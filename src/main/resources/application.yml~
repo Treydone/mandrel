@@ -18,39 +18,9 @@ environments:
         name: My Cool App    
 
 network:
-    interfaces:
-        - 127.0.0.1
-    group:
-        name: default
-        password: null
-    tcp:
-        no_delay: true
-        keep_alive: true
-        reuse_address: true
-        send_buffer_size: null
-        receive_buffer_size : null
-        connect_timeout: 15
-    ssl:
-        enabled: false
-        type: basic
-        props:
-            key_store:
-            key_store_password:
-            key_manager_algorithm: trust_manager_algorithm
-            protocol:
     discovery:
-        unicast:
-            enabled: true
         multicast:
-            enabled: true
-            group: 224.2.2.4
-            port: 54328
-            ttl: 3
-            address: 
-    ec2:
-        enabled: false
-        access_key:
-        secret_key: 
+            enabled: false
 
 logging:
     level:
