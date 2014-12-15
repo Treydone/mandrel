@@ -1,0 +1,8 @@
+package io.mandrel.client.ua;
+
+import io.mandrel.common.Spider;
+
+public interface UserAgentProvisionner {
+
+	String get(String url, Spider spider);
+}
