@@ -1,13 +1,15 @@
 package io.mandrel.client;
 
+import java.io.InputStream;
+
 import io.mandrel.client.dns.DnsCache;
 import io.mandrel.client.dns.InternalDnsCache;
 import io.mandrel.client.proxy.InternalProxyServersSource;
 import io.mandrel.client.proxy.ProxyServersSource;
 import io.mandrel.client.ua.FixedUserAgentProvisionner;
 import io.mandrel.client.ua.UserAgentProvisionner;
-import io.mandrel.common.Spider;
 import io.mandrel.common.settings.Settings;
+import io.mandrel.spider.Spider;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
@@ -15,6 +17,7 @@ import javax.inject.Inject;
 import com.google.common.base.Strings;
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHandler.STATE;
 import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.HttpResponseHeaders;
@@ -56,12 +59,12 @@ public class Requester {
 				.build();
 
 		this.client = new AsyncHttpClient(new NettyAsyncHttpProvider(cf), cf);
-		this.userAgentProvisionner = new FixedUserAgentProvisionner("OhScrap");
+		this.userAgentProvisionner = new FixedUserAgentProvisionner("Mandrel");
 		this.dnsCache = new InternalDnsCache();
 		this.proxyServersSource = new InternalProxyServersSource(settings);
 	}
 
-	public void get(String url, Spider spider) {
+	public void get(String url, Spider spider, Callback callback) {
 		BoundRequestBuilder request = client.prepareGet(dnsCache
 				.optimizeUrl(url));
 
@@ -69,7 +72,7 @@ public class Requester {
 		request.setFollowRedirects(true);
 		request.setHeaders(spider.getHeaders());
 		// request.setCookies(cookies)
-		// request.setQueryParams(params)
+		request.setQueryParams(spider.getParams());
 		request.setProxyServer(proxyServersSource.findProxy(spider));
 
 		String userAgent = userAgentProvisionner.get(url, spider);
@@ -84,8 +87,8 @@ public class Requester {
 					throws Exception {
 				int statusCode = status.getStatusCode();
 
-				if (statusCode >= 300) {
-					// TODO Skip
+				if (statusCode >= 400) {
+					return STATE.ABORT;
 				}
 
 				return super.onStatusReceived(status);
@@ -95,6 +98,7 @@ public class Requester {
 			public STATE onHeadersReceived(HttpResponseHeaders headers)
 					throws Exception {
 
+				// TODO
 				String header = headers.getHeaders().getFirstValue("");
 
 				return super.onHeadersReceived(headers);
@@ -102,8 +106,14 @@ public class Requester {
 
 			@Override
 			public Response onCompleted(Response response) throws Exception {
-				return null;
+				callback.on(response.getResponseBodyAsStream());
+				return response;
 			}
 		});
+	}
+
+	interface Callback {
+
+		void on(InputStream stream);
 	}
 }

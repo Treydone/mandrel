@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "info.build")
+@ConfigurationProperties(prefix = "info")
 public class Settings {
 
 	private String artifact;

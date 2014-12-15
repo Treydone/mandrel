@@ -17,10 +17,15 @@ environments:
         url: http://foo.bar.com
         name: My Cool App    
 
+network:
+    discovery:
+        multicast:
+            enabled: false
+
 logging:
     level:
         org.springframework.web: INFO
-        cbm: DEBUG
+        io.mandrel: DEBUG
         org.apache.cxf: WARN
         org.apache.cxf.interceptor.LoggingInInterceptor: DEBUG
         org.apache.cxf.interceptor.LoggingOutInterceptor: DEBUG

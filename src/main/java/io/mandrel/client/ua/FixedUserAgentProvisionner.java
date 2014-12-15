@@ -1,6 +1,6 @@
 package io.mandrel.client.ua;
 
-import io.mandrel.common.Spider;
+import io.mandrel.spider.Spider;
 
 public class FixedUserAgentProvisionner implements UserAgentProvisionner {
 

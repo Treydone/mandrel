@@ -1,7 +1,7 @@
 package io.mandrel;
 
+import io.mandrel.common.rest.ApiOriginFilter;
 import io.mandrel.common.settings.Settings;
-import io.mandrel.rest.ApiOriginFilter;
 
 import java.util.Arrays;
 
@@ -23,8 +23,7 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan
 public class Main extends SpringBootServletInitializer {
 
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(Main.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
 	@Bean
 	public ServletRegistrationBean cxfServlet() {
@@ -50,28 +49,6 @@ public class Main extends SpringBootServletInitializer {
 	}
 
 	public static void main(String[] args) {
-
-		//
-		// Config config = new Config();
-		//
-		// // Group
-		// config.setGroupConfig(new GroupConfig("", ""));
-		//
-		// // Network
-		// NetworkConfig networkConfig = new NetworkConfig();
-		//
-		// InterfacesConfig interfaces = new InterfacesConfig();
-		// interfaces.addInterface("");
-		// interfaces.setEnabled(true);
-		// networkConfig.setInterfaces(interfaces);
-		//
-		// networkConfig.setReuseAddress(true);
-		//
-		// config.setNetworkConfig(networkConfig);
-		//
-		// // Start Hazelcast
-		// HazelcastInstance instance = Hazelcast.newHazelcastInstance(config);
-
 		ConfigurableApplicationContext context = SpringApplication.run(
 				Main.class, args);
 

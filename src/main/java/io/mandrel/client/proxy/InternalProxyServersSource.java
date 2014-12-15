@@ -1,7 +1,7 @@
 package io.mandrel.client.proxy;
 
-import io.mandrel.common.Spider;
 import io.mandrel.common.settings.Settings;
+import io.mandrel.spider.Spider;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;

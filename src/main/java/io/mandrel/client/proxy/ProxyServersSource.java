@@ -1,6 +1,6 @@
 package io.mandrel.client.proxy;
 
-import io.mandrel.common.Spider;
+import io.mandrel.spider.Spider;
 
 import com.ning.http.client.ProxyServer;
 
