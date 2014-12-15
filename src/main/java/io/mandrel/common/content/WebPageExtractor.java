@@ -17,13 +17,12 @@ import java.util.stream.Collectors;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
+@Data
+@Slf4j
 public class WebPageExtractor {
-
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(WebPageExtractor.class);
 
 	private String name;
 
@@ -113,7 +112,7 @@ public class WebPageExtractor {
 							return scriptingService.execScript(new String(
 									formatter.getValue()), engine, bindings);
 						} catch (Exception e) {
-							LOGGER.debug("Can not format field {}: {}",
+							log.debug("Can not format field {}: {}",
 									field.getName(), e);
 						}
 						return null;
@@ -123,52 +122,12 @@ public class WebPageExtractor {
 		return results;
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public DataStore getDataStore() {
-		return dataStore;
-	}
-
-	public void setDataStore(DataStore dataStore) {
-		this.dataStore = dataStore;
-	}
-
 	public void setMatchingPatternsAsString(
 			List<String> matchingPatternsAsString) {
 		this.matchingPatternsAsString = matchingPatternsAsString;
 		matchingPatterns = this.matchingPatternsAsString.stream()
 				.map(pattern -> Pattern.compile(pattern))
 				.collect(Collectors.toList());
-	}
-
-	public List<Field> getFields() {
-		return fields;
-	}
-
-	public void setFields(List<Field> fields) {
-		this.fields = fields;
-	}
-
-	public ScriptingService getScriptingService() {
-		return scriptingService;
-	}
-
-	public void setScriptingService(ScriptingService scriptingService) {
-		this.scriptingService = scriptingService;
-	}
-
-	public SelectorService getSelectorService() {
-		return selectorService;
-	}
-
-	public void setSelectorService(SelectorService selectorService) {
-		this.selectorService = selectorService;
 	}
 
 }

@@ -3,23 +3,18 @@ package io.mandrel.common;
 import java.io.InputStream;
 import java.net.URL;
 
-public class WebPage {
-	
-	private URL url;
+import lombok.Data;
 
-	private InputStream dataStream;
+@Data
+public class WebPage {
+
+	private final URL url;
+
+	private final InputStream dataStream;
 
 	public WebPage(URL url, InputStream dataStream) {
 		super();
 		this.url = url;
 		this.dataStream = dataStream;
-	}
-
-	public URL getUrl() {
-		return url;
-	}
-
-	public InputStream getDataStream() {
-		return dataStream;
 	}
 }

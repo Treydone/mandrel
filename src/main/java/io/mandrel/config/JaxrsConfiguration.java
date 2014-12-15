@@ -10,6 +10,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.ext.RuntimeDelegate;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.endpoint.Server;
@@ -20,8 +22,6 @@ import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.validation.JAXRSBeanValidationInInterceptor;
 import org.apache.cxf.jaxrs.validation.JAXRSBeanValidationOutInterceptor;
 import org.apache.cxf.message.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,10 +32,8 @@ import com.wordnik.swagger.jaxrs.listing.ApiDeclarationProvider;
 import com.wordnik.swagger.jaxrs.listing.ResourceListingProvider;
 
 @Configuration
+@Slf4j
 public class JaxrsConfiguration {
-
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(JaxrsConfiguration.class);
 
 	@Bean(destroyMethod = "shutdown")
 	public Bus cxf() {
@@ -51,7 +49,7 @@ public class JaxrsConfiguration {
 
 		List<Object> servicesBean = new ArrayList<Object>(context
 				.getBeansWithAnnotation(Path.class).values());
-		LOGGER.info("Adding services {}", servicesBean);
+		log.info("Adding services {}", servicesBean);
 		sf.setServiceBeans(servicesBean);
 
 		sf.setInInterceptors(Arrays.<Interceptor<? extends Message>> asList(

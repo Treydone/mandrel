@@ -9,22 +9,20 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.cxf.validation.ResponseConstraintViolationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 
 @Provider
+@Slf4j
 public class ValidationExceptionMapper implements
 		ExceptionMapper<ValidationException> {
 
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(ValidationExceptionMapper.class);
-
 	@Override
 	public Response toResponse(ValidationException exception) {
-		LOGGER.debug("Validation failed due to: {}", exception);
+		log.debug("Validation failed due to: {}", exception);
 		if (exception instanceof ConstraintViolationException) {
 
 			final ConstraintViolationException constraint = (ConstraintViolationException) exception;

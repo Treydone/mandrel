@@ -5,8 +5,8 @@ import io.mandrel.common.settings.Settings;
 
 import java.util.Arrays;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -21,9 +21,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableAutoConfiguration
 @ComponentScan
+@Slf4j
 public class Main extends SpringBootServletInitializer {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
 	@Bean
 	public ServletRegistrationBean cxfServlet() {
@@ -54,7 +53,7 @@ public class Main extends SpringBootServletInitializer {
 
 		Settings settings = context.getBean(Settings.class);
 
-		LOGGER.info("{} ({}) started", settings.getArtifact(),
+		log.info("{} ({}) started", settings.getArtifact(),
 				settings.getVersion());
 	}
 

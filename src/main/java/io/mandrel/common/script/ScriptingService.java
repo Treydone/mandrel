@@ -12,17 +12,14 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.SimpleScriptContext;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 @Resource
+@Slf4j
 public class ScriptingService {
-
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(ScriptingService.class);
 
 	private final Cache<Integer, CompiledScript> scripts;
 
@@ -38,7 +35,7 @@ public class ScriptingService {
 				.stream()
 				.forEach(
 						factory -> {
-							LOGGER.debug(
+							log.debug(
 									"Engine : {}, version: {}, threading: {}",
 									factory.getEngineName(),
 									factory.getEngineVersion(),

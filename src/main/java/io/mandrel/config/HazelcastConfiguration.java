@@ -1,9 +1,8 @@
 package io.mandrel.config;
 
 import io.mandrel.common.settings.NetworkSettings;
+import lombok.extern.slf4j.Slf4j;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,15 +17,13 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
 @Configuration
+@Slf4j
 public class HazelcastConfiguration {
-
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(HazelcastConfiguration.class);
 
 	@Bean(destroyMethod = "shutdown")
 	public HazelcastInstance hazelcastInstance(NetworkSettings networkSettings) {
 
-		LOGGER.debug("Network settings: {}", networkSettings);
+		log.debug("Network settings: {}", networkSettings);
 
 		Config config = new Config();
 
