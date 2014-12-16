@@ -9,7 +9,7 @@ import io.mandrel.client.proxy.ProxyServersSource;
 import io.mandrel.client.ua.FixedUserAgentProvisionner;
 import io.mandrel.client.ua.UserAgentProvisionner;
 import io.mandrel.common.settings.Settings;
-import io.mandrel.spider.Spider;
+import io.mandrel.service.spider.Spider;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;

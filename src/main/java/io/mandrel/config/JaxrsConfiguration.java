@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.ext.RuntimeDelegate;
@@ -85,6 +86,7 @@ public class JaxrsConfiguration {
 		return new JaxRsApiApplication();
 	}
 
+	@ApplicationPath("/")
 	static class JaxRsApiApplication extends Application {
 
 	}

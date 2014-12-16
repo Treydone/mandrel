@@ -1,14 +1,14 @@
 package io.mandrel.common.health;
 
-import javax.annotation.Resource;
 import javax.inject.Inject;
 
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health.Builder;
+import org.springframework.stereotype.Component;
 
 import com.hazelcast.core.HazelcastInstance;
 
-@Resource
+@Component
 public class HazelcastHealthIndicator extends AbstractHealthIndicator {
 
 	private final HazelcastInstance hazelcastInstance;

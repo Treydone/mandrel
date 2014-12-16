@@ -1,17 +1,20 @@
-package io.mandrel.spider;
+package io.mandrel.service.spider;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import javax.annotation.Resource;
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Component;
 
 import com.hazelcast.core.HazelcastInstance;
 
-@Resource
+@Component
 public class SpiderService {
 
 	private final HazelcastInstance instance;
 
+	@Inject
 	public SpiderService(HazelcastInstance instance) {
 		this.instance = instance;
 	}

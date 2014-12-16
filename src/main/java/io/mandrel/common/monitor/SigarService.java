@@ -4,7 +4,9 @@ import javax.annotation.Resource;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.hyperic.sigar.FileSystem;
 import org.hyperic.sigar.Sigar;
+import org.hyperic.sigar.SigarException;
 
 @Resource
 @Slf4j
@@ -35,8 +37,12 @@ public class SigarService {
 		this.sigar = sigar;
 	}
 
-	public void info() {
+	public void info() throws SigarException {
 
-		// sigar.getFileSystemList()
+		for (FileSystem fs : sigar.getFileSystemList()) {
+			System.err.println(fs.toString());
+		}
+		
+		System.err.println(sigar.getFQDN());
 	}
 }

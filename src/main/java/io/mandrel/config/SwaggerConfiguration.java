@@ -20,7 +20,7 @@ public class SwaggerConfiguration {
 		config.setDescription(settings.getDescription());
 		config.setTitle(settings.getName() + "(" + settings.getArtifact() + ")");
 		config.setBasePath("/rest");
-		config.setResourcePackage("cbm.api");
+		config.setResourcePackage("io.mandrel");
 		config.setScan(true);
 		return config;
 	}

@@ -6,14 +6,17 @@
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>1.2.0.RELEASE</version>
 	</parent>
-	
+
 	<groupId>io.mandrel</groupId>
 	<artifactId>mandrel</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<name>Mandrel</name>
+	<description>The crawler at scale</description>
 
 	<properties>
 		<start-class>io.mandrel.Main</start-class>
 		<cxf.version>3.0.1</cxf.version>
+		<sigar.version>1.6.5.132</sigar.version>
 	</properties>
 
 	<dependencies>
@@ -128,12 +131,12 @@
 		<dependency>
 			<groupId>org.hyperic</groupId>
 			<artifactId>sigar</artifactId>
-			<version>1.6.5.132</version>
+			<version>${sigar.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hyperic</groupId>
 			<artifactId>sigar-dist</artifactId>
-			<version>1.6.5.132</version>
+			<version>${sigar.version}</version>
 			<type>zip</type>
 		</dependency>
 
@@ -236,28 +239,58 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
+
+			<!-- need to copy/unzip the native libraries to the target directory and 
+				tell SystemInfoFactory where they are -->
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
+				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>unpack-dependencies</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>unpack-dependencies</goal>
-						</goals>
+						<phase>process-classes</phase>
 						<configuration>
-							<includes>**/sigar-bin/lib/*</includes>
-							<excludes>**/sigar-bin/lib/*jar</excludes>
-							<includeGroupIds>org.hyperic</includeGroupIds>
-							<includeArtifactIds>sigar-dist</includeArtifactIds>
-							<outputDirectory>
-								${project.build.directory}/depends
-								<!-- or: ${project.basedir}/depends -->
-							</outputDirectory>
+							<tasks>
+								<echo>SIGAR java library version used is ${sigar.version}</echo>
+								<echo>Copying/unzipping SIGAR native libraries (version
+									${sigar.version}) to local build directory</echo>
+								<delete dir="${project.build.directory}/tmp" />
+								<delete dir="${project.build.directory}/lib" />
+								<mkdir dir="${project.build.directory}/tmp" />
+								<copy toDir="${project.build.directory}/tmp">
+									<fileset
+										dir="${settings.localRepository}/org/hyperic/sigar-dist/${sigar.version}"
+										includes="*.zip" />
+								</copy>
+								<unzip dest="${project.build.directory}/tmp">
+									<fileset dir="${project.build.directory}/tmp" includes="*.zip" />
+									<patternset>
+										<include name="**/lib/*.so" />
+										<include name="**/lib/*.sl" />
+										<include name="**/lib/*.dll" />
+										<include name="**/lib/*.dylib" />
+									</patternset>
+								</unzip>
+								<mkdir dir="${project.build.directory}/tmp" />
+								<move todir="${project.build.directory}/lib" flatten="true">
+									<fileset dir="${project.build.directory}/tmp">
+										<include name="**/lib/*" />
+									</fileset>
+								</move>
+								<delete dir="${project.build.directory}/tmp" />
+							</tasks>
 						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
 					</execution>
 				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<!-- need to point the library path to the location of the native libraries -->
+					<argLine>-Djava.library.path=${project.build.directory}/lib</argLine>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

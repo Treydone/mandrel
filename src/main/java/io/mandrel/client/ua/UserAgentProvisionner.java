@@ -1,6 +1,6 @@
 package io.mandrel.client.ua;
 
-import io.mandrel.spider.Spider;
+import io.mandrel.service.spider.Spider;
 
 public interface UserAgentProvisionner {
 

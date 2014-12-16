@@ -1,4 +1,4 @@
-package io.mandrel.spider;
+package io.mandrel.service.spider;
 
 import java.util.Collection;
 import java.util.List;

@@ -15,6 +15,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
 
+@Configuration
 public class MetricConfiguration {
 
 	@Configuration
@@ -26,10 +27,15 @@ public class MetricConfiguration {
 
 		@Bean
 		public GraphiteReporter graphiteReporter(Environment environment) {
-			final Graphite graphite = new Graphite(new InetSocketAddress(environment.getProperty("graphite.host"), environment.getRequiredProperty(
-					"graphite.port", Integer.class)));
-			final GraphiteReporter reporter = GraphiteReporter.forRegistry(metricRegistry).prefixedWith("webapp").convertRatesTo(TimeUnit.SECONDS)
-					.convertDurationsTo(TimeUnit.MILLISECONDS).filter(MetricFilter.ALL).build(graphite);
+			final Graphite graphite = new Graphite(new InetSocketAddress(
+					environment.getProperty("graphite.host"),
+					environment.getRequiredProperty("graphite.port",
+							Integer.class)));
+			final GraphiteReporter reporter = GraphiteReporter
+					.forRegistry(metricRegistry).prefixedWith("webapp")
+					.convertRatesTo(TimeUnit.SECONDS)
+					.convertDurationsTo(TimeUnit.MILLISECONDS)
+					.filter(MetricFilter.ALL).build(graphite);
 			reporter.start(10, TimeUnit.SECONDS);
 			return reporter;
 		}
