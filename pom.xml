@@ -145,12 +145,11 @@
 		<!-- <artifactId>liquibase-core</artifactId> -->
 		<!-- <version>2.1.0</version> -->
 		<!-- </dependency> -->
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+		</dependency>
 
-		<!-- <dependency> -->
-		<!-- <groupId>org.springframework.boot</groupId> -->
-		<!-- <artifactId>spring-boot-starter-jdbc</artifactId> -->
-		<!-- <version>${boot.version}</version> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -164,6 +163,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-undertow</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -253,7 +256,7 @@
 								<echo>Copying/unzipping SIGAR native libraries (version
 									${sigar.version}) to local build directory</echo>
 								<delete dir="${project.build.directory}/tmp" />
-								<delete dir="${project.build.directory}/lib" />
+								<delete dir="dist/lib/native" />
 								<mkdir dir="${project.build.directory}/tmp" />
 								<copy toDir="${project.build.directory}/tmp">
 									<fileset
@@ -270,7 +273,7 @@
 									</patternset>
 								</unzip>
 								<mkdir dir="${project.build.directory}/tmp" />
-								<move todir="${project.build.directory}/lib" flatten="true">
+								<move todir="dist/lib/native" flatten="true">
 									<fileset dir="${project.build.directory}/tmp">
 										<include name="**/lib/*" />
 									</fileset>
@@ -281,6 +284,125 @@
 						<goals>
 							<goal>run</goal>
 						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>add-source</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>dist</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<dependencies>
+					<dependency>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<version>${spring-boot.version}</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+					<createDependencyReducedPom>true</createDependencyReducedPom>
+					<filters>
+						<filter>
+							<artifact>*:*</artifact>
+							<excludes>
+								<exclude>META-INF/*.SF</exclude>
+								<exclude>META-INF/*.DSA</exclude>
+								<exclude>META-INF/*.RSA</exclude>
+								<exclude>META-INF/*.txt</exclude>
+								<exclude>META-INF/ASL2.0</exclude>
+								<exclude>META-INF/DEPENDENCIES</exclude>
+								<exclude>META-INF/LICENSE</exclude>
+								<exclude>META-INF/NOTICE</exclude>
+								<exclude>META-INF/README</exclude>
+								<exclude>LICENSE.txt</exclude>
+								<exclude>NOTICE.txt</exclude>
+								<exclude>CHANGES</exclude>
+								<exclude>README</exclude>
+								<exclude>builddef.lst</exclude>
+							</excludes>
+						</filter>
+					</filters>
+				</configuration>
+				<executions>
+					<execution>
+						<id>main</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/spring.handlers</resource>
+								</transformer>
+								<transformer
+									implementation="org.springframework.boot.maven.PropertiesMergingResourceTransformer">
+									<resource>META-INF/spring.factories</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/spring.schemas</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/cxf/cxf.extension</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+									<resource>META-INF/extensions.xml</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+									<resource>META-INF/cxf/extensions.xml</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/cxf/bus-extensions.txt</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+									<resource>META-INF/cxf/bus-extensions.xml</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+									<resource>META-INF/wsdl.plugin.xml</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+									<resource>META-INF/tools.service.validator.xml</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+									<resource>META-INF/cxf/java2wsbeans.xml</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>${start-class}</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

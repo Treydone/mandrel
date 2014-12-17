@@ -1,6 +1,7 @@
 package io.mandrel.common.source;
 
 import java.util.List;
+import java.util.Map;
 
 public class SeedsSource implements Source {
 
@@ -14,6 +15,10 @@ public class SeedsSource implements Source {
 		for (String seed : seeds) {
 			listener.onItem(seed);
 		}
+	}
+
+	public void init(Map<String, Object> properties) {
+
 	}
 
 	public String getType() {
