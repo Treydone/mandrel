@@ -3,13 +3,12 @@ package io.mandrel.common.source;
 import java.util.List;
 import java.util.Map;
 
-public class SeedsSource implements Source {
+import lombok.Data;
+
+@Data
+public class SeedsSource extends Source {
 
 	private List<String> seeds;
-
-	public SeedsSource(List<String> seeds) {
-		this.seeds = seeds;
-	}
 
 	public void register(EntryListener listener) {
 		for (String seed : seeds) {
@@ -19,9 +18,5 @@ public class SeedsSource implements Source {
 
 	public void init(Map<String, Object> properties) {
 
-	}
-
-	public String getType() {
-		return "seed";
 	}
 }

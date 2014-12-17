@@ -2,7 +2,12 @@ package io.mandrel.common.source;
 
 import java.util.Map;
 
-public class JMSSource implements Source {
+import lombok.Data;
+
+@Data
+public class JmsSource extends Source {
+
+	private String url;
 
 	public void register(EntryListener listener) {
 
@@ -10,9 +15,5 @@ public class JMSSource implements Source {
 
 	public void init(Map<String, Object> properties) {
 
-	}
-
-	public String getType() {
-		return "jms";
 	}
 }

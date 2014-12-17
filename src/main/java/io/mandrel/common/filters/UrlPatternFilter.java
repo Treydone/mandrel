@@ -2,17 +2,24 @@ package io.mandrel.common.filters;
 
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import lombok.Data;
 import io.mandrel.common.WebPage;
 
-public class UrlPatternFilter implements WebPageFilter {
+@Data
+public class UrlPatternFilter extends WebPageFilter {
 
-	private final Pattern pattern;
-
-	public UrlPatternFilter(String pattern) {
-		this.pattern = Pattern.compile(pattern);
-	}
+	@JsonIgnore
+	private Pattern compiledPattern;
+	private String pattern;
 
 	public boolean isValid(WebPage webPage) {
-		return pattern.matcher(webPage.getUrl().toString()).matches();
+		return compiledPattern.matcher(webPage.getUrl().toString()).matches();
+	}
+
+	public void setPattern(String pattern) {
+		this.pattern = pattern;
+		compiledPattern = Pattern.compile(pattern);
 	}
 }

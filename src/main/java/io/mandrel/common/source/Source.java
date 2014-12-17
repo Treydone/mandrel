@@ -2,11 +2,19 @@ package io.mandrel.common.source;
 
 import java.util.Map;
 
-public interface Source {
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-	void init(Map<String, Object> properties);
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({ @Type(value = JmsSource.class, name = "jms"),
+		@Type(value = SeedsSource.class, name = "seed"),
+		@Type(value = JdbcSource.class, name = "jdbc") })
+public abstract class Source {
 
-	void register(EntryListener listener);
+	abstract void init(Map<String, Object> properties);
 
-	String getType();
+	abstract void register(EntryListener listener);
+
+	// abstract String getType();
 }
