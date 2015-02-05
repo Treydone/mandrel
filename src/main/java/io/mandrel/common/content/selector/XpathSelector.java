@@ -30,7 +30,7 @@ public class XpathSelector implements WebPageSelector {
 		XPath xPath = XPathFactory.newInstance().newXPath();
 		Document document = null;
 		try {
-			TagNode node = cleaner.clean(webPage.getDataStream());
+			TagNode node = cleaner.clean(webPage.getBody());
 			document = new DomSerializer(new CleanerProperties())
 					.createDOM(node);
 		} catch (Exception e) {
@@ -53,10 +53,10 @@ public class XpathSelector implements WebPageSelector {
 		}
 
 		@Override
-		public List<Object> select(byte[] value) {
+		public List<Object> select(String value) {
 			NodeList nodes;
 			try {
-				nodes = (NodeList) xPath.evaluate(new String(value), document,
+				nodes = (NodeList) xPath.evaluate(value, document,
 						XPathConstants.NODESET);
 			} catch (XPathExpressionException e) {
 				throw new RuntimeException(e);

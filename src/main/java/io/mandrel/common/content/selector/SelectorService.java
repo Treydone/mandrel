@@ -8,6 +8,14 @@ import java.util.Map;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
+import org.springframework.stereotype.Component;
+
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Getter
+@Component
 public class SelectorService {
 
 	private Map<String, WebPageSelector> selectorsByName;
@@ -15,10 +23,6 @@ public class SelectorService {
 	public SelectorService() {
 		ClassLoader ctxtLoader = Thread.currentThread().getContextClassLoader();
 		init(ctxtLoader);
-	}
-
-	public SelectorService(ClassLoader loader) {
-		init(loader);
 	}
 
 	private void init(final ClassLoader loader) {
@@ -48,7 +52,7 @@ public class SelectorService {
 
 			itr = sl.iterator();
 		} catch (ServiceConfigurationError err) {
-			System.err.println("Can't find WebPageSelector providers: "
+			log.debug("Can't find WebPageSelector providers: "
 					+ err.getMessage());
 			// do not throw any exception here. user may want to
 			// manage his/her own factories using this manager
@@ -62,15 +66,13 @@ public class SelectorService {
 					WebPageSelector fact = itr.next();
 					selectorsByName.put(fact.getName(), fact);
 				} catch (ServiceConfigurationError err) {
-					System.err.println("Selectors providers.next(): "
-							+ err.getMessage());
+					log.debug("Selectors providers.next(): " + err.getMessage());
 					// one factory failed, but check other factories...
 					continue;
 				}
 			}
 		} catch (ServiceConfigurationError err) {
-			System.err.println("Selectors providers.hasNext(): "
-					+ err.getMessage());
+			log.debug("Selectors providers.hasNext(): " + err.getMessage());
 			// do not throw any exception here. user may want to
 			// manage his/her own factories using this manager
 			// by explicit registratation (by registerXXX) methods.
@@ -87,4 +89,5 @@ public class SelectorService {
 		}
 		return null;
 	}
+
 }

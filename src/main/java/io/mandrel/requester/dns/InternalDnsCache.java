@@ -1,4 +1,4 @@
-package io.mandrel.client.dns;
+package io.mandrel.requester.dns;
 
 public class InternalDnsCache implements DnsCache {
 

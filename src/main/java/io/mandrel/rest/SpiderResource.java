@@ -46,8 +46,8 @@ public class SpiderResource {
 	@ApiOperation(value = "Add a spider")
 	@Path("/add")
 	@POST
-	public void add(Spider spider) {
-		spiderResource.add(spider);
+	public Spider add(Spider spider) {
+		return spiderResource.add(spider);
 	}
 
 	@ApiOperation(value = "Find a spider by its id", response = Spider.class)
@@ -55,6 +55,17 @@ public class SpiderResource {
 	@GET
 	public Spider id(@PathParam("id") Long id) {
 		return spiderResource.get(id).map(opt -> opt).orElse(null);
+	}
+
+	@ApiOperation(value = "Start a spider", response = Spider.class)
+	@Path("/{id}/start")
+	@GET
+	public Spider start(@PathParam("id") Long id) {
+		Spider spider = spiderResource.get(id).map(opt -> {
+			spiderResource.start(opt);
+			return opt;
+		}).orElse(null);
+		return spider;
 	}
 
 	@ApiOperation(value = "Pause a spider", response = Spider.class)

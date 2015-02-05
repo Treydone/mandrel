@@ -1,4 +1,4 @@
-package io.mandrel.client.ua;
+package io.mandrel.requester.ua;
 
 import io.mandrel.service.spider.Spider;
 

@@ -6,11 +6,11 @@ import io.mandrel.common.store.WebPageStore;
 
 import com.hazelcast.core.HazelcastInstance;
 
-public class InternalStore implements WebPageStore, PageMetadataStore {
+public class InternalPageStore implements WebPageStore, PageMetadataStore {
 
 	private final HazelcastInstance instance;
 
-	public InternalStore(HazelcastInstance instance) {
+	public InternalPageStore(HazelcastInstance instance) {
 		this.instance = instance;
 	}
 

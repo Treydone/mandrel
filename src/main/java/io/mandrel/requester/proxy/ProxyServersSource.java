@@ -1,4 +1,4 @@
-package io.mandrel.client.proxy;
+package io.mandrel.requester.proxy;
 
 import io.mandrel.service.spider.Spider;
 

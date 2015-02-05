@@ -1,26 +1,27 @@
-package io.mandrel.client;
+package io.mandrel.requester;
 
-import java.io.InputStream;
-
-import io.mandrel.client.dns.DnsCache;
-import io.mandrel.client.dns.InternalDnsCache;
-import io.mandrel.client.proxy.InternalProxyServersSource;
-import io.mandrel.client.proxy.ProxyServersSource;
-import io.mandrel.client.ua.FixedUserAgentProvisionner;
-import io.mandrel.client.ua.UserAgentProvisionner;
+import io.mandrel.common.WebPage;
 import io.mandrel.common.settings.Settings;
+import io.mandrel.requester.dns.DnsCache;
+import io.mandrel.requester.dns.InternalDnsCache;
+import io.mandrel.requester.proxy.InternalProxyServersSource;
+import io.mandrel.requester.proxy.ProxyServersSource;
+import io.mandrel.requester.ua.FixedUserAgentProvisionner;
+import io.mandrel.requester.ua.UserAgentProvisionner;
 import io.mandrel.service.spider.Spider;
+
+import java.net.URL;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
 
+import lombok.extern.slf4j.Slf4j;
+
 import com.google.common.base.Strings;
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHandler.STATE;
 import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
 import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.Response;
 import com.ning.http.client.extra.ThrottleRequestFilter;
@@ -28,6 +29,7 @@ import com.ning.http.client.providers.netty.NettyAsyncHttpProvider;
 import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
 
 @Resource
+@Slf4j
 public class Requester {
 
 	private final AsyncHttpClient client;
@@ -95,18 +97,17 @@ public class Requester {
 			}
 
 			@Override
-			public STATE onHeadersReceived(HttpResponseHeaders headers)
-					throws Exception {
-
-				// TODO
-				String header = headers.getHeaders().getFirstValue("");
-
-				return super.onHeadersReceived(headers);
-			}
-
-			@Override
 			public Response onCompleted(Response response) throws Exception {
-				callback.on(response.getResponseBodyAsStream());
+				WebPage webPage;
+				try {
+					webPage = new WebPage(new URL(url), response
+							.getStatusCode(), response.getStatusText(),
+							response.getHeaders(), response.getCookies(),
+							response.getResponseBodyAsStream());
+					callback.on(webPage);
+				} catch (Exception e) {
+					log.debug("Can not construct web page", e);
+				}
 				return response;
 			}
 		});
@@ -114,6 +115,6 @@ public class Requester {
 
 	interface Callback {
 
-		void on(InputStream stream);
+		void on(WebPage webapge);
 	}
 }

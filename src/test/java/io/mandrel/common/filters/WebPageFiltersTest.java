@@ -1,6 +1,7 @@
 package io.mandrel.common.filters;
 
 import static org.junit.Assert.assertEquals;
+import io.mandrel.common.filters.BooleanFilters.NotFilter;
 import io.mandrel.common.filters.WebPageFiltersTest.LocalConfiguration;
 import io.mandrel.config.BindConfiguration;
 
@@ -31,10 +32,21 @@ public class WebPageFiltersTest {
 	private ObjectMapper objectMapper;
 
 	@Test
-	public void ref() throws IOException {
+	public void large() throws IOException {
 
-		ReferencedFilter filter = new ReferencedFilter();
-		filter.setRef("test");
+		LargeFilter filter = new LargeFilter();
+
+		String json = objectMapper.writeValueAsString(filter);
+		System.err.println(json);
+		WebPageFilter read = objectMapper.readValue(json, WebPageFilter.class);
+		assertEquals(filter, read);
+	}
+
+	@Test
+	public void not() throws IOException {
+
+		NotFilter filter = new NotFilter();
+		filter.setFilter(new LargeFilter());
 
 		String json = objectMapper.writeValueAsString(filter);
 		System.err.println(json);

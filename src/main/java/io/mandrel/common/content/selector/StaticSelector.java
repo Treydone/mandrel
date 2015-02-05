@@ -17,8 +17,8 @@ public class StaticSelector implements WebPageSelector {
 		return new Instance() {
 
 			@Override
-			public List<Object> select(byte[] value) {
-				return Arrays.<Object> asList(new String(value));
+			public List<Object> select(String value) {
+				return Arrays.<Object> asList(value);
 			}
 		};
 	}

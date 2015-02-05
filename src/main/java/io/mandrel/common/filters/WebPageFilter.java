@@ -1,14 +1,19 @@
 package io.mandrel.common.filters;
 
-import lombok.Data;
 import io.mandrel.common.WebPage;
+import lombok.Data;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes({ @Type(value = ReferencedFilter.class, name = "ref"),
+@JsonSubTypes({ @Type(value = LargeFilter.class, name = "large"),
+		@Type(value = BooleanFilters.AndFilter.class, name = "and"),
+		@Type(value = BooleanFilters.OrFilter.class, name = "or"),
+		@Type(value = BooleanFilters.NotFilter.class, name = "not"),
+		@Type(value = BooleanFilters.NotFilter.class, name = "true"),
+		@Type(value = BooleanFilters.NotFilter.class, name = "false"),
 		@Type(value = UrlPatternFilter.class, name = "pattern") })
 @Data
 public abstract class WebPageFilter {

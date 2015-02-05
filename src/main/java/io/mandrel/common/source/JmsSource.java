@@ -1,10 +1,10 @@
 package io.mandrel.common.source;
 
-import java.util.Map;
-
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class JmsSource extends Source {
 
 	private String url;
@@ -13,7 +13,7 @@ public class JmsSource extends Source {
 
 	}
 
-	public void init(Map<String, Object> properties) {
-
+	public boolean check() {
+		return true;
 	}
 }

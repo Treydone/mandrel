@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class FieldExtractor {
 	private String type;
-	private byte[] value;
+	private String value;
 	private Source source;
 
 }

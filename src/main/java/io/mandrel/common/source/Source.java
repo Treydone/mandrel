@@ -12,9 +12,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 		@Type(value = JdbcSource.class, name = "jdbc") })
 public abstract class Source {
 
-	abstract void init(Map<String, Object> properties);
-
 	abstract void register(EntryListener listener);
+	
+	abstract public boolean check();
+	
+	public void init(Map<String, Object> properties) {
 
-	// abstract String getType();
+	}
 }

@@ -5,9 +5,11 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import io.mandrel.common.WebPage;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class UrlPatternFilter extends WebPageFilter {
 
 	@JsonIgnore

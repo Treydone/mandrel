@@ -3,7 +3,6 @@ package io.mandrel.common.script;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import io.mandrel.common.WebPage;
-import io.mandrel.common.script.ScriptingService;
 
 import java.net.URL;
 
@@ -20,7 +19,8 @@ public class ScriptingTest {
 	public void groovy() throws Exception {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://test-url"), null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
+				null, null, null);
 
 		ScriptEngine engine = scriptingService.getEngineByName("groovy");
 		ScriptContext bindings = scriptingService.getBindings(webPage, null);

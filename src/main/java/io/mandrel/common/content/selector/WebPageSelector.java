@@ -12,6 +12,6 @@ public interface WebPageSelector {
 
 	public interface Instance {
 
-		List<Object> select(byte[] value);
+		List<Object> select(String value);
 	}
 }
