@@ -1,5 +1,7 @@
 package io.mandrel.common.store;
 
+import java.util.Map;
+
 import io.mandrel.common.health.Checkable;
 import io.mandrel.common.store.impl.CassandraStore;
 import io.mandrel.common.store.impl.InternalStore;
@@ -14,4 +16,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 		@Type(value = CassandraStore.class, name = "cassandra") })
 public interface PageMetadataStore extends Checkable {
 
+	void init(Map<String, Object> properties);
 }

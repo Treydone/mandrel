@@ -1,72 +1,68 @@
 package io.mandrel.service.spider;
 
 import io.mandrel.service.spider.Spider.State;
+import io.mandrel.service.spider.Spider.Stores;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
 import org.springframework.stereotype.Component;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.ReplicatedMap;
 
 @Component
 public class SpiderService {
 
 	private final HazelcastInstance instance;
 
+	private Validator spiderValidator = new SpiderValidator();
+
 	@Inject
 	public SpiderService(HazelcastInstance instance) {
 		this.instance = instance;
 	}
 
+	public Errors validate(Spider spider) {
+		Errors errors = new BeanPropertyBindingResult(spider, "spider");
+		spiderValidator.validate(spider, errors);
+		return errors;
+	}
+
+	/**
+	 * Store the spider and distribute it across the cluster.
+	 * 
+	 * @param spider
+	 * @return
+	 */
 	public Spider add(Spider spider) {
-		
 
-		// TODO: test datastore connectivity
-		if (spider.getExtractors() != null) {
-			spider.getExtractors().stream().map(ex -> ex.getDataStore())
-					.filter(ds -> ds != null).forEach(ds -> {
-						ds.check();
-					});
+		Errors errors = validate(spider);
+
+		if (errors.hasErrors()) {
+			// TODO
+			throw new RuntimeException("Errors!");
 		}
-
-		// Test sources
-		Map<String, Boolean> checks = spider
-				.getSources()
-				.stream()
-				.collect(
-						Collectors.toMap(s -> s.getClass().getName(),
-								s -> s.check()));
-		boolean check = checks.entrySet().stream()
-				.anyMatch(entry -> entry.getValue());
-		if (check) {
-			// TODO Throw STG
-		}
-
-		// spider.getSources().stream().parallel().forEach(s -> s);
 
 		long id = instance.getIdGenerator("spiders").newId();
 		spider.setId(id);
-		instance.getMap("spiders").put(id, spider);
+		spiders().put(id, spider);
 		return spider;
 	}
 
-	public void update(Spider spider) {
-		instance.getMap("spiders").put(spider.getId(), spider);
-	}
-
 	public Optional<Spider> get(long id) {
-		Spider value = (Spider) instance.getMap("spiders").get(id);
+		Spider value = (Spider) spiders().get(id);
 		return value == null ? Optional.empty() : Optional.of(value);
 	}
 
 	public Stream<Spider> list() {
-		return instance.getMap("spiders").values().stream()
-				.map(el -> (Spider) el);
+		return spiders().values().stream().map(el -> (Spider) el);
 	}
 
 	public void start(Spider spider) {
@@ -78,8 +74,66 @@ public class SpiderService {
 			source.init(properties);
 		});
 
-		spider.setState(State.STARTED);
-		update(spider);
+		spider.getStores().getPageMetadataStore().init(properties);
+		spider.getStores().getPageStore().init(properties);
 
+		spider.getExtractors().stream().forEach(ex -> ex.getDataStore().init(ex));
+
+		spider.setState(State.STARTED);
+		spiders().put(spider.getId(), spider);
+
+	}
+
+	private ReplicatedMap<Object, Object> spiders() {
+		return instance.getReplicatedMap("spiders");
+	}
+
+	private final class SpiderValidator implements Validator {
+		@Override
+		public void validate(Object target, Errors errors) {
+
+			// ValidationUtils.rejectIfEmptyOrWhitespace(errors, "userName",
+			// "field.required");
+			// ValidationUtils.rejectIfEmptyOrWhitespace(errors, "password",
+			// "field.required");
+
+			Spider spider = (Spider) target;
+
+			// Stores
+			Stores stores = spider.getStores();
+
+			if (stores.getPageMetadataStore() == null) {
+				errors.rejectValue("stores.pageMetadataStore", "stores.pageMetadataStore.not.null", null, "Can not be null.");
+			} else {
+				if (!stores.getPageMetadataStore().check()) {
+					errors.rejectValue("stores.pageMetadataStore", "stores.pageMetadataStore.failed", null, "PageMetadataStore failed check.");
+				}
+			}
+
+			if (stores.getPageStore() == null) {
+				errors.rejectValue("stores.pageStore", "stores.pageStore.not.null", null, "Can not be null.");
+			} else {
+				if (!stores.getPageMetadataStore().check()) {
+					errors.rejectValue("stores.pageStore", "stores.pageStore.failed", null, "PageStore failed check.");
+				}
+			}
+
+			// Sources
+			if (spider.getSources() != null) {
+				spider.getSources().stream().forEach(source -> {
+					if (!source.check()) {
+						errors.rejectValue("sources", "sources.failed", null, "Check " + source.getName() + " failed.");
+					}
+				});
+			}
+
+			// Client
+			// TODO
+		}
+
+		@Override
+		public boolean supports(Class<?> clazz) {
+			return Spider.class.isAssignableFrom(clazz);
+		}
 	}
 }

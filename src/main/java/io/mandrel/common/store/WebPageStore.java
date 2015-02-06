@@ -1,5 +1,7 @@
 package io.mandrel.common.store;
 
+import java.util.Map;
+
 import io.mandrel.common.WebPage;
 import io.mandrel.common.health.Checkable;
 import io.mandrel.common.store.impl.InternalStore;
@@ -13,4 +15,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public interface WebPageStore extends Checkable {
 
 	void save(WebPage webPage);
+	
+	 void init(Map<String, Object> properties);
 }

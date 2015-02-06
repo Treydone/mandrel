@@ -1,6 +1,8 @@
 package io.mandrel.service.spider;
 
 import static org.junit.Assert.assertEquals;
+import io.mandrel.common.filters.UrlPatternFilter;
+import io.mandrel.common.filters.WebPageFilter;
 import io.mandrel.common.source.SeedsSourceTest.LocalConfiguration;
 import io.mandrel.config.BindConfiguration;
 import io.mandrel.service.spider.Spider.Client;
@@ -16,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.validation.Errors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -55,6 +58,18 @@ public class SpiderServiceTest {
 	}
 
 	@Test
+	public void webPageFilters() throws IOException {
+
+		UrlPatternFilter filter = new UrlPatternFilter();
+		filter.setPattern(".*");
+
+		String json = objectMapper.writeValueAsString(filter);
+		System.err.println(json);
+		WebPageFilter read = objectMapper.readValue(json, WebPageFilter.class);
+		assertEquals(filter, read);
+	}
+
+	@Test
 	public void spider() throws IOException {
 
 		Spider spider = new Spider();
@@ -63,5 +78,17 @@ public class SpiderServiceTest {
 		System.err.println(json);
 		Spider read = objectMapper.readValue(json, Spider.class);
 		assertEquals(spider, read);
+	}
+
+	@Test
+	public void validate() throws IOException {
+
+		Spider spider = new Spider();
+
+		SpiderService spiderService = new SpiderService(null);
+		Errors errors = spiderService.validate(spider);
+
+		System.err.println(errors);
+
 	}
 }

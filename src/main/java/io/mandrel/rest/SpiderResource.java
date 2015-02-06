@@ -28,41 +28,41 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @Slf4j
 public class SpiderResource {
 
-	private final SpiderService spiderResource;
+	private final SpiderService spiderService;
 
 	@Inject
-	public SpiderResource(SpiderService spiderResource) {
-		log.debug("Starting spider resource...");
-		this.spiderResource = spiderResource;
+	public SpiderResource(SpiderService spiderService) {
+		log.debug("Starting spider Service...");
+		this.spiderService = spiderService;
 	}
 
 	@ApiOperation(value = "List all the spiders", response = Spider.class, responseContainer = "List")
 	@Path("/all")
 	@GET
 	public List<Spider> all() {
-		return spiderResource.list().collect(Collectors.toList());
+		return spiderService.list().collect(Collectors.toList());
 	}
 
 	@ApiOperation(value = "Add a spider")
 	@Path("/add")
 	@POST
 	public Spider add(Spider spider) {
-		return spiderResource.add(spider);
+		return spiderService.add(spider);
 	}
 
 	@ApiOperation(value = "Find a spider by its id", response = Spider.class)
 	@Path("/{id}")
 	@GET
 	public Spider id(@PathParam("id") Long id) {
-		return spiderResource.get(id).map(opt -> opt).orElse(null);
+		return spiderService.get(id).map(opt -> opt).orElse(null);
 	}
 
 	@ApiOperation(value = "Start a spider", response = Spider.class)
 	@Path("/{id}/start")
 	@GET
 	public Spider start(@PathParam("id") Long id) {
-		Spider spider = spiderResource.get(id).map(opt -> {
-			spiderResource.start(opt);
+		Spider spider = spiderService.get(id).map(opt -> {
+			spiderService.start(opt);
 			return opt;
 		}).orElse(null);
 		return spider;
@@ -72,13 +72,13 @@ public class SpiderResource {
 	@Path("/{id}/pause")
 	@GET
 	public Spider pause(@PathParam("id") Long id) {
-		return spiderResource.get(id).map(opt -> opt).orElse(null);
+		return spiderService.get(id).map(opt -> opt).orElse(null);
 	}
 
 	@ApiOperation(value = "Cancel a spider", response = Spider.class)
 	@Path("/{id}/cancel")
 	@GET
 	public Spider cancel(@PathParam("id") Long id) {
-		return spiderResource.get(id).map(opt -> opt).orElse(null);
+		return spiderService.get(id).map(opt -> opt).orElse(null);
 	}
 }

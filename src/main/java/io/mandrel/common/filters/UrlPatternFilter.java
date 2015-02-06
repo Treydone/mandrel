@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 import io.mandrel.common.WebPage;
 
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = false, exclude = "compiledPattern")
 public class UrlPatternFilter extends WebPageFilter {
 
 	@JsonIgnore

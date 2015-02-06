@@ -12,8 +12,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 		@Type(value = BooleanFilters.AndFilter.class, name = "and"),
 		@Type(value = BooleanFilters.OrFilter.class, name = "or"),
 		@Type(value = BooleanFilters.NotFilter.class, name = "not"),
-		@Type(value = BooleanFilters.NotFilter.class, name = "true"),
-		@Type(value = BooleanFilters.NotFilter.class, name = "false"),
+		@Type(value = BooleanFilters.TrueFilter.class, name = "true"),
+		@Type(value = BooleanFilters.FalseFilter.class, name = "false"),
 		@Type(value = UrlPatternFilter.class, name = "pattern") })
 @Data
 public abstract class WebPageFilter {
