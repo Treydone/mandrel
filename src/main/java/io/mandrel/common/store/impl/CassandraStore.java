@@ -8,4 +8,9 @@ public class CassandraStore implements WebPageStore, PageMetadataStore {
 
 	public void save(WebPage webPage) {
 	}
+
+	@Override
+	public boolean check() {
+		return true;
+	}
 }

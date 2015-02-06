@@ -8,6 +8,8 @@ import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.system.ApplicationPidFileWriter;
+import org.springframework.boot.actuate.system.EmbeddedServerPortFileWriter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
@@ -27,8 +29,7 @@ public class Main extends SpringBootServletInitializer {
 	@Bean
 	public ServletRegistrationBean cxfServlet() {
 		org.apache.cxf.transport.servlet.CXFServlet cxfServlet = new org.apache.cxf.transport.servlet.CXFServlet();
-		ServletRegistrationBean servletDef = new ServletRegistrationBean(
-				cxfServlet, "/rest/*");
+		ServletRegistrationBean servletDef = new ServletRegistrationBean(cxfServlet, "/rest/*");
 		servletDef.setLoadOnStartup(1);
 		return servletDef;
 	}
@@ -42,19 +43,17 @@ public class Main extends SpringBootServletInitializer {
 	}
 
 	@Override
-	protected SpringApplicationBuilder configure(
-			SpringApplicationBuilder application) {
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
 		return application.sources(Main.class);
 	}
 
 	public static void main(String[] args) {
-		ConfigurableApplicationContext context = SpringApplication.run(
-				Main.class, args);
+		ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
+		context.addApplicationListener(new ApplicationPidFileWriter());
+		context.addApplicationListener(new EmbeddedServerPortFileWriter());
 
 		Settings settings = context.getBean(Settings.class);
 
-		log.info("{} ({}) started", settings.getArtifact(),
-				settings.getVersion());
+		log.info("{} ({}) started", settings.getArtifact(), settings.getVersion());
 	}
-
 }

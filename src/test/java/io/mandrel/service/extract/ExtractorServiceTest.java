@@ -6,15 +6,13 @@ import io.mandrel.common.content.FieldExtractor;
 import io.mandrel.common.content.WebPageExtractor;
 import io.mandrel.common.content.selector.SelectorService;
 import io.mandrel.common.script.ScriptingService;
+import io.mandrel.common.store.Document;
 import io.mandrel.common.store.DocumentStore;
 
 import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,16 +36,14 @@ public class ExtractorServiceTest {
 
 	@Before
 	public void init() {
-		extractorService = new ExtractorService(scriptingService,
-				selectorService);
+		extractorService = new ExtractorService(scriptingService, selectorService);
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void no_matching_pattern() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		// Actions
@@ -60,8 +56,7 @@ public class ExtractorServiceTest {
 	public void no_field() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
 
@@ -75,8 +70,7 @@ public class ExtractorServiceTest {
 	public void no_datastore() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
 		Field field = new Field();
@@ -93,8 +87,7 @@ public class ExtractorServiceTest {
 	public void no_field_extractor() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
 		extractor.setDataStore(dataStore);
@@ -112,8 +105,7 @@ public class ExtractorServiceTest {
 	public void no_field_extractor_type() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
 		extractor.setDataStore(dataStore);
@@ -134,8 +126,7 @@ public class ExtractorServiceTest {
 	public void no_field_extractor_value() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
 		extractor.setDataStore(dataStore);
@@ -156,12 +147,9 @@ public class ExtractorServiceTest {
 	public void simple() throws MalformedURLException {
 
 		// Arrange
-		ByteArrayInputStream stream = new ByteArrayInputStream(
-				"<test><o>value1</o></test><test><o>value2</o></test>"
-						.getBytes());
+		ByteArrayInputStream stream = new ByteArrayInputStream("<test><o>value1</o></test><test><o>value2</o></test>".getBytes());
 
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, stream);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
 		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
 		extractor.setDataStore(dataStore);
@@ -177,7 +165,7 @@ public class ExtractorServiceTest {
 		extractorService.extractFormatThenStore(webPage, extractor);
 
 		// Asserts
-		Map<String, List<Object>> data = new HashMap<>();
+		Document data = new Document();
 		data.put("date", Arrays.asList("value1", "value2"));
 		Mockito.verify(dataStore).save(data);
 	}
@@ -186,12 +174,9 @@ public class ExtractorServiceTest {
 	public void simple_with_mutiple_extractors() throws MalformedURLException {
 
 		// Arrange
-		ByteArrayInputStream stream = new ByteArrayInputStream(
-				"<test><o>value1</o><t>key1</t></test><test><o>value2</o></test>"
-						.getBytes());
+		ByteArrayInputStream stream = new ByteArrayInputStream("<test><o>value1</o><t>key1</t></test><test><o>value2</o></test>".getBytes());
 
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, stream);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
 		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
 		extractor.setDataStore(dataStore);
@@ -216,7 +201,7 @@ public class ExtractorServiceTest {
 		extractorService.extractFormatThenStore(webPage, extractor);
 
 		// Asserts
-		Map<String, List<Object>> data = new HashMap<>();
+		Document data = new Document();
 		data.put("date", Arrays.asList("value1", "value2"));
 		data.put("key", Arrays.asList("key1"));
 		Mockito.verify(dataStore).save(data);
@@ -227,11 +212,9 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		ByteArrayInputStream stream = new ByteArrayInputStream(
-				"<test><o>value1</o><t>key1</t></test><test><o>value2</o><t>key2</t></test><test><o>value3</o></test>"
-						.getBytes());
+				"<test><o>value1</o><t>key1</t></test><test><o>value2</o><t>key2</t></test><test><o>value3</o></test>".getBytes());
 
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, stream);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
 		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
 		extractor.setDataStore(dataStore);
@@ -256,17 +239,17 @@ public class ExtractorServiceTest {
 		extractorService.extractFormatThenStore(webPage, extractor);
 
 		// Asserts
-		Map<String, List<Object>> data1 = new HashMap<>();
+		Document data1 = new Document();
 		data1.put("date", Arrays.asList("value1"));
 		data1.put("key", Arrays.asList("key1"));
 		Mockito.verify(dataStore).save(data1);
 
-		Map<String, List<Object>> data2 = new HashMap<>();
+		Document data2 = new Document();
 		data2.put("date", Arrays.asList("value2"));
 		data2.put("key", Arrays.asList("key2"));
 		Mockito.verify(dataStore).save(data2);
 
-		Map<String, List<Object>> data3 = new HashMap<>();
+		Document data3 = new Document();
 		data3.put("date", Arrays.asList("value3"));
 		Mockito.verify(dataStore).save(data3);
 	}

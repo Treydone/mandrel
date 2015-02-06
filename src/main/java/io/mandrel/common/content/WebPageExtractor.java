@@ -1,6 +1,7 @@
 package io.mandrel.common.content;
 
 import io.mandrel.common.store.DocumentStore;
+import io.mandrel.common.store.impl.InternalDocumentStore;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,7 +19,7 @@ public class WebPageExtractor {
 	private String name;
 
 	@JsonProperty("store")
-	private DocumentStore dataStore;
+	private DocumentStore dataStore = new InternalDocumentStore();
 
 	@JsonProperty("matching_patterns")
 	private List<String> matchingPatternsAsString;

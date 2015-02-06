@@ -4,7 +4,6 @@ import io.mandrel.common.WebPage;
 
 import java.util.concurrent.Callable;
 
-import javax.annotation.Resource;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
 import javax.script.ScriptContext;
@@ -14,10 +13,12 @@ import javax.script.SimpleScriptContext;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.stereotype.Component;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-@Resource
+@Component
 @Slf4j
 public class ScriptingService {
 
@@ -35,16 +36,12 @@ public class ScriptingService {
 				.stream()
 				.forEach(
 						factory -> {
-							log.debug(
-									"Engine : {}, version: {}, threading: {}",
-									factory.getEngineName(),
-									factory.getEngineVersion(),
+							log.debug("Engine : {}, version: {}, threading: {}", factory.getEngineName(), factory.getEngineVersion(),
 									factory.getParameter("THREADING"));
 						});
 	}
 
-	public Object execScript(String engineName, final String script,
-			WebPage webPage, Object input) throws Exception {
+	public Object execScript(String engineName, final String script, WebPage webPage, Object input) throws Exception {
 
 		final ScriptEngine engine = getEngineByName(engineName);
 
@@ -57,15 +54,13 @@ public class ScriptingService {
 		return execScript(script, engine, bindings);
 	}
 
-	public Object execScript(final String script, final ScriptEngine engine,
-			ScriptContext bindings) throws Exception {
+	public Object execScript(final String script, final ScriptEngine engine, ScriptContext bindings) throws Exception {
 		if (engine instanceof Compilable) {
-			CompiledScript compiled = scripts.get(script.hashCode(),
-					new Callable<CompiledScript>() {
-						public CompiledScript call() throws Exception {
-							return ((Compilable) engine).compile(script);
-						}
-					});
+			CompiledScript compiled = scripts.get(script.hashCode(), new Callable<CompiledScript>() {
+				public CompiledScript call() throws Exception {
+					return ((Compilable) engine).compile(script);
+				}
+			});
 			return compiled.eval(bindings);
 		} else {
 			return engine.eval(script, bindings);
@@ -75,8 +70,7 @@ public class ScriptingService {
 	public ScriptContext getBindings(WebPage webPage, Object input) {
 		ScriptContext bindings = new SimpleScriptContext();
 		bindings.setAttribute("input", input, ScriptContext.ENGINE_SCOPE);
-		bindings.setAttribute("url", webPage.getUrl(),
-				ScriptContext.ENGINE_SCOPE);
+		bindings.setAttribute("url", webPage.getUrl(), ScriptContext.ENGINE_SCOPE);
 		return bindings;
 	}
 

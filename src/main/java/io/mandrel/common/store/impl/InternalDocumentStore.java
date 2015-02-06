@@ -6,9 +6,13 @@ import io.mandrel.common.store.DocumentStore;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hazelcast.core.HazelcastInstance;
+
 public class InternalDocumentStore implements DocumentStore {
 
-	// private HazelcastInstance instance;
+	@JsonIgnore
+	private HazelcastInstance instance;
 
 	@Override
 	public void save(Document data) {

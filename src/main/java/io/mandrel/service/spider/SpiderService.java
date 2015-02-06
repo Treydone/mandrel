@@ -1,5 +1,7 @@
 package io.mandrel.service.spider;
 
+import io.mandrel.service.spider.Spider.State;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,8 +24,7 @@ public class SpiderService {
 	}
 
 	public Spider add(Spider spider) {
-		long id = instance.getIdGenerator("spiders").newId();
-		spider.setId(id);
+		
 
 		// TODO: test datastore connectivity
 		if (spider.getExtractors() != null) {
@@ -48,6 +49,8 @@ public class SpiderService {
 
 		// spider.getSources().stream().parallel().forEach(s -> s);
 
+		long id = instance.getIdGenerator("spiders").newId();
+		spider.setId(id);
 		instance.getMap("spiders").put(id, spider);
 		return spider;
 	}
