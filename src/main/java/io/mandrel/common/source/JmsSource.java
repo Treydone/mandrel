@@ -13,6 +13,11 @@ public class JmsSource extends Source {
 
 	}
 
+	@Override
+	public boolean singleton() {
+		return false;
+	}
+
 	public boolean check() {
 		return true;
 	}

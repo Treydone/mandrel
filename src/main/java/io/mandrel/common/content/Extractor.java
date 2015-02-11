@@ -3,8 +3,9 @@ package io.mandrel.common.content;
 import lombok.Data;
 
 @Data
-public class FieldFormatter {
+public class Extractor {
 	private String type;
-	private byte[] value;
+	private String value;
+	private SourceType source;
 
 }

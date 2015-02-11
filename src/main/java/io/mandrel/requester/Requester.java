@@ -2,8 +2,6 @@ package io.mandrel.requester;
 
 import io.mandrel.common.WebPage;
 import io.mandrel.common.settings.Settings;
-import io.mandrel.requester.proxy.InternalProxyServersSource;
-import io.mandrel.requester.proxy.ProxyServersSource;
 import io.mandrel.service.spider.Spider;
 
 import java.net.URL;
@@ -33,8 +31,6 @@ public class Requester {
 
 	private final AsyncHttpClient client;
 
-	private final ProxyServersSource proxyServersSource;
-
 	private final Settings settings;
 
 	@Inject
@@ -45,9 +41,8 @@ public class Requester {
 		// nettyConfig.setBossExecutorService(taskExecutor);
 
 		AsyncHttpClientConfig cf = new AsyncHttpClientConfig.Builder()
-		// .setAllowPoolingConnections(true).setCompressionEnabled(true)
-		// .setConnectionTimeoutInMs(10000)
-				.setMaxRequestRetry(3).setAsyncHttpClientProviderConfig(nettyConfig)
+				.setAllowPoolingConnections(true).setMaxRequestRetry(3)
+				.setAsyncHttpClientProviderConfig(nettyConfig)
 				// .setMaximumConnectionsPerHost(100)
 				// .setMaximumConnectionsTotal(100)
 				.addRequestFilter(new ThrottleRequestFilter(100))
@@ -55,11 +50,11 @@ public class Requester {
 				.build();
 
 		this.client = new AsyncHttpClient(new NettyAsyncHttpProvider(cf), cf);
-		this.proxyServersSource = new InternalProxyServersSource(settings);
 	}
 
 	public void get(String url, Spider spider, Callback callback) {
-		BoundRequestBuilder request = client.prepareGet(spider.getClient().getDnsCache().optimizeUrl(url));
+		BoundRequestBuilder request = client.prepareGet(spider.getClient()
+				.getDnsCache().optimizeUrl(url));
 
 		request.setRequestTimeout(spider.getClient().getRequestTimeOut());
 		request.setFollowRedirects(spider.getClient().isFollowRedirects());
@@ -69,12 +64,18 @@ public class Requester {
 					.getClient()
 					.getCookies()
 					.stream()
-					.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), cookie.getRawValue(), cookie.getDomain(), cookie.getPath(), cookie
-							.getExpires(), cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList()));
+					.map(cookie -> new Cookie(cookie.getName(), cookie
+							.getValue(), cookie.getRawValue(), cookie
+							.getDomain(), cookie.getPath(),
+							cookie.getExpires(), cookie.getMaxAge(), cookie
+									.isSecure(), cookie.isHttpOnly()))
+					.collect(Collectors.toList()));
 		request.setQueryParams(spider.getClient().getParams());
-		request.setProxyServer(proxyServersSource.findProxy(spider));
+		request.setProxyServer(spider.getClient().getProxyServersSource()
+				.findProxy(spider));
 
-		String userAgent = spider.getClient().getUserAgentProvisionner().get(url, spider);
+		String userAgent = spider.getClient().getUserAgentProvisionner()
+				.get(url, spider);
 		if (Strings.isNullOrEmpty(userAgent)) {
 			request.addHeader("User-Agent", userAgent);
 		}
@@ -82,7 +83,8 @@ public class Requester {
 		request.execute(new AsyncCompletionHandler<Response>() {
 
 			@Override
-			public STATE onStatusReceived(HttpResponseStatus status) throws Exception {
+			public STATE onStatusReceived(HttpResponseStatus status)
+					throws Exception {
 				int statusCode = status.getStatusCode();
 
 				if (statusCode >= 400) {
@@ -96,8 +98,10 @@ public class Requester {
 			public Response onCompleted(Response response) throws Exception {
 				WebPage webPage;
 				try {
-					webPage = new WebPage(new URL(url), response.getStatusCode(), response.getStatusText(), response.getHeaders(), response
-							.getCookies(), response.getResponseBodyAsStream());
+					webPage = new WebPage(new URL(url), response
+							.getStatusCode(), response.getStatusText(),
+							response.getHeaders(), response.getCookies(),
+							response.getResponseBodyAsStream());
 					callback.on(webPage);
 				} catch (Exception e) {
 					log.debug("Can not construct web page", e);
@@ -108,7 +112,7 @@ public class Requester {
 	}
 
 	@FunctionalInterface
-	interface Callback {
+	public interface Callback {
 
 		void on(WebPage webapge);
 	}

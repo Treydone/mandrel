@@ -4,6 +4,20 @@ From seeds, get sitemaps, extrat them, get url, add to the queue
 
 
 
+start:
+- task?
+- queue?
+- remote service?
+- http via members?
+
+sources
+on start
+
+
+
+
+
+
 Node
   - spiders
   - 
@@ -114,8 +128,14 @@ Plan request:
             "type":"jdbc",
             "url":"..."
          },
-         "matching_patterns":[
-            "/profile/*"
+         "filters":[
+            {
+               "type":"patterns",
+               "value":[
+                  "/user",
+                  "/account"
+               ]
+            }
          ],
          "outlinks":{
              "extractor":{

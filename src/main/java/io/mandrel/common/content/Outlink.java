@@ -4,12 +4,12 @@ import lombok.Data;
 
 @Data
 public class Outlink {
-	private FieldExtractor extractor;
-	private FieldFormatter formatter;
+	private Extractor extractor;
+	private Formatter formatter;
 
 	public Outlink() {
-		extractor = new FieldExtractor();
-		extractor.setSource(Source.BODY);
+		extractor = new Extractor();
+		extractor.setSource(SourceType.BODY);
 		extractor.setType("css");
 		extractor.setValue("a href");
 	}

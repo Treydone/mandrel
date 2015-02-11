@@ -1,7 +1,9 @@
 package io.mandrel.common.content.selector;
 
 import io.mandrel.common.WebPage;
+import io.mandrel.common.content.SourceType;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,12 +15,17 @@ public class StaticSelector implements WebPageSelector {
 	}
 
 	@Override
-	public Instance init(WebPage webpage) {
+	public SourceType getSource() {
+		return SourceType.EMPTY;
+	}
+
+	@Override
+	public Instance init(WebPage webpage, InputStream data) {
 		return new Instance() {
 
 			@Override
-			public List<Object> select(String value) {
-				return Arrays.<Object> asList(value);
+			public List<String> select(String value) {
+				return Arrays.asList(value);
 			}
 		};
 	}

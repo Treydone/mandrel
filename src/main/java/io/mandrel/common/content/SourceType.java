@@ -1,7 +1,8 @@
 package io.mandrel.common.content;
 
-public enum Source {
+public enum SourceType {
 
+	EMPTY,
 	BODY,
 	HEADERS,
 	URL,

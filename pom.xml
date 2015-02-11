@@ -10,7 +10,7 @@
 
 	<properties>
 		<start-class>io.mandrel.Main</start-class>
-		
+
 		<cxf.version>3.0.1</cxf.version>
 		<sigar.version>1.6.5.132</sigar.version>
 		<spring-boot.version>1.2.1.RELEASE</spring-boot.version>
@@ -29,6 +29,11 @@
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-vfs2</artifactId>
+			<version>2.0</version>
 		</dependency>
 
 		<dependency>
@@ -102,6 +107,11 @@
 		<dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast</artifactId>
+			<version>3.3.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast-spring</artifactId>
 			<version>3.3.3</version>
 		</dependency>
 
@@ -194,26 +204,26 @@
 			<groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-core</artifactId>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>io.dropwizard.metrics</groupId> -->
-<!-- 			<artifactId>metrics-servlet</artifactId> -->
-<!-- 			<version>${dropwizard-metrics.version}</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>io.dropwizard.metrics</groupId> -->
-<!-- 			<artifactId>metrics-httpasyncclient</artifactId> -->
-<!-- 			<version>${dropwizard-metrics.version}</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>io.dropwizard.metrics</groupId> -->
-<!-- 			<artifactId>metrics-logback</artifactId> -->
-<!-- 			<version>${dropwizard-metrics.version}</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>io.dropwizard.metrics</groupId> -->
-<!-- 			<artifactId>metrics-jvm</artifactId> -->
-<!-- 			<version>${dropwizard-metrics.version}</version> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>io.dropwizard.metrics</groupId> -->
+		<!-- <artifactId>metrics-servlet</artifactId> -->
+		<!-- <version>${dropwizard-metrics.version}</version> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>io.dropwizard.metrics</groupId> -->
+		<!-- <artifactId>metrics-httpasyncclient</artifactId> -->
+		<!-- <version>${dropwizard-metrics.version}</version> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>io.dropwizard.metrics</groupId> -->
+		<!-- <artifactId>metrics-logback</artifactId> -->
+		<!-- <version>${dropwizard-metrics.version}</version> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>io.dropwizard.metrics</groupId> -->
+		<!-- <artifactId>metrics-jvm</artifactId> -->
+		<!-- <version>${dropwizard-metrics.version}</version> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-graphite</artifactId>
@@ -221,6 +231,11 @@
 		<dependency>
 			<groupId>org.spockframework</groupId>
 			<artifactId>spock-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.neo4j</groupId>
+			<artifactId>neo4j-cypher-compiler-2.1</artifactId>
+			<version>2.1.5</version>
 		</dependency>
 	</dependencies>
 
@@ -279,6 +294,7 @@
 				tell SystemInfoFactory where they are -->
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
 				<executions>
 					<execution>
 						<phase>process-classes</phase>

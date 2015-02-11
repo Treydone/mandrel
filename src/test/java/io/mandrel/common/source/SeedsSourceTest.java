@@ -34,7 +34,7 @@ public class SeedsSourceTest {
 	@Test
 	public void seed() throws IOException {
 
-		SeedsSource source = new SeedsSource();
+		FixedSource source = new FixedSource();
 		source.setSeeds(Arrays.asList("test"));
 
 		String json = objectMapper.writeValueAsString(source);

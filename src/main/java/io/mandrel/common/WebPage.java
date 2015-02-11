@@ -35,5 +35,4 @@ public class WebPage {
 		this.cookies = cookies;
 		this.body = body;
 	}
-
 }

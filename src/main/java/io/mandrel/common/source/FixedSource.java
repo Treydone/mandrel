@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class SeedsSource extends Source {
+public class FixedSource extends Source {
 
 	private List<String> seeds;
 

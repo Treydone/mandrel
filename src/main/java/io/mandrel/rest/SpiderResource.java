@@ -14,8 +14,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.stereotype.Component;
 
 import com.wordnik.swagger.annotations.Api;
@@ -25,14 +23,12 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @Path("/spider")
 @Produces(MediaType.APPLICATION_JSON)
 @Component
-@Slf4j
 public class SpiderResource {
 
 	private final SpiderService spiderService;
 
 	@Inject
 	public SpiderResource(SpiderService spiderService) {
-		log.debug("Starting spider Service...");
 		this.spiderService = spiderService;
 	}
 
@@ -46,8 +42,8 @@ public class SpiderResource {
 	@ApiOperation(value = "Add a spider")
 	@Path("/add")
 	@POST
-	public Spider add(Spider spider) {
-		return spiderService.add(spider);
+	public void add(Spider spider) {
+		spiderService.add(spider);
 	}
 
 	@ApiOperation(value = "Find a spider by its id", response = Spider.class)
@@ -60,25 +56,14 @@ public class SpiderResource {
 	@ApiOperation(value = "Start a spider", response = Spider.class)
 	@Path("/{id}/start")
 	@GET
-	public Spider start(@PathParam("id") Long id) {
-		Spider spider = spiderService.get(id).map(opt -> {
-			spiderService.start(opt);
-			return opt;
-		}).orElse(null);
-		return spider;
-	}
-
-	@ApiOperation(value = "Pause a spider", response = Spider.class)
-	@Path("/{id}/pause")
-	@GET
-	public Spider pause(@PathParam("id") Long id) {
-		return spiderService.get(id).map(opt -> opt).orElse(null);
+	public void start(@PathParam("id") Long id) {
+		spiderService.get(id).ifPresent(opt -> spiderService.start(id));
 	}
 
 	@ApiOperation(value = "Cancel a spider", response = Spider.class)
 	@Path("/{id}/cancel")
 	@GET
-	public Spider cancel(@PathParam("id") Long id) {
-		return spiderService.get(id).map(opt -> opt).orElse(null);
+	public void cancel(@PathParam("id") Long id) {
+		spiderService.get(id).ifPresent(opt -> spiderService.cancel(id));
 	}
 }

@@ -2,7 +2,7 @@ package io.mandrel.service.extract;
 
 import io.mandrel.common.WebPage;
 import io.mandrel.common.content.Field;
-import io.mandrel.common.content.FieldExtractor;
+import io.mandrel.common.content.Extractor;
 import io.mandrel.common.content.WebPageExtractor;
 import io.mandrel.common.content.selector.SelectorService;
 import io.mandrel.common.script.ScriptingService;
@@ -36,14 +36,16 @@ public class ExtractorServiceTest {
 
 	@Before
 	public void init() {
-		extractorService = new ExtractorService(scriptingService, selectorService);
+		extractorService = new ExtractorService(scriptingService,
+				selectorService);
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void no_matching_pattern() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
+				null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		// Actions
@@ -56,9 +58,9 @@ public class ExtractorServiceTest {
 	public void no_field() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
+				null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
-		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
 
 		// Actions
 		extractorService.extractFormatThenStore(webPage, extractor);
@@ -70,9 +72,10 @@ public class ExtractorServiceTest {
 	public void no_datastore() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
+				null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
-		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
+
 		Field field = new Field();
 		field.setName("date");
 		extractor.setFields(Arrays.asList(field));
@@ -87,9 +90,10 @@ public class ExtractorServiceTest {
 	public void no_field_extractor() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
+				null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
-		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
+
 		extractor.setDataStore(dataStore);
 		Field field = new Field();
 		field.setName("date");
@@ -105,13 +109,14 @@ public class ExtractorServiceTest {
 	public void no_field_extractor_type() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
+				null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
-		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
+
 		extractor.setDataStore(dataStore);
 		Field field = new Field();
 		field.setName("date");
-		FieldExtractor fieldExtractor = new FieldExtractor();
+		Extractor fieldExtractor = new Extractor();
 		fieldExtractor.setValue("");
 		field.setExtractor(fieldExtractor);
 		extractor.setFields(Arrays.asList(field));
@@ -126,13 +131,14 @@ public class ExtractorServiceTest {
 	public void no_field_extractor_value() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
+				null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
-		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
+
 		extractor.setDataStore(dataStore);
 		Field field = new Field();
 		field.setName("date");
-		FieldExtractor fieldExtractor = new FieldExtractor();
+		Extractor fieldExtractor = new Extractor();
 		fieldExtractor.setType("xpath");
 		field.setExtractor(fieldExtractor);
 		extractor.setFields(Arrays.asList(field));
@@ -147,15 +153,18 @@ public class ExtractorServiceTest {
 	public void simple() throws MalformedURLException {
 
 		// Arrange
-		ByteArrayInputStream stream = new ByteArrayInputStream("<test><o>value1</o></test><test><o>value2</o></test>".getBytes());
+		ByteArrayInputStream stream = new ByteArrayInputStream(
+				"<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>"
+						.getBytes());
 
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
+				null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
-		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
+
 		extractor.setDataStore(dataStore);
 		Field field = new Field();
 		field.setName("date");
-		FieldExtractor fieldExtractor = new FieldExtractor();
+		Extractor fieldExtractor = new Extractor();
 		fieldExtractor.setType("xpath");
 		fieldExtractor.setValue("//test/o/text()");
 		field.setExtractor(fieldExtractor);
@@ -174,23 +183,26 @@ public class ExtractorServiceTest {
 	public void simple_with_mutiple_extractors() throws MalformedURLException {
 
 		// Arrange
-		ByteArrayInputStream stream = new ByteArrayInputStream("<test><o>value1</o><t>key1</t></test><test><o>value2</o></test>".getBytes());
+		ByteArrayInputStream stream = new ByteArrayInputStream(
+				"<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>"
+						.getBytes());
 
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
+				null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
-		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
+
 		extractor.setDataStore(dataStore);
 
 		Field dateField = new Field();
 		dateField.setName("date");
-		FieldExtractor dateFieldExtractor = new FieldExtractor();
+		Extractor dateFieldExtractor = new Extractor();
 		dateFieldExtractor.setType("xpath");
 		dateFieldExtractor.setValue("//test/o/text()");
 		dateField.setExtractor(dateFieldExtractor);
 
 		Field keyField = new Field();
 		keyField.setName("key");
-		FieldExtractor keyFieldExtractor = new FieldExtractor();
+		Extractor keyFieldExtractor = new Extractor();
 		keyFieldExtractor.setType("xpath");
 		keyFieldExtractor.setValue("//test/t/text()");
 		keyField.setExtractor(keyFieldExtractor);
@@ -212,28 +224,36 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		ByteArrayInputStream stream = new ByteArrayInputStream(
-				"<test><o>value1</o><t>key1</t></test><test><o>value2</o><t>key2</t></test><test><o>value3</o></test>".getBytes());
+				"<!--?xml version=\"1.0\"?--><html><body><test><o>value1</o><t>key1</t></test><test><o>value2</o><t>key2</t></test><test><o>value3</o></test></body></html>"
+						.getBytes());
 
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
+				null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
-		extractor.setMatchingPatternsAsString(Arrays.asList(".*"));
 		extractor.setDataStore(dataStore);
 
 		Field dateField = new Field();
 		dateField.setName("date");
-		FieldExtractor dateFieldExtractor = new FieldExtractor();
+		Extractor dateFieldExtractor = new Extractor();
 		dateFieldExtractor.setType("xpath");
-		dateFieldExtractor.setValue("//test/o/text()");
+		dateFieldExtractor.setValue("/test/o/text()");
 		dateField.setExtractor(dateFieldExtractor);
 
 		Field keyField = new Field();
 		keyField.setName("key");
-		FieldExtractor keyFieldExtractor = new FieldExtractor();
+		Extractor keyFieldExtractor = new Extractor();
 		keyFieldExtractor.setType("xpath");
-		keyFieldExtractor.setValue("//test/t/text()");
+		keyFieldExtractor.setValue("//t/text()");
 		keyField.setExtractor(keyFieldExtractor);
 
 		extractor.setFields(Arrays.asList(dateField, keyField));
+
+		Extractor multiple = new Extractor();
+		multiple.setType("xpath");
+		multiple.setValue("/html/body/test");
+		keyField.setExtractor(keyFieldExtractor);
+
+		extractor.setMultiple(multiple);
 
 		// Actions
 		extractorService.extractFormatThenStore(webPage, extractor);
@@ -242,16 +262,15 @@ public class ExtractorServiceTest {
 		Document data1 = new Document();
 		data1.put("date", Arrays.asList("value1"));
 		data1.put("key", Arrays.asList("key1"));
-		Mockito.verify(dataStore).save(data1);
 
 		Document data2 = new Document();
 		data2.put("date", Arrays.asList("value2"));
 		data2.put("key", Arrays.asList("key2"));
-		Mockito.verify(dataStore).save(data2);
 
 		Document data3 = new Document();
 		data3.put("date", Arrays.asList("value3"));
-		Mockito.verify(dataStore).save(data3);
+
+		Mockito.verify(dataStore).save(Arrays.asList(data1, data2, data3));
 	}
 
 }

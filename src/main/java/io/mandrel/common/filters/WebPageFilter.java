@@ -18,5 +18,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @Data
 public abstract class WebPageFilter {
 
-	abstract boolean isValid(WebPage webPage);
+	public abstract boolean isValid(WebPage webPage);
 }
