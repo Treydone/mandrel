@@ -1,5 +1,6 @@
 package io.mandrel.service.spider;
 
+import io.mandrel.common.data.Spider;
 import io.mandrel.service.queue.UrlsQueueService;
 
 import java.io.Serializable;
@@ -15,8 +16,7 @@ import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.spring.context.SpringAware;
 
 @SpringAware
-public class SpiderTask implements Runnable, Serializable,
-		HazelcastInstanceAware, ApplicationContextAware {
+public class SpiderTask implements Runnable, Serializable, HazelcastInstanceAware, ApplicationContextAware {
 
 	/**
 	 * 
@@ -33,8 +33,7 @@ public class SpiderTask implements Runnable, Serializable,
 		this.instance = instance;
 	}
 
-	public void setApplicationContext(ApplicationContext applicationContext)
-			throws BeansException {
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		context = applicationContext;
 	}
 
@@ -54,8 +53,9 @@ public class SpiderTask implements Runnable, Serializable,
 		spider.getStores().getPageMetadataStore().init(properties);
 		spider.getStores().getPageStore().init(properties);
 
-		spider.getExtractors().stream()
-				.forEach(ex -> ex.getDataStore().init(ex));
+		if (spider.getExtractors().getPages() != null) {
+			spider.getExtractors().getPages().stream().forEach(ex -> ex.getDataStore().init(ex));
+		}
 
 		urlsQueueService.registrer(spider);
 

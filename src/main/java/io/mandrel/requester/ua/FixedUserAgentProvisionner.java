@@ -1,7 +1,7 @@
 package io.mandrel.requester.ua;
 
 import lombok.Data;
-import io.mandrel.service.spider.Spider;
+import io.mandrel.common.data.Spider;
 
 @Data
 public class FixedUserAgentProvisionner implements UserAgentProvisionner {

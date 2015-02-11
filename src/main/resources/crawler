@@ -121,6 +121,17 @@ Plan request:
          "url":"..."
       }
    },
+   "outlinks":{
+       "extractor":{
+          "type":"css",
+          "value":"a href",
+          "source":"body"
+       },
+       "formatter":{
+          "type":"groovy",
+          "value":"data.toLowerCase"
+       }
+   },
    "extractors":[
       {
          "name":"video",
@@ -137,17 +148,6 @@ Plan request:
                ]
             }
          ],
-         "outlinks":{
-             "extractor":{
-                "type":"css",
-                "value":"a href",
-                "source":"body"
-             },
-             "formatter":{
-                "type":"groovy",
-                "value":"data.toLowerCase"
-             }
-         },
          "fields":[
             {
                "title":{

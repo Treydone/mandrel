@@ -1,14 +1,16 @@
-package io.mandrel.requester.ua;
+package io.mandrel.common.export;
 
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.store.Document;
+
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes({ @Type(value = FixedUserAgentProvisionner.class, name = "fixed") })
-public interface UserAgentProvisionner {
+@JsonSubTypes({ @Type(value = CsvExporter.class, name = "csv") })
+public interface Exporter {
 
-	String get(String url, Spider spider);
+	void export(List<Document> documents);
 }

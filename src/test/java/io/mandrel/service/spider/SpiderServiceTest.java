@@ -1,12 +1,13 @@
 package io.mandrel.service.spider;
 
 import static org.junit.Assert.assertEquals;
+import io.mandrel.common.data.Client;
+import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Stores;
 import io.mandrel.common.filters.UrlPatternFilter;
 import io.mandrel.common.filters.WebPageFilter;
 import io.mandrel.common.source.SeedsSourceTest.LocalConfiguration;
 import io.mandrel.config.BindConfiguration;
-import io.mandrel.service.spider.Spider.Client;
-import io.mandrel.service.spider.Spider.Stores;
 
 import java.io.IOException;
 

@@ -1,8 +1,8 @@
 package io.mandrel.requester;
 
 import io.mandrel.common.WebPage;
+import io.mandrel.common.data.Spider;
 import io.mandrel.common.settings.Settings;
-import io.mandrel.service.spider.Spider;
 
 import java.net.URL;
 import java.util.stream.Collectors;

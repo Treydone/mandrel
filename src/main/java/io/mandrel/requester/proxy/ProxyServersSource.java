@@ -1,6 +1,6 @@
 package io.mandrel.requester.proxy;
 
-import io.mandrel.service.spider.Spider;
+import io.mandrel.common.data.Spider;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;

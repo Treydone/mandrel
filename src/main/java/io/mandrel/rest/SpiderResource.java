@@ -1,6 +1,6 @@
 package io.mandrel.rest;
 
-import io.mandrel.service.spider.Spider;
+import io.mandrel.common.data.Spider;
 import io.mandrel.service.spider.SpiderService;
 
 import java.util.List;

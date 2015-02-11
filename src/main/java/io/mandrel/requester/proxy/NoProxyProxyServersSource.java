@@ -1,6 +1,6 @@
 package io.mandrel.requester.proxy;
 
-import io.mandrel.service.spider.Spider;
+import io.mandrel.common.data.Spider;
 import lombok.Data;
 
 import com.ning.http.client.ProxyServer;

@@ -1,8 +1,8 @@
 package io.mandrel.service.queue;
 
+import io.mandrel.common.data.Spider;
 import io.mandrel.requester.Requester;
 import io.mandrel.service.extract.ExtractorService;
-import io.mandrel.service.spider.Spider;
 
 import java.util.List;
 
@@ -20,8 +20,7 @@ public class UrlsQueueService {
 	private final ExtractorService extractorService;
 
 	@Inject
-	public UrlsQueueService(QueueService queueService, Requester requester,
-			ExtractorService extractorService) {
+	public UrlsQueueService(QueueService queueService, Requester requester, ExtractorService extractorService) {
 		this.queueService = queueService;
 		this.requester = requester;
 		this.extractorService = extractorService;
@@ -40,13 +39,13 @@ public class UrlsQueueService {
 	}
 
 	private void doRequest(Spider spider, String url) {
-		requester.get(
-				url,
-				spider,
-				webPage -> {
-					spider.getExtractors().forEach(
-							ex -> extractorService.extractFormatThenStore(
-									webPage, ex));
-				});
+		requester.get(url, spider, webPage -> {
+			if (spider.getExtractors() != null) {
+				spider.getExtractors().getPages().forEach(ex -> extractorService.extractFormatThenStore(webPage, ex));
+			}
+			if (spider.getExtractors().getOutlinks() != null) {
+				spider.getExtractors().getOutlinks().forEach(ol -> add(spider.getId(), extractorService.extractOutlinks(webPage, ol)));
+			}
+		});
 	}
 }

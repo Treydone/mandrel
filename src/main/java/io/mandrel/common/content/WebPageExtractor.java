@@ -4,7 +4,6 @@ import io.mandrel.common.filters.WebPageFilter;
 import io.mandrel.common.store.DocumentStore;
 import io.mandrel.common.store.impl.InternalDocumentStore;
 
-import java.util.Arrays;
 import java.util.List;
 
 import lombok.Data;
@@ -25,11 +24,8 @@ public class WebPageExtractor {
 
 	@JsonProperty("multiple")
 	private Extractor multiple;
-	
-	@JsonProperty("fields")
-	private List<Field> fields;
 
-	@JsonProperty("outlinks")
-	private List<Outlink> outlinks = Arrays.asList(new Outlink());
+	@JsonProperty("fields")
+	private List<FieldExtractor> fields;
 
 }

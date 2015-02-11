@@ -7,5 +7,4 @@ public class Extractor {
 	private String type;
 	private String value;
 	private SourceType source;
-
 }

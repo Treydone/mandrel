@@ -1,7 +1,8 @@
 package io.mandrel.service.spider;
 
+import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.State;
 import io.mandrel.common.source.Source;
-import io.mandrel.service.spider.Spider.State;
 
 import java.util.Map;
 import java.util.Optional;
@@ -74,16 +75,12 @@ public class SpiderService {
 		get(spiderId).map(spider -> {
 
 			// Prepare spider executor
-				instance.getConfig().getExecutorConfig("executor-" + spiderId)
-						.setPoolSize(1).setStatisticsEnabled(true)
-						.setQueueCapacity(1);
+				instance.getConfig().getExecutorConfig("executor-" + spiderId).setPoolSize(1).setStatisticsEnabled(true).setQueueCapacity(1);
 
-				spider.getSources().stream().filter(s -> s.check())
-						.forEach(prepareSource(spiderId, spider));
+				spider.getSources().stream().filter(s -> s.check()).forEach(prepareSource(spiderId, spider));
 
 				// Gooooo
-				instance.getExecutorService("executor-" + spiderId)
-						.executeOnAllMembers(new SpiderTask(spider));
+				instance.getExecutorService("executor-" + spiderId).executeOnAllMembers(new SpiderTask(spider));
 
 				// Update status
 				spider.setState(State.STARTED);
@@ -96,55 +93,42 @@ public class SpiderService {
 
 	private Consumer<? super Source> prepareSource(long spiderId, Spider spider) {
 		return source -> {
-			String sourceExecServiceName = "executor-" + spiderId + "-source-"
-					+ source.getName();
+			String sourceExecServiceName = "executor-" + spiderId + "-source-" + source.getName();
 
-			instance.getConfig().getExecutorConfig(sourceExecServiceName)
-					.setPoolSize(1).setStatisticsEnabled(true)
-					.setQueueCapacity(1);
+			instance.getConfig().getExecutorConfig(sourceExecServiceName).setPoolSize(1).setStatisticsEnabled(true).setQueueCapacity(1);
 
 			if (source.singleton()) {
 				log.debug("Sourcing from a random member");
-				instance.getExecutorService(sourceExecServiceName).execute(
-						new SourceTask(spider, source), ms -> true);
+				instance.getExecutorService(sourceExecServiceName).execute(new SourceTask(spider, source), ms -> true);
 			} else {
 				log.debug("Sourcing from all members");
-				instance.getExecutorService(sourceExecServiceName)
-						.executeOnAllMembers(new SourceTask(spider, source));
+				instance.getExecutorService(sourceExecServiceName).executeOnAllMembers(new SourceTask(spider, source));
 			}
 		};
 	}
 
 	public void cancel(long spiderId) {
-		get(spiderId)
-				.map(spider -> {
+		get(spiderId).map(spider -> {
 
-					// Shutdown source execution service
-					spider.getSources()
-							.stream()
-							.forEach(
-									source -> {
-										String sourceExecServiceName = "executor-"
-												+ spiderId
-												+ "-source-"
-												+ source.getName();
-										shutdownExecutorService(sourceExecServiceName);
-									});
+			// Shutdown source execution service
+				spider.getSources().stream().forEach(source -> {
+					String sourceExecServiceName = "executor-" + spiderId + "-source-" + source.getName();
+					shutdownExecutorService(sourceExecServiceName);
+				});
 
-					// Shutdown task execution service
-					String taskExecServiceName = "executor-" + spiderId;
-					shutdownExecutorService(taskExecServiceName);
+				// Shutdown task execution service
+				String taskExecServiceName = "executor-" + spiderId;
+				shutdownExecutorService(taskExecServiceName);
 
-					// Update status
-					spider.setState(State.CANCELLED);
-					return spiders(instance).put(spiderId, spider);
-				}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
+				// Update status
+				spider.setState(State.CANCELLED);
+				return spiders(instance).put(spiderId, spider);
+			}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
 
 	}
 
 	private void shutdownExecutorService(String taskExecServiceName) {
-		IExecutorService pool = instance
-				.getExecutorService(taskExecServiceName);
+		IExecutorService pool = instance.getExecutorService(taskExecServiceName);
 		pool.shutdown();
 		try {
 			if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {

@@ -1,7 +1,7 @@
 package io.mandrel.service.extract;
 
 import io.mandrel.common.WebPage;
-import io.mandrel.common.content.Field;
+import io.mandrel.common.content.FieldExtractor;
 import io.mandrel.common.content.Extractor;
 import io.mandrel.common.content.WebPageExtractor;
 import io.mandrel.common.content.selector.SelectorService;
@@ -76,7 +76,7 @@ public class ExtractorServiceTest {
 				null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 
-		Field field = new Field();
+		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
 		extractor.setFields(Arrays.asList(field));
 
@@ -95,7 +95,7 @@ public class ExtractorServiceTest {
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		extractor.setDataStore(dataStore);
-		Field field = new Field();
+		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
 		extractor.setFields(Arrays.asList(field));
 
@@ -114,7 +114,7 @@ public class ExtractorServiceTest {
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		extractor.setDataStore(dataStore);
-		Field field = new Field();
+		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
 		Extractor fieldExtractor = new Extractor();
 		fieldExtractor.setValue("");
@@ -136,7 +136,7 @@ public class ExtractorServiceTest {
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		extractor.setDataStore(dataStore);
-		Field field = new Field();
+		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
 		Extractor fieldExtractor = new Extractor();
 		fieldExtractor.setType("xpath");
@@ -162,7 +162,7 @@ public class ExtractorServiceTest {
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		extractor.setDataStore(dataStore);
-		Field field = new Field();
+		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
 		Extractor fieldExtractor = new Extractor();
 		fieldExtractor.setType("xpath");
@@ -193,14 +193,14 @@ public class ExtractorServiceTest {
 
 		extractor.setDataStore(dataStore);
 
-		Field dateField = new Field();
+		FieldExtractor dateField = new FieldExtractor();
 		dateField.setName("date");
 		Extractor dateFieldExtractor = new Extractor();
 		dateFieldExtractor.setType("xpath");
 		dateFieldExtractor.setValue("//test/o/text()");
 		dateField.setExtractor(dateFieldExtractor);
 
-		Field keyField = new Field();
+		FieldExtractor keyField = new FieldExtractor();
 		keyField.setName("key");
 		Extractor keyFieldExtractor = new Extractor();
 		keyFieldExtractor.setType("xpath");
@@ -232,14 +232,14 @@ public class ExtractorServiceTest {
 		WebPageExtractor extractor = new WebPageExtractor();
 		extractor.setDataStore(dataStore);
 
-		Field dateField = new Field();
+		FieldExtractor dateField = new FieldExtractor();
 		dateField.setName("date");
 		Extractor dateFieldExtractor = new Extractor();
 		dateFieldExtractor.setType("xpath");
 		dateFieldExtractor.setValue("/test/o/text()");
 		dateField.setExtractor(dateFieldExtractor);
 
-		Field keyField = new Field();
+		FieldExtractor keyField = new FieldExtractor();
 		keyField.setName("key");
 		Extractor keyFieldExtractor = new Extractor();
 		keyFieldExtractor.setType("xpath");

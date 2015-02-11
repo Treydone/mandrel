@@ -1,5 +1,6 @@
 package io.mandrel.service.spider;
 
+import io.mandrel.common.data.Spider;
 import io.mandrel.common.source.Source;
 import io.mandrel.service.queue.UrlsQueueService;
 

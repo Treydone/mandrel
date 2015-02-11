@@ -1,11 +1,13 @@
 package io.mandrel.common.content;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Data;
-
 @Data
-public class Field {
+@EqualsAndHashCode(callSuper=false)
+public class FieldExtractor extends NamedDataExtractorFormatter {
 
 	@JsonProperty("name")
 	private String name;
