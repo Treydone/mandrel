@@ -1,0 +1,5 @@
+io.mandrel.common.content.selector.XpathSelector
+io.mandrel.common.content.selector.StaticSelector
+io.mandrel.common.content.selector.SimpleUrlSelector
+io.mandrel.common.content.selector.SimpleHeaderSelector
+io.mandrel.common.content.selector.SimpleCookieSelector

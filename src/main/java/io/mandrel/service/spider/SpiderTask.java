@@ -6,17 +6,12 @@ import io.mandrel.service.queue.UrlsQueueService;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.spring.context.SpringAware;
 
 @SpringAware
-public class SpiderTask implements Runnable, Serializable, HazelcastInstanceAware, ApplicationContextAware {
+public class SpiderTask implements Runnable, Serializable {
 
 	/**
 	 * 
@@ -25,24 +20,16 @@ public class SpiderTask implements Runnable, Serializable, HazelcastInstanceAwar
 
 	private Spider spider;
 
-	private transient ApplicationContext context;
+	private transient UrlsQueueService urlsQueueService;
 
-	private transient HazelcastInstance instance;
-
-	public void setHazelcastInstance(HazelcastInstance instance) {
-		this.instance = instance;
-	}
-
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		context = applicationContext;
+	@Autowired
+	public void setUrlsQueueService(UrlsQueueService urlsQueueService) {
+		this.urlsQueueService = urlsQueueService;
 	}
 
 	public SpiderTask(Spider spider) {
 		this.spider = spider;
 	}
-
-	@Autowired
-	private transient UrlsQueueService urlsQueueService;
 
 	@Override
 	public void run() {
@@ -58,6 +45,5 @@ public class SpiderTask implements Runnable, Serializable, HazelcastInstanceAwar
 		}
 
 		urlsQueueService.registrer(spider);
-
 	}
 }

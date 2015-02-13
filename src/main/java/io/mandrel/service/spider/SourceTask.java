@@ -8,18 +8,12 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.spring.context.SpringAware;
 
 @SpringAware
-public class SourceTask implements Runnable, Serializable,
-		HazelcastInstanceAware, ApplicationContextAware {
+public class SourceTask implements Runnable, Serializable {
 
 	/**
 	 * 
@@ -30,18 +24,7 @@ public class SourceTask implements Runnable, Serializable,
 
 	private Source source;
 
-	private transient ApplicationContext context;
-
-	private transient HazelcastInstance instance;
-
-	public void setHazelcastInstance(HazelcastInstance instance) {
-		this.instance = instance;
-	}
-
-	public void setApplicationContext(ApplicationContext applicationContext)
-			throws BeansException {
-		context = applicationContext;
-	}
+	private transient UrlsQueueService urlsQueueService;
 
 	public SourceTask(Spider spider, Source source) {
 		this.spider = spider;
@@ -49,7 +32,9 @@ public class SourceTask implements Runnable, Serializable,
 	}
 
 	@Autowired
-	private transient UrlsQueueService urlsQueueService;
+	public void setUrlsQueueService(UrlsQueueService urlsQueueService) {
+		this.urlsQueueService = urlsQueueService;
+	}
 
 	@Override
 	public void run() {

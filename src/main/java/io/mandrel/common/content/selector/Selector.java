@@ -1,16 +1,12 @@
 package io.mandrel.common.content.selector;
 
-import io.mandrel.common.WebPage;
 import io.mandrel.common.content.SourceType;
 
-import java.io.InputStream;
 import java.util.List;
 
-public interface WebPageSelector {
+public interface Selector {
 
 	String getName();
-
-	Instance init(WebPage webpage, InputStream data);
 
 	SourceType getSource();
 

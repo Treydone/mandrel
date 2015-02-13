@@ -32,7 +32,7 @@ public class SigarServiceTest {
 	@Test
 	public void test() throws SigarException {
 
-		sigarService.info();
+		System.err.println(sigarService.infos());
 
 	}
 }

@@ -1,7 +1,6 @@
 package io.mandrel.common.content.selector;
 
 import io.mandrel.common.WebPage;
-import io.mandrel.common.content.SourceType;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ import org.w3c.dom.NodeList;
  * - XPath Evaluations
  *
  */
-public class XpathSelector implements WebPageSelector {
+public class XpathSelector extends BodySelector {
 
 	private static final String DTM_MANAGER_PROP_NAME = "com.sun.org.apache.xml.internal.dtm.DTMManager";
 	private static final String DTM_MANAGER_CLASS_NAME = "com.sun.org.apache.xml.internal.dtm.ref.DTMManagerDefault";
@@ -49,10 +48,6 @@ public class XpathSelector implements WebPageSelector {
 	}
 
 	@Override
-	public SourceType getSource() {
-		return SourceType.BODY;
-	}
-
 	public Instance init(WebPage webPage, InputStream data) {
 
 		DocumentBuilderFactory builderFactory = DocumentBuilderFactory

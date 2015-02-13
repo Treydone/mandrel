@@ -1,16 +1,20 @@
 package io.mandrel.service.node;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.ws.rs.PathParam;
 
+import org.apache.commons.collections.keyvalue.DefaultMapEntry;
 import org.springframework.stereotype.Component;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.Member;
 
 @Component
@@ -18,10 +22,15 @@ public class NodeService {
 
 	private final HazelcastInstance hazelcastInstance;
 
-	private Function<? super Member, ? extends Node> mapper = member -> {
+	private final Function<? super Entry<Member, Future<Map<String, Object>>>, ? extends Node> mapper = kv -> {
 		Node node = new Node();
-		node.setUuid(member.getUuid());
-		node.setAttributes(member.getAttributes());
+		node.setUuid(kv.getKey().getUuid());
+		try {
+			node.setInfos(kv.getValue().get());
+		} catch (Exception e) {
+			// TODO
+			e.printStackTrace();
+		}
 		return node;
 	};
 
@@ -31,17 +40,26 @@ public class NodeService {
 	}
 
 	public List<Node> all() {
-		return hazelcastInstance.getCluster().getMembers().stream().map(mapper).collect(Collectors.toList());
+		return executorService().submitToAllMembers(new NodeTask()).entrySet().stream().map(mapper).collect(Collectors.toList());
 	}
 
 	public Node id(@PathParam("id") String id) {
-		Optional<Member> memberById = hazelcastInstance.getCluster().getMembers().stream().filter(member -> id.equals(member.getUuid())).findFirst();
-
-		return memberById.map(mapper).orElse(null);
+		Member member = hazelcastInstance.getCluster().getMembers().stream().filter(m -> m.getUuid().equalsIgnoreCase(id)).findFirst().get();
+		Future<Map<String, Object>> result = executorService().submitToMember(new NodeTask(), member);
+		return mapper.apply(new DefaultMapEntry(member, result));
 	}
 
 	public Node dhis() {
-		Member localMember = hazelcastInstance.getCluster().getLocalMember();
-		return mapper.apply(localMember);
+		Member member = hazelcastInstance.getCluster().getLocalMember();
+		Future<Map<String, Object>> result = executorService().submitToMember(new NodeTask(), member);
+		return mapper.apply(new DefaultMapEntry(member, result));
+	}
+
+	public void executeOnAllMembers(Runnable task) {
+		executorService().executeOnAllMembers(task);
+	}
+
+	private IExecutorService executorService() {
+		return hazelcastInstance.getExecutorService("_shared");
 	}
 }

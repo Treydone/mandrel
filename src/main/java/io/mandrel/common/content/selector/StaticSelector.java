@@ -1,26 +1,18 @@
 package io.mandrel.common.content.selector;
 
 import io.mandrel.common.WebPage;
-import io.mandrel.common.content.SourceType;
 
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-public class StaticSelector implements WebPageSelector {
+public class StaticSelector extends EmptySelector {
 
 	@Override
 	public String getName() {
 		return "static";
 	}
 
-	@Override
-	public SourceType getSource() {
-		return SourceType.EMPTY;
-	}
-
-	@Override
-	public Instance init(WebPage webpage, InputStream data) {
+	public Instance init(WebPage webpage) {
 		return new Instance() {
 
 			@Override

@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class SelectorService {
 
-	private Map<String, WebPageSelector> selectorsByName;
+	private Map<String, Selector> selectorsByName;
 
 	public SelectorService() {
 		ClassLoader ctxtLoader = Thread.currentThread().getContextClassLoader();
@@ -26,34 +26,31 @@ public class SelectorService {
 	}
 
 	private void init(final ClassLoader loader) {
-		selectorsByName = new HashMap<String, WebPageSelector>();
+		selectorsByName = new HashMap<String, Selector>();
 		initEngines(loader);
 	}
 
-	private ServiceLoader<WebPageSelector> getServiceLoader(
-			final ClassLoader loader) {
+	private ServiceLoader<Selector> getServiceLoader(final ClassLoader loader) {
 		if (loader != null) {
-			return ServiceLoader.load(WebPageSelector.class, loader);
+			return ServiceLoader.load(Selector.class, loader);
 		} else {
-			return ServiceLoader.loadInstalled(WebPageSelector.class);
+			return ServiceLoader.loadInstalled(Selector.class);
 		}
 	}
 
 	private void initEngines(final ClassLoader loader) {
-		Iterator<WebPageSelector> itr = null;
+		Iterator<Selector> itr = null;
 		try {
-			ServiceLoader<WebPageSelector> sl = AccessController
-					.doPrivileged(new PrivilegedAction<ServiceLoader<WebPageSelector>>() {
-						@Override
-						public ServiceLoader<WebPageSelector> run() {
-							return getServiceLoader(loader);
-						}
-					});
+			ServiceLoader<Selector> sl = AccessController.doPrivileged(new PrivilegedAction<ServiceLoader<Selector>>() {
+				@Override
+				public ServiceLoader<Selector> run() {
+					return getServiceLoader(loader);
+				}
+			});
 
 			itr = sl.iterator();
 		} catch (ServiceConfigurationError err) {
-			log.debug("Can't find WebPageSelector providers: "
-					+ err.getMessage());
+			log.debug("Can't find Selector providers: " + err.getMessage());
 			// do not throw any exception here. user may want to
 			// manage his/her own factories using this manager
 			// by explicit registratation (by registerXXX) methods.
@@ -63,8 +60,9 @@ public class SelectorService {
 		try {
 			while (itr.hasNext()) {
 				try {
-					WebPageSelector fact = itr.next();
+					Selector fact = itr.next();
 					selectorsByName.put(fact.getName(), fact);
+					log.debug("Selectors {} ({}) added", fact.getName(), fact.getClass());
 				} catch (ServiceConfigurationError err) {
 					log.debug("Selectors providers.next(): " + err.getMessage());
 					// one factory failed, but check other factories...
@@ -80,10 +78,10 @@ public class SelectorService {
 		}
 	}
 
-	public WebPageSelector getSelectorByName(String shortName) {
+	public Selector getSelectorByName(String shortName) {
 		if (shortName == null)
 			throw new NullPointerException();
-		WebPageSelector obj;
+		Selector obj;
 		if (null != (obj = selectorsByName.get(shortName))) {
 			return obj;
 		}

@@ -4,13 +4,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.cxf.helpers.IOUtils;
-import org.hyperic.sigar.FileSystem;
+import org.hyperic.sigar.NetInterfaceConfig;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import org.springframework.core.io.ResourceLoader;
@@ -27,9 +31,8 @@ public class SigarService {
 	public SigarService(ResourceLoader rl) {
 
 		try {
-			org.springframework.core.io.Resource[] resources = ResourcePatternUtils
-					.getResourcePatternResolver(rl).getResources(
-							"classpath*:**/libsigar-*");
+			org.springframework.core.io.Resource[] resources = ResourcePatternUtils.getResourcePatternResolver(rl).getResources(
+					"classpath*:**/libsigar-*");
 			for (org.springframework.core.io.Resource resource : resources) {
 				log.debug("Loading native file {}", resource.getFilename());
 				try {
@@ -37,8 +40,7 @@ public class SigarService {
 					temp.deleteOnExit();
 
 					if (!temp.exists()) {
-						throw new FileNotFoundException("File "
-								+ resource.getFilename() + " can not be found");
+						throw new FileNotFoundException("File " + resource.getFilename() + " can not be found");
 					}
 
 					try (FileOutputStream stream = new FileOutputStream(temp)) {
@@ -74,12 +76,49 @@ public class SigarService {
 		this.sigar = sigar;
 	}
 
-	public void info() throws SigarException {
+	public Map<String, Object> infos() throws SigarException {
 
-		for (FileSystem fs : sigar.getFileSystemList()) {
-			System.err.println(fs.toString());
+		Map<String, Object> infos = new HashMap<>();
+		infos.put("pid", sigar.getPid());
+		infos.put("fqdn", sigar.getFQDN());
+		infos.put("hostname", sigar.getNetInfo().getHostName());
+		infos.put("uptime", sigar.getUptime().getUptime());
+
+		String[] netInterfaceList = sigar.getNetInterfaceList();
+		List<Map<String, Object>> iwh = new ArrayList<>(netInterfaceList.length);
+		for (String netInterface : netInterfaceList) {
+			// Add net interface
+			NetInterfaceConfig config = sigar.getNetInterfaceConfig(netInterface);
+			Map<String, Object> netConfig = new HashMap<>();
+			netConfig.put("name", config.getName());
+			netConfig.put("type", config.getType());
+			netConfig.put("address", config.getAddress());
+
+			iwh.add(netConfig);
 		}
+		infos.put("interfaces", iwh);
 
-		System.err.println(sigar.getFQDN());
+		// Add cpu
+		Map<String, Object> cpu = new HashMap<>();
+		infos.put("cpu", cpu);
+		cpu.put("sys", sigar.getThreadCpu().getSys());
+		cpu.put("total", sigar.getThreadCpu().getTotal());
+		cpu.put("user", sigar.getThreadCpu().getUser());
+
+		// Add mem
+		Map<String, Object> mem = new HashMap<>();
+		infos.put("mem", mem);
+		mem.put("total", sigar.getMem().getTotal());
+		mem.put("used", sigar.getMem().getUsed());
+		mem.put("free", sigar.getMem().getFree());
+
+		// Add swap
+		Map<String, Object> swap = new HashMap<>();
+		infos.put("swap", swap);
+		swap.put("total", sigar.getSwap().getTotal());
+		swap.put("used", sigar.getSwap().getUsed());
+		swap.put("free", sigar.getSwap().getFree());
+
+		return infos;
 	}
 }

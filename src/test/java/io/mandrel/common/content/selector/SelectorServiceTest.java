@@ -12,7 +12,7 @@ public class SelectorServiceTest {
 	public void test() {
 
 		SelectorService selectorService = new SelectorService();
-		Map<String, WebPageSelector> selectorsByName = selectorService
+		Map<String, Selector> selectorsByName = selectorService
 				.getSelectorsByName();
 		System.err.println(selectorsByName);
 

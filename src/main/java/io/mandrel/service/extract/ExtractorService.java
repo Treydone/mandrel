@@ -6,10 +6,16 @@ import io.mandrel.common.content.FieldExtractor;
 import io.mandrel.common.content.Formatter;
 import io.mandrel.common.content.NamedDataExtractorFormatter;
 import io.mandrel.common.content.OutlinkExtractor;
+import io.mandrel.common.content.SourceType;
 import io.mandrel.common.content.WebPageExtractor;
+import io.mandrel.common.content.selector.BodySelector;
+import io.mandrel.common.content.selector.CookieSelector;
+import io.mandrel.common.content.selector.EmptySelector;
+import io.mandrel.common.content.selector.HeaderSelector;
+import io.mandrel.common.content.selector.Selector;
+import io.mandrel.common.content.selector.Selector.Instance;
 import io.mandrel.common.content.selector.SelectorService;
-import io.mandrel.common.content.selector.WebPageSelector;
-import io.mandrel.common.content.selector.WebPageSelector.Instance;
+import io.mandrel.common.content.selector.UrlSelector;
 import io.mandrel.common.script.ScriptingService;
 import io.mandrel.common.store.Document;
 
@@ -82,7 +88,7 @@ public class ExtractorService {
 						// Extract the value
 						List<? extends Object> results = null;
 
-						if (field.isUseMultiple()) {
+						if (field.isUseMultiple() && SourceType.BODY.equals(field.getExtractor().getSource())) {
 							results = extract(cachedSelectors, webPage, new ByteArrayInputStream(segment.getBytes()), field.getExtractor());
 						} else {
 							results = extract(cachedSelectors, webPage, null, field.getExtractor());
@@ -132,15 +138,29 @@ public class ExtractorService {
 
 		Instance instance;
 		if (segment != null) {
-			WebPageSelector selector = getSelector(fieldExtractor);
-			instance = selector.init(webPage, segment);
+			Selector selector = getSelector(fieldExtractor);
+			instance = ((BodySelector) selector).init(webPage, segment);
 		} else {
 			// Reuse the previous instance selector for this web page
-			instance = selectors.get(fieldExtractor.getType());
+			String cacheKey = fieldExtractor.getType() + "-" + fieldExtractor.getSource().toString().toLowerCase();
+			instance = selectors.get(cacheKey);
+
 			if (instance == null) {
-				WebPageSelector selector = getSelector(fieldExtractor);
-				instance = selector.init(webPage, webPage.getBody());
-				selectors.put(fieldExtractor.getType(), instance);
+				Selector selector = getSelector(fieldExtractor);
+
+				if (SourceType.BODY.equals(fieldExtractor.getSource())) {
+					instance = ((BodySelector) selector).init(webPage, webPage.getBody());
+				} else if (SourceType.HEADERS.equals(fieldExtractor.getSource())) {
+					instance = ((HeaderSelector) selector).init(webPage, webPage.getHeaders());
+				} else if (SourceType.URL.equals(fieldExtractor.getSource())) {
+					instance = ((UrlSelector) selector).init(webPage, webPage.getUrl());
+				} else if (SourceType.COOKIE.equals(fieldExtractor.getSource())) {
+					instance = ((CookieSelector) selector).init(webPage, webPage.getCookies());
+				} else if (SourceType.EMPTY.equals(fieldExtractor.getSource())) {
+					instance = ((EmptySelector) selector).init(webPage);
+				}
+
+				selectors.put(cacheKey, instance);
 			}
 		}
 
@@ -148,8 +168,8 @@ public class ExtractorService {
 		return result;
 	}
 
-	private WebPageSelector getSelector(Extractor fieldExtractor) {
-		WebPageSelector selector = selectorService.getSelectorByName(fieldExtractor.getType());
+	private Selector getSelector(Extractor fieldExtractor) {
+		Selector selector = selectorService.getSelectorByName(fieldExtractor.getType());
 		if (selector == null) {
 			throw new IllegalArgumentException("Unknown extractor '" + fieldExtractor.getType() + "'");
 		}

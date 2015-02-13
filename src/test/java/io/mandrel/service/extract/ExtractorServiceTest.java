@@ -3,6 +3,7 @@ package io.mandrel.service.extract;
 import io.mandrel.common.WebPage;
 import io.mandrel.common.content.FieldExtractor;
 import io.mandrel.common.content.Extractor;
+import io.mandrel.common.content.SourceType;
 import io.mandrel.common.content.WebPageExtractor;
 import io.mandrel.common.content.selector.SelectorService;
 import io.mandrel.common.script.ScriptingService;
@@ -36,16 +37,14 @@ public class ExtractorServiceTest {
 
 	@Before
 	public void init() {
-		extractorService = new ExtractorService(scriptingService,
-				selectorService);
+		extractorService = new ExtractorService(scriptingService, selectorService);
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void no_matching_pattern() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		// Actions
@@ -58,8 +57,7 @@ public class ExtractorServiceTest {
 	public void no_field() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		// Actions
@@ -72,8 +70,7 @@ public class ExtractorServiceTest {
 	public void no_datastore() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		FieldExtractor field = new FieldExtractor();
@@ -90,8 +87,7 @@ public class ExtractorServiceTest {
 	public void no_field_extractor() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		extractor.setDataStore(dataStore);
@@ -109,8 +105,7 @@ public class ExtractorServiceTest {
 	public void no_field_extractor_type() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		extractor.setDataStore(dataStore);
@@ -131,8 +126,7 @@ public class ExtractorServiceTest {
 	public void no_field_extractor_value() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, null);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		extractor.setDataStore(dataStore);
@@ -154,11 +148,9 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		ByteArrayInputStream stream = new ByteArrayInputStream(
-				"<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>"
-						.getBytes());
+				"<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes());
 
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, stream);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		extractor.setDataStore(dataStore);
@@ -166,6 +158,7 @@ public class ExtractorServiceTest {
 		field.setName("date");
 		Extractor fieldExtractor = new Extractor();
 		fieldExtractor.setType("xpath");
+		fieldExtractor.setSource(SourceType.BODY);
 		fieldExtractor.setValue("//test/o/text()");
 		field.setExtractor(fieldExtractor);
 		extractor.setFields(Arrays.asList(field));
@@ -184,11 +177,9 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		ByteArrayInputStream stream = new ByteArrayInputStream(
-				"<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>"
-						.getBytes());
+				"<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes());
 
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, stream);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		extractor.setDataStore(dataStore);
@@ -197,6 +188,7 @@ public class ExtractorServiceTest {
 		dateField.setName("date");
 		Extractor dateFieldExtractor = new Extractor();
 		dateFieldExtractor.setType("xpath");
+		dateFieldExtractor.setSource(SourceType.BODY);
 		dateFieldExtractor.setValue("//test/o/text()");
 		dateField.setExtractor(dateFieldExtractor);
 
@@ -204,6 +196,7 @@ public class ExtractorServiceTest {
 		keyField.setName("key");
 		Extractor keyFieldExtractor = new Extractor();
 		keyFieldExtractor.setType("xpath");
+		keyFieldExtractor.setSource(SourceType.BODY);
 		keyFieldExtractor.setValue("//test/t/text()");
 		keyField.setExtractor(keyFieldExtractor);
 
@@ -227,8 +220,7 @@ public class ExtractorServiceTest {
 				"<!--?xml version=\"1.0\"?--><html><body><test><o>value1</o><t>key1</t></test><test><o>value2</o><t>key2</t></test><test><o>value3</o></test></body></html>"
 						.getBytes());
 
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, stream);
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
 		extractor.setDataStore(dataStore);
 
@@ -236,6 +228,7 @@ public class ExtractorServiceTest {
 		dateField.setName("date");
 		Extractor dateFieldExtractor = new Extractor();
 		dateFieldExtractor.setType("xpath");
+		dateFieldExtractor.setSource(SourceType.BODY);
 		dateFieldExtractor.setValue("/test/o/text()");
 		dateField.setExtractor(dateFieldExtractor);
 
@@ -243,6 +236,7 @@ public class ExtractorServiceTest {
 		keyField.setName("key");
 		Extractor keyFieldExtractor = new Extractor();
 		keyFieldExtractor.setType("xpath");
+		keyFieldExtractor.setSource(SourceType.BODY);
 		keyFieldExtractor.setValue("//t/text()");
 		keyField.setExtractor(keyFieldExtractor);
 
@@ -250,8 +244,8 @@ public class ExtractorServiceTest {
 
 		Extractor multiple = new Extractor();
 		multiple.setType("xpath");
+		multiple.setSource(SourceType.BODY);
 		multiple.setValue("/html/body/test");
-		keyField.setExtractor(keyFieldExtractor);
 
 		extractor.setMultiple(multiple);
 
