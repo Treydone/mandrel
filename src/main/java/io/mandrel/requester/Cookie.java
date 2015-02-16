@@ -1,9 +1,13 @@
 package io.mandrel.requester;
 
+import java.io.Serializable;
+
 import lombok.Data;
 
 @Data
-public class Cookie {
+public class Cookie implements Serializable {
+
+	private static final long serialVersionUID = -5911842148311031909L;
 
 	private String name;
 	private String value;

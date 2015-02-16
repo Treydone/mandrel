@@ -1,6 +1,10 @@
 package io.mandrel.common.content;
 
-public abstract class NamedDataExtractorFormatter {
+import java.io.Serializable;
+
+public abstract class NamedDataExtractorFormatter implements Serializable {
+
+	private static final long serialVersionUID = 5137211741952328647L;
 
 	public abstract String getName();
 

@@ -29,11 +29,11 @@ public class QueueService {
 				T message = (T) instance.getQueue(queueName).take();
 				callback.onMessage(message);
 			} catch (Exception e) {
-				log.warn("", e);
+				log.warn("Wut?", e);
 				try {
 					Thread.sleep(5000);
 				} catch (Exception e1) {
-					log.warn("", e1);
+					log.warn("Wut?", e1);
 				}
 			}
 		}

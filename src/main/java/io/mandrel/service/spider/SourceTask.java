@@ -43,11 +43,9 @@ public class SourceTask implements Runnable, Serializable {
 
 		source.init(properties);
 
-		while (true) {
-			source.register(lst -> {
-				// TODO create bag!!!!!!
-				urlsQueueService.add(spider.getId(), Arrays.asList(lst));
-			});
-		}
+		source.register(lst -> {
+			// TODO create bag!!!!!!
+			urlsQueueService.add(spider.getId(), Arrays.asList(lst));
+		});
 	}
 }

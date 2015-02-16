@@ -8,9 +8,12 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class UrlsQueueService {
 
 	private final QueueService queueService;
@@ -31,15 +34,19 @@ public class UrlsQueueService {
 	}
 
 	public void registrer(Spider spider) {
-		queueService.registrer("urls-" + spider.getId(), bag -> {
-			((EnqueuedUrls) bag).getUrls().forEach(url -> {
+		log.debug("Registering spider {} ({})", spider.getName(), spider.getId());
+		queueService.registrer("urls-" + spider.getId(), data -> {
+			EnqueuedUrls bag = (EnqueuedUrls) data;
+			bag.getUrls().forEach(url -> {
 				doRequest(spider, url);
 			});
 		});
 	}
 
 	private void doRequest(Spider spider, String url) {
+		log.trace("Requesting {}...", url);
 		requester.get(url, spider, webPage -> {
+			log.trace("Getting response for {}", url);
 			if (spider.getExtractors() != null) {
 				spider.getExtractors().getPages().forEach(ex -> extractorService.extractFormatThenStore(webPage, ex));
 			}

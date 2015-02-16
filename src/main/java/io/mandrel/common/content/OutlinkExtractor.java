@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class OutlinkExtractor extends NamedDataExtractorFormatter {
 
+	private static final long serialVersionUID = -4094495903167374714L;
+
 	private String name;
 	private Extractor extractor;
 	private Formatter formatter;

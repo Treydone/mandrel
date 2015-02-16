@@ -3,6 +3,7 @@ package io.mandrel.common.data;
 import io.mandrel.common.filters.WebPageFilter;
 import io.mandrel.common.source.Source;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -12,7 +13,9 @@ import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-public class Spider {
+public class Spider implements Serializable {
+
+	private static final long serialVersionUID = 7577967853566572778L;
 
 	@JsonProperty("id")
 	private long id;

@@ -1,6 +1,6 @@
 package io.mandrel.rest;
 
-import io.mandrel.service.node.NodeService;
+import io.mandrel.service.task.TaskService;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,24 +28,26 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @Component
 public class LogResource {
 
-	private final NodeService nodeService;
+	private final TaskService taskService;
 
 	@Inject
-	public LogResource(NodeService nodeService) {
-		this.nodeService = nodeService;
+	public LogResource(TaskService taskService) {
+		super();
+		this.taskService = taskService;
 	}
 
 	@ApiOperation(value = "List the loggers with their level")
 	@GET
 	public Map<String, String> all() {
 		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-		return loggerContext.getLoggerList().stream().collect(Collectors.toMap(l -> l.getName(), l -> l.getLevel().toString()));
+		return loggerContext.getLoggerList() != null ? loggerContext.getLoggerList().stream()
+				.collect(Collectors.toMap(l -> l.getName(), l -> l.getLevel().toString())) : null;
 	}
 
 	@ApiOperation(value = "Change the log level")
 	@POST
 	public void set(@QueryParam("logger") String logger, @QueryParam("level") String level) {
-		nodeService.executeOnAllMembers(() -> {
+		taskService.executeOnAllMembers(() -> {
 			LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 			loggerContext.getLogger(logger).setLevel(Level.toLevel(level.toUpperCase()));
 		});

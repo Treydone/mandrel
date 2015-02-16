@@ -36,7 +36,6 @@ logging:
     level:
         org.springframework.web: INFO
         io.mandrel: DEBUG
-        io.mandrel.service.queue.UrlsQueueService: TRACE
         org.apache.cxf: WARN
         org.apache.cxf.interceptor.LoggingInInterceptor: DEBUG
         org.apache.cxf.interceptor.LoggingOutInterceptor: DEBUG
