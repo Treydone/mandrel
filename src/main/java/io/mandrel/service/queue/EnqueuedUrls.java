@@ -1,7 +1,7 @@
 package io.mandrel.service.queue;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
 
 import lombok.Data;
 
@@ -12,9 +12,9 @@ public class EnqueuedUrls implements Serializable {
 
 	private final long spiderId;
 
-	private final List<String> urls;
+	private final Set<String> urls;
 
-	public EnqueuedUrls(long spiderId, List<String> urls) {
+	public EnqueuedUrls(long spiderId, Set<String> urls) {
 		super();
 		this.spiderId = spiderId;
 		this.urls = urls;

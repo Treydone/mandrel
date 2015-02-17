@@ -5,11 +5,11 @@ import io.mandrel.common.source.Source;
 import io.mandrel.service.queue.UrlsQueueService;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.Sets;
 import com.hazelcast.spring.context.SpringAware;
 
 @SpringAware
@@ -45,7 +45,7 @@ public class SourceTask implements Runnable, Serializable {
 
 		source.register(lst -> {
 			// TODO create bag!!!!!!
-			urlsQueueService.add(spider.getId(), Arrays.asList(lst));
+			urlsQueueService.add(spider.getId(), Sets.newHashSet(lst));
 		});
 	}
 }

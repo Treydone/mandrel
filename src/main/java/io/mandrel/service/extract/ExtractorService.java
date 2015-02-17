@@ -23,8 +23,10 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -52,7 +54,7 @@ public class ExtractorService {
 		this.selectorService = selectorService;
 	}
 
-	public List<String> extractOutlinks(WebPage webPage, OutlinkExtractor extractor) {
+	public Set<String> extractOutlinks(WebPage webPage, OutlinkExtractor extractor) {
 		Map<String, Instance> cachedSelectors = new HashMap<String, Instance>();
 
 		List<String> outlinks = extract(cachedSelectors, webPage, null, extractor.getExtractor());
@@ -61,7 +63,7 @@ public class ExtractorService {
 			outlinks = (List<String>) format(webPage, extractor, outlinks);
 		}
 
-		return outlinks;
+		return new HashSet<String>(outlinks);
 	}
 
 	public void extractFormatThenStore(WebPage webPage, WebPageExtractor extractor) {
@@ -151,11 +153,11 @@ public class ExtractorService {
 				if (SourceType.BODY.equals(fieldExtractor.getSource())) {
 					instance = ((BodySelector) selector).init(webPage, webPage.getBody());
 				} else if (SourceType.HEADERS.equals(fieldExtractor.getSource())) {
-					instance = ((HeaderSelector) selector).init(webPage, webPage.getHeaders());
+					instance = ((HeaderSelector) selector).init(webPage, webPage.getMetadata().getHeaders());
 				} else if (SourceType.URL.equals(fieldExtractor.getSource())) {
 					instance = ((UrlSelector) selector).init(webPage, webPage.getUrl());
 				} else if (SourceType.COOKIE.equals(fieldExtractor.getSource())) {
-					instance = ((CookieSelector) selector).init(webPage, webPage.getCookies());
+					instance = ((CookieSelector) selector).init(webPage, webPage.getMetadata().getCookies());
 				} else if (SourceType.EMPTY.equals(fieldExtractor.getSource())) {
 					instance = ((EmptySelector) selector).init(webPage);
 				}

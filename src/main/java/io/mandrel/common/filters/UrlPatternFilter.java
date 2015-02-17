@@ -12,6 +12,8 @@ import io.mandrel.common.WebPage;
 @EqualsAndHashCode(callSuper = false, exclude = "compiledPattern")
 public class UrlPatternFilter extends WebPageFilter {
 
+	private static final long serialVersionUID = -5195589618123470396L;
+
 	@JsonIgnore
 	private Pattern compiledPattern;
 	private String pattern;

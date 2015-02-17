@@ -4,7 +4,7 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.requester.Requester;
 import io.mandrel.service.extract.ExtractorService;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -29,7 +29,7 @@ public class UrlsQueueService {
 		this.extractorService = extractorService;
 	}
 
-	public void add(long spiderId, List<String> urls) {
+	public void add(long spiderId, Set<String> urls) {
 		queueService.add("urls-" + spiderId, new EnqueuedUrls(spiderId, urls));
 	}
 
@@ -47,11 +47,27 @@ public class UrlsQueueService {
 		log.trace("Requesting {}...", url);
 		requester.get(url, spider, webPage -> {
 			log.trace("Getting response for {}", url);
+
+			spider.getStores().getPageStore().addPage(webPage);
+			spider.getStores().getPageMetadataStore().addMetadata(webPage);
+
 			if (spider.getExtractors() != null) {
 				spider.getExtractors().getPages().forEach(ex -> extractorService.extractFormatThenStore(webPage, ex));
 			}
 			if (spider.getExtractors().getOutlinks() != null) {
-				spider.getExtractors().getOutlinks().forEach(ol -> add(spider.getId(), extractorService.extractOutlinks(webPage, ol)));
+				spider.getExtractors().getOutlinks().forEach(ol -> {
+					// Find outlinks in page
+						Set<String> outlinks = extractorService.extractOutlinks(webPage, ol);
+
+						// Filter outlinks
+						outlinks = spider.getStores().getPageMetadataStore().filter(outlinks, spider.getClient().getPoliteness());
+
+						// Respect politeness for this spider
+						// spider.getClient().getPoliteness().getMaxPages();
+
+						// Add outlinks to queue
+						add(spider.getId(), outlinks);
+					});
 			}
 		});
 	}

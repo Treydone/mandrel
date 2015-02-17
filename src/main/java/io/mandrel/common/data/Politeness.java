@@ -2,9 +2,9 @@ package io.mandrel.common.data;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.Data;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 public class Politeness implements Serializable {
@@ -25,5 +25,8 @@ public class Politeness implements Serializable {
 
 	@JsonProperty("ignore_robots_txt")
 	private boolean ignoreRobotsTxt = false;
+
+	@JsonProperty("recrawl_after")
+	private int recrawlAfterSeconds = -1;
 
 }

@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({ @Type(value = InternalStore.class, name = "internal") })
 public interface WebPageStore extends Checkable, Serializable {
 
-	void save(WebPage webPage);
+	void addPage(WebPage webPage);
 
 	void init(Map<String, Object> properties);
 }
