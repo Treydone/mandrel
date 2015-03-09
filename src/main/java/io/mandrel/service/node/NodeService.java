@@ -10,7 +10,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.ws.rs.PathParam;
 
 import org.springframework.stereotype.Component;
 
@@ -42,7 +41,7 @@ public class NodeService {
 		return taskService.executeOnAllMembers(new NodeTask()).entrySet().stream().map(mapper).collect(Collectors.toList());
 	}
 
-	public Node id(@PathParam("id") String id) {
+	public Node id(String id) {
 		Entry<Member, Future<Map<String, Object>>> result = taskService.executeOnMember(new NodeTask(), id);
 		return mapper.apply(result);
 	}

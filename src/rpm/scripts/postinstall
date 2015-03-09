@@ -1,0 +1,18 @@
+
+# Initial installation: $1 == 1
+# Upgrade: $1 == 2, and configured to restart on upgrade
+if [ $1 -eq 1 ] ; then
+
+    if [ -x /sbin/chkconfig ] ; then
+		echo "### Starting on installation"
+        /sbin/chkconfig --add mandrel
+    else 
+        echo "### NOT starting on installation, chkconfig is not found"
+        echo "### You can start mandrel by executing"
+        echo " sudo service mandrel start"    	
+    fi
+
+	ln -sfnv /var/log/mandrel /usr/share/mandrel/logs    
+
+fi
+

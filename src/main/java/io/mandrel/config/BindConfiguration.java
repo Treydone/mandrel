@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
 @Configuration
 public class BindConfiguration {
@@ -37,10 +36,4 @@ public class BindConfiguration {
 		// objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
 
 	}
-
-	@Bean
-	public JacksonJsonProvider jsonProvider() {
-		return new JacksonJsonProvider(mapper());
-	}
-
 }

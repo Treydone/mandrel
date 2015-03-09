@@ -25,6 +25,7 @@
 			<version>1</version>
 		</dependency>
 
+		<!-- Commons -->
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
@@ -35,30 +36,21 @@
 			<artifactId>commons-vfs2</artifactId>
 			<version>2.0</version>
 		</dependency>
-
 		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
-			<version>${cxf.version}</version>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-transports-http</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-rs-client</artifactId>
-			<version>${cxf.version}</version>
-			<scope>test</scope>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.1</version>
 		</dependency>
 
+		<!-- Jackson -->
 		<dependency>
-			<groupId>com.fasterxml.jackson.jaxrs</groupId>
-			<artifactId>jackson-jaxrs-json-provider</artifactId>
-			<version>2.4.4</version>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
@@ -74,27 +66,12 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.wordnik</groupId>
-			<artifactId>swagger-core_2.11</artifactId>
-			<version>1.3.11</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>slf4j-api</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.wordnik</groupId>
-			<artifactId>swagger-jaxrs_2.11</artifactId>
-			<version>1.3.11</version>
-		</dependency>
-		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>swagger-ui</artifactId>
 			<version>2.0.24</version>
 		</dependency>
 
+		<!-- Http -->
 		<dependency>
 			<groupId>com.ning</groupId>
 			<artifactId>async-http-client</artifactId>
@@ -104,6 +81,8 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpasyncclient</artifactId>
 		</dependency>
+
+		<!-- HZ -->
 		<dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast</artifactId>
@@ -120,6 +99,8 @@
 			<artifactId>lombok</artifactId>
 			<version>1.14.8</version>
 		</dependency>
+
+		<!-- Data format -->
 		<dependency>
 			<groupId>net.sourceforge.htmlcleaner</groupId>
 			<artifactId>htmlcleaner</artifactId>
@@ -130,6 +111,7 @@
 			<artifactId>jsoup</artifactId>
 			<version>1.7.2</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
@@ -141,6 +123,7 @@
 			<version>15.0</version>
 		</dependency>
 
+		<!-- Monitoring -->
 		<dependency>
 			<groupId>org.hyperic</groupId>
 			<artifactId>sigar</artifactId>
@@ -153,16 +136,28 @@
 			<type>zip</type>
 		</dependency>
 
-		<!-- <dependency> -->
-		<!-- <groupId>org.liquibase</groupId> -->
-		<!-- <artifactId>liquibase-core</artifactId> -->
-		<!-- <version>2.1.0</version> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.mangofactory</groupId>
+			<artifactId>swagger-springmvc</artifactId>
+			<version>0.9.5</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>servlet-api</artifactId>
+					<groupId>javax.servlet</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>slf4j-log4j12</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- Well, Spring... -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -232,20 +227,23 @@
 			<groupId>org.spockframework</groupId>
 			<artifactId>spock-core</artifactId>
 		</dependency>
+
 		<dependency>
-			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j-cypher-compiler-2.1</artifactId>
-			<version>2.1.5</version>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
+			<groupId>tanukisoft</groupId>
+			<artifactId>wrapper</artifactId>
+			<version>3.2.3</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-library</artifactId>
-			<version>2.10.4</version>
+			<groupId>org.jhades</groupId>
+			<artifactId>jhades</artifactId>
+			<version>1.0.4</version>
 		</dependency>
+
 	</dependencies>
 
 	<dependencyManagement>
@@ -269,6 +267,40 @@
 		</resources>
 
 		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>1.3.1</version>
+				<executions>
+					<execution>
+						<id>enforce-versions</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<rules>
+								<bannedDependencies>
+									<searchTransitive>true</searchTransitive>
+									<excludes>
+										<exclude>javax.servlet:servlet-api</exclude>
+										<exclude>javassist:javassist</exclude>
+										<exclude>commons-logging</exclude>
+										<exclude>aspectj:aspectj*</exclude>
+										<exclude>log4j:log4j</exclude>
+										<exclude>org.slf4j:1.5*</exclude>
+										<exclude>org.springframework:2.*</exclude>
+										<exclude>org.springframework:3.0.*</exclude>
+									</excludes>
+								</bannedDependencies>
+							</rules>
+							<fail>true</fail>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -364,96 +396,174 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<dependencies>
-					<dependency>
-						<groupId>org.springframework.boot</groupId>
-						<artifactId>spring-boot-maven-plugin</artifactId>
-						<version>${spring-boot.version}</version>
-					</dependency>
-				</dependencies>
-				<configuration>
-					<keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
-					<createDependencyReducedPom>true</createDependencyReducedPom>
-					<shadedArtifactAttached>true</shadedArtifactAttached>
-					<shadedClassifierName>uber</shadedClassifierName>
-					<filters>
-						<filter>
-							<artifact>*:*</artifact>
-							<excludes>
-								<exclude>META-INF/*.SF</exclude>
-								<exclude>META-INF/*.DSA</exclude>
-								<exclude>META-INF/*.RSA</exclude>
-								<exclude>META-INF/*.txt</exclude>
-								<exclude>META-INF/ASL2.0</exclude>
-								<exclude>META-INF/DEPENDENCIES</exclude>
-								<exclude>META-INF/LICENSE</exclude>
-								<exclude>META-INF/NOTICE</exclude>
-								<exclude>META-INF/README</exclude>
-								<exclude>LICENSE.txt</exclude>
-								<exclude>NOTICE.txt</exclude>
-								<exclude>CHANGES</exclude>
-								<exclude>README</exclude>
-								<exclude>builddef.lst</exclude>
-							</excludes>
-						</filter>
-					</filters>
-				</configuration>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>appassembler-maven-plugin</artifactId>
+				<version>1.9</version>
 				<executions>
 					<execution>
+						<id>generate-jsw-scripts</id>
 						<phase>package</phase>
 						<goals>
-							<goal>shade</goal>
+							<goal>generate-daemons</goal>
 						</goals>
 						<configuration>
-							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/spring.handlers</resource>
-								</transformer>
-								<transformer
-									implementation="org.springframework.boot.maven.PropertiesMergingResourceTransformer">
-									<resource>META-INF/spring.factories</resource>
-								</transformer>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/spring.schemas</resource>
-								</transformer>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/cxf/cxf.extension</resource>
-								</transformer>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
-									<resource>META-INF/extensions.xml</resource>
-								</transformer>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
-									<resource>META-INF/cxf/extensions.xml</resource>
-								</transformer>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/cxf/bus-extensions.txt</resource>
-								</transformer>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
-									<resource>META-INF/cxf/bus-extensions.xml</resource>
-								</transformer>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
-									<resource>META-INF/wsdl.plugin.xml</resource>                                     <!-- Add this to enable loading of DTDs <ignoreDtd>false</ignoreDtd> -->
-								</transformer>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>${start-class}</mainClass>
-								</transformer>
-							</transformers>
+							<useWildcardClassPath>true</useWildcardClassPath>
+							<repositoryLayout>flat</repositoryLayout>
+							<configurationSourceDirectory>src/main/conf</configurationSourceDirectory>
+							<copyConfigurationDirectory>true</copyConfigurationDirectory>
+							<configurationDirectory>conf</configurationDirectory>
+							<logsDirectory>logs</logsDirectory>
+							<daemons>
+								<daemon>
+									<id>mandrel</id>
+									<jvmSettings>
+										<initialMemorySize>1024</initialMemorySize>
+										<maxMemorySize>1024</maxMemorySize>
+										<maxStackSize>128</maxStackSize>
+										<extraArguments>
+											<extraArgument>-Dlogging.file=logs/application.log</extraArgument>
+											<extraArgument>-Dlogging.mode=file</extraArgument>
+											<extraArgument>-server</extraArgument>
+											<extraArgument>-XX:+UseConcMarkSweepGC</extraArgument>
+											<extraArgument>-XX:+CMSParallelRemarkEnabled</extraArgument>
+											<extraArgument>-XX:+UseCMSInitiatingOccupancyOnly</extraArgument>
+											<extraArgument>-XX:+ScavengeBeforeFullGC</extraArgument>
+											<extraArgument>-XX:+CMSScavengeBeforeRemark</extraArgument>
+											<extraArgument>-XX:+PrintGCDateStamps</extraArgument>
+											<extraArgument>-verbose:gc</extraArgument>
+											<extraArgument>-XX:+PrintGCDetails</extraArgument>
+											<extraArgument>-Xloggc:logs/gc.%t.%p.log</extraArgument>
+											<extraArgument>-XX:+UseGCLogFileRotation</extraArgument>
+											<extraArgument>-XX:NumberOfGCLogFiles=10</extraArgument>
+											<extraArgument>-XX:GCLogFileSize=100M</extraArgument>
+											<extraArgument>-XX:+HeapDumpOnOutOfMemoryError</extraArgument>
+											<extraArgument>-XX:HeapDumpPath=logs/heapdump`date`.hprof</extraArgument>
+											<extraArgument>-Djava.net.preferIPv4Stack=true</extraArgument>
+										</extraArguments>
+									</jvmSettings>
+									<wrapperMainClass>cbm.Wrapper</wrapperMainClass>
+									<platforms>
+										<platform>jsw</platform>
+									</platforms>
+									<generatorConfigurations>
+										<generatorConfiguration>
+											<generator>jsw</generator>
+											<includes>
+												<include>linux-x86-32</include>
+												<include>linux-x86-64</include>
+											</includes>
+											<configuration>
+												<property>
+													<name>wrapper.logfile</name>
+													<value>../logs/wrapper.log</value>
+												</property>
+											</configuration>
+										</generatorConfiguration>
+									</generatorConfigurations>
+								</daemon>
+							</daemons>
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>rpm-maven-plugin</artifactId>
+				<version>2.1-alpha-3</version>
+				<executions>
+					<execution>
+						<id>attach-rpm</id>
+						<goals>
+							<goal>attached-rpm</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<group>Application/Internet</group>
+					<prefix>/usr</prefix>
+					<changelogFile>src/changelog</changelogFile>
+					<defineStatements>
+						<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+						<defineStatement>_binaries_in_noarch_packages_terminate_build 0</defineStatement>
+					</defineStatements>
+					<defaultFilemode>644</defaultFilemode>
+					<defaultDirmode>755</defaultDirmode>
+					<defaultUsername>root</defaultUsername>
+					<defaultGroupname>root</defaultGroupname>
+					<mappings>
+						<mapping>
+							<directory>/usr/share/mandrel/bin/</directory>
+							<filemode>755</filemode>
+							<sources>
+								<source>
+									<location>target/generated-resources/appassembler/jsw/mandrel/bin/</location>
+									<excludes>
+										<exclude>*.bat</exclude>
+									</excludes>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/etc/init.d/</directory>
+							<filemode>755</filemode>
+							<sources>
+								<softlinkSource>
+									<location>/usr/share/mandrel/bin/mandrel</location>
+								</softlinkSource>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/usr/share/mandrel/lib/</directory>
+							<sources>
+								<source>
+									<location>target/generated-resources/appassembler/jsw/mandrel/lib/</location>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/usr/share/mandrel/conf/</directory>
+							<sources>
+								<source>
+									<location>target/generated-resources/appassembler/jsw/mandrel/conf/</location>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/var/log/mandrel/</directory>
+							<filemode>755</filemode>
+							<username>mandrel</username>
+							<groupname>mandrel</groupname>
+						</mapping>
+						<mapping>
+							<directory>/usr/share/mandrel/</directory>
+							<sources>
+								<source>
+									<location>../</location>
+									<includes>
+										<include>README.md</include>
+									</includes>
+								</source>
+							</sources>
+						</mapping>
+					</mappings>
+					<preinstallScriptlet>
+						<scriptFile>src/rpm/scripts/preinstall</scriptFile>
+						<fileEncoding>utf-8</fileEncoding>
+					</preinstallScriptlet>
+					<postinstallScriptlet>
+						<scriptFile>src/rpm/scripts/postinstall</scriptFile>
+						<fileEncoding>utf-8</fileEncoding>
+					</postinstallScriptlet>
+					<preremoveScriptlet>
+						<scriptFile>src/rpm/scripts/preremove</scriptFile>
+						<fileEncoding>utf-8</fileEncoding>
+					</preremoveScriptlet>
+					<postremoveScriptlet>
+						<scriptFile>src/rpm/scripts/postremove</scriptFile>
+						<fileEncoding>utf-8</fileEncoding>
+					</postremoveScriptlet>
+				</configuration>
 			</plugin>
 
 			<plugin>
@@ -481,6 +591,14 @@
 				<updatePolicy>never</updatePolicy>
 			</snapshots>
 		</repository>
+		<repositories>
+			<repository>
+				<id>jcenter-release</id>
+				<name>jcenter</name>
+				<url>http://oss.jfrog.org/artifactory/oss-release-local/</url>
+			</repository>
+		</repositories>
+
 	</repositories>
 
 </project>

@@ -2,43 +2,37 @@ package io.mandrel.config;
 
 import io.mandrel.common.settings.Settings;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.wordnik.swagger.jaxrs.config.BeanConfig;
-import com.wordnik.swagger.jaxrs.listing.ApiDeclarationProvider;
-import com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON;
-import com.wordnik.swagger.jaxrs.listing.ResourceListingProvider;
+import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
+import com.mangofactory.swagger.models.dto.ApiInfo;
+import com.mangofactory.swagger.models.dto.builder.ApiInfoBuilder;
+import com.mangofactory.swagger.plugin.EnableSwagger;
+import com.mangofactory.swagger.plugin.SwaggerSpringMvcPlugin;
 
 @Configuration
+@EnableSwagger
 public class SwaggerConfiguration {
 
-	@Bean
-	public BeanConfig beanConfig(Settings settings) {
-		BeanConfig config = new BeanConfig();
-		config.setVersion(settings.getVersion());
-		config.setDescription(settings.getDescription());
-		config.setTitle(settings.getName() + "(" + settings.getArtifact() + ")");
-		config.setBasePath("/rest");
-		config.setResourcePackage("io.mandrel");
-		config.setScan(true);
-		return config;
-	}
+	private SpringSwaggerConfig springSwaggerConfig;
 
-	// Swagger API listing resource
-	@Bean
-	public ApiListingResourceJSON apiListingResource() {
-		return new ApiListingResourceJSON();
-	}
-
-	// Swagger writers
-	@Bean
-	public ResourceListingProvider resourceListingProvider() {
-		return new ResourceListingProvider();
+	@Autowired
+	public void setSpringSwaggerConfig(SpringSwaggerConfig springSwaggerConfig) {
+		this.springSwaggerConfig = springSwaggerConfig;
 	}
 
 	@Bean
-	public ApiDeclarationProvider apiDeclarationProvider() {
-		return new ApiDeclarationProvider();
+	public SwaggerSpringMvcPlugin customImplementation(Settings settings) {
+		SwaggerSpringMvcPlugin swaggerSpringMvcPlugin = new SwaggerSpringMvcPlugin(this.springSwaggerConfig);
+		return swaggerSpringMvcPlugin.apiInfo(apiInfo(settings)).includePatterns("/logs", "/nodes", "/spiders").apiVersion(settings.getVersion());
+	}
+
+	private ApiInfo apiInfo(Settings settings) {
+		ApiInfoBuilder apiInfoBuilder = new ApiInfoBuilder();
+		apiInfoBuilder.description(settings.getDescription());
+		apiInfoBuilder.title(settings.getName() + "(" + settings.getArtifact() + ")");
+		return apiInfoBuilder.build();
 	}
 }

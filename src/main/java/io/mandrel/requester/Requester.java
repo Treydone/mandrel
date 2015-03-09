@@ -40,8 +40,7 @@ public class Requester {
 		NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
 		// nettyConfig.setBossExecutorService(taskExecutor);
 
-		AsyncHttpClientConfig cf = new AsyncHttpClientConfig.Builder()
-				.setAllowPoolingConnections(true).setMaxRequestRetry(3)
+		AsyncHttpClientConfig cf = new AsyncHttpClientConfig.Builder().setAllowPoolingConnections(true).setMaxRequestRetry(3)
 				.setAsyncHttpClientProviderConfig(nettyConfig)
 				// .setMaximumConnectionsPerHost(100)
 				// .setMaximumConnectionsTotal(100)
@@ -53,8 +52,7 @@ public class Requester {
 	}
 
 	public void get(String url, Spider spider, Callback callback) {
-		BoundRequestBuilder request = client.prepareGet(spider.getClient()
-				.getDnsCache().optimizeUrl(url));
+		BoundRequestBuilder request = client.prepareGet(spider.getClient().getDnsCache().optimizeUrl(url));
 
 		request.setRequestTimeout(spider.getClient().getRequestTimeOut());
 		request.setFollowRedirects(spider.getClient().isFollowRedirects());
@@ -64,18 +62,12 @@ public class Requester {
 					.getClient()
 					.getCookies()
 					.stream()
-					.map(cookie -> new Cookie(cookie.getName(), cookie
-							.getValue(), cookie.getRawValue(), cookie
-							.getDomain(), cookie.getPath(),
-							cookie.getExpires(), cookie.getMaxAge(), cookie
-									.isSecure(), cookie.isHttpOnly()))
-					.collect(Collectors.toList()));
+					.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), cookie.getRawValue(), cookie.getDomain(), cookie.getPath(), cookie
+							.getExpires(), cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList()));
 		request.setQueryParams(spider.getClient().getParams());
-		request.setProxyServer(spider.getClient().getProxyServersSource()
-				.findProxy(spider));
+		request.setProxyServer(spider.getClient().getProxyServersSource().findProxy(spider));
 
-		String userAgent = spider.getClient().getUserAgentProvisionner()
-				.get(url, spider);
+		String userAgent = spider.getClient().getUserAgentProvisionner().get(url, spider);
 		if (Strings.isNullOrEmpty(userAgent)) {
 			request.addHeader("User-Agent", userAgent);
 		}
@@ -83,8 +75,7 @@ public class Requester {
 		request.execute(new AsyncCompletionHandler<Response>() {
 
 			@Override
-			public STATE onStatusReceived(HttpResponseStatus status)
-					throws Exception {
+			public STATE onStatusReceived(HttpResponseStatus status) throws Exception {
 				int statusCode = status.getStatusCode();
 
 				if (statusCode >= 400) {
@@ -98,13 +89,12 @@ public class Requester {
 			public Response onCompleted(Response response) throws Exception {
 				WebPage webPage;
 				try {
-					webPage = new WebPage(new URL(url), response
-							.getStatusCode(), response.getStatusText(),
-							response.getHeaders(), response.getCookies(),
-							response.getResponseBodyAsStream());
+					webPage = new WebPage(new URL(url), response.getStatusCode(), response.getStatusText(), response.getHeaders(), response
+							.getCookies(), response.getResponseBodyAsStream());
 					callback.on(webPage);
 				} catch (Exception e) {
 					log.debug("Can not construct web page", e);
+					throw e;
 				}
 				return response;
 			}

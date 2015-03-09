@@ -5,15 +5,15 @@ import io.mandrel.common.settings.Settings;
 
 import java.util.Arrays;
 
-import lombok.extern.slf4j.Slf4j;
-
+import org.jhades.JHades;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.system.ApplicationPidFileWriter;
 import org.springframework.boot.actuate.system.EmbeddedServerPortFileWriter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
-import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -23,37 +23,54 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableAutoConfiguration
 @ComponentScan
-@Slf4j
-public class Main extends SpringBootServletInitializer {
+public class Application extends SpringBootServletInitializer {
 
-	@Bean
-	public ServletRegistrationBean cxfServlet() {
-		org.apache.cxf.transport.servlet.CXFServlet cxfServlet = new org.apache.cxf.transport.servlet.CXFServlet();
-		ServletRegistrationBean servletDef = new ServletRegistrationBean(cxfServlet, "/rest/*");
-		servletDef.setLoadOnStartup(1);
-		return servletDef;
-	}
+	private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
+
+	private ConfigurableApplicationContext context;
 
 	@Bean
 	public FilterRegistrationBean originFilter() {
 		FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
 		filterRegistrationBean.setFilter(new ApiOriginFilter());
-		filterRegistrationBean.setUrlPatterns(Arrays.asList("/rest/*"));
+		filterRegistrationBean.setUrlPatterns(Arrays.asList("/*"));
 		return filterRegistrationBean;
 	}
 
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(Main.class);
+		return application.sources(Application.class);
 	}
 
 	public static void main(String[] args) {
-		ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
+		new Application().start(args);
+	}
+
+	public void start(String[] args) {
+
+		// Print some useful infos about the classpath and others things
+		new JHades().overlappingJarsReport();
+
+		context = SpringApplication.run(Application.class, args);
 		context.addApplicationListener(new ApplicationPidFileWriter());
 		context.addApplicationListener(new EmbeddedServerPortFileWriter());
 
 		Settings settings = context.getBean(Settings.class);
 
-		log.info("{} ({}) started", settings.getArtifact(), settings.getVersion());
+		LOGGER.info("{} ({}) started", settings.getArtifact(), settings.getVersion());
+	}
+
+	public void stop() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(500L);
+				} catch (InterruptedException ex) {
+					// Swallow exception and continue
+				}
+				context.close();
+			}
+		}).start();
 	}
 }

@@ -1,0 +1,18 @@
+# only execute in case of package removal, not on upgrade
+if [ $1 -eq 0 ] ; then
+
+    getent passwd mandrel > /dev/null
+    if [ "$?" == "0" ] ; then
+        userdel mandrel
+    fi
+
+    getent group mandrel >/dev/null
+    if [ "$?" == "0" ] ; then
+        groupdel mandrel
+    fi
+    
+    rm -rf /var/log/mandrel/
+
+fi
+
+exit

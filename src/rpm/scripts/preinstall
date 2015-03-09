@@ -1,0 +1,4 @@
+getent group mandrel >/dev/null || groupadd -r mandrel
+getent passwd mandrel >/dev/null || \
+    useradd -r -g mandrel -d /usr/share/mandrel -s /sbin/nologin \
+    -c "mandrel user" mandrel

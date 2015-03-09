@@ -6,21 +6,19 @@ import io.mandrel.service.node.NodeService;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 
-import org.springframework.stereotype.Component;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
-@Api("/node")
-@Path("/node")
-@Produces(MediaType.APPLICATION_JSON)
-@Component
+@Api("/nodes")
+@RequestMapping(value = "/nodes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+@RestController
 public class NodeResource {
 
 	private final NodeService nodeService;
@@ -31,22 +29,19 @@ public class NodeResource {
 	}
 
 	@ApiOperation(value = "List all the nodes", response = Node.class, responseContainer = "List")
-	@Path("/all")
-	@GET
+	@RequestMapping
 	public List<Node> all() {
 		return nodeService.all();
 	}
 
 	@ApiOperation(value = "Find a node by its id", response = Node.class)
-	@Path("/{id}")
-	@GET
-	public Node id(@PathParam("id") String id) {
+	@RequestMapping(value = "/{id}")
+	public Node id(@PathVariable String id) {
 		return nodeService.id(id);
 	}
 
 	@ApiOperation(value = "Return the current node", response = Node.class)
-	@Path("/this")
-	@GET
+	@RequestMapping(value = "/this")
 	public Node dhis() {
 		return nodeService.dhis();
 	}

@@ -1,0 +1,13 @@
+
+# Removal: $1 == 0
+# Dont do anything on upgrade, because the preun script in redhat gets executed after the postinst (madness!)
+if [ $1 -eq 0 ] ; then
+
+    if [ -x /sbin/chkconfig ] ; then
+        /sbin/chkconfig --del mandrel 2> /dev/null
+    fi
+    
+	/etc/init.d/mandrel stop
+fi
+
+exit 0
