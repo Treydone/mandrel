@@ -1,7 +1,7 @@
 package io.mandrel;
 
 import io.mandrel.common.rest.ApiOriginFilter;
-import io.mandrel.common.settings.Settings;
+import io.mandrel.common.settings.InfoSettings;
 
 import java.util.Arrays;
 
@@ -55,7 +55,7 @@ public class Application extends SpringBootServletInitializer {
 		context.addApplicationListener(new ApplicationPidFileWriter());
 		context.addApplicationListener(new EmbeddedServerPortFileWriter());
 
-		Settings settings = context.getBean(Settings.class);
+		InfoSettings settings = context.getBean(InfoSettings.class);
 
 		LOGGER.info("{} ({}) started", settings.getArtifact(), settings.getVersion());
 	}

@@ -58,6 +58,17 @@ public class TaskService {
 		return new DefaultMapEntry(member, result);
 	}
 
+	public void executeOnLocalMember(String suffix, Runnable callable) {
+		Member member = hazelcastInstance.getCluster().getLocalMember();
+		hazelcastInstance.getExecutorService(EXECUTOR_PREFIX + suffix).executeOnMember(callable, member);
+	}
+
+	public <T> Entry<Member, Future<T>> executeOnLocalMember(String suffix, Callable<T> callable) {
+		Member member = hazelcastInstance.getCluster().getLocalMember();
+		Future<T> result = hazelcastInstance.getExecutorService(EXECUTOR_PREFIX + suffix).submitToMember(callable, member);
+		return new DefaultMapEntry(member, result);
+	}
+
 	public void prepareSimpleExecutor(String suffix) {
 		hazelcastInstance.getConfig().getExecutorConfig(EXECUTOR_PREFIX + suffix).setPoolSize(1).setStatisticsEnabled(true).setQueueCapacity(1);
 	}

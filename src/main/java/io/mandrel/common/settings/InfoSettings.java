@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConfigurationProperties(prefix = "info")
-public class Settings {
+public class InfoSettings {
 
 	private String artifact;
 

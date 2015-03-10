@@ -2,7 +2,7 @@ package io.mandrel.requester;
 
 import io.mandrel.common.WebPage;
 import io.mandrel.common.data.Spider;
-import io.mandrel.common.settings.Settings;
+import io.mandrel.common.settings.InfoSettings;
 
 import java.net.URL;
 import java.util.stream.Collectors;
@@ -31,10 +31,10 @@ public class Requester {
 
 	private final AsyncHttpClient client;
 
-	private final Settings settings;
+	private final InfoSettings settings;
 
 	@Inject
-	public Requester(Settings settings) {
+	public Requester(InfoSettings settings) {
 		this.settings = settings;
 
 		NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();

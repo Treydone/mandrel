@@ -18,13 +18,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class SettingsTest {
 
 	@Configuration
-	@EnableConfigurationProperties(Settings.class)
+	@EnableConfigurationProperties(InfoSettings.class)
 	public static class SettingsConfiguration {
 
 	}
 
 	@Inject
-	private Settings settings;
+	private InfoSettings settings;
 
 	@Test
 	public void test() {

@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,19 @@ public class SpiderService {
 	public SpiderService(SpiderRepository spiderRepository, TaskService taskService) {
 		this.spiderRepository = spiderRepository;
 		this.taskService = taskService;
+	}
+
+	@PostConstruct
+	public void init() {
+
+		// Start the available spiders on this node
+		spiderRepository.list().filter(spider -> State.STARTED.equals(spider.getState())).forEach(spider -> {
+			taskService.executeOnLocalMember(String.valueOf(spider.getId()), new SpiderTask(spider));
+
+			// TODO manage sources!
+			// spider.getSources().stream().forEach(prepareSource(spider.getId(),
+			// spider));
+			});
 	}
 
 	public Errors validate(Spider spider) {
@@ -81,7 +95,6 @@ public class SpiderService {
 			return spider;
 
 		}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
-
 	}
 
 	private Consumer<? super Source> prepareSource(long spiderId, Spider spider) {

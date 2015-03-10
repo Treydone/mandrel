@@ -47,13 +47,13 @@ public class SpiderResource {
 		return spiderService.get(id).map(opt -> opt).orElse(null);
 	}
 
-	@ApiOperation(value = "Start a spider", response = Spider.class)
+	@ApiOperation(value = "Start a spider")
 	@RequestMapping(value = "/{id}/start")
 	public void start(@PathVariable("id") Long id) {
 		spiderService.get(id).ifPresent(opt -> spiderService.start(id));
 	}
 
-	@ApiOperation(value = "Cancel a spider", response = Spider.class)
+	@ApiOperation(value = "Cancel a spider")
 	@RequestMapping(value = "/{id}/cancel")
 	public void cancel(@PathVariable("id") Long id) {
 		spiderService.get(id).ifPresent(opt -> spiderService.cancel(id));

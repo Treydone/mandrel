@@ -1,6 +1,6 @@
 package io.mandrel.config;
 
-import io.mandrel.common.settings.Settings;
+import io.mandrel.common.settings.InfoSettings;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -24,12 +24,12 @@ public class SwaggerConfiguration {
 	}
 
 	@Bean
-	public SwaggerSpringMvcPlugin customImplementation(Settings settings) {
+	public SwaggerSpringMvcPlugin customImplementation(InfoSettings settings) {
 		SwaggerSpringMvcPlugin swaggerSpringMvcPlugin = new SwaggerSpringMvcPlugin(this.springSwaggerConfig);
 		return swaggerSpringMvcPlugin.apiInfo(apiInfo(settings)).includePatterns("/logs", "/nodes", "/spiders").apiVersion(settings.getVersion());
 	}
 
-	private ApiInfo apiInfo(Settings settings) {
+	private ApiInfo apiInfo(InfoSettings settings) {
 		ApiInfoBuilder apiInfoBuilder = new ApiInfoBuilder();
 		apiInfoBuilder.description(settings.getDescription());
 		apiInfoBuilder.title(settings.getName() + "(" + settings.getArtifact() + ")");
