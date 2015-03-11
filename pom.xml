@@ -38,6 +38,12 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-vfs2</artifactId>
 			<version>2.0</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-collections</groupId>
@@ -348,6 +354,28 @@
 					<source>${java.version}</source>
 					<target>${java.version}</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.7</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/src/main/conf</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/resources</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 
 
@@ -670,13 +698,11 @@
 				<updatePolicy>never</updatePolicy>
 			</snapshots>
 		</repository>
-		<repositories>
-			<repository>
-				<id>jcenter-release</id>
-				<name>jcenter</name>
-				<url>http://oss.jfrog.org/artifactory/oss-release-local/</url>
-			</repository>
-		</repositories>
+		<repository>
+			<id>jcenter-release</id>
+			<name>jcenter</name>
+			<url>http://oss.jfrog.org/artifactory/oss-release-local/</url>
+		</repository>
 
 	</repositories>
 

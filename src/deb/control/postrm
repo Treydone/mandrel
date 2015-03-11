@@ -1,0 +1,30 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove)
+        # Remove logs
+        rm -rf /var/log/mandrel
+    ;;
+
+    purge)
+    	# Remove service
+        update-rc.d mandrel remove >/dev/null || true
+    
+        # Remove logs
+        rm -rf /var/log/mandrel
+
+        # Remove user/group
+        deluser mandrel || true
+        delgroup mandrel || true
+    ;;
+
+    upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        # Nothing to do here
+    ;;
+
+    *)
+        echo "$0 called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac

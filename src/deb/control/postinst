@@ -1,0 +1,38 @@
+#!/bin/sh
+set -e
+
+start() {
+		/etc/init.d/mandrel start || true
+}
+
+case "$1" in
+	configure)
+	[ -z "$MANDREL_USER" ] && MANDREL_USER="mandrel"
+	[ -z "$MANDREL_GROUP" ] && MANDREL_GROUP="mandrel"
+	if ! getent group "$MANDREL_GROUP" > /dev/null 2>&1 ; then
+	    addgroup --system "$MANDREL_GROUP" --quiet
+	fi
+	if ! id $MANDREL_USER > /dev/null 2>&1 ; then
+	    adduser --system --home /usr/share/mandrel --no-create-home \
+		--ingroup "$MANDREL_GROUP" --disabled-password --shell /bin/false \
+		"$MANDREL_USER"
+	fi
+
+	# Set user permissions on /var/log/mandrel
+	mkdir -p /var/log/mandrel
+	chown -R $MANDREL_USER:$MANDREL_GROUP /var/log/mandrel
+	chmod 755 /var/log/mandrel
+	
+	# if $2 is set, this is an upgrade
+	if ( [ -n $2 ]) ; then
+		start
+	# this is a fresh installation
+	elif [ -z $2 ] ; then
+            echo "### NOT starting mandrel by default on bootup, please execute"
+            echo " sudo update-rc.d mandrel defaults 95 10"
+            echo "### In order to start mandrel, execute"
+            echo " sudo /etc/init.d/mandrel start"
+	fi
+	;;
+esac
+

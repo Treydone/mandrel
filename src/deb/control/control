@@ -1,0 +1,8 @@
+Package: [[name]]
+Version: [[version]]
+Section: misc
+Priority: low
+Architecture: all
+Depends: libc6, adduser
+Description: [[description]]
+Maintainer: vincent.devillers@layer4.fr
