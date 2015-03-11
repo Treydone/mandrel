@@ -39,6 +39,8 @@ public class JsonExporter implements Exporter {
 				}
 			}
 		});
+
+		mapper.writeValue(writer, arrayNode);
 	}
 
 	@Override
