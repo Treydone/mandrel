@@ -214,6 +214,26 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
+		
+		<!-- <dependency> -->
+		<!-- <groupId>org.springframework.cloud</groupId> -->
+		<!-- <artifactId>spring-cloud-cluster-hazelcast</artifactId> -->
+		<!-- <version>1.0.0.RC1</version> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.springframework.cloud</groupId> -->
+		<!-- <artifactId>spring-cloud-commons</artifactId> -->
+		<!-- <version>1.0.0.RELEASE</version> -->
+		<!-- </dependency> -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-messaging</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -703,7 +723,19 @@
 			<name>jcenter</name>
 			<url>http://oss.jfrog.org/artifactory/oss-release-local/</url>
 		</repository>
-
+		<repository>
+			<id>spring-milestone</id>
+			<name>spring-milestone</name>
+			<url>http://repo.spring.io/milestone</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
 	</repositories>
 
 </project>
