@@ -5,6 +5,7 @@ import io.mandrel.common.store.Document;
 import io.mandrel.common.store.DocumentStore;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hazelcast.core.HazelcastInstance;
@@ -34,5 +35,10 @@ public class InternalDocumentStore implements DocumentStore {
 	@Override
 	public boolean check() {
 		return false;
+	}
+
+	@Override
+	public Stream<Document> all() {
+		return null;
 	}
 }

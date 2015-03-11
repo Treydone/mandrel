@@ -18,6 +18,7 @@ import io.mandrel.common.content.selector.SelectorService;
 import io.mandrel.common.content.selector.UrlSelector;
 import io.mandrel.common.script.ScriptingService;
 import io.mandrel.common.store.Document;
+import io.mandrel.requester.Cookie;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -157,7 +158,14 @@ public class ExtractorService {
 				} else if (SourceType.URL.equals(fieldExtractor.getSource())) {
 					instance = ((UrlSelector) selector).init(webPage, webPage.getUrl());
 				} else if (SourceType.COOKIE.equals(fieldExtractor.getSource())) {
-					instance = ((CookieSelector) selector).init(webPage, webPage.getMetadata().getCookies());
+					instance = ((CookieSelector) selector).init(
+							webPage,
+							webPage.getMetadata()
+									.getCookies()
+									.stream()
+									.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), cookie.getRawValue(), cookie.getDomain(), cookie
+											.getPath(), cookie.getExpires(), cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly()))
+									.collect(Collectors.toList()));
 				} else if (SourceType.EMPTY.equals(fieldExtractor.getSource())) {
 					instance = ((EmptySelector) selector).init(webPage);
 				}

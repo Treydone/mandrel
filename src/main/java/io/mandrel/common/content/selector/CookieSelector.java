@@ -2,10 +2,9 @@ package io.mandrel.common.content.selector;
 
 import io.mandrel.common.WebPage;
 import io.mandrel.common.content.SourceType;
+import io.mandrel.requester.Cookie;
 
 import java.util.List;
-
-import com.ning.http.client.cookie.Cookie;
 
 public abstract class CookieSelector implements Selector {
 

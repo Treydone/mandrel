@@ -5,6 +5,7 @@ import io.mandrel.common.store.Document;
 import io.mandrel.common.store.DocumentStore;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public class CassandraDocumentStore implements DocumentStore {
 
@@ -26,5 +27,10 @@ public class CassandraDocumentStore implements DocumentStore {
 	@Override
 	public boolean check() {
 		return false;
+	}
+
+	@Override
+	public Stream<Document> all() {
+		return null;
 	}
 }

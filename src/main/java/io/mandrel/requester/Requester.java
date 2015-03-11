@@ -5,6 +5,7 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.common.settings.InfoSettings;
 
 import java.net.URL;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -89,8 +90,14 @@ public class Requester {
 			public Response onCompleted(Response response) throws Exception {
 				WebPage webPage;
 				try {
-					webPage = new WebPage(new URL(url), response.getStatusCode(), response.getStatusText(), response.getHeaders(), response
-							.getCookies(), response.getResponseBodyAsStream());
+					List<io.mandrel.requester.Cookie> cookies = response
+							.getCookies()
+							.stream()
+							.map(cookie -> new io.mandrel.requester.Cookie(cookie.getName(), cookie.getValue(), cookie.getRawValue(), cookie
+									.getDomain(), cookie.getPath(), cookie.getExpires(), cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly()))
+							.collect(Collectors.toList());
+					webPage = new WebPage(new URL(url), response.getStatusCode(), response.getStatusText(), response.getHeaders(), cookies, response
+							.getResponseBodyAsStream());
 					callback.on(webPage);
 				} catch (Exception e) {
 					log.debug("Can not construct web page", e);

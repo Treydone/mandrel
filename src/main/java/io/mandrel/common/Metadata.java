@@ -1,5 +1,7 @@
 package io.mandrel.common;
 
+import io.mandrel.requester.Cookie;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -7,7 +9,6 @@ import java.util.List;
 import lombok.Data;
 
 import com.ning.http.client.FluentCaseInsensitiveStringsMap;
-import com.ning.http.client.cookie.Cookie;
 
 @Data
 public class Metadata implements Serializable {

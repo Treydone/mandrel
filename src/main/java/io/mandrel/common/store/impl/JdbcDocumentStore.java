@@ -5,6 +5,7 @@ import io.mandrel.common.store.Document;
 import io.mandrel.common.store.DocumentStore;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
@@ -37,13 +38,17 @@ public class JdbcDocumentStore implements DocumentStore {
 
 	@Override
 	public void init(WebPageExtractor webPageExtractor) {
-		DataSource dataSource = new org.apache.tomcat.jdbc.pool.DataSource(
-				configuration);
+		DataSource dataSource = new org.apache.tomcat.jdbc.pool.DataSource(configuration);
 		jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
 	@Override
 	public boolean check() {
 		return false;
+	}
+
+	@Override
+	public Stream<Document> all() {
+		return null;
 	}
 }

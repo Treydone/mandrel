@@ -7,6 +7,7 @@ import io.mandrel.common.store.impl.InternalDocumentStore;
 import io.mandrel.common.store.impl.JdbcDocumentStore;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
@@ -22,5 +23,7 @@ public interface DocumentStore extends Checkable {
 	void save(Document doc);
 
 	void save(List<Document> data);
+
+	Stream<Document> all();
 
 }

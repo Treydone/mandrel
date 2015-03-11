@@ -1,10 +1,9 @@
 package io.mandrel.common.content.selector;
 
 import io.mandrel.common.WebPage;
+import io.mandrel.requester.Cookie;
 
 import java.util.List;
-
-import com.ning.http.client.cookie.Cookie;
 
 public class SimpleCookieSelector extends CookieSelector {
 
@@ -13,6 +12,7 @@ public class SimpleCookieSelector extends CookieSelector {
 
 			@Override
 			public List<String> select(String value) {
+				cookies.stream().filter(cookie -> cookie.getName().equals(value)).map(cookie -> cookie.getValue());
 				return null;
 			}
 		};

@@ -19,4 +19,17 @@ public class Cookie implements Serializable {
 	private boolean secure;
 	private boolean httpOnly;
 
+	public Cookie(String name, String value, String rawValue, String domain, String path, long expires, int maxAge, boolean secure, boolean httpOnly) {
+		super();
+		this.name = name;
+		this.value = value;
+		this.rawValue = rawValue;
+		this.domain = domain;
+		this.path = path;
+		this.expires = expires;
+		this.maxAge = maxAge;
+		this.secure = secure;
+		this.httpOnly = httpOnly;
+	}
+
 }

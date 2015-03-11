@@ -13,8 +13,7 @@ public class SimpleHeaderSelector extends HeaderSelector {
 
 			@Override
 			public List<String> select(String value) {
-				// TODO Auto-generated method stub
-				return null;
+				return headers.get(value);
 			}
 		};
 	}
