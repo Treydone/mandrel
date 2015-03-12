@@ -67,6 +67,7 @@ public class Application extends SpringBootServletInitializer {
 		Boolean isConsoleEnabled = env.getProperty("logging.console.enabled", Boolean.class, false);
 		if (isConsoleEnabled) {
 			String pattern = env.getRequiredProperty("logging.console.pattern", String.class);
+			String level = env.getProperty("logging.console.level", String.class, "WARN");
 
 			LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 
@@ -80,7 +81,7 @@ public class Application extends SpringBootServletInitializer {
 
 			Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 			logger.addAppender(appender);
-			logger.setLevel(Level.DEBUG);
+			logger.setLevel(Level.valueOf(level));
 			logger.setAdditive(false);
 		}
 	}
