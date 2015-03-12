@@ -16,7 +16,7 @@
 
 		<cxf.version>3.0.1</cxf.version>
 		<sigar.version>1.6.5.132</sigar.version>
-		<spring-boot.version>1.2.1.RELEASE</spring-boot.version>
+		<spring-boot.version>1.2.2.RELEASE</spring-boot.version>
 		<java.version>1.8</java.version>
 	</properties>
 
@@ -89,12 +89,6 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>swagger-ui</artifactId>
-			<version>2.0.24</version>
 		</dependency>
 
 		<!-- Http -->
@@ -183,6 +177,22 @@
 			</exclusions>
 		</dependency>
 
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>swagger-ui</artifactId>
+			<version>2.0.24</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>stomp-websocket</artifactId>
+			<version>2.3.1-1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>sockjs-client</artifactId>
+			<version>0.3.4-1</version>
+		</dependency>
+
 		<!-- Well, Spring... -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -206,15 +216,19 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.springframework.boot</groupId> -->
+<!-- 			<artifactId>spring-boot-starter-security</artifactId> -->
+<!-- 		</dependency> -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
-		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mustache</artifactId>
+		</dependency>
+
 		<!-- <dependency> -->
 		<!-- <groupId>org.springframework.cloud</groupId> -->
 		<!-- <artifactId>spring-cloud-cluster-hazelcast</artifactId> -->
@@ -233,7 +247,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

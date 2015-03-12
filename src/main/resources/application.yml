@@ -15,38 +15,29 @@ server:
     port: 8080
     #address:
     
-security:
-    user:
-        name: admin
-        password: admin
-        role: ADMIN
-
 spring:
     pidfile: application.pid
     groovy:
         template:
             check-template-location: false
-
+    mustache:
+        suffix: .html
+    
 graphite:
     enabled: false
     port: 2003
     host: localhost
     
 logging:
+    console:
+        enabled: true
+        pattern: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wex"
     level:
-        org.springframework.web: INFO
+        org.springframework: INFO
         io.mandrel: DEBUG
-        io.mandrel.service.queue.UrlsQueueService: TRACE
-        org.apache.cxf: WARN
-        org.apache.cxf.interceptor.LoggingInInterceptor: DEBUG
-        org.apache.cxf.interceptor.LoggingOutInterceptor: DEBUG
-        org.hibernate: ERROR
         
 management:
     context-path: /admin
-    security:
-        enabled: true
-        role: ADMIN
         
 info:
     artifact: @project.artifactId@
@@ -55,7 +46,6 @@ info:
     version: @project.version@
 
 endpoints:
-    sensitive: true
     shutdown:
         enabled: true
     health:
