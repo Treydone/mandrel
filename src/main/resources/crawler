@@ -1,8 +1,15 @@
 ----------------------------------- FONCTIONNAL
 
+Batch size 100
+while getting bags of urls
+	crawl this bags for each url
+	add stats
+	check politness
+	if maximum reached go away
+	
+
+
 From seeds, get sitemaps, extrat them, get url, add to the queue
-
-
 
 start:
 - task?
@@ -14,13 +21,8 @@ sources
 on start
 
 
-
-
-
-
-Node
-  - spiders
-  - 
+To be done:
+- Configure
 
 ----------------------------------- TECH
 

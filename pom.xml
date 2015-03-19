@@ -216,10 +216,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.springframework.boot</groupId> -->
-<!-- 			<artifactId>spring-boot-starter-security</artifactId> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.springframework.boot</groupId> -->
+		<!-- <artifactId>spring-boot-starter-security</artifactId> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
@@ -234,11 +234,11 @@
 		<!-- <artifactId>spring-cloud-cluster-hazelcast</artifactId> -->
 		<!-- <version>1.0.0.RC1</version> -->
 		<!-- </dependency> -->
-		<!-- <dependency> -->
-		<!-- <groupId>org.springframework.cloud</groupId> -->
-		<!-- <artifactId>spring-cloud-commons</artifactId> -->
-		<!-- <version>1.0.0.RELEASE</version> -->
-		<!-- </dependency> -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-commons</artifactId>
+			<version>1.0.0.RELEASE</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-messaging</artifactId>
@@ -523,7 +523,7 @@
 											<extraArgument>-Djava.net.preferIPv4Stack=true</extraArgument>
 										</extraArguments>
 									</jvmSettings>
-									<wrapperMainClass>cbm.Wrapper</wrapperMainClass>
+									<wrapperMainClass>io.mandrel.boostrap.Wrapper</wrapperMainClass>
 									<platforms>
 										<platform>jsw</platform>
 									</platforms>

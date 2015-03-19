@@ -2,9 +2,9 @@ package io.mandrel.common.data;
 
 import java.io.Serializable;
 
-import io.mandrel.common.store.PageMetadataStore;
-import io.mandrel.common.store.WebPageStore;
-import io.mandrel.common.store.impl.InternalStore;
+import io.mandrel.gateway.PageMetadataStore;
+import io.mandrel.gateway.WebPageStore;
+import io.mandrel.gateway.impl.InternalStore;
 import lombok.Data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;

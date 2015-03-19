@@ -1,14 +1,15 @@
 package io.mandrel.service.extract;
 
-import io.mandrel.common.WebPage;
-import io.mandrel.common.content.FieldExtractor;
-import io.mandrel.common.content.Extractor;
-import io.mandrel.common.content.SourceType;
-import io.mandrel.common.content.WebPageExtractor;
-import io.mandrel.common.content.selector.SelectorService;
-import io.mandrel.common.script.ScriptingService;
-import io.mandrel.common.store.Document;
-import io.mandrel.common.store.DocumentStore;
+import io.mandrel.data.content.Extractor;
+import io.mandrel.data.content.FieldExtractor;
+import io.mandrel.data.content.SourceType;
+import io.mandrel.data.content.WebPageExtractor;
+import io.mandrel.data.content.selector.SelectorService;
+import io.mandrel.data.extract.ExtractorService;
+import io.mandrel.gateway.Document;
+import io.mandrel.gateway.DocumentStore;
+import io.mandrel.http.WebPage;
+import io.mandrel.script.ScriptingService;
 
 import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;

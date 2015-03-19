@@ -1,6 +1,8 @@
 package io.mandrel.common.content.selector;
 
 import static org.junit.Assert.*;
+import io.mandrel.data.content.selector.Selector;
+import io.mandrel.data.content.selector.SelectorService;
 
 import java.util.Map;
 

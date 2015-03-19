@@ -2,7 +2,8 @@ package io.mandrel.common.script;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import io.mandrel.common.WebPage;
+import io.mandrel.http.WebPage;
+import io.mandrel.script.ScriptingService;
 
 import java.net.URL;
 

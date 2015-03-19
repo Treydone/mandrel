@@ -1,7 +1,7 @@
 package io.mandrel.common.data;
 
-import io.mandrel.common.content.OutlinkExtractor;
-import io.mandrel.common.content.WebPageExtractor;
+import io.mandrel.data.content.OutlinkExtractor;
+import io.mandrel.data.content.WebPageExtractor;
 
 import java.io.Serializable;
 import java.util.Arrays;

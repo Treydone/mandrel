@@ -4,10 +4,11 @@ import static org.junit.Assert.assertEquals;
 import io.mandrel.common.data.Client;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Stores;
-import io.mandrel.common.filters.UrlPatternFilter;
-import io.mandrel.common.filters.WebPageFilter;
 import io.mandrel.common.source.SeedsSourceTest.LocalConfiguration;
 import io.mandrel.config.BindConfiguration;
+import io.mandrel.data.filters.UrlPatternFilter;
+import io.mandrel.data.filters.WebPageFilter;
+import io.mandrel.data.spider.SpiderService;
 
 import java.io.IOException;
 

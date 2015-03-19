@@ -1,12 +1,12 @@
 package io.mandrel.common.data;
 
-import io.mandrel.requester.Cookie;
-import io.mandrel.requester.dns.DnsCache;
-import io.mandrel.requester.dns.InternalDnsCache;
-import io.mandrel.requester.proxy.NoProxyProxyServersSource;
-import io.mandrel.requester.proxy.ProxyServersSource;
-import io.mandrel.requester.ua.FixedUserAgentProvisionner;
-import io.mandrel.requester.ua.UserAgentProvisionner;
+import io.mandrel.http.Cookie;
+import io.mandrel.http.dns.DnsCache;
+import io.mandrel.http.dns.InternalDnsCache;
+import io.mandrel.http.proxy.NoProxyProxyServersSource;
+import io.mandrel.http.proxy.ProxyServersSource;
+import io.mandrel.http.ua.FixedUserAgentProvisionner;
+import io.mandrel.http.ua.UserAgentProvisionner;
 
 import java.io.Serializable;
 import java.util.Collection;

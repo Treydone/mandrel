@@ -1,7 +1,7 @@
 package io.mandrel.common.data;
 
-import io.mandrel.common.filters.WebPageFilter;
-import io.mandrel.common.source.Source;
+import io.mandrel.data.filters.WebPageFilter;
+import io.mandrel.data.source.Source;
 
 import java.io.Serializable;
 import java.util.List;

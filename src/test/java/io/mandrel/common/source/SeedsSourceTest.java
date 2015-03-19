@@ -3,6 +3,10 @@ package io.mandrel.common.source;
 import static org.junit.Assert.assertEquals;
 import io.mandrel.common.source.SeedsSourceTest.LocalConfiguration;
 import io.mandrel.config.BindConfiguration;
+import io.mandrel.data.source.FixedSource;
+import io.mandrel.data.source.JdbcSource;
+import io.mandrel.data.source.JmsSource;
+import io.mandrel.data.source.Source;
 
 import java.io.IOException;
 import java.util.Arrays;

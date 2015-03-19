@@ -1,6 +1,7 @@
 package io.mandrel.common.monitor;
 
 import io.mandrel.common.monitor.SigarServiceTest.LocalConfiguration;
+import io.mandrel.monitor.SigarService;
 
 import javax.inject.Inject;
 
