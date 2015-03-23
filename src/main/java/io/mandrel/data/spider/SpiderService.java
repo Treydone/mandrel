@@ -2,9 +2,12 @@ package io.mandrel.data.spider;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.State;
+import io.mandrel.data.source.FixedSource;
 import io.mandrel.data.source.Source;
 import io.mandrel.task.TaskService;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -35,6 +38,14 @@ public class SpiderService {
 		this.taskService = taskService;
 	}
 
+	/**
+	 * On start:
+	 * <ul>
+	 * <li>Find the available spiders, and foreach spider:
+	 * <li>Start the spider
+	 * <li>Start the sources
+	 * </ul>
+	 */
 	@PostConstruct
 	public void init() {
 
@@ -52,6 +63,24 @@ public class SpiderService {
 		Errors errors = new BeanPropertyBindingResult(spider, "spider");
 		spiderValidator.validate(spider, errors);
 		return errors;
+	}
+
+	public Spider update(Spider spider) {
+
+		Errors errors = validate(spider);
+
+		if (errors.hasErrors()) {
+			// TODO
+			throw new RuntimeException("Errors!");
+		}
+
+		return spiderRepository.update(spider);
+	}
+
+	public Spider add(List<String> urls) {
+		Spider spider = new Spider();
+		spider.setSources(Arrays.asList(new FixedSource(urls)));
+		return add(spider);
 	}
 
 	public Spider add(Spider spider) {
@@ -119,12 +148,12 @@ public class SpiderService {
 			// Shutdown source execution service
 				spider.getSources().stream().forEach(source -> {
 					String sourceExecServiceName = "executor-" + spiderId + "-source-" + source.getName();
-					taskService.shutdownExecutorService(sourceExecServiceName);
+					taskService.shutdownDistributedExecutorService(sourceExecServiceName);
 				});
 
 				// Shutdown task execution service
 				String taskExecServiceName = "executor-" + spiderId;
-				taskService.shutdownExecutorService(taskExecServiceName);
+				taskService.shutdownDistributedExecutorService(taskExecServiceName);
 
 				// Update status
 				spider.setState(State.CANCELLED);

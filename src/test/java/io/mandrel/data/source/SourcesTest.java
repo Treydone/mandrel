@@ -1,12 +1,8 @@
-package io.mandrel.common.source;
+package io.mandrel.data.source;
 
 import static org.junit.Assert.assertEquals;
-import io.mandrel.common.source.SeedsSourceTest.LocalConfiguration;
 import io.mandrel.config.BindConfiguration;
-import io.mandrel.data.source.FixedSource;
-import io.mandrel.data.source.JdbcSource;
-import io.mandrel.data.source.JmsSource;
-import io.mandrel.data.source.Source;
+import io.mandrel.data.source.SourcesTest.LocalConfiguration;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -24,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ContextConfiguration(classes = LocalConfiguration.class)
 @RunWith(SpringJUnit4ClassRunner.class)
-public class SeedsSourceTest {
+public class SourcesTest {
 
 	@Configuration
 	@Import(BindConfiguration.class)
@@ -39,7 +35,7 @@ public class SeedsSourceTest {
 	public void seed() throws IOException {
 
 		FixedSource source = new FixedSource();
-		source.setSeeds(Arrays.asList("test"));
+		source.setUrls(Arrays.asList("test"));
 
 		String json = objectMapper.writeValueAsString(source);
 		System.err.println(json);

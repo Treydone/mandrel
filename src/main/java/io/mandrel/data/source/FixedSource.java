@@ -9,15 +9,25 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class FixedSource extends Source {
 
-	private List<String> seeds;
+	private static final long serialVersionUID = -3095179267476304019L;
+
+	private List<String> urls;
 
 	public void register(EntryListener listener) {
-		for (String seed : seeds) {
+		for (String seed : urls) {
 			listener.onItem(seed);
 		}
 	}
 
 	public boolean check() {
 		return true;
+	}
+
+	public FixedSource(List<String> urls) {
+		this.urls = urls;
+	}
+
+	public FixedSource() {
+		super();
 	}
 }

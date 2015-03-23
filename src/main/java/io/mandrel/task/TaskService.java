@@ -73,7 +73,12 @@ public class TaskService {
 		hazelcastInstance.getConfig().getExecutorConfig(EXECUTOR_PREFIX + suffix).setPoolSize(1).setStatisticsEnabled(true).setQueueCapacity(1);
 	}
 
-	public void shutdownExecutorService(String taskExecServiceName) {
+	/**
+	 * Shutdown a distributed executor service.
+	 * 
+	 * @param taskExecServiceName
+	 */
+	public void shutdownDistributedExecutorService(String taskExecServiceName) {
 		IExecutorService pool = hazelcastInstance.getExecutorService(taskExecServiceName);
 		pool.shutdown();
 		try {

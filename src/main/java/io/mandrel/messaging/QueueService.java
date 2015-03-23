@@ -23,6 +23,12 @@ public class QueueService {
 		instance.getQueue(queueName).add(data);
 	}
 
+	/**
+	 * Blocking call (while true) on a queue.
+	 * 
+	 * @param queueName
+	 * @param callback
+	 */
 	public <T> void registrer(String queueName, Callback<T> callback) {
 		while (true) {
 			try {

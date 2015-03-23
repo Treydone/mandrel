@@ -1,53 +1,77 @@
 package io.mandrel.node;
 
-import io.mandrel.task.TaskService;
+import io.mandrel.monitor.SigarService;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.Future;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
 
-import com.hazelcast.core.Member;
+import com.hazelcast.config.MapConfig;
+import com.hazelcast.config.MapConfig.EvictionPolicy;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 
 @Component
+@Slf4j
 public class NodeService {
 
-	private final TaskService taskService;
+	private static final String NODES = "nodes";
 
-	private final Function<? super Entry<Member, Future<Map<String, Object>>>, ? extends Node> mapper = kv -> {
-		Node node = new Node();
-		node.setUuid(kv.getKey().getUuid());
-		try {
-			node.setInfos(kv.getValue().get());
-		} catch (Exception e) {
-			// TODO
-			e.printStackTrace();
-		}
-		return node;
-	};
+	private final ScheduledExecutorService scheduledExecutorService;
+
+	private final SigarService sigarService;
+
+	private final HazelcastInstance instance;
 
 	@Inject
-	public NodeService(TaskService taskService) {
-		this.taskService = taskService;
+	public NodeService(ScheduledExecutorService scheduledExecutorService, SigarService sigarService, HazelcastInstance instance) {
+		this.scheduledExecutorService = scheduledExecutorService;
+		this.sigarService = sigarService;
+		this.instance = instance;
 	}
 
-	public List<Node> all() {
-		return taskService.executeOnAllMembers(new NodeTask()).entrySet().stream().map(mapper).collect(Collectors.toList());
+	@PostConstruct
+	public void init() {
+		if (!instance.getConfig().getMapConfigs().containsKey(NODES)) {
+			MapConfig mapConfig = new MapConfig();
+			mapConfig.setEvictionPolicy(EvictionPolicy.LRU);
+			mapConfig.setMaxIdleSeconds(20);
+			mapConfig.setName(NODES);
+			instance.getConfig().addMapConfig(mapConfig);
+		}
+
+		scheduledExecutorService.scheduleAtFixedRate(() -> {
+			try {
+				Map<String, Object> infos = sigarService.infos();
+				String uuid = instance.getLocalEndpoint().getUuid();
+
+				Node dhis = new Node();
+				dhis.setInfos(infos);
+				dhis.setUuid(uuid);
+				_nodes().put(uuid, dhis);
+			} catch (Exception e) {
+				log.warn("Can not set the infos for the endpoint", e);
+			}
+		}, 0, 1000, TimeUnit.MILLISECONDS);
 	}
 
-	public Node id(String id) {
-		Entry<Member, Future<Map<String, Object>>> result = taskService.executeOnMember(new NodeTask(), id);
-		return mapper.apply(result);
+	public Node node(String id) {
+		return _nodes().get(id);
 	}
 
-	public Node dhis() {
-		Entry<Member, Future<Map<String, Object>>> result = taskService.executeOnLocalMember(new NodeTask());
-		return mapper.apply(result);
+	public Map<String, Node> nodes() {
+		return _nodes();
 	}
+
+	private IMap<String, Node> _nodes() {
+		return instance.<String, Node> getMap(NODES);
+	}
+
 }

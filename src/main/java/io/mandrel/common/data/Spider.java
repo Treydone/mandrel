@@ -6,8 +6,6 @@ import io.mandrel.data.source.Source;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
 import lombok.Data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,7 +25,6 @@ public class Spider implements Serializable {
 	private State state = State.NEW;
 
 	@JsonProperty("sources")
-	@NotNull
 	private List<Source> sources;
 
 	@JsonProperty("filter")

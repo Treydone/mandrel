@@ -1,7 +1,7 @@
 package io.mandrel.endpoints.rest;
 
+import io.mandrel.discovery.DiscoveryService;
 import io.mandrel.node.Node;
-import io.mandrel.node.NodeService;
 
 import java.util.List;
 
@@ -21,28 +21,28 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @RestController
 public class NodeResource {
 
-	private final NodeService nodeService;
+	private final DiscoveryService discoveryService;
 
 	@Inject
-	public NodeResource(NodeService nodeService) {
-		this.nodeService = nodeService;
+	public NodeResource(DiscoveryService discoveryService) {
+		this.discoveryService = discoveryService;
 	}
 
 	@ApiOperation(value = "List all the nodes", response = Node.class, responseContainer = "List")
 	@RequestMapping
 	public List<Node> all() {
-		return nodeService.all();
+		return discoveryService.all();
 	}
 
 	@ApiOperation(value = "Find a node by its id", response = Node.class)
 	@RequestMapping(value = "/{id}")
 	public Node id(@PathVariable String id) {
-		return nodeService.id(id);
+		return discoveryService.id(id);
 	}
 
 	@ApiOperation(value = "Return the current node", response = Node.class)
 	@RequestMapping(value = "/this")
 	public Node dhis() {
-		return nodeService.dhis();
+		return discoveryService.dhis();
 	}
 }

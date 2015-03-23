@@ -1,8 +1,15 @@
 package io.mandrel.discovery;
 
-import org.springframework.stereotype.Component;
+import io.mandrel.node.Node;
 
-@Component
-public class DiscoveryService {
+import java.util.List;
+
+public interface DiscoveryService {
+
+	List<Node> all();
+
+	Node id(String id);
+
+	Node dhis();
 
 }
