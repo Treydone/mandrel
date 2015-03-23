@@ -1,0 +1,202 @@
+h1. Mandrel
+
+h2. A Distributed Crawler Engine
+
+Mandrel is a distributed Crawler engine built for the cloud. Features include:
+* Distributed and Highly Available Crawler Engine.
+* HTTP RESTful API
+* Open Source under the Apache License, version 2 ("ALv2")
+
+h2. Getting Started
+
+h3. Installation
+
+* Download and unzip the Mandrel official distribution OR checkout the code and build it via a "mvn package -DskipTests"
+* Run @bin/mandrel@ on unix
+* Run @curl -X GET http://localhost:9200/@.
+* Start more servers ...
+
+h3. Crawling
+
+Ok, we want to crawl Wikipedia. First step, we create a spider:
+@curl -X POST http://localhost:9200/spiders/wikipedia?urls=http://en.wikipedia.org@
+
+You can see your spider:
+@curl -X GET http://localhost:9200/spiders@
+
+Now start it:
+@curl -X POST http://localhost:9200/spiders/wikipedia/start@
+
+And, that's it. Wait, what???
+
+Mandrel create the spider "wikipedia" and distribute it across all the nodes. When you start it, Mandrel begin to crawl the urls you give and the deep in the pages in order to find other urls. 
+
+bq. By default, only 1000 urls are crawled. See below in order to configure your spider.
+
+Once you have done all you want with your spider, you can kill it:
+@curl -X POST http://localhost:9200/spiders/wikipedia/cancel@
+
+h3. Raw exporting
+
+TODO...
+
+h3. Filtering
+
+TODO...
+
+h3. Extracting
+
+Something we want to crawl pages. But what we really want is the data INSIDE the pages.
+
+bc. curl -X POST http://localhost:9200/spiders/imdb -d '
+{
+   "sources":[
+      {
+         "type":"fixed",
+         "urls":[
+            "http://www.imdb.com/"
+         ]
+      }
+   ],
+   "extractors":[
+      {
+         "name":"movie_extractor"
+         "filters":[
+            {
+               "type":"patterns",
+               "value":[
+                  "/title"
+               ]
+            }
+         ],
+         "fields":[
+            {
+               "title":{
+                  "extractor":{
+                     "type":"xpath",
+                     "value":"//*[@id="overview-top"]/h1/span[1]/text()",
+                     "source":"body"
+                  }
+               }
+            },
+            {
+               "description":{
+                  "extractor":{
+                     "type":"xpath",
+                     "value":"//*[@id="overview-top"]/p[2]/text()",
+                     "source":"body"
+                  }
+               }
+            },
+            {
+               "actors":{
+                  "extractor":{
+                     "type":"xpath",
+                     "value":"//*[@id="overview-top"]/div[6]/a/span",
+                     "source":"body"
+                  }
+               }
+            }            
+         ]
+      }
+   ]
+}
+'
+
+This will extract the fields 'title', 'description' and 'actors' from the page.
+
+h3. Data exporting
+
+Ok, now we got some data, we can export them by calling:
+
+bc. curl -X POST http://localhost:9200/spiders/export/movie_extractor -d '{"type":"..."}'
+
+h4. JSON
+
+bc. {
+    "type":"json"
+}
+
+h4. Delimited separated values
+
+
+bc. {
+    "type":"csv",
+    "quote_char":"\"",
+    "delimiter_values":44,
+    "delimiter_multivalues":124,
+    "keep_only_first_value":false,
+    "add_header":true,
+    "end_of_line_symbols":"\r\n"
+}
+
+h3. Client
+
+Each spider can be configured with a specified HTTP client in order to configure:
+* Proxies
+* Request and connection timeouts
+* User-agent generation
+* Custom cookies (jsessionid...) and headers (X-Request-By, Basic-Authentication...)
+* DNS resolution strategies
+* Politeness
+
+bc. {
+    "request_time_out":3000,
+    "headers":null,
+    "params":null,
+    "follow_redirects":false,
+    "cookies":null,
+    "user_agent_provisionner":{
+        "type":"fixed",
+        "ua":"Mandrel"
+    },
+    "dns_cache":{
+        "type":"internal"
+    },
+    "proxy":{
+        "type":"no"
+    },
+    "politeness":{
+        "global_rate":1000,
+        "per_node_rate":500,
+        "max_pages":500,
+        "wait":100,
+        "ignore_robots_txt":false,
+        "recrawl_after":-1
+    }
+}
+
+h3. Distributed, Highly Available
+
+TODO...
+
+h3. Building from Source
+
+Mandrel uses "Maven":http://maven.apache.org for its build system.
+
+In order to create a distribution, simply run the @mvn clean package -DskipTests@ command in the cloned directory.
+
+h1. License
+
+<pre>
+This software is licensed under the Apache License, version 2 ("ALv2"), quoted below.
+
+Copyright 2009-2015 Elasticsearch <http://www.elasticsearch.org>
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+</pre>
+
+
+
+
+
