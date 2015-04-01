@@ -2,9 +2,11 @@ package io.mandrel.node;
 
 import io.mandrel.monitor.SigarService;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -64,6 +66,11 @@ public class NodeService {
 
 	public Node node(String id) {
 		return _nodes().get(id);
+	}
+
+	public Map<String, Node> nodes(Collection<String> uuids) {
+		return _nodes().entrySet().stream().filter(idNode -> uuids.contains(idNode.getKey()))
+				.collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
 	}
 
 	public Map<String, Node> nodes() {
