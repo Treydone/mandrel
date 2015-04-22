@@ -12,9 +12,9 @@ import io.mandrel.data.content.selector.CookieSelector;
 import io.mandrel.data.content.selector.EmptySelector;
 import io.mandrel.data.content.selector.HeaderSelector;
 import io.mandrel.data.content.selector.Selector;
+import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.content.selector.SelectorService;
 import io.mandrel.data.content.selector.UrlSelector;
-import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.gateway.Document;
 import io.mandrel.http.Cookie;
 import io.mandrel.http.WebPage;
@@ -163,9 +163,8 @@ public class ExtractorService {
 							webPage.getMetadata()
 									.getCookies()
 									.stream()
-									.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), cookie.getRawValue(), cookie.getDomain(), cookie
-											.getPath(), cookie.getExpires(), cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly()))
-									.collect(Collectors.toList()));
+									.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie
+											.getExpires(), cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList()));
 				} else if (SourceType.EMPTY.equals(fieldExtractor.getSource())) {
 					instance = ((EmptySelector) selector).init(webPage);
 				}

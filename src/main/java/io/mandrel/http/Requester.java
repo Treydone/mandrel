@@ -1,6 +1,7 @@
 package io.mandrel.http;
 
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.settings.ClientSettings;
 import io.mandrel.common.settings.InfoSettings;
 
 import java.net.URL;
@@ -31,22 +32,14 @@ public class Requester {
 
 	private final AsyncHttpClient client;
 
-	private final InfoSettings settings;
-
 	@Inject
-	public Requester(InfoSettings settings) {
-		this.settings = settings;
-
+	public Requester(ClientSettings settings) {
 		NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
-		// nettyConfig.setBossExecutorService(taskExecutor);
 
 		AsyncHttpClientConfig cf = new AsyncHttpClientConfig.Builder().setAllowPoolingConnections(true).setMaxRequestRetry(3)
-				.setAsyncHttpClientProviderConfig(nettyConfig)
-				// .setMaximumConnectionsPerHost(100)
-				// .setMaximumConnectionsTotal(100)
-				.addRequestFilter(new ThrottleRequestFilter(100))
-				// .setExecutorService(taskExecutor)
-				.build();
+				.setCompressionEnforced(true).setAllowPoolingConnections(true).setAllowPoolingSslConnections(true)
+				.setAsyncHttpClientProviderConfig(nettyConfig).setMaxConnectionsPerHost(settings.getConnections().getHost())
+				.setMaxConnections(settings.getConnections().getGlobal()).addRequestFilter(new ThrottleRequestFilter(100)).build();
 
 		this.client = new AsyncHttpClient(new NettyAsyncHttpProvider(cf), cf);
 	}
@@ -62,8 +55,8 @@ public class Requester {
 					.getClient()
 					.getCookies()
 					.stream()
-					.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), cookie.getRawValue(), cookie.getDomain(), cookie.getPath(), cookie
-							.getExpires(), cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList()));
+					.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), false, cookie.getDomain(), cookie.getPath(), cookie.getExpires(),
+							cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList()));
 		request.setQueryParams(spider.getClient().getParams());
 		request.setProxyServer(spider.getClient().getProxyServersSource().findProxy(spider));
 
@@ -92,9 +85,8 @@ public class Requester {
 					List<io.mandrel.http.Cookie> cookies = response
 							.getCookies()
 							.stream()
-							.map(cookie -> new io.mandrel.http.Cookie(cookie.getName(), cookie.getValue(), cookie.getRawValue(), cookie
-									.getDomain(), cookie.getPath(), cookie.getExpires(), cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly()))
-							.collect(Collectors.toList());
+							.map(cookie -> new io.mandrel.http.Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(),
+									cookie.getExpires(), cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList());
 					webPage = new WebPage(new URL(url), response.getStatusCode(), response.getStatusText(), response.getHeaders(), cookies, response
 							.getResponseBodyAsStream());
 					callback.on(webPage);
@@ -108,7 +100,7 @@ public class Requester {
 	}
 
 	@FunctionalInterface
-	public interface Callback {
+	public static interface Callback {
 
 		void on(WebPage webapge);
 	}

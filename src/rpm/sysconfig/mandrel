@@ -1,0 +1,3 @@
+# Default configuration for mandrel
+
+MAX_OPEN_FILES=65535

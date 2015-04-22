@@ -11,6 +11,9 @@ network:
         multicast:
             enabled: false
 
+http:
+    port: 8080
+
 server:
     port: 8080
     #address:

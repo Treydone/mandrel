@@ -11,7 +11,6 @@ public class Cookie implements Serializable {
 
 	private String name;
 	private String value;
-	private String rawValue;
 	private String domain;
 	private String path;
 	private long expires;
@@ -19,11 +18,10 @@ public class Cookie implements Serializable {
 	private boolean secure;
 	private boolean httpOnly;
 
-	public Cookie(String name, String value, String rawValue, String domain, String path, long expires, int maxAge, boolean secure, boolean httpOnly) {
+	public Cookie(String name, String value, String domain, String path, long expires, int maxAge, boolean secure, boolean httpOnly) {
 		super();
 		this.name = name;
 		this.value = value;
-		this.rawValue = rawValue;
 		this.domain = domain;
 		this.path = path;
 		this.expires = expires;

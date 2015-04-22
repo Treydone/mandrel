@@ -95,11 +95,7 @@
 		<dependency>
 			<groupId>com.ning</groupId>
 			<artifactId>async-http-client</artifactId>
-			<version>1.9.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpasyncclient</artifactId>
+			<version>1.9.20</version>
 		</dependency>
 
 		<!-- HZ -->
@@ -498,6 +494,9 @@
 							<daemons>
 								<daemon>
 									<id>mandrel</id>
+									<commandLineArguments>
+										<commandLineArgument>--spring.config.location=/usr/share/mandrel/conf/application.yml</commandLineArgument>
+									</commandLineArguments>
 									<jvmSettings>
 										<initialMemorySize>1024</initialMemorySize>
 										<maxMemorySize>1024</maxMemorySize>
@@ -646,12 +645,25 @@
 							</sources>
 						</mapping>
 						<mapping>
-							<directory>/etc/init.d/</directory>
-							<filemode>755</filemode>
+							<directory>/etc/sysconfig/</directory>
+							<configuration>noreplace</configuration>
 							<sources>
-								<softlinkSource>
-									<location>/usr/share/mandrel/bin/mandrel</location>
-								</softlinkSource>
+								<source>
+									<location>src/rpm/sysconfig</location>
+									<includes>
+										<include>mandrel</include>
+									</includes>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/etc/rc.d/init.d/</directory>
+							<filemode>755</filemode>
+							<configuration>true</configuration>
+							<sources>
+								<source>
+									<location>src/rpm/init.d/mandrel</location>
+								</source>
 							</sources>
 						</mapping>
 						<mapping>
