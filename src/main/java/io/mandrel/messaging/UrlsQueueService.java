@@ -48,11 +48,11 @@ public class UrlsQueueService {
 		requester.get(url, spider, webPage -> {
 			log.trace("Getting response for {}", url);
 
-			spider.getStores().getPageStore().addPage(webPage);
-			spider.getStores().getPageMetadataStore().addMetadata(webPage);
+			spider.getStores().getPageStore().addPage(spider.getId(), webPage);
+			spider.getStores().getPageMetadataStore().addMetadata(spider.getId(), webPage);
 
 			if (spider.getExtractors() != null) {
-				spider.getExtractors().getPages().forEach(ex -> extractorService.extractFormatThenStore(webPage, ex));
+				spider.getExtractors().getPages().forEach(ex -> extractorService.extractThenFormatThenStore(spider.getId(), webPage, ex));
 			}
 			if (spider.getExtractors().getOutlinks() != null) {
 				spider.getExtractors().getOutlinks().forEach(ol -> {
@@ -60,7 +60,7 @@ public class UrlsQueueService {
 						Set<String> outlinks = extractorService.extractOutlinks(webPage, ol);
 
 						// Filter outlinks
-						outlinks = spider.getStores().getPageMetadataStore().filter(outlinks, spider.getClient().getPoliteness());
+						outlinks = spider.getStores().getPageMetadataStore().filter(spider.getId(), outlinks, spider.getClient().getPoliteness());
 
 						// Respect politeness for this spider
 						// spider.getClient().getPoliteness().getMaxPages();

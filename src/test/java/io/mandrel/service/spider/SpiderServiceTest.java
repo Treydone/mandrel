@@ -87,7 +87,7 @@ public class SpiderServiceTest {
 
 		Spider spider = new Spider();
 
-		SpiderService spiderService = new SpiderService(null, null);
+		SpiderService spiderService = new SpiderService(null, null, null, null);
 		Errors errors = spiderService.validate(spider);
 
 		System.err.println(errors);

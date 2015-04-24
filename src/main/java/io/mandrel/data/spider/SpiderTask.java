@@ -4,6 +4,7 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.messaging.UrlsQueueService;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,7 @@ public class SpiderTask implements Runnable, Serializable {
 	public void run() {
 
 		// TODO
-		Map<String, Object> properties = null;
+		Map<String, Object> properties = new HashMap<>();
 
 		spider.getStores().getPageMetadataStore().init(properties);
 		spider.getStores().getPageStore().init(properties);

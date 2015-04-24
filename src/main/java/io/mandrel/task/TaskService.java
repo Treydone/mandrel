@@ -1,5 +1,7 @@
 package io.mandrel.task;
 
+import io.mandrel.common.data.Spider;
+
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
@@ -71,6 +73,18 @@ public class TaskService {
 
 	public void prepareSimpleExecutor(String suffix) {
 		hazelcastInstance.getConfig().getExecutorConfig(EXECUTOR_PREFIX + suffix).setPoolSize(1).setStatisticsEnabled(true).setQueueCapacity(1);
+	}
+
+	public void shutdownAllExecutorService(Spider spider) {
+		if (spider.getSources() != null) {
+			spider.getSources().stream().forEach(source -> {
+				String sourceExecServiceName = "executor-" + spider.getId() + "-source-" + source.getName();
+				shutdownDistributedExecutorService(sourceExecServiceName);
+			});
+		}
+
+		String taskExecServiceName = "executor-" + spider.getId();
+		shutdownDistributedExecutorService(taskExecServiceName);
 	}
 
 	/**

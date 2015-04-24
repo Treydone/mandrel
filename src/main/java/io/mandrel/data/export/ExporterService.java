@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @Component
 @Slf4j
@@ -27,22 +26,39 @@ public class ExporterService {
 		this.spiderService = spiderService;
 	}
 
-	public void export(Long id, String extractorName, Exporter exporter, HttpServletResponse response) {
+	public void export(Long id, String extractorName, DocumentExporter exporter, HttpServletResponse response) {
 		Optional<Spider> spider = spiderService.get(id);
 
 		if (spider.isPresent()) {
-			Optional<WebPageExtractor> extractor = spider.get().getExtractors().getPages().stream()
-					.filter(ext -> ext.getName().equals(extractorName)).findFirst();
+			Optional<WebPageExtractor> extractor = spider.get().getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName))
+					.findFirst();
 			if (extractor.isPresent()) {
 				response.setContentType(exporter.contentType());
 				try {
-					exporter.export(extractor.get().getDataStore().all(), extractor.get().getFields(), response.getWriter());
+					exporter.export(extractor.get().getDataStore().all(spider.get().getId()), extractor.get().getFields(), response.getWriter());
 				} catch (Exception e) {
 					log.debug("Uhhh...", e);
 				}
 			} else {
 				response.setStatus(HttpStatus.NOT_FOUND.value());
 				log.debug("Extract {} not found for spider {}", extractorName, id);
+			}
+		} else {
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			log.debug("Spider {} not found", id);
+		}
+
+	}
+
+	public void export(Long id, RawExporter exporter, HttpServletResponse response) {
+		Optional<Spider> spider = spiderService.get(id);
+
+		if (spider.isPresent()) {
+			response.setContentType(exporter.contentType());
+			try {
+				exporter.export(spider.get().getStores().getPageStore().all(id), response.getWriter());
+			} catch (Exception e) {
+				log.debug("Uhhh...", e);
 			}
 		} else {
 			response.setStatus(HttpStatus.NOT_FOUND.value());

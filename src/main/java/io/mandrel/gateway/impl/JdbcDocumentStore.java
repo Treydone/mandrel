@@ -27,12 +27,12 @@ public class JdbcDocumentStore implements DocumentStore {
 	private JdbcTemplate jdbcTemplate;
 
 	@Override
-	public void save(Document data) {
+	public void save(long spiderId, Document data) {
 		jdbcTemplate.update(insertQuery, data);
 	}
 
 	@Override
-	public void save(List<Document> data) {
+	public void save(long spiderId, List<Document> data) {
 		jdbcTemplate.batchUpdate(insertQuery, (List<Object[]>) null);
 	}
 
@@ -48,7 +48,14 @@ public class JdbcDocumentStore implements DocumentStore {
 	}
 
 	@Override
-	public Stream<Document> all() {
+	public void deleteAllFor(long spiderId) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Stream<Document> all(long spiderId) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

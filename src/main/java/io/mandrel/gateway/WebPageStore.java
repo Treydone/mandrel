@@ -6,6 +6,7 @@ import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
@@ -15,7 +16,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({ @Type(value = InternalStore.class, name = "internal") })
 public interface WebPageStore extends Checkable, Serializable {
 
-	void addPage(WebPage webPage);
+	void addPage(long spiderId, WebPage webPage);
+
+	void deleteAllFor(long spiderId);
 
 	void init(Map<String, Object> properties);
+
+	Stream<WebPage> all(long spiderId);
 }

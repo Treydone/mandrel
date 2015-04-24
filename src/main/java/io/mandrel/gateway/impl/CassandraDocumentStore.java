@@ -10,12 +10,12 @@ import java.util.stream.Stream;
 public class CassandraDocumentStore implements DocumentStore {
 
 	@Override
-	public void save(Document data) {
+	public void save(long spiderId, Document data) {
 		// TODO
 	}
 
 	@Override
-	public void save(List<Document> data) {
+	public void save(long spiderId, List<Document> data) {
 		// TODO Auto-generated method stub
 	}
 
@@ -30,7 +30,14 @@ public class CassandraDocumentStore implements DocumentStore {
 	}
 
 	@Override
-	public Stream<Document> all() {
+	public void deleteAllFor(long spiderId) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Stream<Document> all(long spiderId) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

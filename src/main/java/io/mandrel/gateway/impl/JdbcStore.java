@@ -7,6 +7,7 @@ import io.mandrel.http.WebPage;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import lombok.Data;
 
@@ -26,18 +27,30 @@ public class JdbcStore implements WebPageStore, PageMetadataStore {
 
 	}
 
-	public void addPage(WebPage webPage) {
+	public void addPage(long spiderId, WebPage webPage) {
 	}
 
 	@Override
-	public void addMetadata(WebPage webPage) {
+	public void addMetadata(long spiderId, WebPage webPage) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public Set<String> filter(Set<String> outlinks, Politeness politeness) {
+	public Set<String> filter(long spiderId, Set<String> outlinks, Politeness politeness) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public Stream<WebPage> all(long spiderId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void deleteAllFor(long spiderId) {
+		// TODO Auto-generated method stub
+
 	}
 }

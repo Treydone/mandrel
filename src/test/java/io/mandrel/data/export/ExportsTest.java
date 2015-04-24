@@ -37,7 +37,7 @@ public class ExportsTest {
 
 		String json = objectMapper.writeValueAsString(exporter);
 		System.err.println(json);
-		Exporter read = objectMapper.readValue(json, Exporter.class);
+		DocumentExporter read = objectMapper.readValue(json, DocumentExporter.class);
 		assertEquals(exporter, read);
 	}
 
@@ -48,7 +48,7 @@ public class ExportsTest {
 
 		String json = objectMapper.writeValueAsString(exporter);
 		System.err.println(json);
-		Exporter read = objectMapper.readValue(json, Exporter.class);
+		DocumentExporter read = objectMapper.readValue(json, DocumentExporter.class);
 		assertEquals(exporter, read);
 	}
 

@@ -25,7 +25,7 @@ public class HazelcastDiscoveryService implements DiscoveryService {
 	private final NodeService nodeService;
 
 	private final Function<? super Member, ? extends Node> mapper = kv -> {
-		return nodeService.node(kv.getUuid());
+		return getNodeService().node(kv.getUuid());
 	};
 
 	@Inject
@@ -46,6 +46,10 @@ public class HazelcastDiscoveryService implements DiscoveryService {
 
 	public Node dhis() {
 		return id(hazelcastInstance.getCluster().getLocalMember().getUuid());
+	}
+
+	public NodeService getNodeService() {
+		return nodeService;
 	}
 
 }

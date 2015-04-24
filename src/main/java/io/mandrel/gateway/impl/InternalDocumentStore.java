@@ -16,13 +16,13 @@ public class InternalDocumentStore implements DocumentStore {
 	private HazelcastInstance instance;
 
 	@Override
-	public void save(Document data) {
+	public void save(long spiderId, Document data) {
 		// TODO
 		// instance.getMap("store").set(null, data);
 	}
 
 	@Override
-	public void save(List<Document> data) {
+	public void save(long spiderId, List<Document> data) {
 		// TODO Auto-generated method stub
 
 	}
@@ -38,7 +38,13 @@ public class InternalDocumentStore implements DocumentStore {
 	}
 
 	@Override
-	public Stream<Document> all() {
+	public Stream<Document> all(long spiderId) {
 		return null;
+	}
+
+	@Override
+	public void deleteAllFor(long spiderId) {
+		// TODO Auto-generated method stub
+
 	}
 }

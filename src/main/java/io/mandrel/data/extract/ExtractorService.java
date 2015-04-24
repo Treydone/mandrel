@@ -23,6 +23,7 @@ import io.mandrel.script.ScriptingService;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -67,22 +68,33 @@ public class ExtractorService {
 		return new HashSet<String>(outlinks);
 	}
 
-	public void extractFormatThenStore(WebPage webPage, WebPageExtractor extractor) {
+	public void extractThenFormatThenStore(long spiderId, WebPage webPage, WebPageExtractor extractor) {
 
+		List<Document> documents = extractThenFormat(webPage, extractor);
+
+		// Store the result
+		if (documents != null) {
+			extractor.getDataStore().save(spiderId, documents);
+		}
+	}
+
+	public List<Document> extractThenFormat(WebPage webPage, WebPageExtractor extractor) {
 		Preconditions.checkNotNull(extractor.getFields(), "No field for this extractor...");
 		Preconditions.checkNotNull(extractor.getDataStore(), "No datastore for this extractor...");
+
+		List<Document> documents = null;
 
 		if (extractor.getFilters() == null || extractor.getFilters().stream().anyMatch(f -> f.isValid(webPage))) {
 			Map<String, Instance> cachedSelectors = new HashMap<String, Instance>();
 
 			if (extractor.getMultiple() != null) {
 
-				List<Document> documents = new ArrayList<>();
+				documents = new ArrayList<>();
 
 				// Extract the multiple
 				List<String> segments = extract(cachedSelectors, webPage, null, extractor.getMultiple());
 
-				segments.forEach(segment -> {
+				documents = segments.stream().map(segment -> {
 
 					Document document = new Document(extractor.getFields().size());
 
@@ -105,11 +117,8 @@ public class ExtractorService {
 						}
 					}
 
-					documents.add(document);
-				});
-
-				// Store the result
-				extractor.getDataStore().save(documents);
+					return document;
+				}).collect(Collectors.toList());
 
 			} else {
 
@@ -128,10 +137,11 @@ public class ExtractorService {
 					}
 				}
 
-				// Store the result
-				extractor.getDataStore().save(document);
+				documents = Arrays.asList(document);
+
 			}
 		}
+		return documents;
 	}
 
 	public List<String> extract(Map<String, Instance> selectors, WebPage webPage, InputStream segment, Extractor fieldExtractor) {
@@ -163,8 +173,8 @@ public class ExtractorService {
 							webPage.getMetadata()
 									.getCookies()
 									.stream()
-									.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie
-											.getExpires(), cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList()));
+									.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie.getExpires(),
+											cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList()));
 				} else if (SourceType.EMPTY.equals(fieldExtractor.getSource())) {
 					instance = ((EmptySelector) selector).init(webPage);
 				}

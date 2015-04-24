@@ -2,6 +2,7 @@ package io.mandrel.data.export;
 
 import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.gateway.Document;
+import io.mandrel.http.WebPage;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -23,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 @Slf4j
-public class DelimiterSeparatedValuesExporter implements Exporter {
+public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawExporter {
 
 	private static final long serialVersionUID = -7085997792228493889L;
 
@@ -56,7 +57,6 @@ public class DelimiterSeparatedValuesExporter implements Exporter {
 			}
 
 			List<String> buffer = new ArrayList<>(fields.size());
-			StringBuilder builder = new StringBuilder(512);
 
 			documents.forEach(doc -> {
 				for (String header : headers) {
@@ -79,7 +79,6 @@ public class DelimiterSeparatedValuesExporter implements Exporter {
 				}
 
 				buffer.clear();
-				builder.setLength(0);
 			});
 
 		}
@@ -88,5 +87,29 @@ public class DelimiterSeparatedValuesExporter implements Exporter {
 	@Override
 	public String contentType() {
 		return "text/csv";
+	}
+
+	@Override
+	public void export(Stream<WebPage> pages, Writer writer) throws IOException {
+		try (ICsvListWriter csvWriter = new CsvListWriter(writer, new CsvPreference.Builder(quoteChar, delimiterValuesChar, endOfLineSymbols).build())) {
+
+			// TODO size?
+			List<Object> buffer = new ArrayList<>();
+
+			pages.forEach(page -> {
+				buffer.add(page.getUrl());
+				buffer.add(page.getMetadata().getStatusCode());
+				buffer.add(page.getMetadata().getLastCrawlDate());
+
+				try {
+					csvWriter.write(buffer);
+				} catch (Exception e) {
+					log.debug("Can not write line {}", csvWriter.getLineNumber(), e);
+				}
+
+				buffer.clear();
+			});
+		}
+
 	}
 }

@@ -44,7 +44,6 @@ public class SourceTask implements Runnable, Serializable {
 		source.init(properties);
 
 		source.register(lst -> {
-			// TODO create bag!!!!!!
 			urlsQueueService.add(spider.getId(), Sets.newHashSet(lst));
 		});
 	}

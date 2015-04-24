@@ -20,9 +20,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 		@Type(value = CassandraStore.class, name = "cassandra") })
 public interface PageMetadataStore extends Checkable, Serializable {
 
-	void addMetadata(WebPage webPage);
+	void addMetadata(long spiderId, WebPage webPage);
 
 	void init(Map<String, Object> properties);
 
-	Set<String> filter(Set<String> outlinks, Politeness politeness);
+	Set<String> filter(long spiderId, Set<String> outlinks, Politeness politeness);
 }

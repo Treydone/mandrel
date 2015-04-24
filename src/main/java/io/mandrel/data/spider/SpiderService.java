@@ -2,14 +2,21 @@ package io.mandrel.data.spider;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.State;
+import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.data.source.FixedSource;
 import io.mandrel.data.source.Source;
+import io.mandrel.gateway.Document;
+import io.mandrel.http.Requester;
+import io.mandrel.http.WebPage;
 import io.mandrel.task.TaskService;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
@@ -17,10 +24,14 @@ import javax.inject.Inject;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+
+import com.google.common.base.Throwables;
+import com.google.common.collect.Maps;
 
 @Component
 @Slf4j
@@ -30,12 +41,18 @@ public class SpiderService {
 
 	private final TaskService taskService;
 
+	private final ExtractorService extractorService;
+
+	private final Requester requester;
+
 	private Validator spiderValidator = new SpiderValidator();
 
 	@Inject
-	public SpiderService(SpiderRepository spiderRepository, TaskService taskService) {
+	public SpiderService(SpiderRepository spiderRepository, TaskService taskService, ExtractorService extractorService, Requester requester) {
 		this.spiderRepository = spiderRepository;
 		this.taskService = taskService;
+		this.extractorService = extractorService;
+		this.requester = requester;
 	}
 
 	/**
@@ -77,6 +94,12 @@ public class SpiderService {
 		return spiderRepository.update(spider);
 	}
 
+	/**
+	 * Create a new spider from a fixed list of urls.
+	 * 
+	 * @param urls
+	 * @return
+	 */
 	public Spider add(List<String> urls) {
 		Spider spider = new Spider();
 		spider.setSources(Arrays.asList(new FixedSource(urls)));
@@ -145,21 +168,73 @@ public class SpiderService {
 	public void cancel(long spiderId) {
 		get(spiderId).map(spider -> {
 
-			// Shutdown source execution service
-				spider.getSources().stream().forEach(source -> {
-					String sourceExecServiceName = "executor-" + spiderId + "-source-" + source.getName();
-					taskService.shutdownDistributedExecutorService(sourceExecServiceName);
-				});
+			taskService.shutdownAllExecutorService(spider);
 
-				// Shutdown task execution service
-				String taskExecServiceName = "executor-" + spiderId;
-				taskService.shutdownDistributedExecutorService(taskExecServiceName);
-
-				// Update status
+			// Update status
 				spider.setState(State.CANCELLED);
 				return spiderRepository.update(spider);
 			}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
 
 	}
 
+	public void delete(long spiderId) {
+		get(spiderId).map(spider -> {
+			taskService.shutdownAllExecutorService(spider);
+
+			// Delete data
+				spider.getStores().getPageStore().deleteAllFor(spiderId);
+				spider.getExtractors().getPages().stream().forEach(ex -> ex.getDataStore().deleteAllFor(spiderId));
+
+				// Remove spider
+				spiderRepository.delete(spiderId);
+
+				return spider;
+			}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
+
+	}
+
+	public Analysis analyze(Long id, String source) {
+		return get(id).map(
+				spider -> {
+					Analysis report = new Analysis();
+
+					WebPage webPage;
+					try {
+						webPage = requester.getBlocking(source, spider);
+					} catch (Exception e) {
+						throw Throwables.propagate(e);
+					}
+					log.trace("Getting response for {}", source);
+
+					if (spider.getExtractors() != null) {
+						Map<String, List<Document>> documentsByExtractor = spider.getExtractors().getPages().stream()
+								.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(webPage, ex)))
+								.collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
+						report.setDocuments(documentsByExtractor);
+					}
+					if (spider.getExtractors().getOutlinks() != null) {
+						Map<String, Pair<Set<String>, Set<String>>> outlinksByExtractor = spider
+								.getExtractors()
+								.getOutlinks()
+								.stream()
+								.map(ol -> {
+									// Find outlinks in page
+									Set<String> outlinks = extractorService.extractOutlinks(webPage, ol);
+
+									// Filter outlinks
+									Set<String> filteredOutlinks = spider.getStores().getPageMetadataStore()
+											.filter(spider.getId(), outlinks, spider.getClient().getPoliteness());
+
+									return Pair.of(ol.getName(), Pair.of(outlinks, filteredOutlinks));
+								}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
+
+						report.setOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getLeft()));
+						report.setFilteredOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getRight()));
+					}
+
+					report.setMetadata(webPage.getMetadata());
+
+					return report;
+				}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
+	}
 }

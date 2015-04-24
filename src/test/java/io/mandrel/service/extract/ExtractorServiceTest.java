@@ -49,7 +49,7 @@ public class ExtractorServiceTest {
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		// Actions
-		extractorService.extractFormatThenStore(webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, webPage, extractor);
 
 		// Asserts
 	}
@@ -62,7 +62,7 @@ public class ExtractorServiceTest {
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		// Actions
-		extractorService.extractFormatThenStore(webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, webPage, extractor);
 
 		// Asserts
 	}
@@ -79,7 +79,7 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractFormatThenStore(webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, webPage, extractor);
 
 		// Asserts
 	}
@@ -97,7 +97,7 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractFormatThenStore(webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, webPage, extractor);
 
 		// Asserts
 	}
@@ -118,7 +118,7 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractFormatThenStore(webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, webPage, extractor);
 
 		// Asserts
 	}
@@ -139,7 +139,7 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractFormatThenStore(webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, webPage, extractor);
 
 		// Asserts
 	}
@@ -148,8 +148,7 @@ public class ExtractorServiceTest {
 	public void simple() throws MalformedURLException {
 
 		// Arrange
-		ByteArrayInputStream stream = new ByteArrayInputStream(
-				"<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes());
+		ByteArrayInputStream stream = new ByteArrayInputStream("<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes());
 
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
@@ -165,20 +164,19 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractFormatThenStore(webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, webPage, extractor);
 
 		// Asserts
 		Document data = new Document();
 		data.put("date", Arrays.asList("value1", "value2"));
-		Mockito.verify(dataStore).save(data);
+		Mockito.verify(dataStore).save(0, Arrays.asList(data));
 	}
 
 	@Test
 	public void simple_with_mutiple_extractors() throws MalformedURLException {
 
 		// Arrange
-		ByteArrayInputStream stream = new ByteArrayInputStream(
-				"<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes());
+		ByteArrayInputStream stream = new ByteArrayInputStream("<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes());
 
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
@@ -204,13 +202,13 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(dateField, keyField));
 
 		// Actions
-		extractorService.extractFormatThenStore(webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, webPage, extractor);
 
 		// Asserts
 		Document data = new Document();
 		data.put("date", Arrays.asList("value1", "value2"));
 		data.put("key", Arrays.asList("key1"));
-		Mockito.verify(dataStore).save(data);
+		Mockito.verify(dataStore).save(0, Arrays.asList(data));
 	}
 
 	@Test
@@ -251,7 +249,7 @@ public class ExtractorServiceTest {
 		extractor.setMultiple(multiple);
 
 		// Actions
-		extractorService.extractFormatThenStore(webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, webPage, extractor);
 
 		// Asserts
 		Document data1 = new Document();
@@ -265,7 +263,7 @@ public class ExtractorServiceTest {
 		Document data3 = new Document();
 		data3.put("date", Arrays.asList("value3"));
 
-		Mockito.verify(dataStore).save(Arrays.asList(data1, data2, data3));
+		Mockito.verify(dataStore).save(0, Arrays.asList(data1, data2, data3));
 	}
 
 }

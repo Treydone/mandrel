@@ -1,8 +1,10 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.data.export.Exporter;
+import io.mandrel.data.export.DocumentExporter;
 import io.mandrel.data.export.ExporterService;
+import io.mandrel.data.export.RawExporter;
+import io.mandrel.data.spider.Analysis;
 import io.mandrel.data.spider.SpiderService;
 
 import java.util.List;
@@ -54,7 +56,7 @@ public class SpiderResource {
 		return spiderService.add(spider);
 	}
 
-	@ApiOperation(value = "Update a spider")
+	@ApiOperation(value = "Update a spider", response = Spider.class)
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	public Spider update(@PathVariable Long id, Spider spider) {
 		return spiderService.update(spider);
@@ -72,6 +74,12 @@ public class SpiderResource {
 		spiderService.get(id).ifPresent(opt -> spiderService.start(id));
 	}
 
+	@ApiOperation(value = "Analyze a source against a spider")
+	@RequestMapping(value = "/{id}/analyze")
+	public Analysis analyze(@PathVariable Long id, @RequestParam String source) {
+		return spiderService.analyze(id, source);
+	}
+
 	@ApiOperation(value = "Pause a spider")
 	@RequestMapping(value = "/{id}/pause")
 	public void pause(@PathVariable Long id) {
@@ -84,9 +92,21 @@ public class SpiderResource {
 		spiderService.get(id).ifPresent(opt -> spiderService.cancel(id));
 	}
 
+	@ApiOperation(value = "Delete a spider")
+	@RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
+	public void delete(@PathVariable Long id) {
+		spiderService.get(id).ifPresent(opt -> spiderService.delete(id));
+	}
+
 	@ApiOperation(value = "Export the data of the extractor of a spider")
 	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.POST)
-	public void export(@PathVariable Long id, @PathVariable String extractorName, Exporter exporter, HttpServletResponse response) {
+	public void export(@PathVariable Long id, @PathVariable String extractorName, DocumentExporter exporter, HttpServletResponse response) {
 		exporterService.export(id, extractorName, exporter, response);
+	}
+
+	@ApiOperation(value = "Export the raw data of a spider")
+	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.POST)
+	public void rawExport(@PathVariable Long id, RawExporter exporter, HttpServletResponse response) {
+		exporterService.export(id, exporter, response);
 	}
 }

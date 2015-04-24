@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import lombok.Data;
 
@@ -34,25 +35,24 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 
 	@Override
 	public void init(Map<String, Object> properties) {
-		// TODO Auto-generated method stub
 
 	}
 
-	public void addPage(WebPage webPage) {
-		instance.getMap("pagestore").set(webPage.getUrl().toString(), webPage);
-	}
-
-	@Override
-	public void addMetadata(WebPage webPage) {
-		instance.getMap("pagemetastore").set(webPage.getUrl().toString(), webPage.getMetadata());
+	public void addPage(long spiderId, WebPage webPage) {
+		instance.getMap("pagestore-" + spiderId).set(webPage.getUrl().toString(), webPage);
 	}
 
 	@Override
-	public Set<String> filter(Set<String> outlinks, Politeness politeness) {
+	public void addMetadata(long spiderId, WebPage webPage) {
+		instance.getMap("pagemetastore-" + spiderId).set(webPage.getUrl().toString(), webPage.getMetadata());
+	}
+
+	@Override
+	public Set<String> filter(long spiderId, Set<String> outlinks, Politeness politeness) {
 
 		int recrawlAfterSeconds = politeness.getRecrawlAfterSeconds();
 
-		Map<Object, Object> all = instance.getMap("pagemetastore").getAll((Set) outlinks);
+		Map<String, Metadata> all = instance.<String, Metadata> getMap("pagemetastore-" + spiderId).getAll(outlinks);
 
 		LocalDateTime now = LocalDateTime.now();
 		return outlinks.stream().filter(outlink -> {
@@ -68,5 +68,16 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 
 			return false;
 		}).collect(Collectors.toSet());
+	}
+
+	@Override
+	public Stream<WebPage> all(long spiderId) {
+		return instance.<String, WebPage> getMap("pagestore-" + spiderId).values().stream();
+	}
+
+	@Override
+	public void deleteAllFor(long spiderId) {
+		instance.getMap("pagestore-" + spiderId).destroy();
+		instance.getMap("pagemetastore-" + spiderId).destroy();
 	}
 }

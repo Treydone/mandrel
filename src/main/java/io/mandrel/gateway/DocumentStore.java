@@ -20,10 +20,12 @@ public interface DocumentStore extends Checkable {
 
 	void init(WebPageExtractor webPageExtractor);
 
-	void save(Document doc);
+	void save(long spiderId,Document doc);
 
-	void save(List<Document> data);
+	void save(long spiderId,List<Document> data);
+	
+	void deleteAllFor(long spiderId);
 
-	Stream<Document> all();
+	Stream<Document> all(long spiderId);
 
 }

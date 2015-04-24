@@ -34,6 +34,10 @@ public class SpiderRepository {
 		return spider;
 	}
 
+	public void delete(long id) {
+		spiders(instance).remove(id);
+	}
+
 	public Optional<Spider> get(long id) {
 		Spider value = spiders(instance).get(id);
 		return value == null ? Optional.empty() : Optional.of(value);
