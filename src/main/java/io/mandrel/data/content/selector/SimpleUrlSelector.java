@@ -5,13 +5,12 @@ import io.mandrel.http.WebPage;
 import java.net.URL;
 import java.util.List;
 
-public class SimpleUrlSelector extends UrlSelector {
+public class SimpleUrlSelector extends UrlSelector<String> {
 
-	public Instance init(WebPage webpage, URL url) {
-		return new Instance() {
-
+	public Instance<String> init(WebPage webpage, URL url) {
+		return new Instance<String>() {
 			@Override
-			public List<String> select(String value) {
+			public <T> List<T> select(String value, DataConverter<String, T> converter) {
 				return null;
 			}
 		};

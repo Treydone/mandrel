@@ -1,4 +1,4 @@
-package io.mandrel.service.spider;
+package io.mandrel.data.spider;
 
 import static org.junit.Assert.assertEquals;
 import io.mandrel.common.data.Client;
@@ -8,7 +8,7 @@ import io.mandrel.config.BindConfiguration;
 import io.mandrel.data.filters.UrlPatternFilter;
 import io.mandrel.data.filters.WebPageFilter;
 import io.mandrel.data.spider.SpiderService;
-import io.mandrel.service.spider.SpiderServiceTest.LocalConfiguration;
+import io.mandrel.data.spider.SpiderServiceTest.LocalConfiguration;
 
 import java.io.IOException;
 

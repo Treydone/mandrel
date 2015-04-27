@@ -1,4 +1,4 @@
-package io.mandrel.service.extract;
+package io.mandrel.data.extract;
 
 import io.mandrel.data.content.Extractor;
 import io.mandrel.data.content.FieldExtractor;
@@ -216,8 +216,7 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		ByteArrayInputStream stream = new ByteArrayInputStream(
-				"<!--?xml version=\"1.0\"?--><html><body><test><o>value1</o><t>key1</t></test><test><o>value2</o><t>key2</t></test><test><o>value3</o></test></body></html>"
-						.getBytes());
+				"<html><body><test><o>value1</o><t>key1</t></test><test><o>value2</o><t>key2</t></test><test><o>value3</o></test></body></html>".getBytes());
 
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();

@@ -5,12 +5,13 @@ import io.mandrel.http.WebPage;
 
 import java.io.InputStream;
 
-public abstract class BodySelector implements Selector {
+public abstract class BodySelector<X> implements Selector<X> {
 
-	public abstract Instance init(WebPage webpage, InputStream data);
+	public abstract Instance<X> init(WebPage webpage, InputStream data, boolean isSegment);
 
 	@Override
 	public final SourceType getSource() {
 		return SourceType.BODY;
 	}
+
 }

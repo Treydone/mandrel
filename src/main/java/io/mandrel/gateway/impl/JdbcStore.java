@@ -1,6 +1,7 @@
 package io.mandrel.gateway.impl;
 
 import io.mandrel.common.data.Politeness;
+import io.mandrel.data.spider.Link;
 import io.mandrel.gateway.PageMetadataStore;
 import io.mandrel.gateway.WebPageStore;
 import io.mandrel.http.WebPage;
@@ -37,7 +38,7 @@ public class JdbcStore implements WebPageStore, PageMetadataStore {
 	}
 
 	@Override
-	public Set<String> filter(long spiderId, Set<String> outlinks, Politeness politeness) {
+	public Set<Link> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -2,9 +2,11 @@ package io.mandrel.messaging;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.extract.ExtractorService;
+import io.mandrel.data.spider.Link;
 import io.mandrel.http.Requester;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -57,7 +59,7 @@ public class UrlsQueueService {
 			if (spider.getExtractors().getOutlinks() != null) {
 				spider.getExtractors().getOutlinks().forEach(ol -> {
 					// Find outlinks in page
-						Set<String> outlinks = extractorService.extractOutlinks(webPage, ol);
+						Set<Link> outlinks = extractorService.extractOutlinks(webPage, ol);
 
 						// Filter outlinks
 						outlinks = spider.getStores().getPageMetadataStore().filter(spider.getId(), outlinks, spider.getClient().getPoliteness());
@@ -66,7 +68,7 @@ public class UrlsQueueService {
 						// spider.getClient().getPoliteness().getMaxPages();
 
 						// Add outlinks to queue
-						add(spider.getId(), outlinks);
+						add(spider.getId(), outlinks.stream().map(l -> l.getUrl()).collect(Collectors.toSet()));
 					});
 			}
 		});

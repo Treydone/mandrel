@@ -6,7 +6,7 @@
 			</pattern>
 		</encoder>
 	</appender>
-	<logger name="com.streaming" level="trace" />
+	<logger name="io.mandrel" level="debug" />
 
 	<root level="warn">
 		<appender-ref ref="stdout" />

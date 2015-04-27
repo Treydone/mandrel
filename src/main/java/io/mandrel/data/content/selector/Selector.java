@@ -4,14 +4,14 @@ import io.mandrel.data.content.SourceType;
 
 import java.util.List;
 
-public interface Selector {
+public interface Selector<X> {
 
 	String getName();
 
 	SourceType getSource();
 
-	public interface Instance {
+	public interface Instance<T> {
 
-		List<String> select(String value);
+		<U> List<U> select(String value, DataConverter<T, U> converter);
 	}
 }

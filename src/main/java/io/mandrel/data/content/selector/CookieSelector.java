@@ -6,9 +6,9 @@ import io.mandrel.http.WebPage;
 
 import java.util.List;
 
-public abstract class CookieSelector implements Selector {
+public abstract class CookieSelector<X> implements Selector<X> {
 
-	public abstract Instance init(WebPage webpage, List<Cookie> cookies);
+	public abstract Instance<X> init(WebPage webpage, List<Cookie> cookies);
 
 	@Override
 	public final SourceType getSource() {

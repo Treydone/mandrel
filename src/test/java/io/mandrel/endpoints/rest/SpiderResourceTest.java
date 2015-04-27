@@ -1,4 +1,4 @@
-package io.mandrel.rest;
+package io.mandrel.endpoints.rest;
 
 import org.junit.Test;
 import org.springframework.web.client.RestTemplate;

@@ -5,9 +5,9 @@ import io.mandrel.http.WebPage;
 
 import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 
-public abstract class HeaderSelector implements Selector {
+public abstract class HeaderSelector<X> implements Selector<X> {
 
-	public abstract Instance init(WebPage webpage, FluentCaseInsensitiveStringsMap headers);
+	public abstract Instance<X> init(WebPage webpage, FluentCaseInsensitiveStringsMap headers);
 
 	@Override
 	public final SourceType getSource() {

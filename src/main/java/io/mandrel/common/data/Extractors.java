@@ -20,5 +20,5 @@ public class Extractors implements Serializable {
 	private List<WebPageExtractor> pages;
 
 	@JsonProperty("outlinks")
-	private List<OutlinkExtractor> outlinks = Arrays.asList(new OutlinkExtractor("_default"));
+	private List<OutlinkExtractor> outlinks = Arrays.asList(new OutlinkExtractor(Constants._DEFAULT_OUTLINKS_EXTRATOR));
 }

@@ -16,8 +16,8 @@ public class OutlinkExtractor extends NamedDataExtractorFormatter {
 	public OutlinkExtractor(String name) {
 		this.extractor = new Extractor();
 		this.extractor.setSource(SourceType.BODY);
-		this.extractor.setType("css");
-		this.extractor.setValue("a href");
+		this.extractor.setType("xpath");
+		this.extractor.setValue("//a/@href/text()");
 		this.name = name;
 	}
 

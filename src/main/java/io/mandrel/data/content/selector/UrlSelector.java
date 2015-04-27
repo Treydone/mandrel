@@ -5,9 +5,9 @@ import io.mandrel.http.WebPage;
 
 import java.net.URL;
 
-public abstract class UrlSelector implements Selector {
+public abstract class UrlSelector<X> implements Selector<X> {
 
-	public abstract Instance init(WebPage webpage, URL url);
+	public abstract Instance<X> init(WebPage webpage, URL url);
 
 	@Override
 	public final SourceType getSource() {

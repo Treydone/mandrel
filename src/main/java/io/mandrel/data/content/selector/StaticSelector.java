@@ -5,19 +5,18 @@ import io.mandrel.http.WebPage;
 import java.util.Arrays;
 import java.util.List;
 
-public class StaticSelector extends EmptySelector {
+public class StaticSelector extends EmptySelector<String> {
 
 	@Override
 	public String getName() {
 		return "static";
 	}
 
-	public Instance init(WebPage webpage) {
-		return new Instance() {
-
+	public Instance<String> init(WebPage webpage) {
+		return new Instance<String>() {
 			@Override
-			public List<String> select(String value) {
-				return Arrays.asList(value);
+			public <T> List<T> select(String value, DataConverter<String, T> converter) {
+				return Arrays.asList(converter.convert(value));
 			}
 		};
 	}

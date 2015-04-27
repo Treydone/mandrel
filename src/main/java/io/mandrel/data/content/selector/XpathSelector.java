@@ -2,45 +2,35 @@ package io.mandrel.data.content.selector;
 
 import io.mandrel.http.WebPage;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
+import org.apache.commons.io.IOUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import us.codecraft.xsoup.Xsoup;
+import us.codecraft.xsoup.xevaluator.DefaultXElements;
+import us.codecraft.xsoup.xevaluator.XElement;
+import us.codecraft.xsoup.xevaluator.XPathEvaluator;
 
-/**
- * XML tweaks for performance (from
- * http://scn.sap.com/community/java/blog/2009/12
- * /04/performance-improvements-in-nw-java-applications-with-xml-processing) <br>
- * - Make XML Factories Static <br>
- * - XPath Evaluations
- *
- */
-public class XpathSelector extends BodySelector {
+import com.google.common.base.Throwables;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
-	private static final String DTM_MANAGER_PROP_NAME = "com.sun.org.apache.xml.internal.dtm.DTMManager";
-	private static final String DTM_MANAGER_CLASS_NAME = "com.sun.org.apache.xml.internal.dtm.ref.DTMManagerDefault";
+public class XpathSelector extends BodySelector<XElement> {
 
-	private final static DocumentBuilderFactory factory;
-	static {
-		System.setProperty(DTM_MANAGER_PROP_NAME, DTM_MANAGER_CLASS_NAME);
-		factory = DocumentBuilderFactory.newInstance();
-		factory.setNamespaceAware(true);
-		factory.setIgnoringComments(true);
-	}
-
-	// private final HtmlCleaner cleaner = new HtmlCleaner();
+	private final static LoadingCache<String, XPathEvaluator> evaluations = CacheBuilder.newBuilder().maximumSize(10000)
+			.build(new CacheLoader<String, XPathEvaluator>() {
+				@Override
+				public XPathEvaluator load(String expression) throws Exception {
+					return Xsoup.compile(expression);
+				}
+			});
 
 	@Override
 	public String getName() {
@@ -48,83 +38,36 @@ public class XpathSelector extends BodySelector {
 	}
 
 	@Override
-	public Instance init(WebPage webPage, InputStream data) {
-
-		DocumentBuilderFactory builderFactory = DocumentBuilderFactory
-				.newInstance();
-		DocumentBuilder builder = null;
+	public Instance<XElement> init(WebPage webPage, InputStream data, boolean isSegment) {
+		Element element;
 		try {
-			builder = builderFactory.newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
+			if (!isSegment) {
+				element = Jsoup.parse(data, "UTF-8", webPage.getUrl().toString());
+			} else {
+				element = Jsoup.parseBodyFragment(IOUtils.toString(data, "UTF-8"), webPage.getUrl().toString()).body();
+			}
+		} catch (IOException e) {
+			throw Throwables.propagate(e);
 		}
-
-		XPath xPath = XPathFactory.newInstance().newXPath();
-		Document document = null;
-		try {
-			document = builder.parse(data);
-			// TagNode node = cleaner.clean(data);
-			// document = new DomSerializer(new CleanerProperties())
-			// .createDOM(node);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		return new XpathSelectorInstance(xPath, document);
-
+		return new XpathSelectorInstance(element);
 	}
 
-	public class XpathSelectorInstance implements Instance {
+	public class XpathSelectorInstance implements Instance<XElement> {
 
-		private final XPath xPath;
+		private final Element element;
 
-		private final Document document;
-
-		public XpathSelectorInstance(XPath xPath, Document document) {
+		public XpathSelectorInstance(Element element) {
 			super();
-			this.xPath = xPath;
-			this.document = document;
+			this.element = element;
 		}
 
 		@Override
-		public List<String> select(String value) {
-			NodeList nodes;
+		public <U> List<U> select(String value, DataConverter<XElement, U> converter) {
 			try {
-				nodes = (NodeList) xPath.evaluate(value, document,
-						XPathConstants.NODESET);
-			} catch (XPathExpressionException e) {
-				throw new RuntimeException(e);
+				return ((DefaultXElements) evaluations.get(value).evaluate(element)).stream().map(el -> converter.convert(el)).collect(Collectors.toList());
+			} catch (ExecutionException e) {
+				throw Throwables.propagate(e);
 			}
-
-			List<String> results = new ArrayList<>();
-			for (int i = 0; i < nodes.getLength(); i++) {
-				results.add(serializeNode(nodes.item(i)));
-			}
-			return results;
-		}
-
-		// TODO this is shit
-		private String serializeNode(Node node) {
-			String s = "";
-			if (node.getNodeName().equals("#text"))
-				return node.getTextContent();
-			s += "<" + node.getNodeName();
-			NamedNodeMap attributes = node.getAttributes();
-			if (attributes != null) {
-				for (int i = 0; i < attributes.getLength(); i++) {
-					s += " " + attributes.item(i).getNodeName() + "=\""
-							+ attributes.item(i).getNodeValue() + "\"";
-				}
-			}
-			NodeList childs = node.getChildNodes();
-			if (childs == null || childs.getLength() == 0) {
-				s += "/>";
-				return s;
-			}
-			s += ">";
-			for (int i = 0; i < childs.getLength(); i++)
-				s += serializeNode(childs.item(i));
-			s += "</" + node.getNodeName() + ">";
-			return s;
 		}
 	}
 }

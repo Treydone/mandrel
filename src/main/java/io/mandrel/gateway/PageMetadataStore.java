@@ -1,6 +1,7 @@
 package io.mandrel.gateway;
 
 import io.mandrel.common.data.Politeness;
+import io.mandrel.data.spider.Link;
 import io.mandrel.gateway.impl.CassandraStore;
 import io.mandrel.gateway.impl.InternalStore;
 import io.mandrel.gateway.impl.JdbcStore;
@@ -24,5 +25,5 @@ public interface PageMetadataStore extends Checkable, Serializable {
 
 	void init(Map<String, Object> properties);
 
-	Set<String> filter(long spiderId, Set<String> outlinks, Politeness politeness);
+	Set<Link> filter(long spiderId, Set<Link> outlinks, Politeness politeness);
 }

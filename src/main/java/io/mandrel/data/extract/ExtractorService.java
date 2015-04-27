@@ -9,12 +9,14 @@ import io.mandrel.data.content.SourceType;
 import io.mandrel.data.content.WebPageExtractor;
 import io.mandrel.data.content.selector.BodySelector;
 import io.mandrel.data.content.selector.CookieSelector;
+import io.mandrel.data.content.selector.DataConverter;
 import io.mandrel.data.content.selector.EmptySelector;
 import io.mandrel.data.content.selector.HeaderSelector;
 import io.mandrel.data.content.selector.Selector;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.content.selector.SelectorService;
 import io.mandrel.data.content.selector.UrlSelector;
+import io.mandrel.data.spider.Link;
 import io.mandrel.gateway.Document;
 import io.mandrel.http.Cookie;
 import io.mandrel.http.WebPage;
@@ -39,6 +41,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
 
+import us.codecraft.xsoup.xevaluator.XElement;
+
 import com.google.common.base.Preconditions;
 
 @Component
@@ -56,16 +60,20 @@ public class ExtractorService {
 		this.selectorService = selectorService;
 	}
 
-	public Set<String> extractOutlinks(WebPage webPage, OutlinkExtractor extractor) {
-		Map<String, Instance> cachedSelectors = new HashMap<String, Instance>();
+	public Set<Link> extractOutlinks(WebPage webPage, OutlinkExtractor extractor) {
+		Map<String, Instance<?>> cachedSelectors = new HashMap<>();
 
-		List<String> outlinks = extract(cachedSelectors, webPage, null, extractor.getExtractor());
+		List<Link> outlinks = extract(cachedSelectors, webPage, null, extractor.getExtractor(), new DataConverter<XElement, Link>() {
+			public Link convert(XElement element) {
+				return null;
+			}
+		});
 
 		if (outlinks != null && !outlinks.isEmpty()) {
-			outlinks = (List<String>) format(webPage, extractor, outlinks);
+			outlinks = (List<Link>) format(webPage, extractor, outlinks);
 		}
 
-		return new HashSet<String>(outlinks);
+		return new HashSet<>(outlinks);
 	}
 
 	public void extractThenFormatThenStore(long spiderId, WebPage webPage, WebPageExtractor extractor) {
@@ -85,7 +93,7 @@ public class ExtractorService {
 		List<Document> documents = null;
 
 		if (extractor.getFilters() == null || extractor.getFilters().stream().anyMatch(f -> f.isValid(webPage))) {
-			Map<String, Instance> cachedSelectors = new HashMap<String, Instance>();
+			Map<String, Instance<?>> cachedSelectors = new HashMap<>();
 
 			if (extractor.getMultiple() != null) {
 
@@ -144,25 +152,30 @@ public class ExtractorService {
 		return documents;
 	}
 
-	public List<String> extract(Map<String, Instance> selectors, WebPage webPage, InputStream segment, Extractor fieldExtractor) {
+	public List<String> extract(Map<String, Instance<?>> selectors, WebPage webPage, InputStream segment, Extractor fieldExtractor) {
+		return extract(selectors, webPage, segment, fieldExtractor, DataConverter.BODY);
+	}
+
+	public <T, U> List<U> extract(Map<String, Instance<?>> selectors, WebPage webPage, InputStream segment, Extractor fieldExtractor,
+			DataConverter<T, U> converter) {
 		Preconditions.checkNotNull(fieldExtractor, "There is no field extractor...");
 		Preconditions.checkNotNull(fieldExtractor.getType(), "Extractor without type");
 		Preconditions.checkNotNull(fieldExtractor.getValue(), "Extractor without value");
 
-		Instance instance;
+		Instance<T> instance;
 		if (segment != null) {
-			Selector selector = getSelector(fieldExtractor);
-			instance = ((BodySelector) selector).init(webPage, segment);
+			Selector<T> selector = getSelector(fieldExtractor);
+			instance = ((BodySelector) selector).init(webPage, segment, true);
 		} else {
 			// Reuse the previous instance selector for this web page
 			String cacheKey = fieldExtractor.getType() + "-" + fieldExtractor.getSource().toString().toLowerCase();
-			instance = selectors.get(cacheKey);
+			instance = (Instance<T>) selectors.get(cacheKey);
 
 			if (instance == null) {
 				Selector selector = getSelector(fieldExtractor);
 
 				if (SourceType.BODY.equals(fieldExtractor.getSource())) {
-					instance = ((BodySelector) selector).init(webPage, webPage.getBody());
+					instance = ((BodySelector) selector).init(webPage, webPage.getBody(), false);
 				} else if (SourceType.HEADERS.equals(fieldExtractor.getSource())) {
 					instance = ((HeaderSelector) selector).init(webPage, webPage.getMetadata().getHeaders());
 				} else if (SourceType.URL.equals(fieldExtractor.getSource())) {
@@ -183,7 +196,7 @@ public class ExtractorService {
 			}
 		}
 
-		List<String> result = instance.select(fieldExtractor.getValue());
+		List<U> result = instance.select(fieldExtractor.getValue(), converter);
 		return result;
 	}
 

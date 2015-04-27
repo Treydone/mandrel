@@ -111,6 +111,7 @@ public class SpiderService {
 		Errors errors = validate(spider);
 
 		if (errors.hasErrors()) {
+			errors.getAllErrors().stream().forEach(oe -> log.info(oe.toString()));
 			// TODO
 			throw new RuntimeException("Errors!");
 		}
@@ -194,47 +195,53 @@ public class SpiderService {
 	}
 
 	public Analysis analyze(Long id, String source) {
-		return get(id).map(
-				spider -> {
-					Analysis report = new Analysis();
+		return get(id).map(spider -> {
 
-					WebPage webPage;
-					try {
-						webPage = requester.getBlocking(source, spider);
-					} catch (Exception e) {
-						throw Throwables.propagate(e);
-					}
-					log.trace("Getting response for {}", source);
+			WebPage webPage;
+			try {
+				webPage = requester.getBlocking(source, spider);
+			} catch (Exception e) {
+				throw Throwables.propagate(e);
+			}
+			log.trace("Getting response for {}", source);
 
-					if (spider.getExtractors() != null) {
-						Map<String, List<Document>> documentsByExtractor = spider.getExtractors().getPages().stream()
-								.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(webPage, ex)))
-								.collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
-						report.setDocuments(documentsByExtractor);
-					}
-					if (spider.getExtractors().getOutlinks() != null) {
-						Map<String, Pair<Set<String>, Set<String>>> outlinksByExtractor = spider
-								.getExtractors()
-								.getOutlinks()
-								.stream()
-								.map(ol -> {
-									// Find outlinks in page
-									Set<String> outlinks = extractorService.extractOutlinks(webPage, ol);
+			Analysis report = buildReport(spider, webPage);
 
-									// Filter outlinks
-									Set<String> filteredOutlinks = spider.getStores().getPageMetadataStore()
-											.filter(spider.getId(), outlinks, spider.getClient().getPoliteness());
+			return report;
+		}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
+	}
 
-									return Pair.of(ol.getName(), Pair.of(outlinks, filteredOutlinks));
-								}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
+	protected Analysis buildReport(Spider spider, WebPage webPage) {
+		Analysis report = new Analysis();
+		if (spider.getExtractors() != null) {
+			if (spider.getExtractors().getPages() != null) {
+				Map<String, List<Document>> documentsByExtractor = spider.getExtractors().getPages().stream()
+						.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(webPage, ex)))
+						.collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
+				report.setDocuments(documentsByExtractor);
+			}
+			if (spider.getExtractors().getOutlinks() != null) {
+				Map<String, Pair<Set<Link>, Set<Link>>> outlinksByExtractor = spider
+						.getExtractors()
+						.getOutlinks()
+						.stream()
+						.map(ol -> {
+							// Find outlinks in page
+							Set<Link> outlinks = extractorService.extractOutlinks(webPage, ol);
 
-						report.setOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getLeft()));
-						report.setFilteredOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getRight()));
-					}
+							// Filter outlinks
+							Set<Link> filteredOutlinks = spider.getStores().getPageMetadataStore()
+									.filter(spider.getId(), outlinks, spider.getClient().getPoliteness());
 
-					report.setMetadata(webPage.getMetadata());
+							return Pair.of(ol.getName(), Pair.of(outlinks, filteredOutlinks));
+						}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
 
-					return report;
-				}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
+				report.setOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getLeft()));
+				report.setFilteredOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getRight()));
+			}
+		}
+
+		report.setMetadata(webPage.getMetadata());
+		return report;
 	}
 }

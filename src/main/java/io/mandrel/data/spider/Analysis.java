@@ -13,7 +13,7 @@ import lombok.Data;
 public class Analysis {
 
 	private Map<String, List<Document>> documents;
-	private Map<String, Set<String>> outlinks;
-	private Map<String, Set<String>> filteredOutlinks;
+	private Map<String, Set<Link>> outlinks;
+	private Map<String, Set<Link>> filteredOutlinks;
 	private Metadata metadata;
 }
