@@ -65,7 +65,12 @@ public class ExtractorService {
 
 		List<Link> outlinks = extract(cachedSelectors, webPage, null, extractor.getExtractor(), new DataConverter<XElement, Link>() {
 			public Link convert(XElement element) {
-				return null;
+				Link link = new Link();
+				link.setUri(element.getElement().attr("href"));
+				link.setRel(element.getElement().attr("rel"));
+				link.setTitle(element.getElement().attr("title"));
+				link.setText(element.getElement().val());
+				return link;
 			}
 		});
 

@@ -54,7 +54,7 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 		int recrawlAfterSeconds = politeness.getRecrawlAfterSeconds();
 
 		Map<String, Metadata> all = instance.<String, Metadata> getMap("pagemetastore-" + spiderId).getAll(
-				outlinks.stream().map(ol -> ol.getUrl()).collect(Collectors.toSet()));
+				outlinks.stream().map(ol -> ol.getUri()).collect(Collectors.toSet()));
 
 		LocalDateTime now = LocalDateTime.now();
 		return outlinks.stream().filter(outlink -> {

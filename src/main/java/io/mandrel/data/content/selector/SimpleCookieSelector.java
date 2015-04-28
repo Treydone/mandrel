@@ -4,6 +4,7 @@ import io.mandrel.http.Cookie;
 import io.mandrel.http.WebPage;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SimpleCookieSelector extends CookieSelector<String> {
 
@@ -11,8 +12,8 @@ public class SimpleCookieSelector extends CookieSelector<String> {
 		return new Instance<String>() {
 			@Override
 			public <T> List<T> select(String value, DataConverter<String, T> converter) {
-				cookies.stream().filter(cookie -> cookie.getName().equals(value)).map(cookie -> converter.convert(cookie.getValue()));
-				return null;
+				return cookies.stream().filter(cookie -> cookie.getName().equals(value)).map(cookie -> converter.convert(cookie.getValue()))
+						.collect(Collectors.toList());
 			}
 		};
 	}

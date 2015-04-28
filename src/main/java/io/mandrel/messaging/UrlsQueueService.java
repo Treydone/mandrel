@@ -68,7 +68,7 @@ public class UrlsQueueService {
 						// spider.getClient().getPoliteness().getMaxPages();
 
 						// Add outlinks to queue
-						add(spider.getId(), outlinks.stream().map(l -> l.getUrl()).collect(Collectors.toSet()));
+						add(spider.getId(), outlinks.stream().map(l -> l.getUri()).collect(Collectors.toSet()));
 					});
 			}
 		});

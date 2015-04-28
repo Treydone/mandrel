@@ -229,6 +229,13 @@ public class SpiderService {
 							// Find outlinks in page
 							Set<Link> outlinks = extractorService.extractOutlinks(webPage, ol);
 
+							if (spider.getFilters() != null) {
+								// TODO filtering!!!
+								// outlinks.stream().filter(predicate)
+								// spider.getFilters().stream().anyMatch(f ->
+								// f.)
+							}
+
 							// Filter outlinks
 							Set<Link> filteredOutlinks = spider.getStores().getPageMetadataStore()
 									.filter(spider.getId(), outlinks, spider.getClient().getPoliteness());

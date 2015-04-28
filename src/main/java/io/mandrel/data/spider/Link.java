@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class Link {
 
-	private String url;
-	private String name;
+	private String uri;
+	private String text;
+	private String title;
+	private String rel;
 }

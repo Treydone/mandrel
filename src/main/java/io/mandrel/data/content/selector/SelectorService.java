@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class SelectorService {
 
-	private Map<String, Selector> selectorsByName;
+	private Map<String, Selector<?>> selectorsByName;
 
 	public SelectorService() {
 		ClassLoader ctxtLoader = Thread.currentThread().getContextClassLoader();
@@ -26,7 +26,7 @@ public class SelectorService {
 	}
 
 	private void init(final ClassLoader loader) {
-		selectorsByName = new HashMap<String, Selector>();
+		selectorsByName = new HashMap<>();
 		initEngines(loader);
 	}
 
@@ -60,7 +60,7 @@ public class SelectorService {
 		try {
 			while (itr.hasNext()) {
 				try {
-					Selector fact = itr.next();
+					Selector<?> fact = itr.next();
 					selectorsByName.put(fact.getName(), fact);
 					log.debug("Selectors {} ({}) added", fact.getName(), fact.getClass());
 				} catch (ServiceConfigurationError err) {
@@ -78,10 +78,10 @@ public class SelectorService {
 		}
 	}
 
-	public Selector getSelectorByName(String shortName) {
+	public Selector<?> getSelectorByName(String shortName) {
 		if (shortName == null)
 			throw new NullPointerException();
-		Selector obj;
+		Selector<?> obj;
 		if (null != (obj = selectorsByName.get(shortName))) {
 			return obj;
 		}

@@ -4,6 +4,7 @@ import io.mandrel.data.filters.WebPageFilter;
 import io.mandrel.data.source.Source;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
@@ -25,10 +26,10 @@ public class Spider implements Serializable {
 	private State state = State.NEW;
 
 	@JsonProperty("sources")
-	private List<Source> sources;
+	private List<Source> sources = new ArrayList<>();
 
 	@JsonProperty("filter")
-	private List<WebPageFilter> filters;
+	private List<WebPageFilter> filters = new ArrayList<>();
 
 	@JsonProperty("extractors")
 	private Extractors extractors = new Extractors();
