@@ -122,7 +122,6 @@ public class MyTest {
 							} catch (IOException ex) {
 								onFailure(ex);
 							}
-
 						}
 
 						private void onFailure(IOException ex) {

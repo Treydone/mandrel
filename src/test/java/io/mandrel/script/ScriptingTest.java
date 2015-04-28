@@ -1,4 +1,4 @@
-package io.mandrel.common.script;
+package io.mandrel.script;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

@@ -1,4 +1,4 @@
-package io.mandrel.common.content.selector;
+package io.mandrel.data.content.selector;
 
 import static org.junit.Assert.*;
 import io.mandrel.data.content.selector.Selector;
@@ -14,7 +14,7 @@ public class SelectorServiceTest {
 	public void test() {
 
 		SelectorService selectorService = new SelectorService();
-		Map<String, Selector> selectorsByName = selectorService
+		Map<String, Selector<?>> selectorsByName = selectorService
 				.getSelectorsByName();
 		System.err.println(selectorsByName);
 
