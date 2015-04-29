@@ -1,6 +1,6 @@
 package io.mandrel.data.content;
 
-import io.mandrel.data.filters.WebPageFilter;
+import io.mandrel.data.filters.page.WebPageFilter;
 import io.mandrel.gateway.DocumentStore;
 import io.mandrel.gateway.impl.InternalDocumentStore;
 

@@ -6,6 +6,8 @@ import io.mandrel.common.data.Spider;
 @Data
 public class FixedUserAgentProvisionner implements UserAgentProvisionner {
 
+	private static final long serialVersionUID = -8868530554024953901L;
+
 	private String ua;
 
 	public FixedUserAgentProvisionner() {

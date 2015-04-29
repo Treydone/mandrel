@@ -8,13 +8,13 @@ public interface DataConverter<T, U> {
 
 	DataConverter<String, String> DEFAULT = new DataConverter<String, String>() {
 		public String convert(String input) {
-			return input;
+			return input.trim();
 		}
 	};
 
 	DataConverter<XElement, String> BODY = new DataConverter<XElement, String>() {
 		public String convert(XElement xElement) {
-			return xElement.get();
+			return xElement.get().trim();
 		}
 	};
 }

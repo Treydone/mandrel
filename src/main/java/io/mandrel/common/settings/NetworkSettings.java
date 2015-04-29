@@ -1,5 +1,6 @@
 package io.mandrel.common.settings;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "network")
 @Data
 public class NetworkSettings {
+
+	private boolean reuseAddress = true;
 
 	@Data
 	public static class Group {
@@ -26,7 +29,10 @@ public class NetworkSettings {
 
 		@Data
 		public static class Unicast {
-			private boolean enabled = true;
+			private boolean enabled = false;
+			private List<String> members = new ArrayList<>();
+			private String requiredMember;
+			private int connectionTimeout = 5;
 		}
 
 		@Data
@@ -35,6 +41,8 @@ public class NetworkSettings {
 			private String group = "224.2.2.4";
 			private int port = 54328;
 			private String address = null;
+			private int timeToLive = 3;
+			private int timeout = 3;
 		}
 
 		@Data
@@ -49,7 +57,6 @@ public class NetworkSettings {
 	public static class Tcp {
 		private boolean noDelay = true;
 		private boolean keepAlive = true;
-		private boolean reuseAddress = true;
 		private Integer sendBufferSize = null;
 		private Integer receiveBufferSize = null;
 		private int connectTimeout = 15;

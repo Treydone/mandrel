@@ -32,7 +32,7 @@ public class QueueService {
 	public <T> void registrer(String queueName, Callback<T> callback) {
 		while (true) {
 			try {
-				T message = (T) instance.getQueue(queueName).take();
+				T message = instance.<T> getQueue(queueName).take();
 				callback.onMessage(message);
 			} catch (Exception e) {
 				log.warn("Wut?", e);

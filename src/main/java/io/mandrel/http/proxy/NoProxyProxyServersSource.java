@@ -8,6 +8,8 @@ import com.ning.http.client.ProxyServer;
 @Data
 public class NoProxyProxyServersSource implements ProxyServersSource {
 
+	private static final long serialVersionUID = 3055822574410617130L;
+
 	public NoProxyProxyServersSource() {
 	}
 

@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class JmsSource extends Source {
 
+	private static final long serialVersionUID = -1343900230187746468L;
+
 	private String url;
 
 	public void register(EntryListener listener) {

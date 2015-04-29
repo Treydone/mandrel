@@ -49,9 +49,7 @@ public class HazelcastConfiguration {
 			networkConfig.setInterfaces(interfaces);
 		}
 
-		if (networkSettings.getTcp() != null) {
-			networkConfig.setReuseAddress(networkSettings.getTcp().isReuseAddress());
-		}
+		networkConfig.setReuseAddress(networkSettings.isReuseAddress());
 
 		if (networkSettings.getDiscovery() != null) {
 
@@ -63,12 +61,17 @@ public class HazelcastConfiguration {
 				multicastConfig.setEnabled(networkSettings.getDiscovery().getMulticast().isEnabled());
 				multicastConfig.setMulticastGroup(networkSettings.getDiscovery().getMulticast().getGroup());
 				multicastConfig.setMulticastPort(networkSettings.getDiscovery().getMulticast().getPort());
+				multicastConfig.setMulticastTimeToLive(networkSettings.getDiscovery().getMulticast().getTimeToLive());
+				multicastConfig.setMulticastTimeoutSeconds(networkSettings.getDiscovery().getMulticast().getTimeout());
 			}
 
 			// Unicast
 			if (networkSettings.getDiscovery().getUnicast() != null) {
 				TcpIpConfig tcpIpConfig = join.getTcpIpConfig();
 				tcpIpConfig.setEnabled(networkSettings.getDiscovery().getUnicast().isEnabled());
+				tcpIpConfig.setMembers(networkSettings.getDiscovery().getUnicast().getMembers());
+				tcpIpConfig.setRequiredMember(networkSettings.getDiscovery().getUnicast().getRequiredMember());
+				tcpIpConfig.setConnectionTimeoutSeconds(networkSettings.getDiscovery().getUnicast().getConnectionTimeout());
 			}
 
 			networkConfig.setJoin(join);

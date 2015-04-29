@@ -1,6 +1,5 @@
 package io.mandrel.common.data;
 
-import io.mandrel.data.filters.WebPageFilter;
 import io.mandrel.data.source.Source;
 
 import java.io.Serializable;
@@ -28,8 +27,8 @@ public class Spider implements Serializable {
 	@JsonProperty("sources")
 	private List<Source> sources = new ArrayList<>();
 
-	@JsonProperty("filter")
-	private List<WebPageFilter> filters = new ArrayList<>();
+	@JsonProperty("filters")
+	private Filters filters = new Filters();
 
 	@JsonProperty("extractors")
 	private Extractors extractors = new Extractors();

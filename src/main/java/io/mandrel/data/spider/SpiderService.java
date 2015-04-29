@@ -24,6 +24,7 @@ import javax.inject.Inject;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -229,16 +230,17 @@ public class SpiderService {
 							// Find outlinks in page
 							Set<Link> outlinks = extractorService.extractOutlinks(webPage, ol);
 
-							if (spider.getFilters() != null) {
-								// TODO filtering!!!
-								// outlinks.stream().filter(predicate)
-								// spider.getFilters().stream().anyMatch(f ->
-								// f.)
+							Set<Link> filteredOutlinks = null;
+							if (spider.getFilters() != null && CollectionUtils.isNotEmpty(spider.getFilters().getForLinks())) {
+								filteredOutlinks = outlinks.stream().filter(link -> spider.getFilters().getForLinks().stream().anyMatch(f -> f.isValid(link)))
+										.collect(Collectors.toSet());
+							} else {
+								filteredOutlinks = outlinks;
 							}
 
 							// Filter outlinks
-							Set<Link> filteredOutlinks = spider.getStores().getPageMetadataStore()
-									.filter(spider.getId(), outlinks, spider.getClient().getPoliteness());
+							filteredOutlinks = spider.getStores().getPageMetadataStore()
+									.filter(spider.getId(), filteredOutlinks, spider.getClient().getPoliteness());
 
 							return Pair.of(ol.getName(), Pair.of(outlinks, filteredOutlinks));
 						}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));

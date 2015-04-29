@@ -1,4 +1,4 @@
-package io.mandrel.data.filters;
+package io.mandrel.data.filters.page;
 
 import io.mandrel.http.WebPage;
 
@@ -7,7 +7,7 @@ import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-public interface BooleanFilters {
+public interface BooleanWebPageFilters {
 
 	@Data
 	@EqualsAndHashCode(callSuper = false)

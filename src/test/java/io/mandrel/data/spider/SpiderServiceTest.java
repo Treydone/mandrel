@@ -2,15 +2,19 @@ package io.mandrel.data.spider;
 
 import static org.junit.Assert.assertEquals;
 import io.mandrel.common.data.Client;
+import io.mandrel.common.data.Filters;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Stores;
 import io.mandrel.config.BindConfiguration;
-import io.mandrel.data.filters.UrlPatternFilter;
-import io.mandrel.data.filters.WebPageFilter;
-import io.mandrel.data.spider.SpiderService;
+import io.mandrel.data.filters.link.AllowedForDomainsFilter;
+import io.mandrel.data.filters.link.LinkFilter;
+import io.mandrel.data.filters.link.UrlPatternFilter;
+import io.mandrel.data.filters.page.LargeFilter;
+import io.mandrel.data.filters.page.WebPageFilter;
 import io.mandrel.data.spider.SpiderServiceTest.LocalConfiguration;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.inject.Inject;
 
@@ -60,10 +64,47 @@ public class SpiderServiceTest {
 	}
 
 	@Test
-	public void webPageFilters() throws IOException {
+	public void filters() throws IOException {
 
+		Filters filters = new Filters();
+
+		String json = objectMapper.writeValueAsString(filters);
+		System.err.println(json);
+		Filters read = objectMapper.readValue(json, Filters.class);
+		assertEquals(filters, read);
+	}
+
+	@Test
+	public void linkFilters_domain() throws IOException {
+
+		// URL
+		AllowedForDomainsFilter filter = new AllowedForDomainsFilter();
+		filter.setDomains(Arrays.asList("wiki.org"));
+
+		String json = objectMapper.writeValueAsString(filter);
+		System.err.println(json);
+		LinkFilter read = objectMapper.readValue(json, LinkFilter.class);
+		assertEquals(filter, read);
+	}
+
+	@Test
+	public void linkFilters_pattern() throws IOException {
+
+		// URL
 		UrlPatternFilter filter = new UrlPatternFilter();
 		filter.setPattern(".*");
+
+		String json = objectMapper.writeValueAsString(filter);
+		System.err.println(json);
+		LinkFilter read = objectMapper.readValue(json, LinkFilter.class);
+		assertEquals(filter, read);
+	}
+
+	@Test
+	public void pageFilters_large() throws IOException {
+
+		// URL
+		LargeFilter filter = new LargeFilter();
 
 		String json = objectMapper.writeValueAsString(filter);
 		System.err.println(json);

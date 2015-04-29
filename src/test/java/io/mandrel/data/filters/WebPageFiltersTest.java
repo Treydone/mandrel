@@ -2,10 +2,10 @@ package io.mandrel.data.filters;
 
 import static org.junit.Assert.assertEquals;
 import io.mandrel.config.BindConfiguration;
-import io.mandrel.data.filters.LargeFilter;
-import io.mandrel.data.filters.WebPageFilter;
-import io.mandrel.data.filters.BooleanFilters.NotFilter;
 import io.mandrel.data.filters.WebPageFiltersTest.LocalConfiguration;
+import io.mandrel.data.filters.page.LargeFilter;
+import io.mandrel.data.filters.page.WebPageFilter;
+import io.mandrel.data.filters.page.BooleanWebPageFilters.NotFilter;
 
 import java.io.IOException;
 

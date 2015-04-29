@@ -170,23 +170,23 @@ public class ExtractorService {
 		Instance<T> instance;
 		if (segment != null) {
 			Selector<T> selector = getSelector(fieldExtractor);
-			instance = ((BodySelector) selector).init(webPage, segment, true);
+			instance = ((BodySelector<T>) selector).init(webPage, segment, true);
 		} else {
 			// Reuse the previous instance selector for this web page
 			String cacheKey = fieldExtractor.getType() + "-" + fieldExtractor.getSource().toString().toLowerCase();
 			instance = (Instance<T>) selectors.get(cacheKey);
 
 			if (instance == null) {
-				Selector selector = getSelector(fieldExtractor);
+				Selector<T> selector = getSelector(fieldExtractor);
 
 				if (SourceType.BODY.equals(fieldExtractor.getSource())) {
-					instance = ((BodySelector) selector).init(webPage, webPage.getBody(), false);
+					instance = ((BodySelector<T>) selector).init(webPage, webPage.getBody(), false);
 				} else if (SourceType.HEADERS.equals(fieldExtractor.getSource())) {
-					instance = ((HeaderSelector) selector).init(webPage, webPage.getMetadata().getHeaders());
+					instance = ((HeaderSelector<T>) selector).init(webPage, webPage.getMetadata().getHeaders());
 				} else if (SourceType.URL.equals(fieldExtractor.getSource())) {
-					instance = ((UrlSelector) selector).init(webPage, webPage.getUrl());
+					instance = ((UrlSelector<T>) selector).init(webPage, webPage.getUrl());
 				} else if (SourceType.COOKIE.equals(fieldExtractor.getSource())) {
-					instance = ((CookieSelector) selector).init(
+					instance = ((CookieSelector<T>) selector).init(
 							webPage,
 							webPage.getMetadata()
 									.getCookies()
@@ -194,18 +194,17 @@ public class ExtractorService {
 									.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie.getExpires(),
 											cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList()));
 				} else if (SourceType.EMPTY.equals(fieldExtractor.getSource())) {
-					instance = ((EmptySelector) selector).init(webPage);
+					instance = ((EmptySelector<T>) selector).init(webPage);
 				}
 
 				selectors.put(cacheKey, instance);
 			}
 		}
 
-		List<U> result = instance.select(fieldExtractor.getValue(), converter);
-		return result;
+		return instance.select(fieldExtractor.getValue(), converter);
 	}
 
-	private Selector getSelector(Extractor fieldExtractor) {
+	private <T> Selector<T> getSelector(Extractor fieldExtractor) {
 		Selector selector = selectorService.getSelectorByName(fieldExtractor.getType());
 		if (selector == null) {
 			throw new IllegalArgumentException("Unknown extractor '" + fieldExtractor.getType() + "'");

@@ -1,4 +1,4 @@
-package io.mandrel.data.filters;
+package io.mandrel.data.filters.page;
 
 import io.mandrel.http.WebPage;
 import lombok.Data;

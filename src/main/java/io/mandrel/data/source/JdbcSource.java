@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class JdbcSource extends Source {
 
+	private static final long serialVersionUID = -4979543740004679462L;
+
 	private String query;
 	private String url;
 

@@ -31,13 +31,7 @@ network:
     group:
         name: default
         password: null
-    tcp:
-        no_delay: true
-        keep_alive: true
-        reuse_address: true
-        send_buffer_size: null
-        receive_buffer_size : null
-        connect_timeout: 15
+    reuse_address: true
     ssl:
         enabled: false
         type: basic
@@ -49,8 +43,12 @@ network:
     discovery:
         unicast:
             enabled: true
+            members:
+                - 10.20.30.40
+            required_member: null
+            connection_timeout: 5
         multicast:
-            enabled: true
+            enabled: false
             group: 224.2.2.4
             port: 54328
             ttl: 3

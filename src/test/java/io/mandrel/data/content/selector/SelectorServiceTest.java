@@ -14,15 +14,15 @@ public class SelectorServiceTest {
 	public void test() {
 
 		SelectorService selectorService = new SelectorService();
-		Map<String, Selector<?>> selectorsByName = selectorService
-				.getSelectorsByName();
+		Map<String, Selector<?>> selectorsByName = selectorService.getSelectorsByName();
 		System.err.println(selectorsByName);
 
-		assertEquals(2, selectorsByName.size());
+		assertEquals(5, selectorsByName.size());
 		assertNotNull(selectorsByName.get("xpath"));
 		assertNotNull(selectorsByName.get("static"));
+		assertNotNull(selectorsByName.get("url"));
+		assertNotNull(selectorsByName.get("header"));
+		assertNotNull(selectorsByName.get("cookie"));
 
-		assertNotNull(selectorService.getSelectorByName("xpath"));
-		assertNotNull(selectorService.getSelectorByName("static"));
 	}
 }

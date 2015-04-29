@@ -1,16 +1,17 @@
-package io.mandrel.data.filters;
+package io.mandrel.data.filters.link;
+
+import io.mandrel.data.spider.Link;
 
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import io.mandrel.http.WebPage;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @EqualsAndHashCode(callSuper = false, exclude = "compiledPattern")
-public class UrlPatternFilter extends WebPageFilter {
+public class UrlPatternFilter extends LinkFilter {
 
 	private static final long serialVersionUID = -5195589618123470396L;
 
@@ -18,8 +19,8 @@ public class UrlPatternFilter extends WebPageFilter {
 	private Pattern compiledPattern;
 	private String pattern;
 
-	public boolean isValid(WebPage webPage) {
-		return compiledPattern.matcher(webPage.getUrl().toString()).matches();
+	public boolean isValid(Link link) {
+		return compiledPattern.matcher(link.getUri()).matches();
 	}
 
 	public void setPattern(String pattern) {

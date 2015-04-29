@@ -14,13 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CsvSource extends Source {
 
+	private static final long serialVersionUID = -343795756996004307L;
+
 	private List<String> files;
 
 	public void register(EntryListener listener) {
 		files.forEach(file -> {
 			try {
-				VFS.getManager().resolveFile(file).getContent()
-						.getInputStream();
+				VFS.getManager().resolveFile(file).getContent().getInputStream();
 			} catch (FileSystemException e) {
 				log.debug("Can not resolve file {}", file, e);
 			}
