@@ -179,6 +179,18 @@ public class SpiderService {
 
 	}
 
+	public void end(long spiderId) {
+		get(spiderId).map(spider -> {
+
+			taskService.shutdownAllExecutorService(spider);
+
+			// Update status
+				spider.setState(State.ENDED);
+				return spiderRepository.update(spider);
+			}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
+
+	}
+
 	public void delete(long spiderId) {
 		get(spiderId).map(spider -> {
 			taskService.shutdownAllExecutorService(spider);

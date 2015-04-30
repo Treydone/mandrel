@@ -21,26 +21,80 @@ h3. Crawling
 Ok, we want to crawl Wikipedia. First step, we create a spider:
 @curl -X POST http://localhost:9200/spiders/wikipedia?urls=http://en.wikipedia.org@
 
-You can see your spider:
+You can see all the spiders here:
 @curl -X GET http://localhost:9200/spiders@
+
+Or just your newly created spider:
+@curl -X GET http://localhost:9200/spiders/wikipedia@
 
 Now start it:
 @curl -X POST http://localhost:9200/spiders/wikipedia/start@
 
 And, that's it. Wait, what???
 
-Mandrel create the spider "wikipedia" and distribute it across all the nodes. When you start it, Mandrel begin to crawl the urls you give and the deep in the pages in order to find other urls. 
+Mandrel create the spider "wikipedia" and distribute it across all the nodes. When you start it, Mandrel begin to crawl the urls you give and dig in the pages in order to find other urls. 
 
 bq. By default, only 1000 urls are crawled. See below in order to configure your spider.
 
 Once you have done all you want with your spider, you can kill it:
 @curl -X POST http://localhost:9200/spiders/wikipedia/cancel@
 
-h3. Raw exporting
-
-TODO...
+Before starting your spider, it may be useful to test it against a url and have a first look of the result:
+@curl -X GET http://localhost:9200/spiders/wikipedia/analyze?source=http://myurl.com/...@
 
 h3. Filtering
+
+You can add filters to your spider. There are two types of filters:
+- url filters
+- page filters
+
+Url filters apply conditions only on the url whereas page filters apply conditions on the page. This means also that url filters are applied BEFORE the crawling and page filters AFTER.
+Filters are added on the spider in this way:
+
+
+Url filters
+
+
+Page filters
+
+
+      {
+         "type":"large"
+      },
+      {
+         "type":"only_seeds_domain"
+      },
+      {
+         "type":"on_domains"
+      },
+      {
+         "type":"not",
+         "filter":
+            {
+               "type":"statics"
+            }
+      },
+      {
+         "type":"statics"
+      },
+      {
+         "name":"xxxx",
+         "type":"groovy",
+         "value":"seeds.domain.contains($url.domain)"
+      },
+      {
+         "type":"patterns",
+         "value":[
+            "/signin",
+            "/contact"
+         ]
+      }
+      
+TODO...
+
+h3. Raw exporting
+
+/{id}/raw/export
 
 TODO...
 

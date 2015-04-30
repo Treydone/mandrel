@@ -1,8 +1,12 @@
 package io.mandrel.http;
 
+import io.mandrel.data.spider.Link;
+
 import java.io.Serializable;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import lombok.Data;
 
@@ -13,18 +17,12 @@ public class Metadata implements Serializable {
 
 	private static final long serialVersionUID = -7319512873380929621L;
 
-	private final int statusCode;
-	private final String statusText;
-	private final FluentCaseInsensitiveStringsMap headers;
-	private final List<Cookie> cookies;
-	private final LocalDateTime lastCrawlDate;
-
-	public Metadata(int statusCode, String statusText, FluentCaseInsensitiveStringsMap headers, List<Cookie> cookies) {
-		super();
-		this.statusCode = statusCode;
-		this.statusText = statusText;
-		this.headers = headers;
-		this.cookies = cookies;
-		this.lastCrawlDate = LocalDateTime.now();
-	}
+	private URL url;
+	private int statusCode;
+	private String statusText;
+	private FluentCaseInsensitiveStringsMap headers;
+	private List<Cookie> cookies;
+	private LocalDateTime lastCrawlDate;
+	private long timeToFetch;
+	private Set<Link> outlinks;
 }

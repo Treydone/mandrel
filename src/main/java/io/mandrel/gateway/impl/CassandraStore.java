@@ -4,6 +4,7 @@ import io.mandrel.common.data.Politeness;
 import io.mandrel.data.spider.Link;
 import io.mandrel.gateway.PageMetadataStore;
 import io.mandrel.gateway.WebPageStore;
+import io.mandrel.http.Metadata;
 import io.mandrel.http.WebPage;
 
 import java.util.Map;
@@ -25,12 +26,12 @@ public class CassandraStore implements WebPageStore, PageMetadataStore {
 
 	}
 
-	public void addPage(long spiderId, WebPage webPage) {
+	public void addPage(long spiderId, String url, WebPage webPage) {
 
 	}
 
 	@Override
-	public void addMetadata(long spiderId, WebPage webPage) {
+	public void addMetadata(long spiderId, String url, Metadata metadata) {
 		// TODO Auto-generated method stub
 
 	}

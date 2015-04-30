@@ -18,7 +18,7 @@ public class Politeness implements Serializable {
 	private long perNodeRate = 500;
 
 	@JsonProperty("max_pages")
-	private long maxPages = 500;
+	private long maxPages = 1000;
 
 	@JsonProperty("wait")
 	private long wait = 100;

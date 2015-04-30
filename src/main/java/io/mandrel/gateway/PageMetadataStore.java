@@ -5,7 +5,7 @@ import io.mandrel.data.spider.Link;
 import io.mandrel.gateway.impl.CassandraStore;
 import io.mandrel.gateway.impl.InternalStore;
 import io.mandrel.gateway.impl.JdbcStore;
-import io.mandrel.http.WebPage;
+import io.mandrel.http.Metadata;
 import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 		@Type(value = CassandraStore.class, name = "cassandra") })
 public interface PageMetadataStore extends Checkable, Serializable {
 
-	void addMetadata(long spiderId, WebPage webPage);
+	void addMetadata(long spiderId, String url, Metadata metadata);
 
 	void init(Map<String, Object> properties);
 

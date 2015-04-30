@@ -6,8 +6,11 @@ import io.mandrel.data.export.ExporterService;
 import io.mandrel.data.export.RawExporter;
 import io.mandrel.data.spider.Analysis;
 import io.mandrel.data.spider.SpiderService;
+import io.mandrel.stats.Stats;
+import io.mandrel.stats.StatsService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
@@ -32,10 +35,13 @@ public class SpiderResource {
 
 	private final ExporterService exporterService;
 
+	private final StatsService statsService;
+
 	@Autowired
-	public SpiderResource(SpiderService spiderService, ExporterService exporterService) {
+	public SpiderResource(SpiderService spiderService, ExporterService exporterService, StatsService statsService) {
 		this.spiderService = spiderService;
 		this.exporterService = exporterService;
+		this.statsService = statsService;
 	}
 
 	@ApiOperation(value = "List all the spiders", response = Spider.class, responseContainer = "List")
@@ -96,6 +102,12 @@ public class SpiderResource {
 	@RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
 	public void delete(@PathVariable Long id) {
 		spiderService.get(id).ifPresent(opt -> spiderService.delete(id));
+	}
+
+	@ApiOperation(value = "Retrieve the stats of a spider")
+	@RequestMapping(value = "/{id}/stats")
+	public Optional<Stats> stats(@PathVariable Long id) {
+		return spiderService.get(id).map(spider -> statsService.get(spider.getId()));
 	}
 
 	@ApiOperation(value = "Export the data of the extractor of a spider")

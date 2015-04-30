@@ -12,8 +12,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<start-class>io.mandrel.Main</start-class>
-
 		<cxf.version>3.0.1</cxf.version>
 		<sigar.version>1.6.5.132</sigar.version>
 		<spring-boot.version>1.2.2.RELEASE</spring-boot.version>
@@ -127,11 +125,11 @@
 			<artifactId>xsoup</artifactId>
 			<version>0.3.0</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parsers</artifactId>
-			<version>1.8</version>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.tika</groupId> -->
+		<!-- <artifactId>tika-parsers</artifactId> -->
+		<!-- <version>1.8</version> -->
+		<!-- </dependency> -->
 
 		<dependency>
 			<groupId>com.google.code.crawler-commons</groupId>
@@ -286,7 +284,7 @@
 			<groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-graphite</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.spockframework</groupId>
 			<artifactId>spock-core</artifactId>

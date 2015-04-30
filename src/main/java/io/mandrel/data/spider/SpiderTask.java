@@ -23,9 +23,16 @@ public class SpiderTask implements Runnable, Serializable {
 
 	private transient UrlsQueueService urlsQueueService;
 
+	private transient SpiderService spiderService;
+
 	@Autowired
 	public void setUrlsQueueService(UrlsQueueService urlsQueueService) {
 		this.urlsQueueService = urlsQueueService;
+	}
+
+	@Autowired
+	public void setSpiderService(SpiderService spiderService) {
+		this.spiderService = spiderService;
 	}
 
 	public SpiderTask(Spider spider) {
@@ -45,6 +52,10 @@ public class SpiderTask implements Runnable, Serializable {
 			spider.getExtractors().getPages().stream().forEach(ex -> ex.getDataStore().init(ex));
 		}
 
+		// Block until the end
 		urlsQueueService.registrer(spider);
+
+		// End the spider on all members
+		spiderService.end(spider.getId());
 	}
 }

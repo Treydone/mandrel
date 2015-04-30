@@ -30,10 +30,11 @@ public class QueueService {
 	 * @param callback
 	 */
 	public <T> void registrer(String queueName, Callback<T> callback) {
-		while (true) {
+		boolean loop = true;
+		while (loop) {
 			try {
 				T message = instance.<T> getQueue(queueName).take();
-				callback.onMessage(message);
+				loop = !callback.onMessage(message);
 			} catch (Exception e) {
 				log.warn("Wut?", e);
 				try {
@@ -47,6 +48,13 @@ public class QueueService {
 
 	@FunctionalInterface
 	public static interface Callback<T> {
-		void onMessage(T message);
+
+		/**
+		 * Return true if this has to stop
+		 * 
+		 * @param message
+		 * @return
+		 */
+		boolean onMessage(T message);
 	}
 }

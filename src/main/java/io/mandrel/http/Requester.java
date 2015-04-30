@@ -21,7 +21,6 @@ import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
 import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.Response;
 import com.ning.http.client.cookie.Cookie;
 import com.ning.http.client.extra.ThrottleRequestFilter;
@@ -50,18 +49,6 @@ public class Requester {
 		BoundRequestBuilder request = prepareRequest(url, spider);
 
 		request.execute(new AsyncCompletionHandler<Response>() {
-
-			@Override
-			public STATE onStatusReceived(HttpResponseStatus status) throws Exception {
-				int statusCode = status.getStatusCode();
-
-				if (statusCode >= 400) {
-					return STATE.ABORT;
-				}
-
-				return super.onStatusReceived(status);
-			}
-
 			@Override
 			public Response onCompleted(Response response) throws Exception {
 				try {

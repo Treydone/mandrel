@@ -29,26 +29,22 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 	public InternalStore() {
 	}
 
-	@Override
 	public boolean check() {
 		return true;
 	}
 
-	@Override
 	public void init(Map<String, Object> properties) {
 
 	}
 
-	public void addPage(long spiderId, WebPage webPage) {
-		instance.getMap("pagestore-" + spiderId).set(webPage.getUrl().toString(), webPage);
+	public void addPage(long spiderId, String url, WebPage webPage) {
+		instance.getMap("pagestore-" + spiderId).set(url, webPage);
 	}
 
-	@Override
-	public void addMetadata(long spiderId, WebPage webPage) {
-		instance.getMap("pagemetastore-" + spiderId).set(webPage.getUrl().toString(), webPage.getMetadata());
+	public void addMetadata(long spiderId, String url, Metadata metadata) {
+		instance.getMap("pagemetastore-" + spiderId).set(url, metadata);
 	}
 
-	@Override
 	public Set<Link> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
 
 		int recrawlAfterSeconds = politeness.getRecrawlAfterSeconds();
@@ -72,12 +68,10 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 		}).collect(Collectors.toSet());
 	}
 
-	@Override
 	public Stream<WebPage> all(long spiderId) {
 		return instance.<String, WebPage> getMap("pagestore-" + spiderId).values().stream();
 	}
 
-	@Override
 	public void deleteAllFor(long spiderId) {
 		instance.getMap("pagestore-" + spiderId).destroy();
 		instance.getMap("pagemetastore-" + spiderId).destroy();

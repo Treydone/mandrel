@@ -2,6 +2,7 @@ package io.mandrel.http;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.Data;
@@ -20,7 +21,14 @@ public class WebPage {
 	public WebPage(URL url, int statusCode, String statusText, FluentCaseInsensitiveStringsMap headers, List<Cookie> cookies, InputStream body) {
 		super();
 		this.url = url;
-		this.metadata = new Metadata(statusCode, statusText, headers, cookies);
+		this.metadata = new Metadata();
+		metadata.setCookies(cookies);
+		metadata.setHeaders(headers);
+		metadata.setLastCrawlDate(LocalDateTime.now());
+		metadata.setStatusCode(statusCode);
+		metadata.setStatusText(statusText);
+		metadata.setUrl(url);
+
 		this.body = body;
 	}
 }
