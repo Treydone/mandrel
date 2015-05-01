@@ -11,9 +11,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import lombok.Data;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hazelcast.core.HazelcastInstance;
+
+@Data
 public class CassandraStore implements WebPageStore, PageMetadataStore {
 
 	private static final long serialVersionUID = 6800608875261746768L;
+
+	@JsonIgnore
+	private HazelcastInstance hazelcastInstance;
 
 	@Override
 	public boolean check() {

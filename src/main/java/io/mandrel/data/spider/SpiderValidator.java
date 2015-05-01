@@ -2,6 +2,8 @@ package io.mandrel.data.spider;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Stores;
+import io.mandrel.data.content.WebPageExtractor;
+import io.mandrel.data.source.Source;
 
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -37,15 +39,17 @@ public class SpiderValidator implements Validator {
 
 		// Sources
 		if (spider.getSources() != null) {
-			spider.getSources().stream().forEach(source -> {
+			int i = 0;
+			for (Source source : spider.getSources()) {
 				if (source.getName() == null) {
-					errors.rejectValue("sources.name", "sources.name.not.null", null, "Can not be null.");
+					errors.rejectValue("sources[" + i + "].name", "sources.name.not.null", null, "Can not be null.");
 				}
 
 				if (!source.check()) {
 					errors.rejectValue("sources", "sources.failed", null, "Check " + source.getName() + " failed.");
 				}
-			});
+				i++;
+			}
 		}
 
 		// Client
@@ -53,35 +57,29 @@ public class SpiderValidator implements Validator {
 
 		// Extractors
 		if (spider.getExtractors().getPages() != null) {
-			spider.getExtractors()
-					.getPages()
-					.stream()
-					.forEach(
-							ex -> {
-								if (ex.getName() == null) {
-									errors.rejectValue("extractors.name", "extractors.name.not.null", null, "Can not be null.");
-								}
+			int i = 0;
+			for (WebPageExtractor ex : spider.getExtractors().getPages()) {
+				if (ex.getName() == null) {
+					errors.rejectValue("extractors[" + i + "].name", "extractors.name.not.null", null, "Can not be null.");
+				}
 
-								if (!ex.getDataStore().check()) {
-									errors.rejectValue("extractors.datastore", "extractors.datastore.failed", null, "Check " + ex.getName()
-											+ " failed.");
-								}
+				if (!ex.getDataStore().check()) {
+					errors.rejectValue("extractors[" + i + "].datastore", "extractors.datastore.failed", null, "Check " + ex.getName() + " failed.");
+				}
 
-								if (ex.getFields() == null) {
-									errors.rejectValue("extractors.fields", "extractors.fields.not.null", null, "Can not be null.");
-								}
+				if (ex.getFields() == null) {
+					errors.rejectValue("extractors[" + i + "].fields", "extractors.fields.not.null", null, "Can not be null.");
+				}
 
-								if (ex.getMultiple() != null) {
-
-									if (ex.getFields().stream().filter(f -> f.isUseMultiple())
-											.anyMatch(f -> !ex.getMultiple().getType().equals(f.getExtractor().getType()))) {
-										errors.rejectValue("extractors.fields", "extractors.fields.not.same.type.as.multiple", null,
-												"Is not the same type as the multiple.");
-									}
-
-								}
-
-							});
+				if (ex.getMultiple() != null) {
+					if (ex.getFields().stream().filter(f -> f.isUseMultiple()).anyMatch(f -> !ex.getMultiple().getType().equals(f.getExtractor().getType()))) {
+						errors.rejectValue("extractors[" + i + "].fields", "extractors.fields.not.same.type.as.multiple", null,
+								"Is not the same type as the multiple.");
+					}
+				}
+				i++;
+			}
+			;
 		}
 	}
 

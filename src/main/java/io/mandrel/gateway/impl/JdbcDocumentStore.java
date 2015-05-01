@@ -14,10 +14,15 @@ import lombok.Data;
 import org.apache.tomcat.jdbc.pool.PoolConfiguration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.hazelcast.core.HazelcastInstance;
 
 @Data
 public class JdbcDocumentStore implements DocumentStore {
+
+	@JsonIgnore
+	private HazelcastInstance hazelcastInstance;
 
 	@JsonUnwrapped
 	private PoolConfiguration configuration;

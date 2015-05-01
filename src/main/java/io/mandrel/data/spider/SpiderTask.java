@@ -4,14 +4,15 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.messaging.UrlsQueueService;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.Setter;
 
 import com.hazelcast.spring.context.SpringAware;
 
 @SpringAware
+@Setter
 public class SpiderTask implements Runnable, Serializable {
 
 	/**
@@ -21,19 +22,11 @@ public class SpiderTask implements Runnable, Serializable {
 
 	private Spider spider;
 
+	@Autowired
 	private transient UrlsQueueService urlsQueueService;
 
+	@Autowired
 	private transient SpiderService spiderService;
-
-	@Autowired
-	public void setUrlsQueueService(UrlsQueueService urlsQueueService) {
-		this.urlsQueueService = urlsQueueService;
-	}
-
-	@Autowired
-	public void setSpiderService(SpiderService spiderService) {
-		this.spiderService = spiderService;
-	}
 
 	public SpiderTask(Spider spider) {
 		this.spider = spider;
@@ -41,12 +34,6 @@ public class SpiderTask implements Runnable, Serializable {
 
 	@Override
 	public void run() {
-
-		// TODO
-		Map<String, Object> properties = new HashMap<>();
-
-		spider.getStores().getPageMetadataStore().init(properties);
-		spider.getStores().getPageStore().init(properties);
 
 		if (spider.getExtractors().getPages() != null) {
 			spider.getExtractors().getPages().stream().forEach(ex -> ex.getDataStore().init(ex));

@@ -8,8 +8,10 @@ import org.apache.commons.collections.CollectionUtils;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 @Data
+@Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 public class AllowedForDomainsFilter extends LinkFilter {
 

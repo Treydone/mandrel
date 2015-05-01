@@ -7,13 +7,16 @@ import io.mandrel.gateway.DocumentStore;
 import java.util.List;
 import java.util.stream.Stream;
 
+import lombok.Data;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hazelcast.core.HazelcastInstance;
 
+@Data
 public class InternalDocumentStore implements DocumentStore {
 
 	@JsonIgnore
-	private HazelcastInstance instance;
+	private HazelcastInstance hazelcastInstance;
 
 	@Override
 	public void save(long spiderId, Document data) {

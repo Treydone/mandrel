@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,7 +26,7 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 	private static final long serialVersionUID = -775049235484042261L;
 
 	@JsonIgnore
-	private HazelcastInstance instance;
+	private HazelcastInstance hazelcastInstance;
 
 	public InternalStore() {
 	}
@@ -38,19 +40,23 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 	}
 
 	public void addPage(long spiderId, String url, WebPage webPage) {
-		instance.getMap("pagestore-" + spiderId).set(url, webPage);
+		hazelcastInstance.getMap("pagestore-" + spiderId).set(url, webPage);
 	}
 
 	public void addMetadata(long spiderId, String url, Metadata metadata) {
-		instance.getMap("pagemetastore-" + spiderId).set(url, metadata);
+		hazelcastInstance.getMap("pagemetastore-" + spiderId).set(url, metadata);
 	}
 
 	public Set<Link> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
 
+		if (outlinks == null) {
+			return null;
+		}
+
 		int recrawlAfterSeconds = politeness.getRecrawlAfterSeconds();
 
-		Map<String, Metadata> all = instance.<String, Metadata> getMap("pagemetastore-" + spiderId).getAll(
-				outlinks.stream().map(ol -> ol.getUri()).collect(Collectors.toSet()));
+		Map<String, Metadata> all = hazelcastInstance.<String, Metadata> getMap("pagemetastore-" + spiderId).getAll(
+				outlinks.stream().filter(ol -> StringUtils.isNotBlank(ol.getUri())).map(ol -> ol.getUri()).collect(Collectors.toSet()));
 
 		LocalDateTime now = LocalDateTime.now();
 		return outlinks.stream().filter(outlink -> {
@@ -69,11 +75,12 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 	}
 
 	public Stream<WebPage> all(long spiderId) {
-		return instance.<String, WebPage> getMap("pagestore-" + spiderId).values().stream();
+		return hazelcastInstance.<String, WebPage> getMap("pagestore-" + spiderId).values().stream();
 	}
 
 	public void deleteAllFor(long spiderId) {
-		instance.getMap("pagestore-" + spiderId).destroy();
-		instance.getMap("pagemetastore-" + spiderId).destroy();
+		hazelcastInstance.getMap("pagestore-" + spiderId).destroy();
+		hazelcastInstance.getMap("pagemetastore-" + spiderId).destroy();
 	}
+
 }

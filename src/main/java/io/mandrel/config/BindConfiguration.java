@@ -6,6 +6,11 @@ import org.springframework.context.annotation.Configuration;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.hppc.HppcModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 @Configuration
 public class BindConfiguration {
@@ -34,6 +39,8 @@ public class BindConfiguration {
 		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		// to allow coercion of JSON empty String ("") to null Object value:
 		// objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+
+		objectMapper.registerModules(new JodaModule(), new AfterburnerModule(), new Jdk8Module(), new HppcModule(), new JSR310Module());
 
 	}
 }

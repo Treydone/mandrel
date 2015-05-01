@@ -15,8 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
 
+import com.hazelcast.config.EvictionPolicy;
 import com.hazelcast.config.MapConfig;
-import com.hazelcast.config.MapConfig.EvictionPolicy;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 

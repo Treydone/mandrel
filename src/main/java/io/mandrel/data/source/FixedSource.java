@@ -4,8 +4,10 @@ import java.util.List;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 @Data
+@Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 public class FixedSource extends Source {
 
@@ -21,10 +23,6 @@ public class FixedSource extends Source {
 
 	public boolean check() {
 		return true;
-	}
-
-	public FixedSource(List<String> urls) {
-		this.urls = urls;
 	}
 
 	public FixedSource() {

@@ -3,6 +3,7 @@ package io.mandrel.data.spider;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.State;
 import io.mandrel.data.extract.ExtractorService;
+import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.source.FixedSource;
 import io.mandrel.data.source.Source;
 import io.mandrel.gateway.Document;
@@ -10,7 +11,9 @@ import io.mandrel.http.Requester;
 import io.mandrel.http.WebPage;
 import io.mandrel.task.TaskService;
 
+import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,20 +25,26 @@ import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.kohsuke.randname.RandomNameGenerator;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
+import com.hazelcast.core.HazelcastInstance;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class SpiderService {
 
 	private final SpiderRepository spiderRepository;
@@ -46,15 +55,11 @@ public class SpiderService {
 
 	private final Requester requester;
 
+	private final HazelcastInstance instance;
+
 	private Validator spiderValidator = new SpiderValidator();
 
-	@Inject
-	public SpiderService(SpiderRepository spiderRepository, TaskService taskService, ExtractorService extractorService, Requester requester) {
-		this.spiderRepository = spiderRepository;
-		this.taskService = taskService;
-		this.extractorService = extractorService;
-		this.requester = requester;
-	}
+	private RandomNameGenerator generator = new RandomNameGenerator();
 
 	/**
 	 * On start:
@@ -77,8 +82,8 @@ public class SpiderService {
 			});
 	}
 
-	public Errors validate(Spider spider) {
-		Errors errors = new BeanPropertyBindingResult(spider, "spider");
+	public BindingResult validate(Spider spider) {
+		BindingResult errors = new BeanPropertyBindingResult(spider, "spider");
 		spiderValidator.validate(spider, errors);
 		return errors;
 	}
@@ -101,23 +106,40 @@ public class SpiderService {
 	 * @param urls
 	 * @return
 	 */
-	public Spider add(List<String> urls) {
+	public Spider add(List<String> urls) throws BindException {
 		Spider spider = new Spider();
-		spider.setSources(Arrays.asList(new FixedSource(urls)));
+		spider.setName(generator.next());
+		spider.setSources(Arrays.asList(new FixedSource().setUrls(urls).setName("fixed_source")));
+		spider.getFilters().getForLinks().add(new AllowedForDomainsFilter().setDomains(urls.stream().map(url -> {
+			try {
+				return new URL(url).getHost();
+			} catch (Exception e) {
+				throw Throwables.propagate(e);
+			}
+		}).collect(Collectors.toList())));
 		return add(spider);
 	}
 
-	public Spider add(Spider spider) {
-
-		Errors errors = validate(spider);
+	public Spider add(Spider spider) throws BindException {
+		BindingResult errors = validate(spider);
 
 		if (errors.hasErrors()) {
 			errors.getAllErrors().stream().forEach(oe -> log.info(oe.toString()));
-			// TODO
-			throw new RuntimeException("Errors!");
+			throw new BindException(errors);
 		}
 
-		return spiderRepository.add(spider);
+		spider = spiderRepository.add(spider);
+
+		spider.getStores().getPageMetadataStore().setHazelcastInstance(instance);
+		spider.getStores().getPageStore().setHazelcastInstance(instance);
+
+		// TODO
+		Map<String, Object> properties = new HashMap<>();
+
+		spider.getStores().getPageMetadataStore().init(properties);
+		spider.getStores().getPageStore().init(properties);
+
+		return spider;
 	}
 
 	public Optional<Spider> get(long id) {
@@ -159,10 +181,10 @@ public class SpiderService {
 
 			if (source.singleton()) {
 				log.debug("Sourcing from a random member");
-				taskService.executeOnRandomMember(sourceExecServiceName, new SourceTask(spider, source));
+				taskService.executeOnRandomMember(sourceExecServiceName, new SourceTask(spider.getId(), source));
 			} else {
 				log.debug("Sourcing from all members");
-				taskService.executeOnAllMembers(sourceExecServiceName, new SourceTask(spider, source));
+				taskService.executeOnAllMembers(sourceExecServiceName, new SourceTask(spider.getId(), source));
 			}
 		};
 	}

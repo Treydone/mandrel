@@ -11,7 +11,7 @@ import org.springframework.web.socket.server.standard.ServletServerContainerFact
 @Configuration
 @EnableWebSocket
 @EnableWebSocketMessageBroker
-public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
+public class WebSocketConfiguration extends AbstractWebSocketMessageBrokerConfigurer {
 
 	@Bean
 	public ServletServerContainerFactoryBean createWebSocketContainer() {

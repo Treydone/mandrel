@@ -49,7 +49,7 @@ public class SpiderServiceIntegrationTest {
 	public void no_filtering() throws IOException {
 
 		SpiderService spiderService = new SpiderService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
-				new Requester(new ClientSettings()));
+				new Requester(new ClientSettings()), null);
 
 		Spider spider = new Spider();
 		spider.setName("wikipedia");
@@ -80,7 +80,7 @@ public class SpiderServiceIntegrationTest {
 	public void same_domain() throws IOException {
 
 		SpiderService spiderService = new SpiderService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
-				new Requester(new ClientSettings()));
+				new Requester(new ClientSettings()), null);
 
 		Spider spider = new Spider();
 		spider.setName("wikipedia");
