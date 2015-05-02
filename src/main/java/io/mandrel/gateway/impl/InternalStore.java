@@ -13,9 +13,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
-
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hazelcast.core.HazelcastInstance;
@@ -26,7 +28,8 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 	private static final long serialVersionUID = -775049235484042261L;
 
 	@JsonIgnore
-	private HazelcastInstance hazelcastInstance;
+	@Getter(value = AccessLevel.NONE)
+	private transient HazelcastInstance hazelcastInstance;
 
 	public InternalStore() {
 	}
@@ -55,8 +58,9 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 
 		int recrawlAfterSeconds = politeness.getRecrawlAfterSeconds();
 
-		Map<String, Metadata> all = hazelcastInstance.<String, Metadata> getMap("pagemetastore-" + spiderId).getAll(
-				outlinks.stream().filter(ol -> StringUtils.isNotBlank(ol.getUri())).map(ol -> ol.getUri()).collect(Collectors.toSet()));
+		Map<String, Metadata> all = hazelcastInstance.<String, Metadata> getMap("pagemetastore-" + spiderId)
+				.getAll(outlinks.stream().filter(ol -> ol != null).filter(ol -> StringUtils.isNotBlank(ol.getUri())).map(ol -> ol.getUri())
+						.collect(Collectors.toSet()));
 
 		LocalDateTime now = LocalDateTime.now();
 		return outlinks.stream().filter(outlink -> {

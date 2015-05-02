@@ -130,15 +130,6 @@ public class SpiderService {
 
 		spider = spiderRepository.add(spider);
 
-		spider.getStores().getPageMetadataStore().setHazelcastInstance(instance);
-		spider.getStores().getPageStore().setHazelcastInstance(instance);
-
-		// TODO
-		Map<String, Object> properties = new HashMap<>();
-
-		spider.getStores().getPageMetadataStore().init(properties);
-		spider.getStores().getPageStore().init(properties);
-
 		return spider;
 	}
 
@@ -247,6 +238,21 @@ public class SpiderService {
 	}
 
 	protected Analysis buildReport(Spider spider, WebPage webPage) {
+
+		// State is new, spider is not initialized
+		if (State.NEW.equals(spider.getState())) {
+			spider.getStores().getPageMetadataStore().setHazelcastInstance(instance);
+			if (spider.getStores().getPageStore() != null) {
+				spider.getStores().getPageStore().setHazelcastInstance(instance);
+			}
+
+			// TODO
+			Map<String, Object> properties = new HashMap<>();
+
+			spider.getStores().getPageMetadataStore().init(properties);
+			spider.getStores().getPageStore().init(properties);
+		}
+
 		Analysis report = new Analysis();
 		if (spider.getExtractors() != null) {
 			if (spider.getExtractors().getPages() != null) {

@@ -6,11 +6,10 @@ import java.io.Serializable;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Data;
-
-import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 
 @Data
 public class Metadata implements Serializable {
@@ -20,7 +19,7 @@ public class Metadata implements Serializable {
 	private URL url;
 	private int statusCode;
 	private String statusText;
-	private FluentCaseInsensitiveStringsMap headers;
+	private Map<String, List<String>> headers;
 	private List<Cookie> cookies;
 	private LocalDateTime lastCrawlDate;
 	private long timeToFetch;

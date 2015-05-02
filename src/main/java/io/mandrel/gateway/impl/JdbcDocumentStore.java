@@ -9,7 +9,9 @@ import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 
 import org.apache.tomcat.jdbc.pool.PoolConfiguration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,8 +23,11 @@ import com.hazelcast.core.HazelcastInstance;
 @Data
 public class JdbcDocumentStore implements DocumentStore {
 
+	private static final long serialVersionUID = 5608990195947997882L;
+
 	@JsonIgnore
-	private HazelcastInstance hazelcastInstance;
+	@Getter(value = AccessLevel.NONE)
+	private transient HazelcastInstance hazelcastInstance;
 
 	@JsonUnwrapped
 	private PoolConfiguration configuration;

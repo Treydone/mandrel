@@ -7,7 +7,9 @@ import io.mandrel.gateway.DocumentStore;
 import java.util.List;
 import java.util.stream.Stream;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hazelcast.core.HazelcastInstance;
@@ -15,8 +17,11 @@ import com.hazelcast.core.HazelcastInstance;
 @Data
 public class CassandraDocumentStore implements DocumentStore {
 
+	private static final long serialVersionUID = 6396577303162229457L;
+
 	@JsonIgnore
-	private HazelcastInstance hazelcastInstance;
+	@Getter(value = AccessLevel.NONE)
+	private transient HazelcastInstance hazelcastInstance;
 
 	@Override
 	public void save(long spiderId, Document data) {

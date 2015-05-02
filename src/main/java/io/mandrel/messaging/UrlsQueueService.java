@@ -50,7 +50,8 @@ public class UrlsQueueService {
 			EnqueuedUrls bag = (EnqueuedUrls) data;
 			return bag.getUrls().stream().anyMatch(url -> {
 				long maxPages = spider.getClient().getPoliteness().getMaxPages();
-				if (maxPages > 0 && stats.getNbPages() < maxPages) {
+				if (maxPages > 0 && stats.getNbPages() > maxPages) {
+					log.debug("Max pages reached for {} ({})", spider.getName(), spider.getId());
 					return true;
 				}
 				doRequest(spider, url, stats);
@@ -62,44 +63,50 @@ public class UrlsQueueService {
 	private void doRequest(Spider spider, String url, Stats stats) {
 		log.trace("Requesting {}...", url);
 
-		StopWatch watch = new StopWatch();
-		watch.start();
+		try {
+			StopWatch watch = new StopWatch();
+			watch.start();
 
-		requester.get(url, spider, webPage -> {
-			watch.stop();
-			log.trace("Getting response for {}", url);
+			requester.get(url, spider, webPage -> {
+				watch.stop();
+				log.trace("Getting response for {}", url);
 
-			Metadata metadata = webPage.getMetadata();
-			metadata.setTimeToFetch(watch.getTotalTimeMillis());
+				Metadata metadata = webPage.getMetadata();
+				metadata.setTimeToFetch(watch.getTotalTimeMillis());
 
-			stats.incNbPages();
-			stats.incPageForStatus(metadata.getStatusCode());
-			// TODO
-			// stats.incTotalSize(size);
+				stats.incNbPages();
+				stats.incPageForStatus(metadata.getStatusCode());
+				// TODO
+				// stats.incTotalSize(size);
 
-				if (spider.getExtractors() != null) {
-					spider.getExtractors().getPages().forEach(ex -> extractorService.extractThenFormatThenStore(spider.getId(), webPage, ex));
-				}
-				if (spider.getExtractors().getOutlinks() != null) {
-					spider.getExtractors().getOutlinks().forEach(ol -> {
-						// Find outlinks in page
-							Set<Link> outlinks = extractorService.extractOutlinks(webPage, ol);
+					if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
+						spider.getExtractors().getPages().forEach(ex -> extractorService.extractThenFormatThenStore(spider.getId(), webPage, ex));
+					}
+					if (spider.getExtractors().getOutlinks() != null) {
+						spider.getExtractors().getOutlinks().forEach(ol -> {
+							// Find outlinks in page
+								Set<Link> outlinks = extractorService.extractOutlinks(webPage, ol);
 
-							// Filter outlinks
-							outlinks = spider.getStores().getPageMetadataStore().filter(spider.getId(), outlinks, spider.getClient().getPoliteness());
+								// Filter outlinks
+								outlinks = spider.getStores().getPageMetadataStore().filter(spider.getId(), outlinks, spider.getClient().getPoliteness());
 
-							metadata.setOutlinks(outlinks);
+								metadata.setOutlinks(outlinks);
 
-							// Respect politeness for this spider
-							// spider.getClient().getPoliteness().getMaxPages();
+								// Respect politeness for this spider
+								// spider.getClient().getPoliteness().getMaxPages();
 
-							// Add outlinks to queue
-							add(spider.getId(), outlinks.stream().map(l -> l.getUri()).collect(Collectors.toSet()));
-						});
-				}
+								// Add outlinks to queue
+								add(spider.getId(), outlinks.stream().map(l -> l.getUri()).collect(Collectors.toSet()));
+							});
+					}
 
-				spider.getStores().getPageStore().addPage(spider.getId(), webPage.getUrl().toString(), webPage);
-				spider.getStores().getPageMetadataStore().addMetadata(spider.getId(), webPage.getUrl().toString(), metadata);
-			});
+					if (spider.getStores().getPageStore() != null) {
+						spider.getStores().getPageStore().addPage(spider.getId(), webPage.getUrl().toString(), webPage);
+					}
+					spider.getStores().getPageMetadataStore().addMetadata(spider.getId(), webPage.getUrl().toString(), metadata);
+				});
+		} catch (Exception e) {
+			log.info("Hum...", url);
+		}
 	}
 }

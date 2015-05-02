@@ -1,5 +1,7 @@
 package io.mandrel.common.data;
 
-public enum State {
+import java.io.Serializable;
+
+public enum State implements Serializable {
 	NEW, STARTED, ENDED, CANCELLED
 }

@@ -6,6 +6,7 @@ import io.mandrel.gateway.impl.InternalDocumentStore;
 import io.mandrel.gateway.impl.JdbcDocumentStore;
 import io.mandrel.monitor.health.Checkable;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -17,7 +18,7 @@ import com.hazelcast.core.HazelcastInstanceAware;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({ @Type(value = InternalDocumentStore.class, name = "internal"), @Type(value = JdbcDocumentStore.class, name = "jdbc"),
 		@Type(value = CassandraDocumentStore.class, name = "cassandra") })
-public interface DocumentStore extends Checkable, HazelcastInstanceAware {
+public interface DocumentStore extends Checkable, Serializable, HazelcastInstanceAware {
 
 	void init(WebPageExtractor webPageExtractor);
 

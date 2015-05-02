@@ -11,10 +11,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Getter;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hazelcast.core.HazelcastInstance;
-
-import lombok.Data;
 
 @Data
 public class JdbcStore implements WebPageStore, PageMetadataStore {
@@ -22,7 +24,8 @@ public class JdbcStore implements WebPageStore, PageMetadataStore {
 	private static final long serialVersionUID = -4148862105449045170L;
 
 	@JsonIgnore
-	private HazelcastInstance hazelcastInstance;
+	@Getter(value = AccessLevel.NONE)
+	private transient HazelcastInstance hazelcastInstance;
 
 	@Override
 	public boolean check() {

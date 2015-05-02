@@ -4,10 +4,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import lombok.Data;
-
-import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 
 @Data
 public class WebPage {
@@ -18,7 +17,7 @@ public class WebPage {
 
 	private final InputStream body;
 
-	public WebPage(URL url, int statusCode, String statusText, FluentCaseInsensitiveStringsMap headers, List<Cookie> cookies, InputStream body) {
+	public WebPage(URL url, int statusCode, String statusText, Map<String, List<String>> headers, List<Cookie> cookies, InputStream body) {
 		super();
 		this.url = url;
 		this.metadata = new Metadata();

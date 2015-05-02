@@ -1,6 +1,8 @@
 package io.mandrel.data.content;
 
-public enum SourceType {
+import java.io.Serializable;
+
+public enum SourceType implements Serializable {
 
 	EMPTY, BODY, HEADERS, URL, COOKIE
 }
