@@ -29,12 +29,8 @@ public class SpiderValidator implements Validator {
 			}
 		}
 
-		if (stores.getPageStore() == null) {
-			errors.rejectValue("stores.pageStore", "stores.pageStore.not.null", null, "Can not be null.");
-		} else {
-			if (!stores.getPageMetadataStore().check()) {
-				errors.rejectValue("stores.pageStore", "stores.pageStore.failed", null, "PageStore failed check.");
-			}
+		if (stores.getPageStore() != null && !stores.getPageMetadataStore().check()) {
+			errors.rejectValue("stores.pageStore", "stores.pageStore.failed", null, "PageStore failed check.");
 		}
 
 		// Sources

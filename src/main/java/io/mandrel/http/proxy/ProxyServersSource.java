@@ -13,5 +13,6 @@ import com.ning.http.client.ProxyServer;
 @JsonSubTypes({ @Type(value = NoProxyProxyServersSource.class, name = "no") })
 public interface ProxyServersSource extends Serializable {
 
+	// TODO Use an internal proxy class
 	ProxyServer findProxy(Spider spider);
 }

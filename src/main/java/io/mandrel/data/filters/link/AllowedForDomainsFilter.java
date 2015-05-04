@@ -5,6 +5,7 @@ import io.mandrel.data.spider.Link;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,7 +21,7 @@ public class AllowedForDomainsFilter extends LinkFilter {
 	private List<String> domains;
 
 	public boolean isValid(Link link) {
-		if (CollectionUtils.isNotEmpty(domains)) {
+		if (CollectionUtils.isNotEmpty(domains) && link != null && StringUtils.isNotBlank(link.getUri())) {
 			return domains.stream().anyMatch(d -> link.getUri().contains(d));
 		}
 		return false;

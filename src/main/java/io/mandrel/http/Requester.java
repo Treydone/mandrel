@@ -6,6 +6,7 @@ import io.mandrel.common.settings.ClientSettings;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -46,6 +47,7 @@ public class Requester {
 	}
 
 	public void get(String url, Spider spider, Callback callback) {
+		log.trace("Requesting {}...", url);
 		BoundRequestBuilder request = prepareRequest(url, spider);
 
 		request.execute(new AsyncCompletionHandler<Response>() {
@@ -100,8 +102,8 @@ public class Requester {
 				.stream()
 				.map(cookie -> new io.mandrel.http.Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie.getExpires(),
 						cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList());
-		WebPage webPage = new WebPage(new URL(url), response.getStatusCode(), response.getStatusText(), response.getHeaders(), cookies,
-				response.getResponseBodyAsStream());
+		WebPage webPage = new WebPage(new URL(url), response.getStatusCode(), response.getStatusText(), new HashMap<>(response.getHeaders()), cookies,
+				response.getResponseBodyAsBytes());
 		return webPage;
 	}
 

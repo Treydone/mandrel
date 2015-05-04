@@ -44,7 +44,7 @@ public class SpiderRepository {
 	}
 
 	public Stream<Spider> list() {
-		return spiders(instance).values().stream().map(el -> (Spider) el);
+		return spiders(instance).values().stream().map(el -> el);
 	}
 
 	// ------------------------------ TOOLS

@@ -22,8 +22,6 @@ import io.mandrel.http.Cookie;
 import io.mandrel.http.WebPage;
 import io.mandrel.script.ScriptingService;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,6 +37,7 @@ import javax.script.ScriptEngine;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import us.codecraft.xsoup.xevaluator.XElement;
@@ -66,10 +65,18 @@ public class ExtractorService {
 		List<Link> outlinks = extract(cachedSelectors, webPage, null, extractor.getExtractor(), new DataConverter<XElement, Link>() {
 			public Link convert(XElement element) {
 				Link link = new Link();
-				link.setUri(element.getElement().attr("href"));
-				link.setRel(element.getElement().attr("rel"));
-				link.setTitle(element.getElement().attr("title"));
-				link.setText(element.getElement().val());
+
+				String uri = element.getElement().absUrl("href");
+				link.setUri(StringUtils.isNotBlank(uri) ? uri : null);
+
+				String rel = element.getElement().attr("rel");
+				link.setRel(StringUtils.isNotBlank(rel) ? rel : null);
+
+				String title = element.getElement().attr("title");
+				link.setTitle(StringUtils.isNotBlank(title) ? title : null);
+
+				String text = element.getElement().ownText();
+				link.setText(StringUtils.isNotBlank(text) ? text : null);
 				return link;
 			}
 		});
@@ -117,7 +124,7 @@ public class ExtractorService {
 						List<? extends Object> results = null;
 
 						if (field.isUseMultiple() && SourceType.BODY.equals(field.getExtractor().getSource())) {
-							results = extract(cachedSelectors, webPage, new ByteArrayInputStream(segment.getBytes()), field.getExtractor());
+							results = extract(cachedSelectors, webPage, segment.getBytes(), field.getExtractor());
 						} else {
 							results = extract(cachedSelectors, webPage, null, field.getExtractor());
 						}
@@ -157,12 +164,11 @@ public class ExtractorService {
 		return documents;
 	}
 
-	public List<String> extract(Map<String, Instance<?>> selectors, WebPage webPage, InputStream segment, Extractor fieldExtractor) {
+	public List<String> extract(Map<String, Instance<?>> selectors, WebPage webPage, byte[] segment, Extractor fieldExtractor) {
 		return extract(selectors, webPage, segment, fieldExtractor, DataConverter.BODY);
 	}
 
-	public <T, U> List<U> extract(Map<String, Instance<?>> selectors, WebPage webPage, InputStream segment, Extractor fieldExtractor,
-			DataConverter<T, U> converter) {
+	public <T, U> List<U> extract(Map<String, Instance<?>> selectors, WebPage webPage, byte[] segment, Extractor fieldExtractor, DataConverter<T, U> converter) {
 		Preconditions.checkNotNull(fieldExtractor, "There is no field extractor...");
 		Preconditions.checkNotNull(fieldExtractor.getType(), "Extractor without type");
 		Preconditions.checkNotNull(fieldExtractor.getValue(), "Extractor without value");

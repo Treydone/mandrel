@@ -31,12 +31,24 @@ public class QueueService {
 	 */
 	public <T> void registrer(String queueName, Callback<T> callback) {
 		boolean loop = true;
+		int nbException = 0;
+		// TODO should be parameterized
+		int maxAllowedSuccessiveException = 10;
+
 		while (loop) {
 			try {
+				// Block until message arrive
 				T message = instance.<T> getQueue(queueName).take();
 				loop = !callback.onMessage(message);
 			} catch (Exception e) {
 				log.warn("Wut?", e);
+
+				nbException++;
+				if (nbException >= maxAllowedSuccessiveException) {
+					log.warn("Too many succesive exceptions, breaking the loop");
+					break;
+				}
+
 				try {
 					Thread.sleep(5000);
 				} catch (Exception e1) {
@@ -44,6 +56,7 @@ public class QueueService {
 				}
 			}
 		}
+		log.warn("Loop has been stopped");
 	}
 
 	@FunctionalInterface

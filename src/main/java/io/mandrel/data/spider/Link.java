@@ -3,8 +3,10 @@ package io.mandrel.data.spider;
 import java.io.Serializable;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
+@Accessors(chain = true)
 public class Link implements Serializable {
 
 	private static final long serialVersionUID = -7302907794790398632L;

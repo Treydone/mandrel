@@ -2,10 +2,12 @@ package io.mandrel.data.extract;
 
 import io.mandrel.data.content.Extractor;
 import io.mandrel.data.content.FieldExtractor;
+import io.mandrel.data.content.OutlinkExtractor;
 import io.mandrel.data.content.SourceType;
 import io.mandrel.data.content.WebPageExtractor;
 import io.mandrel.data.content.selector.SelectorService;
 import io.mandrel.data.extract.ExtractorService;
+import io.mandrel.data.spider.Link;
 import io.mandrel.gateway.Document;
 import io.mandrel.gateway.DocumentStore;
 import io.mandrel.http.WebPage;
@@ -15,7 +17,9 @@ import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Set;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -148,7 +152,7 @@ public class ExtractorServiceTest {
 	public void simple() throws MalformedURLException {
 
 		// Arrange
-		ByteArrayInputStream stream = new ByteArrayInputStream("<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes());
+		byte[] stream = "<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes();
 
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
@@ -176,7 +180,7 @@ public class ExtractorServiceTest {
 	public void simple_with_mutiple_extractors() throws MalformedURLException {
 
 		// Arrange
-		ByteArrayInputStream stream = new ByteArrayInputStream("<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes());
+		byte[] stream = "<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes();
 
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
@@ -215,8 +219,8 @@ public class ExtractorServiceTest {
 	public void multiple() throws MalformedURLException {
 
 		// Arrange
-		ByteArrayInputStream stream = new ByteArrayInputStream(
-				"<html><body><test><o>value1</o><t>key1</t></test><test><o>value2</o><t>key2</t></test><test><o>value3</o></test></body></html>".getBytes());
+		byte[] stream = "<html><body><test><o>value1</o><t>key1</t></test><test><o>value2</o><t>key2</t></test><test><o>value3</o></test></body></html>"
+				.getBytes();
 
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
@@ -265,4 +269,20 @@ public class ExtractorServiceTest {
 		Mockito.verify(dataStore).save(0, Arrays.asList(data1, data2, data3));
 	}
 
+	@Test
+	public void outlinks() throws MalformedURLException {
+
+		// Arrange
+		byte[] stream = "<html><body><a href='http://test.com/pouet'>Absolute</a><a href='/pouet'>Relative</a></body></html>".getBytes();
+
+		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
+		OutlinkExtractor extractor = new OutlinkExtractor("_default");
+
+		// Actions
+		Set<Link> links = extractorService.extractOutlinks(webPage, extractor);
+
+		// Asserts
+		Assertions.assertThat(links).containsExactly(new Link().setText("Absolute").setUri("http://test.com/pouet"),
+				new Link().setText("Relative").setUri("http://localhost/pouet"));
+	}
 }

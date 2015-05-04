@@ -2,13 +2,12 @@ package io.mandrel.data.content.selector;
 
 import io.mandrel.http.WebPage;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 
@@ -38,13 +37,13 @@ public class XpathSelector extends BodySelector<XElement> {
 	}
 
 	@Override
-	public Instance<XElement> init(WebPage webPage, InputStream data, boolean isSegment) {
+	public Instance<XElement> init(WebPage webPage, byte[] data, boolean isSegment) {
 		Element element;
 		try {
 			if (!isSegment) {
-				element = Jsoup.parse(data, "UTF-8", webPage.getUrl().toString());
+				element = Jsoup.parse(new ByteArrayInputStream(data), "UTF-8", webPage.getUrl().toString());
 			} else {
-				element = Jsoup.parseBodyFragment(IOUtils.toString(data, "UTF-8"), webPage.getUrl().toString()).body();
+				element = Jsoup.parseBodyFragment(new String(data, "UTF-8"), webPage.getUrl().toString()).body();
 			}
 		} catch (IOException e) {
 			throw Throwables.propagate(e);

@@ -1,12 +1,16 @@
 package io.mandrel.config;
 
+import io.mandrel.common.serialization.CompressionType;
+import io.mandrel.common.serialization.KryoSerializer;
 import io.mandrel.common.settings.NetworkSettings;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.esotericsoftware.kryo.pool.KryoPool;
 import com.hazelcast.config.Config;
+import com.hazelcast.config.GlobalSerializerConfig;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.InterfacesConfig;
 import com.hazelcast.config.JoinConfig;
@@ -27,7 +31,7 @@ public class HazelcastConfiguration {
 	}
 
 	@Bean(destroyMethod = "shutdown")
-	public HazelcastInstance hazelcastInstance(NetworkSettings networkSettings) {
+	public HazelcastInstance hazelcastInstance(NetworkSettings networkSettings, KryoPool pool) {
 
 		log.debug("Network settings: {}", networkSettings);
 
@@ -78,6 +82,9 @@ public class HazelcastConfiguration {
 		}
 
 		config.setNetworkConfig(networkConfig);
+
+		GlobalSerializerConfig global = new GlobalSerializerConfig().setImplementation(new KryoSerializer<>(CompressionType.SNAPPY, Object.class, pool, 0));
+		config.getSerializationConfig().setGlobalSerializerConfig(global);
 
 		// Start Hazelcast
 		HazelcastInstance instance = Hazelcast.newHazelcastInstance(config);

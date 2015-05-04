@@ -10,8 +10,10 @@ import java.util.Map;
 import java.util.Set;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
+@Accessors(chain = true)
 public class Metadata implements Serializable {
 
 	private static final long serialVersionUID = -7319512873380929621L;

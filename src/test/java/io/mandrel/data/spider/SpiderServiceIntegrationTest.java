@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,7 +64,7 @@ public class SpiderServiceIntegrationTest {
 		Mockito.when(metadataStore.filter(Mockito.anyLong(), captor.capture(), Mockito.any(Politeness.class))).thenReturn(temp);
 
 		InputStream body = new ClassPathResource("/data/wikipedia.html").getInputStream();
-		WebPage webPage = new WebPage(new URL("http://fr.wikipedia.org/wiki/Wikip%C3%A9dia"), 200, "", null, null, body);
+		WebPage webPage = new WebPage(new URL("http://fr.wikipedia.org/wiki/Wikip%C3%A9dia"), 200, "", null, null, IOUtils.toByteArray(body));
 		Analysis report = spiderService.buildReport(spider, webPage);
 
 		Mockito.verify(metadataStore).filter(Mockito.anyLong(), Mockito.anySetOf(Link.class), Mockito.any(Politeness.class));
@@ -97,7 +98,7 @@ public class SpiderServiceIntegrationTest {
 		Mockito.when(metadataStore.filter(Mockito.anyLong(), captor.capture(), Mockito.any(Politeness.class))).thenReturn(temp);
 
 		InputStream body = new ClassPathResource("/data/wikipedia.html").getInputStream();
-		WebPage webPage = new WebPage(new URL("http://fr.wikipedia.org/wiki/Wikip%C3%A9dia"), 200, "", null, null, body);
+		WebPage webPage = new WebPage(new URL("http://fr.wikipedia.org/wiki/Wikip%C3%A9dia"), 200, "", null, null, IOUtils.toByteArray(body));
 		Analysis report = spiderService.buildReport(spider, webPage);
 
 		Mockito.verify(metadataStore).filter(Mockito.anyLong(), Mockito.anySetOf(Link.class), Mockito.any(Politeness.class));

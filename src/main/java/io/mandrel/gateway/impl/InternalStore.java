@@ -56,15 +56,14 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 			return null;
 		}
 
+		Set<String> uris = outlinks.stream().filter(ol -> ol != null).filter(ol -> StringUtils.isNotBlank(ol.getUri())).map(ol -> ol.getUri())
+				.collect(Collectors.toSet());
+		Map<String, Metadata> all = hazelcastInstance.<String, Metadata> getMap("pagemetastore-" + spiderId).getAll(uris);
+
 		int recrawlAfterSeconds = politeness.getRecrawlAfterSeconds();
-
-		Map<String, Metadata> all = hazelcastInstance.<String, Metadata> getMap("pagemetastore-" + spiderId)
-				.getAll(outlinks.stream().filter(ol -> ol != null).filter(ol -> StringUtils.isNotBlank(ol.getUri())).map(ol -> ol.getUri())
-						.collect(Collectors.toSet()));
-
 		LocalDateTime now = LocalDateTime.now();
 		return outlinks.stream().filter(outlink -> {
-			Metadata entry = (Metadata) all.get(outlink);
+			Metadata entry = all.get(outlink.getUri());
 
 			if (entry == null) {
 				return true;

@@ -1,23 +1,24 @@
 package io.mandrel.http;
 
-import java.io.InputStream;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class WebPage {
 
-	private final URL url;
+	private URL url;
 
-	private final Metadata metadata;
+	private Metadata metadata;
 
-	private final InputStream body;
+	private byte[] body;
 
-	public WebPage(URL url, int statusCode, String statusText, Map<String, List<String>> headers, List<Cookie> cookies, InputStream body) {
+	public WebPage(URL url, int statusCode, String statusText, Map<String, List<String>> headers, List<Cookie> cookies, byte[] body) {
 		super();
 		this.url = url;
 		this.metadata = new Metadata();
