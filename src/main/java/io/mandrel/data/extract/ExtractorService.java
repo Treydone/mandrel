@@ -1,5 +1,6 @@
 package io.mandrel.data.extract;
 
+import io.mandrel.common.data.Spider;
 import io.mandrel.data.content.Extractor;
 import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.data.content.Formatter;
@@ -37,7 +38,9 @@ import javax.script.ScriptEngine;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
 import us.codecraft.xsoup.xevaluator.XElement;
@@ -57,6 +60,26 @@ public class ExtractorService {
 		super();
 		this.scriptingService = scriptingService;
 		this.selectorService = selectorService;
+	}
+
+	public Pair<Set<Link>, Set<String>> extractAndFilterOutlinks(Spider spider, String url, WebPage webPage, OutlinkExtractor ol) {
+		// Find outlinks in page
+		Set<Link> outlinks = extractOutlinks(webPage, ol);
+		log.trace("Finding outlinks for url {}: {}", url, outlinks);
+
+		// Filter outlinks
+		Set<Link> filteredOutlinks = null;
+		if (spider.getFilters() != null && CollectionUtils.isNotEmpty(spider.getFilters().getForLinks())) {
+			filteredOutlinks = outlinks.stream().filter(link -> spider.getFilters().getForLinks().stream().allMatch(f -> f.isValid(link)))
+					.collect(Collectors.toSet());
+		} else {
+			filteredOutlinks = outlinks;
+		}
+
+		Set<String> allFilteredOutlinks = spider.getStores().getPageMetadataStore()
+				.filter(spider.getId(), filteredOutlinks, spider.getClient().getPoliteness());
+		log.trace("And filtering {}", filteredOutlinks);
+		return Pair.of(outlinks, allFilteredOutlinks);
 	}
 
 	public Set<Link> extractOutlinks(WebPage webPage, OutlinkExtractor extractor) {

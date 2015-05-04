@@ -2,20 +2,17 @@ package io.mandrel.messaging;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.extract.ExtractorService;
-import io.mandrel.data.spider.Link;
 import io.mandrel.http.Metadata;
 import io.mandrel.http.Requester;
 import io.mandrel.stats.Stats;
 import io.mandrel.stats.StatsService;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -66,64 +63,44 @@ public class UrlsQueueService {
 			StopWatch watch = new StopWatch();
 			watch.start();
 
-			requester.get(
-					url,
-					spider,
-					webPage -> {
-						watch.stop();
-						log.trace("Getting response for {}", url);
+			requester.get(url, spider, webPage -> {
+				watch.stop();
+				log.trace("Getting response for {}", url);
 
-						Metadata metadata = webPage.getMetadata();
-						metadata.setTimeToFetch(watch.getTotalTimeMillis());
+				Metadata metadata = webPage.getMetadata();
+				metadata.setTimeToFetch(watch.getTotalTimeMillis());
 
-						stats.incNbPages();
-						stats.incPageForStatus(metadata.getStatusCode());
-						// TODO
-						// stats.incTotalSize(size);
+				stats.incNbPages();
+				stats.incPageForStatus(metadata.getStatusCode());
+				// TODO
+				// stats.incTotalSize(size);
 
-						if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
-							spider.getExtractors().getPages().forEach(ex -> extractorService.extractThenFormatThenStore(spider.getId(), webPage, ex));
-						}
-						if (spider.getExtractors().getOutlinks() != null) {
-							spider.getExtractors()
-									.getOutlinks()
-									.forEach(ol -> {
-										// Find outlinks in page
-											Set<Link> outlinks = extractorService.extractOutlinks(webPage, ol);
-											log.trace("Finding outlinks for url {}: {}", url, outlinks);
+					if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
+						spider.getExtractors().getPages().forEach(ex -> extractorService.extractThenFormatThenStore(spider.getId(), webPage, ex));
+					}
+					if (spider.getExtractors().getOutlinks() != null) {
+						spider.getExtractors().getOutlinks().forEach(ol -> {
+							Set<String> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, url, webPage, ol).getRight();
 
-											// Filter outlinks
-											Set<Link> filteredOutlinks = null;
-											if (spider.getFilters() != null && CollectionUtils.isNotEmpty(spider.getFilters().getForLinks())) {
-												filteredOutlinks = outlinks.stream()
-														.filter(link -> spider.getFilters().getForLinks().stream().anyMatch(f -> f.isValid(link)))
-														.collect(Collectors.toSet());
-											} else {
-												filteredOutlinks = outlinks;
-											}
+							metadata.setOutlinks(allFilteredOutlinks);
 
-											Set<String> allFilteredOutlinks = spider.getStores().getPageMetadataStore()
-													.filter(spider.getId(), filteredOutlinks, spider.getClient().getPoliteness());
-											log.trace("And filtering {}", filteredOutlinks);
+							// Respect politeness for this
+							// spider
+							// TODO
 
-											metadata.setOutlinks(allFilteredOutlinks);
+								// Add outlinks to queue
+								add(spider.getId(), allFilteredOutlinks);
+							});
+					}
 
-											// Respect politeness for this
-											// spider
-											// TODO
-
-											// Add outlinks to queue
-											add(spider.getId(), allFilteredOutlinks);
-										});
-						}
-
-						if (spider.getStores().getPageStore() != null) {
-							spider.getStores().getPageStore().addPage(spider.getId(), webPage.getUrl().toString(), webPage);
-						}
-						spider.getStores().getPageMetadataStore().addMetadata(spider.getId(), webPage.getUrl().toString(), metadata);
-					});
+					if (spider.getStores().getPageStore() != null) {
+						spider.getStores().getPageStore().addPage(spider.getId(), webPage.getUrl().toString(), webPage);
+					}
+					spider.getStores().getPageMetadataStore().addMetadata(spider.getId(), webPage.getUrl().toString(), metadata);
+				});
 		} catch (Exception e) {
 			log.debug("Can not fetch url {} due to {}", new Object[] { url, e.toString() }, e);
 		}
 	}
+
 }

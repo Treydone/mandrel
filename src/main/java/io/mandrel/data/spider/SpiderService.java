@@ -269,28 +269,9 @@ public class SpiderService {
 				report.setDocuments(documentsByExtractor);
 			}
 			if (spider.getExtractors().getOutlinks() != null) {
-				Map<String, Pair<Set<Link>, Set<String>>> outlinksByExtractor = spider
-						.getExtractors()
-						.getOutlinks()
-						.stream()
-						.map(ol -> {
-							// Find outlinks in page
-							Set<Link> outlinks = extractorService.extractOutlinks(webPage, ol);
-
-							Set<Link> filteredOutlinks = null;
-							if (spider.getFilters() != null && CollectionUtils.isNotEmpty(spider.getFilters().getForLinks())) {
-								filteredOutlinks = outlinks.stream().filter(link -> spider.getFilters().getForLinks().stream().anyMatch(f -> f.isValid(link)))
-										.collect(Collectors.toSet());
-							} else {
-								filteredOutlinks = outlinks;
-							}
-
-							// Filter outlinks
-							Set<String> allFilteredOutlinks = spider.getStores().getPageMetadataStore()
-									.filter(spider.getId(), filteredOutlinks, spider.getClient().getPoliteness());
-
-							return Pair.of(ol.getName(), Pair.of(outlinks, allFilteredOutlinks));
-						}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
+				Map<String, Pair<Set<Link>, Set<String>>> outlinksByExtractor = spider.getExtractors().getOutlinks().stream().map(ol -> {
+					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(spider, webPage.getUrl().toString(), webPage, ol));
+				}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
 
 				report.setOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getLeft()));
 				report.setFilteredOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getRight()));
