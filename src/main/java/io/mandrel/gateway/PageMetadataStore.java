@@ -26,5 +26,5 @@ public interface PageMetadataStore extends Checkable, Serializable, HazelcastIns
 
 	void init(Map<String, Object> properties);
 
-	Set<Link> filter(long spiderId, Set<Link> outlinks, Politeness politeness);
+	Set<String> filter(long spiderId, Set<Link> outlinks, Politeness politeness);
 }

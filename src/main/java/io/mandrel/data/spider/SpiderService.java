@@ -4,6 +4,7 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.State;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
+import io.mandrel.data.filters.link.SkipAncorFilter;
 import io.mandrel.data.source.FixedSource;
 import io.mandrel.data.source.Source;
 import io.mandrel.gateway.Document;
@@ -109,7 +110,11 @@ public class SpiderService {
 	public Spider add(List<String> urls) throws BindException {
 		Spider spider = new Spider();
 		spider.setName(generator.next());
+
+		// Add source
 		spider.setSources(Arrays.asList(new FixedSource().setUrls(urls).setName("fixed_source")));
+
+		// Add filters
 		spider.getFilters().getForLinks().add(new AllowedForDomainsFilter().setDomains(urls.stream().map(url -> {
 			try {
 				return new URL(url).getHost();
@@ -117,6 +122,8 @@ public class SpiderService {
 				throw Throwables.propagate(e);
 			}
 		}).collect(Collectors.toList())));
+		spider.getFilters().getForLinks().add(new SkipAncorFilter());
+
 		return add(spider);
 	}
 
@@ -262,7 +269,7 @@ public class SpiderService {
 				report.setDocuments(documentsByExtractor);
 			}
 			if (spider.getExtractors().getOutlinks() != null) {
-				Map<String, Pair<Set<Link>, Set<Link>>> outlinksByExtractor = spider
+				Map<String, Pair<Set<Link>, Set<String>>> outlinksByExtractor = spider
 						.getExtractors()
 						.getOutlinks()
 						.stream()
@@ -279,10 +286,10 @@ public class SpiderService {
 							}
 
 							// Filter outlinks
-							filteredOutlinks = spider.getStores().getPageMetadataStore()
+							Set<String> allFilteredOutlinks = spider.getStores().getPageMetadataStore()
 									.filter(spider.getId(), filteredOutlinks, spider.getClient().getPoliteness());
 
-							return Pair.of(ol.getName(), Pair.of(outlinks, filteredOutlinks));
+							return Pair.of(ol.getName(), Pair.of(outlinks, allFilteredOutlinks));
 						}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
 
 				report.setOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getLeft()));

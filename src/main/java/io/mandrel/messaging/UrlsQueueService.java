@@ -102,18 +102,18 @@ public class UrlsQueueService {
 												filteredOutlinks = outlinks;
 											}
 
-											filteredOutlinks = spider.getStores().getPageMetadataStore()
+											Set<String> allFilteredOutlinks = spider.getStores().getPageMetadataStore()
 													.filter(spider.getId(), filteredOutlinks, spider.getClient().getPoliteness());
 											log.trace("And filtering {}", filteredOutlinks);
 
-											metadata.setOutlinks(filteredOutlinks);
+											metadata.setOutlinks(allFilteredOutlinks);
 
 											// Respect politeness for this
 											// spider
 											// TODO
 
 											// Add outlinks to queue
-											add(spider.getId(), filteredOutlinks.stream().map(l -> l.getUri()).collect(Collectors.toSet()));
+											add(spider.getId(), allFilteredOutlinks);
 										});
 						}
 

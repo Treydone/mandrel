@@ -50,14 +50,13 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 		hazelcastInstance.getMap("pagemetastore-" + spiderId).set(url, metadata);
 	}
 
-	public Set<Link> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
+	public Set<String> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
 
 		if (outlinks == null) {
 			return null;
 		}
 
-		Set<String> uris = outlinks.stream().filter(ol -> ol != null).filter(ol -> StringUtils.isNotBlank(ol.getUri())).map(ol -> ol.getUri())
-				.collect(Collectors.toSet());
+		Set<String> uris = outlinks.stream().filter(ol -> ol != null && StringUtils.isNotBlank(ol.getUri())).map(ol -> ol.getUri()).collect(Collectors.toSet());
 		Map<String, Metadata> all = hazelcastInstance.<String, Metadata> getMap("pagemetastore-" + spiderId).getAll(uris);
 
 		int recrawlAfterSeconds = politeness.getRecrawlAfterSeconds();
@@ -74,7 +73,7 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 			}
 
 			return false;
-		}).collect(Collectors.toSet());
+		}).map(l -> l.getUri()).collect(Collectors.toSet());
 	}
 
 	public Stream<WebPage> all(long spiderId) {

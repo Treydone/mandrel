@@ -25,5 +25,5 @@ public class Metadata implements Serializable {
 	private List<Cookie> cookies;
 	private LocalDateTime lastCrawlDate;
 	private long timeToFetch;
-	private Set<Link> outlinks;
+	private Set<String> outlinks;
 }

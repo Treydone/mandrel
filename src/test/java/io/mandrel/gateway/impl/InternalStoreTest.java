@@ -9,11 +9,13 @@ import io.mandrel.http.WebPage;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -59,11 +61,48 @@ public class InternalStoreTest {
 		instance.shutdown();
 	}
 
+	@Before
+	public void beforeEachTest() {
+		instance.getMap("pagestore-" + 0).destroy();
+		instance.getMap("pagemetastore-" + 0).destroy();
+	}
+
 	@Test
 	public void addPage() throws MalformedURLException {
 
-		store.addPage(0, "http://wikipedia.org/0", new WebPage(new URL("http://wikipedia.org"), 200, "OK", null, null, "<html></html>".getBytes()));
-		store.addPage(0, "http://wikipedia.org/1", new WebPage(new URL("http://wikipedia.org"), 200, "OK", null, null, "<html></html>".getBytes()));
+		store.addPage(0, "http://wikipedia.org/0", new WebPage(new URL("http://wikipedia.org/0"), 200, "OK", null, null, "<html></html>".getBytes()));
+		store.addPage(0, "http://wikipedia.org/1", new WebPage(new URL("http://wikipedia.org/1"), 200, "OK", null, null, "<html></html>".getBytes()));
+
+		Assertions.assertThat(instance.getMap("pagestore-" + 0).get("http://wikipedia.org/0")).isNotNull();
+		Assertions.assertThat(instance.getMap("pagestore-" + 0).get("http://wikipedia.org/1")).isNotNull();
+	}
+
+	@Test
+	public void all() throws MalformedURLException {
+
+		WebPage webPage1 = new WebPage(new URL("http://wikipedia.org/1"), 200, "OK", null, null, "<html></html>".getBytes());
+		store.addPage(0, "http://wikipedia.org/1", webPage1);
+
+		WebPage webPage2 = new WebPage(new URL("http://wikipedia.org/2"), 200, "OK", null, null, "<html></html>".getBytes());
+		store.addPage(0, "http://wikipedia.org/2", webPage2);
+
+		List<WebPage> all = store.all(0).collect(Collectors.toList());
+
+		Assertions.assertThat(all).usingFieldByFieldElementComparator().containsExactly(webPage1, webPage2);
+	}
+
+	@Test
+	public void delete() throws MalformedURLException {
+		store.addMetadata(0, "http://wikipedia.org/0", new Metadata().setStatusCode(200).setStatusText("OK").setUrl(new URL("http://wikipedia.org/0")));
+		store.addPage(0, "http://wikipedia.org/0", new WebPage(new URL("http://wikipedia.org/0"), 200, "OK", null, null, "<html></html>".getBytes()));
+
+		Assertions.assertThat(instance.getMap("pagemetastore-" + 0).get("http://wikipedia.org/0")).isNotNull();
+		Assertions.assertThat(instance.getMap("pagestore-" + 0).get("http://wikipedia.org/0")).isNotNull();
+
+		store.deleteAllFor(0);
+
+		Assertions.assertThat(instance.getMap("pagemetastore-" + 0).get("http://wikipedia.org/0")).isNull();
+		Assertions.assertThat(instance.getMap("pagestore-" + 0).get("http://wikipedia.org/0")).isNull();
 	}
 
 	@Test
@@ -73,13 +112,12 @@ public class InternalStoreTest {
 	}
 
 	@Test
-	public void filter() throws MalformedURLException {
+	public void filter_simple() throws MalformedURLException {
 		store.addMetadata(0, "http://toto", new Metadata().setStatusCode(200).setStatusText("OK").setUrl(new URL("http://toto")));
-		store.addMetadata(0, "http://toto/2", new Metadata().setStatusCode(200).setStatusText("OK").setUrl(new URL("http://toto/2")));
 
-		Set<Link> filtered = store.filter(0, Sets.newHashSet(new Link().setUri("http://toto")), new Politeness());
+		Set<String> filtered = store.filter(0, Sets.newHashSet(new Link().setUri("http://toto"), new Link().setUri("http://toto/2")), new Politeness());
 
-		Assertions.assertThat(filtered).contains(new Link().setUri("http://toto/2"));
+		Assertions.assertThat(filtered).contains("http://toto/2");
 	}
 
 }

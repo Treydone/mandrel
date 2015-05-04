@@ -48,7 +48,7 @@ public class JdbcStore implements WebPageStore, PageMetadataStore {
 	}
 
 	@Override
-	public Set<Link> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
+	public Set<String> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
 		// TODO Auto-generated method stub
 		return null;
 	}

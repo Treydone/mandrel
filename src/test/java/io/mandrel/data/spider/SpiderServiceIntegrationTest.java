@@ -19,6 +19,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.assertj.core.api.Assertions;
@@ -60,7 +61,7 @@ public class SpiderServiceIntegrationTest {
 
 		spiderService.validate(spider);
 
-		Set<Link> temp = new HashSet<>();
+		Set<String> temp = new HashSet<>();
 		Mockito.when(metadataStore.filter(Mockito.anyLong(), captor.capture(), Mockito.any(Politeness.class))).thenReturn(temp);
 
 		InputStream body = new ClassPathResource("/data/wikipedia.html").getInputStream();
@@ -68,13 +69,13 @@ public class SpiderServiceIntegrationTest {
 		Analysis report = spiderService.buildReport(spider, webPage);
 
 		Mockito.verify(metadataStore).filter(Mockito.anyLong(), Mockito.anySetOf(Link.class), Mockito.any(Politeness.class));
-		temp.addAll(captor.getValue());
+		temp.addAll(captor.getValue().stream().map(l -> l.getUri()).collect(Collectors.toSet()));
 
 		Assertions.assertThat(report.getOutlinks().get(Constants._DEFAULT_OUTLINKS_EXTRATOR).size()).isGreaterThan(0);
 		Assertions.assertThat(report.getFilteredOutlinks().get(Constants._DEFAULT_OUTLINKS_EXTRATOR).size()).isGreaterThan(0);
 
-		Assertions.assertThat(report.getOutlinks().get(Constants._DEFAULT_OUTLINKS_EXTRATOR)).usingFieldByFieldElementComparator()
-				.isEqualTo(report.getFilteredOutlinks().get(Constants._DEFAULT_OUTLINKS_EXTRATOR));
+		Assertions.assertThat(report.getOutlinks().get(Constants._DEFAULT_OUTLINKS_EXTRATOR).stream().map(l -> l.getUri()).collect(Collectors.toSet()))
+				.usingFieldByFieldElementComparator().isEqualTo(report.getFilteredOutlinks().get(Constants._DEFAULT_OUTLINKS_EXTRATOR));
 	}
 
 	@Test
@@ -94,7 +95,7 @@ public class SpiderServiceIntegrationTest {
 
 		spiderService.validate(spider);
 
-		Set<Link> temp = new HashSet<>();
+		Set<String> temp = new HashSet<>();
 		Mockito.when(metadataStore.filter(Mockito.anyLong(), captor.capture(), Mockito.any(Politeness.class))).thenReturn(temp);
 
 		InputStream body = new ClassPathResource("/data/wikipedia.html").getInputStream();
@@ -102,14 +103,13 @@ public class SpiderServiceIntegrationTest {
 		Analysis report = spiderService.buildReport(spider, webPage);
 
 		Mockito.verify(metadataStore).filter(Mockito.anyLong(), Mockito.anySetOf(Link.class), Mockito.any(Politeness.class));
-		temp.addAll(captor.getValue());
+		temp.addAll(captor.getValue().stream().map(l -> l.getUri()).collect(Collectors.toSet()));
 
 		Assertions.assertThat(report.getOutlinks().get(Constants._DEFAULT_OUTLINKS_EXTRATOR).size()).isGreaterThan(0);
 		Assertions.assertThat(report.getFilteredOutlinks().get(Constants._DEFAULT_OUTLINKS_EXTRATOR).size()).isGreaterThan(0);
 
 		Assertions.assertThat(report.getOutlinks().get(Constants._DEFAULT_OUTLINKS_EXTRATOR)).usingFieldByFieldElementComparator()
 				.isNotEqualTo(report.getFilteredOutlinks().get(Constants._DEFAULT_OUTLINKS_EXTRATOR));
-		System.err.println(report.getFilteredOutlinks().get(Constants._DEFAULT_OUTLINKS_EXTRATOR));
 
 	}
 }
