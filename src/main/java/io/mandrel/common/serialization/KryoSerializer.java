@@ -37,7 +37,7 @@ public class KryoSerializer<T> implements StreamSerializer<T> {
 		Kryo kryo = pool.borrow();
 		try {
 			switch (type) {
-			case SNAPPY: {
+			case DEFLATE: {
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(16384);
 				DeflaterOutputStream deflaterOutputStream = new DeflaterOutputStream(byteArrayOutputStream);
 				Output output = new Output(deflaterOutputStream);
@@ -48,7 +48,7 @@ public class KryoSerializer<T> implements StreamSerializer<T> {
 				objectDataOutput.write(bytes);
 			}
 				break;
-			case DEFLATE: {
+			case SNAPPY: {
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(16384);
 				SnappyOutputStream snappyOutputStream = new SnappyOutputStream(byteArrayOutputStream);
 				Output output = new Output(snappyOutputStream);
@@ -76,11 +76,11 @@ public class KryoSerializer<T> implements StreamSerializer<T> {
 		try {
 			InputStream in = (InputStream) objectDataInput;
 			switch (type) {
-			case SNAPPY:
-				in = new SnappyInputStream(in);
-				break;
 			case DEFLATE:
 				in = new InflaterInputStream(in);
+				break;
+			case SNAPPY:
+				in = new SnappyInputStream(in);
 				break;
 			case NONE:
 				break;
