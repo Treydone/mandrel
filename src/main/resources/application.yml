@@ -39,6 +39,8 @@ logging:
     level:
         org.springframework: INFO
         io.mandrel: DEBUG
+        io.mandrel.messaging: TRACE
+        io.mandrel.http: TRACE
         
 management:
     context-path: /admin
