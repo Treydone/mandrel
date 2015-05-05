@@ -1,8 +1,10 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.data.Spider;
+import io.mandrel.data.export.DelimiterSeparatedValuesExporter;
 import io.mandrel.data.export.DocumentExporter;
 import io.mandrel.data.export.ExporterService;
+import io.mandrel.data.export.JsonExporter;
 import io.mandrel.data.export.RawExporter;
 import io.mandrel.data.spider.Analysis;
 import io.mandrel.data.spider.SpiderService;
@@ -113,14 +115,28 @@ public class SpiderResource {
 	}
 
 	@ApiOperation(value = "Export the data of the extractor of a spider")
-	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.POST)
+	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET)
 	public void export(@PathVariable Long id, @PathVariable String extractorName, DocumentExporter exporter, HttpServletResponse response) {
 		exporterService.export(id, extractorName, exporter, response);
 	}
 
 	@ApiOperation(value = "Export the raw data of a spider")
-	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.POST)
+	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.GET)
 	public void rawExport(@PathVariable Long id, RawExporter exporter, HttpServletResponse response) {
+		exporterService.export(id, exporter, response);
+	}
+
+	@ApiOperation(value = "Export the raw data of a spider in CSV")
+	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.GET, params = "format=csv")
+	public void rawExportCsv(@PathVariable Long id, HttpServletResponse response) {
+		DelimiterSeparatedValuesExporter exporter = new DelimiterSeparatedValuesExporter();
+		exporterService.export(id, exporter, response);
+	}
+
+	@ApiOperation(value = "Export the raw data of a spider in JSON")
+	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.GET, params = "format=json")
+	public void rawExportJson(@PathVariable Long id, HttpServletResponse response) {
+		JsonExporter exporter = new JsonExporter();
 		exporterService.export(id, exporter, response);
 	}
 }
