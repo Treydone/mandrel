@@ -1,5 +1,9 @@
 package io.mandrel.messaging;
 
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 
 import lombok.extern.slf4j.Slf4j;
@@ -7,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IQueue;
 
 @Component
 @Slf4j
@@ -19,8 +24,19 @@ public class QueueService {
 		this.instance = instance;
 	}
 
-	public <T> void add(String queueName, T data) {
-		instance.getQueue(queueName).add(data);
+	public <T> void add(String queueName, Collection<T> data) {
+		if (data != null) {
+			IQueue<Object> queue = instance.getQueue(queueName);
+			data.forEach(t -> queue.offer(t));
+		}
+	}
+
+	public <T> Set<T> deduplicate(String queueName, Collection<T> data) {
+		if (data != null) {
+			IQueue<T> queue = instance.getQueue(queueName);
+			return data.stream().filter(queue::contains).collect(Collectors.toSet());
+		}
+		return null;
 	}
 
 	/**

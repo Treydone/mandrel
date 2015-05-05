@@ -5,6 +5,7 @@ import io.mandrel.common.data.State;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.SkipAncorFilter;
+import io.mandrel.data.filters.link.UrlPatternFilter;
 import io.mandrel.data.source.FixedSource;
 import io.mandrel.data.source.Source;
 import io.mandrel.gateway.Document;
@@ -29,7 +30,6 @@ import javax.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.kohsuke.randname.RandomNameGenerator;
 import org.springframework.stereotype.Component;
@@ -123,6 +123,7 @@ public class SpiderService {
 			}
 		}).collect(Collectors.toList())));
 		spider.getFilters().getForLinks().add(new SkipAncorFilter());
+		spider.getFilters().getForLinks().add(UrlPatternFilter.STATIC);
 
 		return add(spider);
 	}

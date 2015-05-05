@@ -37,24 +37,21 @@ public class UrlsQueueService {
 	}
 
 	public void add(long spiderId, Set<String> urls) {
-		queueService.add("urls-" + spiderId, new EnqueuedUrls(spiderId, urls));
+		queueService.add("urls-" + spiderId, urls);
 	}
 
 	public void registrer(Spider spider) {
 		log.debug("Registering spider {} ({})", spider.getName(), spider.getId());
 
 		Stats stats = statsService.get(spider.getId());
-		queueService.registrer("urls-" + spider.getId(), data -> {
-			EnqueuedUrls bag = (EnqueuedUrls) data;
-			return bag.getUrls().stream().anyMatch(url -> {
-				long maxPages = spider.getClient().getPoliteness().getMaxPages();
-				if (maxPages > 0 && stats.getNbPages() > maxPages) {
-					log.debug("Max pages reached for {} ({})", spider.getName(), spider.getId());
-					return true;
-				}
-				doRequest(spider, url, stats);
-				return false;
-			});
+		queueService.<String> registrer("urls-" + spider.getId(), url -> {
+			long maxPages = spider.getClient().getPoliteness().getMaxPages();
+			if (maxPages > 0 && stats.getNbPages() > maxPages) {
+				log.debug("Max pages reached for {} ({})", spider.getName(), spider.getId());
+				return true;
+			}
+			doRequest(spider, url, stats);
+			return false;
 		});
 	}
 
@@ -88,7 +85,9 @@ public class UrlsQueueService {
 							// spider
 							// TODO
 
-								// Add outlinks to queue
+								// Add outlinks to queue if they are not already
+								// present
+								allFilteredOutlinks = queueService.deduplicate("urls-" + spider.getId(), allFilteredOutlinks);
 								add(spider.getId(), allFilteredOutlinks);
 							});
 					}
