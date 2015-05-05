@@ -38,9 +38,7 @@ logging:
         pattern: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wex"
     level:
         org.springframework: INFO
-        io.mandrel: DEBUG
-        io.mandrel.messaging: TRACE
-        io.mandrel.http: TRACE
+        io.mandrel: TRACE
         
 management:
     context-path: /admin

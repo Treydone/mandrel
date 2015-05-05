@@ -4,8 +4,6 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.messaging.UrlsQueueService;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -42,16 +40,7 @@ public class SpiderTask implements Runnable, HazelcastInstanceAware, Serializabl
 	@Override
 	public void run() {
 
-		spider.getStores().getPageMetadataStore().setHazelcastInstance(hazelcastInstance);
-		if (spider.getStores().getPageStore() != null) {
-			spider.getStores().getPageStore().setHazelcastInstance(hazelcastInstance);
-		}
-
-		// TODO
-		Map<String, Object> properties = new HashMap<>();
-
-		spider.getStores().getPageMetadataStore().init(properties);
-		spider.getStores().getPageStore().init(properties);
+		spiderService.injectAndInit(spider);
 
 		if (spider.getExtractors().getPages() != null) {
 			spider.getExtractors().getPages().stream().forEach(ex -> ex.getDataStore().init(ex));

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.script.ScriptContext;
@@ -69,20 +70,24 @@ public class ExtractorService {
 
 		// Filter outlinks
 		Set<Link> filteredOutlinks = null;
-		if (spider.getFilters() != null && CollectionUtils.isNotEmpty(spider.getFilters().getForLinks())) {
-			filteredOutlinks = outlinks.stream().filter(link -> spider.getFilters().getForLinks().stream().allMatch(f -> f.isValid(link)))
-					.collect(Collectors.toSet());
-		} else {
-			filteredOutlinks = outlinks;
+		if (outlinks != null) {
+			Stream<Link> stream = outlinks.stream().filter(l -> l != null && StringUtils.isNotBlank(l.getUri()));
+			if (spider.getFilters() != null && CollectionUtils.isNotEmpty(spider.getFilters().getForLinks())) {
+				stream = stream.filter(link -> spider.getFilters().getForLinks().stream().allMatch(f -> f.isValid(link)));
+			}
+			filteredOutlinks = stream.collect(Collectors.toSet());
 		}
 
-		Set<String> allFilteredOutlinks = spider.getStores().getPageMetadataStore()
-				.filter(spider.getId(), filteredOutlinks, spider.getClient().getPoliteness());
+		Set<String> allFilteredOutlinks = null;
+		if (filteredOutlinks != null) {
+			allFilteredOutlinks = spider.getStores().getPageMetadataStore().filter(spider.getId(), filteredOutlinks, spider.getClient().getPoliteness());
+		}
 		log.trace("And filtering {}", filteredOutlinks);
 		return Pair.of(outlinks, allFilteredOutlinks);
 	}
 
 	public Set<Link> extractOutlinks(WebPage webPage, OutlinkExtractor extractor) {
+		// TODO NOOOOOOO!!
 		Map<String, Instance<?>> cachedSelectors = new HashMap<>();
 
 		List<Link> outlinks = extract(cachedSelectors, webPage, null, extractor.getExtractor(), new DataConverter<XElement, Link>() {

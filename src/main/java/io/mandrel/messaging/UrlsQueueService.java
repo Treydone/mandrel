@@ -60,7 +60,11 @@ public class UrlsQueueService {
 			StopWatch watch = new StopWatch();
 			watch.start();
 
+			// Mark as pending
+			queueService.markAsPending("pendings-" + spider.getId(), url, Boolean.TRUE);
+
 			requester.get(url, spider, webPage -> {
+
 				watch.stop();
 				log.trace("Getting response for {}", url);
 
@@ -88,6 +92,8 @@ public class UrlsQueueService {
 								// Add outlinks to queue if they are not already
 								// present
 								allFilteredOutlinks = queueService.deduplicate("urls-" + spider.getId(), allFilteredOutlinks);
+								
+								allFilteredOutlinks = queueService.filterPendings("pendings-" + spider.getId(), allFilteredOutlinks);
 								add(spider.getId(), allFilteredOutlinks);
 							});
 					}
@@ -96,6 +102,7 @@ public class UrlsQueueService {
 						spider.getStores().getPageStore().addPage(spider.getId(), webPage.getUrl().toString(), webPage);
 					}
 					spider.getStores().getPageMetadataStore().addMetadata(spider.getId(), webPage.getUrl().toString(), metadata);
+					queueService.removePending("pendings-" + spider.getId(), url);
 				});
 		} catch (Exception e) {
 			log.debug("Can not fetch url {} due to {}", new Object[] { url, e.toString() }, e);

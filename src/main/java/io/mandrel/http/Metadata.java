@@ -1,7 +1,5 @@
 package io.mandrel.http;
 
-import io.mandrel.data.spider.Link;
-
 import java.io.Serializable;
 import java.net.URL;
 import java.time.LocalDateTime;

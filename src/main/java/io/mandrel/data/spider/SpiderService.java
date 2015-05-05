@@ -83,6 +83,19 @@ public class SpiderService {
 			});
 	}
 
+	public void injectAndInit(Spider spider) {
+		spider.getStores().getPageMetadataStore().setHazelcastInstance(instance);
+		if (spider.getStores().getPageStore() != null) {
+			spider.getStores().getPageStore().setHazelcastInstance(instance);
+		}
+
+		// TODO
+		Map<String, Object> properties = new HashMap<>();
+
+		spider.getStores().getPageMetadataStore().init(properties);
+		spider.getStores().getPageStore().init(properties);
+	}
+
 	public BindingResult validate(Spider spider) {
 		BindingResult errors = new BeanPropertyBindingResult(spider, "spider");
 		spiderValidator.validate(spider, errors);
@@ -247,20 +260,8 @@ public class SpiderService {
 
 	protected Analysis buildReport(Spider spider, WebPage webPage) {
 
-		// State is new, spider is not initialized
-		if (State.NEW.equals(spider.getState())) {
-			spider.getStores().getPageMetadataStore().setHazelcastInstance(instance);
-			if (spider.getStores().getPageStore() != null) {
-				spider.getStores().getPageStore().setHazelcastInstance(instance);
-			}
-
-			// TODO
-			Map<String, Object> properties = new HashMap<>();
-
-			spider.getStores().getPageMetadataStore().init(properties);
-			spider.getStores().getPageStore().init(properties);
-		}
-
+		injectAndInit(spider);
+		
 		Analysis report = new Analysis();
 		if (spider.getExtractors() != null) {
 			if (spider.getExtractors().getPages() != null) {
