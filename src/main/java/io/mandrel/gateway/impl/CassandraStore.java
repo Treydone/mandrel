@@ -9,7 +9,6 @@ import io.mandrel.http.WebPage;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -49,12 +48,6 @@ public class CassandraStore implements WebPageStore, PageMetadataStore {
 	}
 
 	@Override
-	public Stream<WebPage> all(long spiderId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public Set<String> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
 		// TODO Auto-generated method stub
 		return null;
@@ -64,5 +57,23 @@ public class CassandraStore implements WebPageStore, PageMetadataStore {
 	public void deleteAllFor(long spiderId) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void byPages(long spiderId, int pageSize, Callback callback) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Metadata getMetadata(long spiderId, String url) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public WebPage getPage(long spiderId, String url) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

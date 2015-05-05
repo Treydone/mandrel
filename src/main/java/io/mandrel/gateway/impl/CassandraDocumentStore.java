@@ -5,7 +5,6 @@ import io.mandrel.gateway.Document;
 import io.mandrel.gateway.DocumentStore;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -50,8 +49,9 @@ public class CassandraDocumentStore implements DocumentStore {
 	}
 
 	@Override
-	public Stream<Document> all(long spiderId) {
+	public void byPages(long spiderId, int pageSize, Callback callback) {
 		// TODO Auto-generated method stub
-		return null;
+		
 	}
+
 }

@@ -24,6 +24,8 @@ public interface PageMetadataStore extends Checkable, Serializable, HazelcastIns
 
 	void addMetadata(long spiderId, String url, Metadata metadata);
 
+	Metadata getMetadata(long spiderId, String url);
+
 	void init(Map<String, Object> properties);
 
 	Set<String> filter(long spiderId, Set<Link> outlinks, Politeness politeness);

@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -36,19 +37,33 @@ public class ExporterService {
 			if (extractor.isPresent()) {
 				response.setContentType(exporter.contentType());
 				try {
-					exporter.export(extractor.get().getDataStore().all(spider.getId()), extractor.get().getFields(), response.getWriter());
+					exporter.init(response.getWriter());
+					extractor.get().getDataStore().byPages(id, 1000, data -> {
+						try {
+							exporter.export(data, extractor.get().getFields());
+						} catch (Exception e) {
+							log.debug("Uhhh...", e);
+							return false;
+						}
+						return CollectionUtils.isNotEmpty(data);
+					});
 				} catch (Exception e) {
 					log.debug("Uhhh...", e);
+				} finally {
+					try {
+						exporter.close();
+					} catch (Exception e1) {
+						log.debug("Uhhh...", e1);
+					}
 				}
 			} else {
-				response.setStatus(HttpStatus.NOT_FOUND.value());
+				notFound(response);
 				log.debug("Extract {} not found for spider {}", extractorName, id);
 			}
 		} else {
-			response.setStatus(HttpStatus.NOT_FOUND.value());
+			notFound(response);
 			log.debug("Spider {} not found", id);
 		}
-
 	}
 
 	public void export(Long id, RawExporter exporter, HttpServletResponse response) {
@@ -60,14 +75,33 @@ public class ExporterService {
 
 			response.setContentType(exporter.contentType());
 			try {
-				exporter.export(spider.getStores().getPageStore().all(id), response.getWriter());
+				exporter.init(response.getWriter());
+				spider.getStores().getPageStore().byPages(id, 1000, data -> {
+					try {
+						exporter.export(data);
+					} catch (Exception e) {
+						log.debug("Uhhh...", e);
+						return false;
+					}
+					return CollectionUtils.isNotEmpty(data);
+				});
 			} catch (Exception e) {
 				log.debug("Uhhh...", e);
+			} finally {
+				try {
+					exporter.close();
+				} catch (Exception e1) {
+					log.debug("Uhhh...", e1);
+				}
 			}
 		} else {
-			response.setStatus(HttpStatus.NOT_FOUND.value());
+			notFound(response);
 			log.debug("Spider {} not found", id);
 		}
 
+	}
+
+	private void notFound(HttpServletResponse response) {
+		response.setStatus(HttpStatus.NOT_FOUND.value());
 	}
 }

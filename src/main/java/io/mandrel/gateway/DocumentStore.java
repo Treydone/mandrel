@@ -7,8 +7,8 @@ import io.mandrel.gateway.impl.JdbcDocumentStore;
 import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
@@ -28,6 +28,13 @@ public interface DocumentStore extends Checkable, Serializable, HazelcastInstanc
 
 	void deleteAllFor(long spiderId);
 
-	Stream<Document> all(long spiderId);
+	// Stream<Document> all(long spiderId);
+
+	@FunctionalInterface
+	public static interface Callback {
+		boolean on(Collection<Document> elements);
+	}
+
+	void byPages(long spiderId, int pageSize, Callback callback);
 
 }

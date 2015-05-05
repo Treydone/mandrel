@@ -5,8 +5,8 @@ import io.mandrel.http.WebPage;
 import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
@@ -19,9 +19,18 @@ public interface WebPageStore extends Checkable, Serializable, HazelcastInstance
 
 	void addPage(long spiderId, String url, WebPage webPage);
 
+	WebPage getPage(long spiderId, String url);
+
 	void deleteAllFor(long spiderId);
 
 	void init(Map<String, Object> properties);
 
-	Stream<WebPage> all(long spiderId);
+	// Stream<WebPage> all(long spiderId);
+
+	@FunctionalInterface
+	public static interface Callback {
+		boolean on(Collection<WebPage> elements);
+	}
+
+	void byPages(long spiderId, int pageSize, Callback callback);
 }

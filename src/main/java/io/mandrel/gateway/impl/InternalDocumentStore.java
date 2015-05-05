@@ -4,8 +4,8 @@ import io.mandrel.data.content.WebPageExtractor;
 import io.mandrel.gateway.Document;
 import io.mandrel.gateway.DocumentStore;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Stream;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -13,6 +13,8 @@ import lombok.Getter;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.query.PagingPredicate;
+import com.hazelcast.util.IterationType;
 
 @Data
 public class InternalDocumentStore implements DocumentStore {
@@ -46,13 +48,21 @@ public class InternalDocumentStore implements DocumentStore {
 	}
 
 	@Override
-	public Stream<Document> all(long spiderId) {
-		return null;
-	}
-
-	@Override
 	public void deleteAllFor(long spiderId) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void byPages(long spiderId, int pageSize, Callback callback) {
+		PagingPredicate predicate = new PagingPredicate(pageSize);
+		predicate.setIterationType(IterationType.VALUE);
+
+		boolean loop = true;
+		while (loop) {
+			Collection<Document> values = hazelcastInstance.<String, Document> getMap("documentstore-" + spiderId).values(predicate);
+			loop = callback.on(values);
+			predicate.nextPage();
+		}
 	}
 }

@@ -4,13 +4,13 @@ import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.gateway.Document;
 import io.mandrel.http.WebPage;
 
-import java.io.IOException;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.util.CollectionUtils;
 
@@ -19,13 +19,28 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Data
+@Slf4j
 public class JsonExporter implements DocumentExporter, RawExporter {
 
 	private static final long serialVersionUID = -410119107553820985L;
 
+	private transient ObjectMapper mapper;
+
+	private transient Writer writer;
+
 	@Override
-	public void export(Stream<Document> documents, List<FieldExtractor> fields, Writer writer) throws IOException {
-		ObjectMapper mapper = new ObjectMapper();
+	public void init(Writer writer) {
+		this.writer = writer;
+		mapper = new ObjectMapper();
+	}
+
+	@Override
+	public void close() {
+
+	}
+
+	@Override
+	public void export(Collection<Document> documents, List<FieldExtractor> fields) {
 
 		ArrayNode arrayNode = mapper.createArrayNode();
 
@@ -41,7 +56,11 @@ public class JsonExporter implements DocumentExporter, RawExporter {
 			}
 		});
 
-		mapper.writeValue(writer, arrayNode);
+		try {
+			mapper.writeValue(writer, arrayNode);
+		} catch (Exception e) {
+			log.debug("Can not write docs", e);
+		}
 	}
 
 	@Override
@@ -50,8 +69,7 @@ public class JsonExporter implements DocumentExporter, RawExporter {
 	}
 
 	@Override
-	public void export(Stream<WebPage> pages, Writer writer) throws IOException {
-		// TODO Auto-generated method stub
+	public void export(Collection<WebPage> documents) {
 
 	}
 }

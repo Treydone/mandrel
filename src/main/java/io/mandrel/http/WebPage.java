@@ -1,5 +1,6 @@
 package io.mandrel.http;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,7 +11,9 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class WebPage {
+public class WebPage implements Serializable {
+
+	private static final long serialVersionUID = 2015538123437048843L;
 
 	private URL url;
 

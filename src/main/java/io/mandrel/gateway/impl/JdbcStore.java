@@ -9,7 +9,6 @@ import io.mandrel.http.WebPage;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -54,14 +53,26 @@ public class JdbcStore implements WebPageStore, PageMetadataStore {
 	}
 
 	@Override
-	public Stream<WebPage> all(long spiderId) {
+	public void deleteAllFor(long spiderId) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void byPages(long spiderId, int pageSize, Callback callback) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Metadata getMetadata(long spiderId, String url) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void deleteAllFor(long spiderId) {
+	public WebPage getPage(long spiderId, String url) {
 		// TODO Auto-generated method stub
-
+		return null;
 	}
 }

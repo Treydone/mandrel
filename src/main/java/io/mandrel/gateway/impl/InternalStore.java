@@ -8,10 +8,10 @@ import io.mandrel.http.Metadata;
 import io.mandrel.http.WebPage;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -21,6 +21,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.query.PagingPredicate;
+import com.hazelcast.util.IterationType;
 
 @Data
 public class InternalStore implements WebPageStore, PageMetadataStore {
@@ -43,7 +45,11 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 	}
 
 	public void addPage(long spiderId, String url, WebPage webPage) {
-		hazelcastInstance.getMap("pagestore-" + spiderId).set(url, webPage);
+		hazelcastInstance.getMap("pagestore-" + spiderId).put(url, webPage);
+	}
+
+	public WebPage getPage(long spiderId, String url) {
+		return hazelcastInstance.<String, WebPage> getMap("pagestore-" + spiderId).get(url);
 	}
 
 	public void addMetadata(long spiderId, String url, Metadata metadata) {
@@ -76,13 +82,26 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 		}).map(l -> l.getUri()).collect(Collectors.toSet());
 	}
 
-	public Stream<WebPage> all(long spiderId) {
-		return hazelcastInstance.<String, WebPage> getMap("pagestore-" + spiderId).values().stream();
-	}
-
 	public void deleteAllFor(long spiderId) {
 		hazelcastInstance.getMap("pagestore-" + spiderId).destroy();
 		hazelcastInstance.getMap("pagemetastore-" + spiderId).destroy();
 	}
 
+	@Override
+	public void byPages(long spiderId, int pageSize, Callback callback) {
+		PagingPredicate predicate = new PagingPredicate(pageSize);
+		predicate.setIterationType(IterationType.VALUE);
+
+		boolean loop = true;
+		while (loop) {
+			Collection<WebPage> values = hazelcastInstance.<String, WebPage> getMap("pagestore-" + spiderId).values(predicate);
+			loop = callback.on(values);
+			predicate.nextPage();
+		}
+	}
+
+	@Override
+	public Metadata getMetadata(long spiderId, String url) {
+		return hazelcastInstance.<String, Metadata> getMap("pagemetastore-" + spiderId).get(url);
+	}
 }
