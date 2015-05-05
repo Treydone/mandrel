@@ -16,6 +16,7 @@ import javax.inject.Inject;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
@@ -50,22 +51,24 @@ public class Requester {
 	}
 
 	public void get(String url, Spider spider, Callback callback) {
-		log.trace("Requesting {}...", url);
-		BoundRequestBuilder request = prepareRequest(url, spider);
+		if (StringUtils.isNotBlank(url)) {
+			log.trace("Requesting {}...", url);
+			BoundRequestBuilder request = prepareRequest(url, spider);
 
-		request.execute(new AsyncCompletionHandler<Response>() {
-			@Override
-			public Response onCompleted(Response response) throws Exception {
-				try {
-					WebPage webPage = extractWebPage(url, response);
-					callback.on(webPage);
-				} catch (Exception e) {
-					log.debug("Can not construct web page", e);
-					throw e;
+			request.execute(new AsyncCompletionHandler<Response>() {
+				@Override
+				public Response onCompleted(Response response) throws Exception {
+					try {
+						WebPage webPage = extractWebPage(url, response);
+						callback.on(webPage);
+					} catch (Exception e) {
+						log.debug("Can not construct web page", e);
+						throw e;
+					}
+					return response;
 				}
-				return response;
-			}
-		});
+			});
+		}
 	}
 
 	// TODO use RxNetty with CompletableFuture
@@ -79,6 +82,7 @@ public class Requester {
 	public BoundRequestBuilder prepareRequest(String url, Spider spider) {
 		BoundRequestBuilder request = client.prepareGet(spider.getClient().getDnsCache().optimizeUrl(url));
 
+		// Add headers, cookies and ohter stuff
 		request.setRequestTimeout(spider.getClient().getRequestTimeOut());
 		request.setFollowRedirects(spider.getClient().isFollowRedirects());
 		request.setHeaders(spider.getClient().getHeaders());
@@ -91,6 +95,7 @@ public class Requester {
 							.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList()));
 		request.setQueryParams(spider.getClient().getParams());
 
+		// Configure the proxy
 		ProxyServer proxy = spider.getClient().getProxyServersSource().findProxy(spider);
 		if (proxy != null) {
 			com.ning.http.client.ProxyServer internalProxy = new com.ning.http.client.ProxyServer(Protocol.valueOf(proxy.getProtocol().getProtocol()
@@ -105,6 +110,7 @@ public class Requester {
 			request.setProxyServer(internalProxy);
 		}
 
+		// Configure the user -agent
 		String userAgent = spider.getClient().getUserAgentProvisionner().get(url, spider);
 		if (Strings.isNullOrEmpty(userAgent)) {
 			request.addHeader("User-Agent", userAgent);
