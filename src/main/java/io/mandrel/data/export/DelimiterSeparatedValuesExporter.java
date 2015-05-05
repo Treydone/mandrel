@@ -99,7 +99,9 @@ public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawEx
 			pages.forEach(page -> {
 				buffer.add(page.getUrl());
 				buffer.add(page.getMetadata().getStatusCode());
+				buffer.add(page.getMetadata().getStatusText());
 				buffer.add(page.getMetadata().getLastCrawlDate());
+				buffer.add(page.getMetadata().getOutlinks());
 
 				try {
 					csvWriter.write(buffer);
