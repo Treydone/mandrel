@@ -2,6 +2,7 @@ package io.mandrel.http;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.settings.ClientSettings;
+import io.mandrel.http.proxy.ProxyServer;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -22,6 +23,8 @@ import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
 import com.ning.http.client.AsyncHttpClientConfig;
+import com.ning.http.client.ProxyServer.Protocol;
+import com.ning.http.client.Realm.AuthScheme;
 import com.ning.http.client.Response;
 import com.ning.http.client.cookie.Cookie;
 import com.ning.http.client.extra.ThrottleRequestFilter;
@@ -87,7 +90,20 @@ public class Requester {
 					.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), false, cookie.getDomain(), cookie.getPath(), cookie.getExpires(), cookie
 							.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList()));
 		request.setQueryParams(spider.getClient().getParams());
-		request.setProxyServer(spider.getClient().getProxyServersSource().findProxy(spider));
+
+		ProxyServer proxy = spider.getClient().getProxyServersSource().findProxy(spider);
+		if (proxy != null) {
+			com.ning.http.client.ProxyServer internalProxy = new com.ning.http.client.ProxyServer(Protocol.valueOf(proxy.getProtocol().getProtocol()
+					.toUpperCase()), proxy.getHost(), proxy.getPort(), proxy.getPrincipal(), proxy.getPassword());
+			internalProxy.setCharset(proxy.getCharset());
+			internalProxy.setNtlmDomain(proxy.getNtlmDomain());
+			internalProxy.setNtlmHost(proxy.getNtlmHost());
+			internalProxy.setScheme(AuthScheme.valueOf(proxy.getScheme().name().toUpperCase()));
+			if (proxy.getNonProxyHosts() != null) {
+				proxy.getNonProxyHosts().forEach(internalProxy::addNonProxyHost);
+			}
+			request.setProxyServer(internalProxy);
+		}
 
 		String userAgent = spider.getClient().getUserAgentProvisionner().get(url, spider);
 		if (Strings.isNullOrEmpty(userAgent)) {
