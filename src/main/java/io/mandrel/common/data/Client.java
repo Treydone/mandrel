@@ -23,7 +23,7 @@ public class Client implements Serializable {
 	private static final long serialVersionUID = -4242505953994309024L;
 
 	@JsonProperty("request_time_out")
-	private int requestTimeOut = 3000;
+	private int requestTimeOut = 10000;
 
 	@JsonProperty("headers")
 	private Map<String, Collection<String>> headers;
@@ -32,7 +32,7 @@ public class Client implements Serializable {
 	private Map<String, List<String>> params;
 
 	@JsonProperty("follow_redirects")
-	private boolean followRedirects = false;
+	private boolean followRedirects = true;
 
 	@JsonProperty("cookies")
 	private List<Cookie> cookies;

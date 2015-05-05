@@ -6,17 +6,16 @@ import io.mandrel.data.content.OutlinkExtractor;
 import io.mandrel.data.content.SourceType;
 import io.mandrel.data.content.WebPageExtractor;
 import io.mandrel.data.content.selector.SelectorService;
-import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.data.spider.Link;
 import io.mandrel.gateway.Document;
 import io.mandrel.gateway.DocumentStore;
 import io.mandrel.http.WebPage;
 import io.mandrel.script.ScriptingService;
 
-import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Set;
 
 import org.assertj.core.api.Assertions;
@@ -53,7 +52,7 @@ public class ExtractorServiceTest {
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
 
 		// Asserts
 	}
@@ -66,7 +65,7 @@ public class ExtractorServiceTest {
 		WebPageExtractor extractor = new WebPageExtractor();
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
 
 		// Asserts
 	}
@@ -83,7 +82,7 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
 
 		// Asserts
 	}
@@ -101,7 +100,7 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
 
 		// Asserts
 	}
@@ -122,7 +121,7 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
 
 		// Asserts
 	}
@@ -143,7 +142,7 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
 
 		// Asserts
 	}
@@ -168,7 +167,7 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
 
 		// Asserts
 		Document data = new Document();
@@ -206,7 +205,7 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(dateField, keyField));
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
 
 		// Asserts
 		Document data = new Document();
@@ -252,7 +251,7 @@ public class ExtractorServiceTest {
 		extractor.setMultiple(multiple);
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
 
 		// Asserts
 		Document data1 = new Document();
@@ -279,7 +278,7 @@ public class ExtractorServiceTest {
 		OutlinkExtractor extractor = new OutlinkExtractor("_default");
 
 		// Actions
-		Set<Link> links = extractorService.extractOutlinks(webPage, extractor);
+		Set<Link> links = extractorService.extractOutlinks(new HashMap<>(), webPage, extractor);
 
 		// Asserts
 		Assertions.assertThat(links).containsExactly(new Link().setText("Absolute").setUri("http://test.com/pouet"),

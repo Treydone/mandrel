@@ -25,7 +25,6 @@ import io.mandrel.script.ScriptingService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -63,9 +62,10 @@ public class ExtractorService {
 		this.selectorService = selectorService;
 	}
 
-	public Pair<Set<Link>, Set<String>> extractAndFilterOutlinks(Spider spider, String url, WebPage webPage, OutlinkExtractor ol) {
+	public Pair<Set<Link>, Set<String>> extractAndFilterOutlinks(Spider spider, String url, Map<String, Instance<?>> cachedSelectors, WebPage webPage,
+			OutlinkExtractor ol) {
 		// Find outlinks in page
-		Set<Link> outlinks = extractOutlinks(webPage, ol);
+		Set<Link> outlinks = extractOutlinks(cachedSelectors, webPage, ol);
 		log.trace("Finding outlinks for url {}: {}", url, outlinks);
 
 		// Filter outlinks
@@ -86,9 +86,7 @@ public class ExtractorService {
 		return Pair.of(outlinks, allFilteredOutlinks);
 	}
 
-	public Set<Link> extractOutlinks(WebPage webPage, OutlinkExtractor extractor) {
-		// TODO NOOOOOOO!!
-		Map<String, Instance<?>> cachedSelectors = new HashMap<>();
+	public Set<Link> extractOutlinks(Map<String, Instance<?>> cachedSelectors, WebPage webPage, OutlinkExtractor extractor) {
 
 		List<Link> outlinks = extract(cachedSelectors, webPage, null, extractor.getExtractor(), new DataConverter<XElement, Link>() {
 			public Link convert(XElement element) {
@@ -116,9 +114,9 @@ public class ExtractorService {
 		return new HashSet<>(outlinks);
 	}
 
-	public void extractThenFormatThenStore(long spiderId, WebPage webPage, WebPageExtractor extractor) {
+	public void extractThenFormatThenStore(long spiderId, Map<String, Instance<?>> cachedSelectors, WebPage webPage, WebPageExtractor extractor) {
 
-		List<Document> documents = extractThenFormat(webPage, extractor);
+		List<Document> documents = extractThenFormat(cachedSelectors, webPage, extractor);
 
 		// Store the result
 		if (documents != null) {
@@ -126,14 +124,14 @@ public class ExtractorService {
 		}
 	}
 
-	public List<Document> extractThenFormat(WebPage webPage, WebPageExtractor extractor) {
+	public List<Document> extractThenFormat(Map<String, Instance<?>> cachedSelectors, WebPage webPage, WebPageExtractor extractor) {
 		Preconditions.checkNotNull(extractor.getFields(), "No field for this extractor...");
 		Preconditions.checkNotNull(extractor.getDataStore(), "No datastore for this extractor...");
+		Preconditions.checkNotNull(cachedSelectors, "Cached selectors can not be null...");
 
 		List<Document> documents = null;
 
 		if (extractor.getFilters() == null || extractor.getFilters().stream().anyMatch(f -> f.isValid(webPage))) {
-			Map<String, Instance<?>> cachedSelectors = new HashMap<>();
 
 			if (extractor.getMultiple() != null) {
 

@@ -106,23 +106,25 @@ public class QueueService {
 			try {
 				// Block until message arrive
 				T message = instance.<T> getQueue(queueName).poll(5, TimeUnit.SECONDS);
-				loop = !callback.onMessage(message);
+				if (message != null) {
+					loop = !callback.onMessage(message);
+					nbSuccessiveWait = 0;
+				} else {
+					log.debug("No more message, waiting...");
+
+					try {
+						Thread.sleep(5000);
+					} catch (Exception e1) {
+						log.warn("Wut?", e1);
+					}
+
+					nbSuccessiveWait++;
+					if (nbSuccessiveWait >= maxAllowedSuccessiveWait) {
+						log.warn("Too many succesive wait, breaking the loop");
+						break;
+					}
+				}
 				nbSuccessiveExceptions = 0;
-				nbSuccessiveWait = 0;
-			} catch (InterruptedException e) {
-				log.trace("No more message, waiting...");
-
-				nbSuccessiveWait++;
-				if (nbSuccessiveWait >= maxAllowedSuccessiveWait) {
-					log.warn("Too many succesive wait, breaking the loop");
-					break;
-				}
-
-				try {
-					Thread.sleep(5000);
-				} catch (Exception e1) {
-					log.warn("Wut?", e1);
-				}
 			} catch (Exception e) {
 				log.warn("Wut?", e);
 

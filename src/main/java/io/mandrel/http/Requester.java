@@ -9,6 +9,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -28,7 +31,6 @@ import com.ning.http.client.ProxyServer.Protocol;
 import com.ning.http.client.Realm.AuthScheme;
 import com.ning.http.client.Response;
 import com.ning.http.client.cookie.Cookie;
-import com.ning.http.client.extra.ThrottleRequestFilter;
 import com.ning.http.client.providers.netty.NettyAsyncHttpProvider;
 import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
 
@@ -42,30 +44,47 @@ public class Requester {
 	public Requester(ClientSettings settings) {
 		NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
 
-		AsyncHttpClientConfig cf = new AsyncHttpClientConfig.Builder().setAllowPoolingConnections(true).setMaxRequestRetry(3).setCompressionEnforced(true)
-				.setAllowPoolingConnections(true).setAllowPoolingSslConnections(true).setAsyncHttpClientProviderConfig(nettyConfig)
-				.setMaxConnectionsPerHost(settings.getConnections().getHost()).setMaxConnections(settings.getConnections().getGlobal())
-				.addRequestFilter(new ThrottleRequestFilter(100)).build();
+		ExecutorService threadPool = Executors.newFixedThreadPool(8, new ThreadFactory() {
+			public Thread newThread(Runnable r) {
+				Thread t = new Thread(r, "AsyncHttpClient-Callback");
+				t.setDaemon(true);
+				return t;
+			}
+		});
+
+		AsyncHttpClientConfig cf = new AsyncHttpClientConfig.Builder().setExecutorService(threadPool).setAllowPoolingConnections(true).setMaxRequestRetry(3)
+				.setCompressionEnforced(true).setAllowPoolingConnections(true).setAllowPoolingSslConnections(true)
+				.setAsyncHttpClientProviderConfig(nettyConfig).setMaxConnectionsPerHost(settings.getConnections().getHost())
+				.setMaxConnections(settings.getConnections().getGlobal())
+				// .addRequestFilter(new ThrottleRequestFilter(20, 10000))
+				.build();
 
 		this.client = new AsyncHttpClient(new NettyAsyncHttpProvider(cf), cf);
 	}
 
-	public void get(String url, Spider spider, Callback callback) {
+	public void get(String url, Spider spider, SuccessCallback successCallback, FailureCallback failureCallback) {
 		if (StringUtils.isNotBlank(url)) {
-			log.trace("Requesting {}...", url);
+			log.debug("Requesting {}...", url);
 			BoundRequestBuilder request = prepareRequest(url, spider);
 
 			request.execute(new AsyncCompletionHandler<Response>() {
 				@Override
 				public Response onCompleted(Response response) throws Exception {
 					try {
+						log.debug("Getting response for {}", url);
 						WebPage webPage = extractWebPage(url, response);
-						callback.on(webPage);
+						successCallback.on(webPage);
 					} catch (Exception e) {
 						log.debug("Can not construct web page", e);
 						throw e;
 					}
 					return response;
+				}
+
+				@Override
+				public void onThrowable(Throwable t) {
+					log.trace(t.getMessage(), t);
+					failureCallback.on(t);
 				}
 			});
 		}
@@ -130,8 +149,14 @@ public class Requester {
 	}
 
 	@FunctionalInterface
-	public static interface Callback {
+	public static interface SuccessCallback {
 
 		void on(WebPage webapge);
+	}
+
+	@FunctionalInterface
+	public static interface FailureCallback {
+
+		void on(Throwable t);
 	}
 }

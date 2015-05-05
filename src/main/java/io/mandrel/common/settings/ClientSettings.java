@@ -18,8 +18,8 @@ public class ClientSettings {
 
 	@Data
 	public static class Connections {
-		private int host = 10;
-		private int global = 100;
+		private int host = -1;
+		private int global = -1;
 	}
 
 	private Timeouts timouts = new Timeouts();

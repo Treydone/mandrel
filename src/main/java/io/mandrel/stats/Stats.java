@@ -10,6 +10,7 @@ public class Stats {
 
 	private final IAtomicLong nbPages;
 	private final IAtomicLong totalSize;
+	private final IAtomicLong totalTimeToFetch;
 	private final Map<Integer, IAtomicLong> nbPagesByStatus = new HashMap<>();
 	private final long spiderId;
 
@@ -21,6 +22,7 @@ public class Stats {
 
 		nbPages = instance.getAtomicLong(getKey(spiderId) + "-nbPages");
 		totalSize = instance.getAtomicLong(getKey(spiderId) + "-totalSize");
+		totalTimeToFetch = instance.getAtomicLong(getKey(spiderId) + "-totalTimeToFetch");
 	}
 
 	protected String getKey(long spiderId) {
@@ -36,8 +38,12 @@ public class Stats {
 		return totalSize.addAndGet(size);
 	}
 
+	public long incTotalTimeToFetch(long time) {
+		return totalTimeToFetch.addAndGet(time);
+	}
+
 	public long incPageForStatus(int httpStatus) {
-		IAtomicLong iAtomicLong = nbPagesByStatus.get(httpStatus);
+		IAtomicLong iAtomicLong = nbPagesByStatus.get(Integer.valueOf(httpStatus));
 		if (iAtomicLong == null) {
 			iAtomicLong = instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus);
 			nbPagesByStatus.put(httpStatus, iAtomicLong);
@@ -51,6 +57,10 @@ public class Stats {
 
 	public long getTotalSize() {
 		return totalSize.get();
+	}
+
+	public long getTotalTimeToFetch() {
+		return totalTimeToFetch.get();
 	}
 
 	public Map<Integer, Long> getPagesByStatus() {

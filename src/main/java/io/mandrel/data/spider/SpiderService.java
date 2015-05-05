@@ -2,6 +2,7 @@ package io.mandrel.data.spider;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.State;
+import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.SkipAncorFilter;
@@ -261,18 +262,21 @@ public class SpiderService {
 	protected Analysis buildReport(Spider spider, WebPage webPage) {
 
 		injectAndInit(spider);
-		
+
 		Analysis report = new Analysis();
 		if (spider.getExtractors() != null) {
+			Map<String, Instance<?>> cachedSelectors = new HashMap<>();
+
 			if (spider.getExtractors().getPages() != null) {
 				Map<String, List<Document>> documentsByExtractor = spider.getExtractors().getPages().stream()
-						.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(webPage, ex)))
+						.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(cachedSelectors, webPage, ex)))
 						.collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
 				report.setDocuments(documentsByExtractor);
 			}
+
 			if (spider.getExtractors().getOutlinks() != null) {
 				Map<String, Pair<Set<Link>, Set<String>>> outlinksByExtractor = spider.getExtractors().getOutlinks().stream().map(ol -> {
-					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(spider, webPage.getUrl().toString(), webPage, ol));
+					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(spider, webPage.getUrl().toString(), cachedSelectors, webPage, ol));
 				}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
 
 				report.setOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getLeft()));
