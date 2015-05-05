@@ -27,15 +27,16 @@ public class ExporterService {
 	}
 
 	public void export(Long id, String extractorName, DocumentExporter exporter, HttpServletResponse response) {
-		Optional<Spider> spider = spiderService.get(id);
+		Optional<Spider> optional = spiderService.get(id);
 
-		if (spider.isPresent()) {
-			Optional<WebPageExtractor> extractor = spider.get().getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName))
-					.findFirst();
+		if (optional.isPresent()) {
+			Spider spider = optional.get();
+			spiderService.injectAndInit(spider);
+			Optional<WebPageExtractor> extractor = spider.getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
 			if (extractor.isPresent()) {
 				response.setContentType(exporter.contentType());
 				try {
-					exporter.export(extractor.get().getDataStore().all(spider.get().getId()), extractor.get().getFields(), response.getWriter());
+					exporter.export(extractor.get().getDataStore().all(spider.getId()), extractor.get().getFields(), response.getWriter());
 				} catch (Exception e) {
 					log.debug("Uhhh...", e);
 				}
@@ -51,12 +52,15 @@ public class ExporterService {
 	}
 
 	public void export(Long id, RawExporter exporter, HttpServletResponse response) {
-		Optional<Spider> spider = spiderService.get(id);
+		Optional<Spider> optional = spiderService.get(id);
 
-		if (spider.isPresent()) {
+		if (optional.isPresent()) {
+			Spider spider = optional.get();
+			spiderService.injectAndInit(spider);
+
 			response.setContentType(exporter.contentType());
 			try {
-				exporter.export(spider.get().getStores().getPageStore().all(id), response.getWriter());
+				exporter.export(spider.getStores().getPageStore().all(id), response.getWriter());
 			} catch (Exception e) {
 				log.debug("Uhhh...", e);
 			}
