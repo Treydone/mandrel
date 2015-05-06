@@ -35,7 +35,7 @@ public class ExportResource {
 	}
 
 	@ApiOperation(value = "Export the data of the extractor of a spider using a custom exporter in the classpath")
-	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET, params = "format")
+	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET)
 	public void export(@PathVariable Long id, @PathVariable String extractorName, DocumentExporter exporter, HttpServletResponse response) throws IOException {
 		internalExport(id, extractorName, exporter, response);
 	}
