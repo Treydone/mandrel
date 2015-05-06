@@ -6,14 +6,15 @@ import java.util.Map;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.hazelcast.core.HazelcastInstance;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes({ @Type(value = JmsSource.class, name = "jms"), @Type(value = FixedSource.class, name = "fixed"), @Type(value = CsvSource.class, name = "csv"),
-		@Type(value = JdbcSource.class, name = "jdbc") })
+@JsonSubTypes({ @Type(value = JmsSource.class, name = "jms"), @Type(value = FixedSource.class, name = "fixed"),
+		@Type(value = SitemapsSource.class, name = "sitemaps"), @Type(value = CsvSource.class, name = "csv"), @Type(value = JdbcSource.class, name = "jdbc") })
 @Data
 @Accessors(chain = true)
 public abstract class Source implements Serializable {
@@ -21,7 +22,8 @@ public abstract class Source implements Serializable {
 	private static final long serialVersionUID = 7468260753688101634L;
 
 	private String name;
-	
+
+	@JsonIgnore
 	private transient HazelcastInstance instance;
 
 	public abstract void register(EntryListener listener);

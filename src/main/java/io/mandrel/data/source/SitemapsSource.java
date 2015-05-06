@@ -11,6 +11,8 @@ public class SitemapsSource extends Source {
 	public void register(EntryListener listener) {
 		List<String> urls = new ArrayList<>();
 
+		// TODO
+
 		for (String seed : urls) {
 			listener.onItem(seed);
 		}
