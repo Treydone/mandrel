@@ -1,18 +1,17 @@
 package io.mandrel.data.export;
 
+import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.content.WebPageExtractor;
 import io.mandrel.data.spider.SpiderService;
 
+import java.io.Writer;
 import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,7 +26,7 @@ public class ExporterService {
 		this.spiderService = spiderService;
 	}
 
-	public void export(Long id, String extractorName, DocumentExporter exporter, HttpServletResponse response) {
+	public void export(Long id, String extractorName, DocumentExporter exporter, Writer writer) {
 		Optional<Spider> optional = spiderService.get(id);
 
 		if (optional.isPresent()) {
@@ -35,9 +34,8 @@ public class ExporterService {
 			spiderService.injectAndInit(spider);
 			Optional<WebPageExtractor> extractor = spider.getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
 			if (extractor.isPresent()) {
-				response.setContentType(exporter.contentType());
 				try {
-					exporter.init(response.getWriter());
+					exporter.init(writer);
 					extractor.get().getDataStore().byPages(id, 1000, data -> {
 						try {
 							exporter.export(data, extractor.get().getFields());
@@ -57,25 +55,24 @@ public class ExporterService {
 					}
 				}
 			} else {
-				notFound(response);
+				notFound("Extractor not found");
 				log.debug("Extract {} not found for spider {}", extractorName, id);
 			}
 		} else {
-			notFound(response);
+			notFound("Spider not found");
 			log.debug("Spider {} not found", id);
 		}
 	}
 
-	public void export(Long id, RawExporter exporter, HttpServletResponse response) {
+	public void export(Long id, RawExporter exporter, Writer writer) {
 		Optional<Spider> optional = spiderService.get(id);
 
 		if (optional.isPresent()) {
 			Spider spider = optional.get();
 			spiderService.injectAndInit(spider);
 
-			response.setContentType(exporter.contentType());
 			try {
-				exporter.init(response.getWriter());
+				exporter.init(writer);
 				spider.getStores().getPageStore().byPages(id, 1000, data -> {
 					try {
 						exporter.export(data);
@@ -95,13 +92,13 @@ public class ExporterService {
 				}
 			}
 		} else {
-			notFound(response);
+			notFound("Spider not found");
 			log.debug("Spider {} not found", id);
 		}
 
 	}
 
-	private void notFound(HttpServletResponse response) {
-		response.setStatus(HttpStatus.NOT_FOUND.value());
+	private void notFound(String message) {
+		throw new NotFoundException(message);
 	}
 }
