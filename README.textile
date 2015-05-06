@@ -4,6 +4,7 @@ h2. A Distributed Crawler Engine
 
 Mandrel is a distributed Crawler engine built for the cloud. Features include:
 * Distributed and Highly Available Crawler Engine.
+* Powerful and customizable
 * HTTP RESTful API
 * Open Source under the Apache License, version 2 ("ALv2")
 
@@ -13,34 +14,35 @@ h3. Installation
 
 * Download and unzip the Mandrel official distribution OR checkout the code and build it via a "mvn package -DskipTests"
 * Run @bin/mandrel@ on unix
-* Run @curl -X GET http://localhost:9200/@.
-* Start more servers ...
+* Go to @curl -X GET http://localhost:8080/@.
+* Enjoy
+* Start more servers and repeat...
 
 h3. Crawling
 
 Ok, we want to crawl Wikipedia. First step, we create a spider:
-@curl -X POST http://localhost:9200/spiders/wikipedia?urls=http://en.wikipedia.org@
+@curl -X GET http://localhost:9200/spiders/wikipedia?urls=http://en.wikipedia.org@
 
 You can see all the spiders here:
-@curl -X GET http://localhost:9200/spiders@
+@curl -X GET http://localhost:8080/spiders@
 
 Or just your newly created spider:
-@curl -X GET http://localhost:9200/spiders/wikipedia@
+@curl -X GET http://localhost:8080/spiders/wikipedia@
 
 Now start it:
-@curl -X POST http://localhost:9200/spiders/wikipedia/start@
+@curl -X POST http://localhost:8080/spiders/wikipedia/start@
 
-And, that's it. Wait, what???
+Aaaaaaand, that's it. Wait, what???
 
-Mandrel create the spider "wikipedia" and distribute it across all the nodes. When you start it, Mandrel begin to crawl the urls you give and dig in the pages in order to find other urls. 
+Mandrel create the spider named "wikipedia" and distribute it across all the nodes. When you start it, Mandrel begin the crawl by using the urls you give and dig in the pages in order to find other urls. 
 
-bq. By default, only 1000 urls are crawled. See below in order to configure your spider.
+bq. By default, only 100 urls are crawled. See below in order to configure your spider.
 
 Once you have done all you want with your spider, you can kill it:
-@curl -X POST http://localhost:9200/spiders/wikipedia/cancel@
+@curl -X POST http://localhost:8080/spiders/wikipedia/cancel@
 
 Before starting your spider, it may be useful to test it against a url and have a first look of the result:
-@curl -X GET http://localhost:9200/spiders/wikipedia/analyze?source=http://myurl.com/...@
+@curl -X GET http://localhost:8080/spiders/wikipedia/analyze?source=http://myurl.com/...@
 
 h3. Filtering
 
@@ -49,60 +51,95 @@ You can add filters to your spider. There are two types of filters:
 - page filters
 
 Url filters apply conditions only on the url whereas page filters apply conditions on the page. This means also that url filters are applied BEFORE the crawling and page filters AFTER.
-Filters are added on the spider in this way:
 
+h4. Url filters
 
-Url filters
+*Domains*
+Example:
 
+bc. {
+    "type":"allowed_for_domains",
+    "domains": [
+        "mydomain1",
+        "mydomain2"
+    ]
+}
 
-Page filters
+*Skip ancor*
+Example:
 
+bc. {
+    "type":"skip_ancor"
+}
 
-      {
-         "type":"large"
-      },
-      {
-         "type":"only_seeds_domain"
-      },
-      {
-         "type":"on_domains"
-      },
-      {
-         "type":"not",
-         "filter":
-            {
-               "type":"statics"
-            }
-      },
-      {
-         "type":"statics"
-      },
-      {
-         "name":"xxxx",
-         "type":"groovy",
-         "value":"seeds.domain.contains($url.domain)"
-      },
-      {
-         "type":"patterns",
-         "value":[
-            "/signin",
-            "/contact"
-         ]
-      }
+*Pattern*
+Example:
+
+bc. {
+    "type":"pattern",
+    "pattern": "..."
+}
+
+*Booleans*
+or|and|not|true|false
+Example:
+
+bc. 
+{
+    "not": {
+        "type":"allowed_for_domains",
+        "domains": [
+            "mydomain1",
+            "mydomain2"
+        ]
+    }
+}
+
+bc. 
+{
+    "and": [ 
+        {
+            "type":"allowed_for_domains",
+            "domains": [
+                "mydomain1",
+                "mydomain2"
+            ]
+        },
+        {
+            "type":"pattern",
+            "pattern": "..."
+        }
+    ]
+}
+
+h4. Page filters
+
+*Size*
+
+*Booleans*
+or|and|not|true|false
+
       
-TODO...
+To be continued...
 
 h3. Raw exporting
 
-/{id}/raw/export
+Your spider is now done. Or not. We don't care, we just want to export the raw data of the pages/documents. You have to two ways to do this:
+- Extract the data from the page store if you have specified one during the creation (SQL, Cassandra...)
+- Use the dedicated endpoint
 
-TODO...
+@curl -X GET http://localhost:8080/spiders/wikipedia/raw/export?format=csv|json@
+
+To be continued...
+- Define options for the exporters
+- Add formats for parquet
+- Support compression
 
 h3. Extracting
 
 Something we want to crawl pages. But what we really want is the data INSIDE the pages.
 
-bc. curl -X POST http://localhost:9200/spiders/imdb -d '
+bc. curl -X POST http://localhost:8080/spiders/imdb -d '
 {
    "sources":[
       {
@@ -163,7 +200,7 @@ h3. Data exporting
 
 Ok, now we got some data, we can export them by calling:
 
-bc. curl -X POST http://localhost:9200/spiders/export/movie_extractor -d '{"type":"..."}'
+@curl -X POST http://localhost:8080/spiders/export/movie_extractor?format=csv|json@
 
 h4. JSON
 
@@ -230,6 +267,9 @@ Mandrel uses "Maven":http://maven.apache.org for its build system.
 
 In order to create a distribution, simply run the @mvn clean package -DskipTests@ command in the cloned directory.
 
+h2. Examples
+
+
 h1. License
 
 <pre>
@@ -249,8 +289,3 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 </pre>
-
-
-
-
-
