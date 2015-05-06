@@ -24,6 +24,7 @@ on start
 To be done:
 - Configure
 
+filter extractor by link AND by webpage
 Sitemap
 robots.txt
 Canonical url!!

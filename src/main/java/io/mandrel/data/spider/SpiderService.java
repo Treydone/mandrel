@@ -42,7 +42,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import com.google.common.base.Throwables;
@@ -118,13 +117,12 @@ public class SpiderService {
 		return errors;
 	}
 
-	public Spider update(Spider spider) {
-
-		Errors errors = validate(spider);
+	public Spider update(Spider spider) throws BindException {
+		BindingResult errors = validate(spider);
 
 		if (errors.hasErrors()) {
-			// TODO
-			throw new RuntimeException("Errors!");
+			errors.getAllErrors().stream().forEach(oe -> log.info(oe.toString()));
+			throw new BindException(errors);
 		}
 
 		return spiderRepository.update(spider);
@@ -178,8 +176,8 @@ public class SpiderService {
 		return spiderRepository.list();
 	}
 
-	public void start(long spiderId) {
-		get(spiderId).map(spider -> {
+	public Optional<Spider> start(long spiderId) {
+		return get(spiderId).map(spider -> {
 
 			if (State.STARTED.equals(spider.getState())) {
 				return spider;
@@ -203,7 +201,7 @@ public class SpiderService {
 				spiderRepository.update(spider);
 				return spider;
 
-			}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
+			});
 	}
 
 	private Consumer<? super Source> prepareSource(long spiderId, Spider spider) {
@@ -222,32 +220,30 @@ public class SpiderService {
 		};
 	}
 
-	public void cancel(long spiderId) {
-		get(spiderId).map(spider -> {
+	public Optional<Spider> cancel(long spiderId) {
+		return get(spiderId).map(spider -> {
 
 			taskService.shutdownAllExecutorService(spider);
 
 			// Update status
 				spider.setState(State.CANCELLED);
 				return spiderRepository.update(spider);
-			}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
-
+			});
 	}
 
-	public void end(long spiderId) {
-		get(spiderId).map(spider -> {
+	public Optional<Spider> end(long spiderId) {
+		return get(spiderId).map(spider -> {
 
 			taskService.shutdownAllExecutorService(spider);
 
 			// Update status
 				spider.setState(State.ENDED);
 				return spiderRepository.update(spider);
-			}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
-
+			});
 	}
 
-	public void delete(long spiderId) {
-		get(spiderId).map(spider -> {
+	public Optional<Spider> delete(long spiderId) {
+		return get(spiderId).map(spider -> {
 			taskService.shutdownAllExecutorService(spider);
 
 			// Delete data
@@ -258,11 +254,10 @@ public class SpiderService {
 				spiderRepository.delete(spiderId);
 
 				return spider;
-			}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
-
+			});
 	}
 
-	public Analysis analyze(Long id, String source) {
+	public Optional<Analysis> analyze(Long id, String source) {
 		return get(id).map(spider -> {
 
 			WebPage webPage;
@@ -276,7 +271,7 @@ public class SpiderService {
 			Analysis report = buildReport(spider, webPage);
 
 			return report;
-		}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
+		});
 	}
 
 	protected Analysis buildReport(Spider spider, WebPage webPage) {
