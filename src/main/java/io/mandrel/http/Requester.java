@@ -98,6 +98,13 @@ public class Requester {
 		return extractWebPage(url, response);
 	}
 
+	@Deprecated
+	public WebPage getBlocking(String url) throws Exception {
+		BoundRequestBuilder request = client.prepareGet(url);
+		Response response = request.execute().get(5000, TimeUnit.MILLISECONDS);
+		return extractWebPage(url, response);
+	}
+
 	public BoundRequestBuilder prepareRequest(String url, Spider spider) {
 		BoundRequestBuilder request = client.prepareGet(spider.getClient().getDnsCache().optimizeUrl(url));
 

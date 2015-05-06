@@ -6,16 +6,20 @@ import io.mandrel.messaging.UrlsQueueService;
 import java.io.Serializable;
 import java.util.Map;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.Setter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.spring.context.SpringAware;
 
 @SpringAware
 @Setter
-public class SourceTask implements Runnable, Serializable {
+public class SourceTask implements Runnable, HazelcastInstanceAware, Serializable {
 
 	private static final long serialVersionUID = -6204571043673228240L;
 
@@ -24,6 +28,10 @@ public class SourceTask implements Runnable, Serializable {
 
 	@Autowired
 	private transient UrlsQueueService urlsQueueService;
+
+	@Autowired
+	@Getter(value = AccessLevel.NONE)
+	private transient HazelcastInstance hazelcastInstance;
 
 	public SourceTask(long spiderId, Source source) {
 		this.spiderId = spiderId;
@@ -35,6 +43,7 @@ public class SourceTask implements Runnable, Serializable {
 		// TODO
 		Map<String, Object> properties = null;
 
+		source.setInstance(hazelcastInstance);
 		source.init(properties);
 
 		source.register(lst -> {

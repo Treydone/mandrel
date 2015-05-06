@@ -22,11 +22,14 @@ public class Politeness implements Serializable {
 
 	// @JsonProperty("wait")
 	// private long wait = 100;
-	//
-	// @JsonProperty("ignore_robots_txt")
-	// private boolean ignoreRobotsTxt = false;
+
+	@JsonProperty("ignore_robots_txt")
+	private boolean ignoreRobotsTxt = false;
 
 	@JsonProperty("recrawl_after")
 	private int recrawlAfterSeconds = -1;
+
+	@JsonProperty("use_sitemaps")
+	private boolean useSitemaps = true;
 
 }

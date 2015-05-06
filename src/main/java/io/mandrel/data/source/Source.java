@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.hazelcast.core.HazelcastInstance;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({ @Type(value = JmsSource.class, name = "jms"), @Type(value = FixedSource.class, name = "fixed"), @Type(value = CsvSource.class, name = "csv"),
@@ -20,6 +21,8 @@ public abstract class Source implements Serializable {
 	private static final long serialVersionUID = 7468260753688101634L;
 
 	private String name;
+	
+	private transient HazelcastInstance instance;
 
 	public abstract void register(EntryListener listener);
 

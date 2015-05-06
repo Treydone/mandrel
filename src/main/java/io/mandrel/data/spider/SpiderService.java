@@ -2,6 +2,8 @@ package io.mandrel.data.spider;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.State;
+import io.mandrel.common.robots.ExtendedRobotRules;
+import io.mandrel.common.robots.ExtendedRobotRulesParser;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
@@ -14,7 +16,9 @@ import io.mandrel.http.Requester;
 import io.mandrel.http.WebPage;
 import io.mandrel.task.TaskService;
 
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.kohsuke.randname.RandomNameGenerator;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindException;
@@ -43,6 +48,14 @@ import org.springframework.validation.Validator;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.hazelcast.core.HazelcastInstance;
+
+import crawlercommons.fetcher.http.BaseHttpFetcher;
+import crawlercommons.fetcher.http.UserAgent;
+import crawlercommons.robots.BaseRobotsParser;
+import crawlercommons.robots.RobotUtils;
+import crawlercommons.sitemaps.AbstractSiteMap;
+import crawlercommons.sitemaps.SiteMapIndex;
+import crawlercommons.sitemaps.SiteMapParser;
 
 @Component
 @Slf4j
@@ -89,6 +102,8 @@ public class SpiderService {
 		if (spider.getStores().getPageStore() != null) {
 			spider.getStores().getPageStore().setHazelcastInstance(instance);
 		}
+
+		spider.getStores().getPageMetadataStore().setHazelcastInstance(instance);
 
 		// TODO
 		Map<String, Object> properties = new HashMap<>();
@@ -174,16 +189,21 @@ public class SpiderService {
 				throw new RuntimeException("Spider cancelled!");
 			}
 
-			spider.getSources().stream().filter(s -> s.check()).forEach(prepareSource(spiderId, spider));
+			// TODO
+			// if (spider.getClient().getPoliteness().isUseSitemaps()) {
+			// spider.getSources().add(new SitemapsSource(url));
+			// }
 
-			taskService.prepareSimpleExecutor(String.valueOf(spiderId));
-			taskService.executeOnAllMembers(String.valueOf(spiderId), new SpiderTask(spider));
+				spider.getSources().stream().filter(s -> s.check()).forEach(prepareSource(spiderId, spider));
 
-			spider.setState(State.STARTED);
-			spiderRepository.update(spider);
-			return spider;
+				taskService.prepareSimpleExecutor(String.valueOf(spiderId));
+				taskService.executeOnAllMembers(String.valueOf(spiderId), new SpiderTask(spider));
 
-		}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
+				spider.setState(State.STARTED);
+				spiderRepository.update(spider);
+				return spider;
+
+			}).orElseThrow(() -> new RuntimeException("Unknown spider!"));
 	}
 
 	private Consumer<? super Source> prepareSource(long spiderId, Spider spider) {
@@ -267,6 +287,7 @@ public class SpiderService {
 		if (spider.getExtractors() != null) {
 			Map<String, Instance<?>> cachedSelectors = new HashMap<>();
 
+			// Page extraction
 			if (spider.getExtractors().getPages() != null) {
 				Map<String, List<Document>> documentsByExtractor = spider.getExtractors().getPages().stream()
 						.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(cachedSelectors, webPage, ex)))
@@ -274,6 +295,7 @@ public class SpiderService {
 				report.setDocuments(documentsByExtractor);
 			}
 
+			// Link extraction
 			if (spider.getExtractors().getOutlinks() != null) {
 				Map<String, Pair<Set<Link>, Set<String>>> outlinksByExtractor = spider.getExtractors().getOutlinks().stream().map(ol -> {
 					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(spider, webPage.getUrl().toString(), cachedSelectors, webPage, ol));
@@ -282,9 +304,63 @@ public class SpiderService {
 				report.setOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getLeft()));
 				report.setFilteredOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getRight()));
 			}
+
+			// Robots.txt
+			URL pageURL = webPage.getUrl();
+			String robotsTxtUrl = pageURL.getProtocol() + "://" + pageURL.getHost() + ":" + pageURL.getPort() + "/robots.txt";
+			ExtendedRobotRules robotRules = getRobotRules(robotsTxtUrl);
+			report.setRobotRules(robotRules);
+
+			// Sitemaps
+			if (robotRules != null && robotRules.getSitemaps() != null) {
+				Map<String, List<AbstractSiteMap>> sitemaps = new HashMap<>();
+				robotRules.getSitemaps().forEach(url -> {
+					List<AbstractSiteMap> results = getSitemapsForUrl(url);
+					sitemaps.put(url, results);
+				});
+				report.setSitemaps(sitemaps);
+			}
 		}
 
 		report.setMetadata(webPage.getMetadata());
 		return report;
+	}
+
+	public ExtendedRobotRules getRobotRules(String url) {
+		ExtendedRobotRules robotRules = null;
+		BaseHttpFetcher fetcher = RobotUtils.createFetcher(new UserAgent("Mandrel", null, null), 1);
+		BaseRobotsParser parser = new ExtendedRobotRulesParser();
+		URL robotsTxtUrl = null;
+		try {
+			robotsTxtUrl = new URL(url);
+		} catch (MalformedURLException e) {
+			log.debug("Can not construct robots.txt url", e);
+		}
+		if (robotsTxtUrl != null) {
+			robotRules = (ExtendedRobotRules) RobotUtils.getRobotRules(fetcher, parser, robotsTxtUrl);
+		}
+		return robotRules;
+	}
+
+	public List<AbstractSiteMap> getSitemapsForUrl(String sitemapUrl) {
+		List<AbstractSiteMap> sitemaps = new ArrayList<>();
+
+		SiteMapParser siteMapParser = new SiteMapParser();
+		try {
+			WebPage page = requester.getBlocking(sitemapUrl);
+			List<String> headers = page.getMetadata().getHeaders().get(HttpHeaders.CONTENT_TYPE);
+			String contentType = headers != null && headers.size() > 0 ? headers.get(0) : "text/xml";
+
+			AbstractSiteMap sitemap = siteMapParser.parseSiteMap(contentType, page.getBody(), new URL(sitemapUrl));
+
+			if (sitemap.isIndex()) {
+				sitemaps.addAll(((SiteMapIndex) sitemap).getSitemaps());
+			} else {
+				sitemaps.add(sitemap);
+			}
+		} catch (Exception e) {
+			log.debug("", e);
+		}
+		return sitemaps;
 	}
 }
