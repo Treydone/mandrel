@@ -8,20 +8,20 @@ import org.junit.Test;
 
 public class UrlPatternFitlerTest {
 
-	private UrlPatternFilter filter = UrlPatternFilter.STATIC;
+	private UrlPatternFilter _static = UrlPatternFilter.STATIC;
 
 	@Test
-	public void no_link() {
-		Assertions.assertThat(filter.isValid(new Link())).isFalse();
+	public void static_no_link() {
+		Assertions.assertThat(_static.isValid(new Link())).isFalse();
 	}
 
 	@Test
-	public void link_simple() {
-		Assertions.assertThat(filter.isValid(new Link().setUri("http://localhost/1"))).isTrue();
+	public void static_link_simple() {
+		Assertions.assertThat(_static.isValid(new Link().setUri("http://localhost/1"))).isTrue();
 	}
 
 	@Test
-	public void link_static() {
-		Assertions.assertThat(filter.isValid(new Link().setUri("http://localhost/1.jpg"))).isFalse();
+	public void static_link_static() {
+		Assertions.assertThat(_static.isValid(new Link().setUri("http://localhost/1.jpg"))).isFalse();
 	}
 }
