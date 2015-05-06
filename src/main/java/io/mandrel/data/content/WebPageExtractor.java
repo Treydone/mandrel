@@ -1,6 +1,6 @@
 package io.mandrel.data.content;
 
-import io.mandrel.data.filters.page.WebPageFilter;
+import io.mandrel.common.data.Filters;
 import io.mandrel.gateway.DocumentStore;
 import io.mandrel.gateway.impl.InternalDocumentStore;
 
@@ -23,12 +23,15 @@ public class WebPageExtractor implements Serializable {
 	private DocumentStore dataStore = new InternalDocumentStore();
 
 	@JsonProperty("filters")
-	private List<WebPageFilter> filters;
+	private Filters filters = new Filters();
 
 	@JsonProperty("multiple")
 	private Extractor multiple;
 
 	@JsonProperty("fields")
 	private List<FieldExtractor> fields;
+	
+	@JsonProperty("key_field")
+	private String keyField;
 
 }

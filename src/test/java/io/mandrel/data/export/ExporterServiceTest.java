@@ -12,8 +12,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +29,7 @@ public class ExporterServiceTest {
 	private SpiderService spiderService;
 
 	@Mock
-	private HttpServletResponse response;
+	private Writer writer;
 
 	@Mock
 	private WebPageStore store;
@@ -78,7 +76,7 @@ public class ExporterServiceTest {
 		// WebPage()));
 
 		// Actions
-		service.export(0L, exporter, response);
+		service.export(0L, exporter, writer);
 
 		// Asserts
 		Assertions.assertThat(results).hasSize(2);

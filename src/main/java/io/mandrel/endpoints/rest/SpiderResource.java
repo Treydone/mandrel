@@ -58,7 +58,7 @@ public class SpiderResource {
 
 	@ApiOperation(value = "Update a spider", response = Spider.class)
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-	public Spider update(@PathVariable Long id, Spider spider) {
+	public Spider update(@PathVariable Long id, @RequestBody Spider spider) throws BindException {
 		return spiderService.update(spider);
 	}
 
@@ -70,13 +70,13 @@ public class SpiderResource {
 
 	@ApiOperation(value = "Start a spider")
 	@RequestMapping(value = "/{id}/start", method = RequestMethod.GET)
-	public void start(@PathVariable Long id) {
-		spiderService.get(id).ifPresent(opt -> spiderService.start(id));
+	public Optional<Spider> start(@PathVariable Long id) {
+		return spiderService.start(id);
 	}
 
 	@ApiOperation(value = "Analyze a source against a spider")
 	@RequestMapping(value = "/{id}/analyze", method = RequestMethod.GET)
-	public Analysis analyze(@PathVariable Long id, @RequestParam String source) {
+	public Optional<Analysis> analyze(@PathVariable Long id, @RequestParam String source) {
 		return spiderService.analyze(id, source);
 	}
 
@@ -88,14 +88,14 @@ public class SpiderResource {
 
 	@ApiOperation(value = "Cancel a spider")
 	@RequestMapping(value = "/{id}/cancel", method = RequestMethod.GET)
-	public void cancel(@PathVariable Long id) {
-		spiderService.get(id).ifPresent(opt -> spiderService.cancel(id));
+	public Optional<Spider> cancel(@PathVariable Long id) {
+		return spiderService.cancel(id);
 	}
 
 	@ApiOperation(value = "Delete a spider")
 	@RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
-	public void delete(@PathVariable Long id) {
-		spiderService.get(id).ifPresent(opt -> spiderService.delete(id));
+	public Optional<Spider> delete(@PathVariable Long id) {
+		return spiderService.delete(id);
 	}
 
 	@ApiOperation(value = "Retrieve the stats of a spider")
