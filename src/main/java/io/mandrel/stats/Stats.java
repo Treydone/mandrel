@@ -9,6 +9,7 @@ import com.hazelcast.core.IAtomicLong;
 public class Stats {
 
 	private final IAtomicLong nbPages;
+	private final IAtomicLong nbPendingPages;
 	private final IAtomicLong totalSize;
 	private final IAtomicLong totalTimeToFetch;
 	private final Map<Integer, IAtomicLong> nbPagesByStatus = new HashMap<>();
@@ -21,6 +22,7 @@ public class Stats {
 		this.spiderId = spiderId;
 
 		nbPages = instance.getAtomicLong(getKey(spiderId) + "-nbPages");
+		nbPendingPages = instance.getAtomicLong(getKey(spiderId) + "-nbPendingPages");
 		totalSize = instance.getAtomicLong(getKey(spiderId) + "-totalSize");
 		totalTimeToFetch = instance.getAtomicLong(getKey(spiderId) + "-totalTimeToFetch");
 	}
@@ -32,6 +34,14 @@ public class Stats {
 
 	public long incNbPages() {
 		return nbPages.incrementAndGet();
+	}
+
+	public long incNbPendingPages() {
+		return nbPendingPages.incrementAndGet();
+	}
+
+	public long decNbPendingPages() {
+		return nbPendingPages.incrementAndGet();
 	}
 
 	public long incTotalSize(long size) {
@@ -51,6 +61,10 @@ public class Stats {
 		return iAtomicLong.incrementAndGet();
 	}
 
+	public long getNbPendingPages() {
+		return nbPendingPages.get();
+	}
+
 	public long getNbPages() {
 		return nbPages.get();
 	}
@@ -61,6 +75,18 @@ public class Stats {
 
 	public long getTotalTimeToFetch() {
 		return totalTimeToFetch.get();
+	}
+
+	public long getAveragePageSize() {
+		return getTotalSize() / getNbPages();
+	}
+
+	public long getAverageTimeToFetch() {
+		return getTotalTimeToFetch() / getNbPages();
+	}
+
+	public long getAverageBandwidth() {
+		return getTotalSize() / getTotalTimeToFetch();
 	}
 
 	public Map<Integer, Long> getPagesByStatus() {

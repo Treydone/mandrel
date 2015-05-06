@@ -49,7 +49,7 @@ public class UrlsQueueService {
 		Stats stats = statsService.get(spider.getId());
 		queueService.<String> registrer("urls-" + spider.getId(), url -> {
 			long maxPages = spider.getClient().getPoliteness().getMaxPages();
-			if (maxPages > 0 && stats.getNbPages() > maxPages) {
+			if (maxPages > 0 && (stats.getNbPages() + stats.getNbPendingPages()) > maxPages) {
 				log.debug("Max pages reached for {} ({})", spider.getName(), spider.getId());
 				return true;
 			}
@@ -65,6 +65,7 @@ public class UrlsQueueService {
 
 			// Mark as pending
 			queueService.markAsPending("pendings-" + spider.getId(), url, Boolean.TRUE);
+			stats.incNbPendingPages();
 
 			requester.get(url, spider, webPage -> {
 
@@ -119,10 +120,13 @@ public class UrlsQueueService {
 				log.trace(">  - Storing metadata for {} done!", url);
 
 				queueService.removePending("pendings-" + spider.getId(), url);
+				stats.decNbPendingPages();
+
 				log.debug("> End parsing data for {}", url);
 			}, t -> {
 				// Well...
 					queueService.removePending("pendings-" + spider.getId(), url);
+					stats.decNbPendingPages();
 				});
 		} catch (Exception e) {
 			log.debug("Can not fetch url {} due to {}", new Object[] { url, e.toString() }, e);
