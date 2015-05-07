@@ -29,13 +29,7 @@ public class QueueService {
 
 	public <T> void markAsPending(String queueName, String identifier, T data) {
 		if (identifier != null) {
-
-			if (instance.getConfig().getQueueConfigs().containsKey(queueName)) {
-				// Create map of pendings with TTL of 2min
-				MapConfig mapConfig = new MapConfig();
-				mapConfig.setName(queueName).setBackupCount(1).setTimeToLiveSeconds(120).setStatisticsEnabled(true);
-				instance.getConfig().addMapConfig(mapConfig);
-			}
+			prepareIfNotDefined(queueName);
 
 			IMap<String, T> pendings = instance.getMap(queueName);
 			pendings.put(identifier, data);
@@ -44,6 +38,8 @@ public class QueueService {
 
 	public <T> void removePending(String queueName, String identifier) {
 		if (identifier != null) {
+			prepareIfNotDefined(queueName);
+
 			IMap<String, T> pendings = instance.getMap(queueName);
 			pendings.remove(identifier);
 		}
@@ -51,10 +47,21 @@ public class QueueService {
 
 	public <T> Set<T> filterPendings(String queueName, Collection<T> identifiers) {
 		if (identifiers != null) {
+			prepareIfNotDefined(queueName);
+
 			IMap<String, T> pendings = instance.getMap(queueName);
 			return identifiers.stream().filter(el -> !pendings.containsKey(el)).collect(Collectors.toSet());
 		}
 		return null;
+	}
+
+	protected void prepareIfNotDefined(String queueName) {
+		if (instance.getConfig().getQueueConfigs().containsKey(queueName)) {
+			// Create map of pendings with TTL of 10 secs
+			MapConfig mapConfig = new MapConfig();
+			mapConfig.setName(queueName).setBackupCount(1).setTimeToLiveSeconds(10).setStatisticsEnabled(true);
+			instance.getConfig().addMapConfig(mapConfig);
+		}
 	}
 
 	public <T> void add(String queueName, T data) {

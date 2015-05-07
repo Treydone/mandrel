@@ -3,13 +3,15 @@ package io.mandrel.stats;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.hazelcast.config.MapConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IAtomicLong;
+import com.hazelcast.core.IMap;
 
 public class Stats {
 
 	private final IAtomicLong nbPages;
-	private final IAtomicLong nbPendingPages;
+	private final IMap<String, Boolean> pendings;
 	private final IAtomicLong totalSize;
 	private final IAtomicLong totalTimeToFetch;
 	private final Map<Integer, IAtomicLong> nbPagesByStatus = new HashMap<>();
@@ -22,7 +24,15 @@ public class Stats {
 		this.spiderId = spiderId;
 
 		nbPages = instance.getAtomicLong(getKey(spiderId) + "-nbPages");
-		nbPendingPages = instance.getAtomicLong(getKey(spiderId) + "-nbPendingPages");
+
+		if (instance.getConfig().getQueueConfigs().containsKey("pendings-" + spiderId)) {
+			// Create map of pendings with TTL of 10 secs
+			MapConfig mapConfig = new MapConfig();
+			mapConfig.setName("pendings-" + spiderId).setBackupCount(10).setTimeToLiveSeconds(1).setStatisticsEnabled(true);
+			instance.getConfig().addMapConfig(mapConfig);
+		}
+		pendings = instance.getMap("pendings-" + spiderId);
+
 		totalSize = instance.getAtomicLong(getKey(spiderId) + "-totalSize");
 		totalTimeToFetch = instance.getAtomicLong(getKey(spiderId) + "-totalTimeToFetch");
 	}
@@ -34,14 +44,6 @@ public class Stats {
 
 	public long incNbPages() {
 		return nbPages.incrementAndGet();
-	}
-
-	public long incNbPendingPages() {
-		return nbPendingPages.incrementAndGet();
-	}
-
-	public long decNbPendingPages() {
-		return nbPendingPages.incrementAndGet();
 	}
 
 	public long incTotalSize(long size) {
@@ -62,7 +64,7 @@ public class Stats {
 	}
 
 	public long getNbPendingPages() {
-		return nbPendingPages.get();
+		return pendings.size();
 	}
 
 	public long getNbPages() {

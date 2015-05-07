@@ -65,7 +65,6 @@ public class UrlsQueueService {
 
 			// Mark as pending
 			queueService.markAsPending("pendings-" + spider.getId(), url, Boolean.TRUE);
-			stats.incNbPendingPages();
 
 			requester.get(url, spider, webPage -> {
 
@@ -120,15 +119,14 @@ public class UrlsQueueService {
 				log.trace(">  - Storing metadata for {} done!", url);
 
 				queueService.removePending("pendings-" + spider.getId(), url);
-				stats.decNbPendingPages();
 
 				log.debug("> End parsing data for {}", url);
 			}, t -> {
 				// Well...
 					queueService.removePending("pendings-" + spider.getId(), url);
-					stats.decNbPendingPages();
 				});
 		} catch (Exception e) {
+			queueService.removePending("pendings-" + spider.getId(), url);
 			log.debug("Can not fetch url {} due to {}", new Object[] { url, e.toString() }, e);
 		}
 	}
