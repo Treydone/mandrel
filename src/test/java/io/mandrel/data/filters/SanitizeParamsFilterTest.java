@@ -28,4 +28,11 @@ public class SanitizeParamsFilterTest {
 		Assertions.assertThat(filter.isValid(link)).isTrue();
 		Assertions.assertThat(link.getUri()).isEqualTo("http://localhost/1");
 	}
+	
+	@Test
+	public void link_with_ancor() {
+		Link link = new Link().setUri("http://localhost/1#foo");
+		Assertions.assertThat(filter.isValid(link)).isTrue();
+		Assertions.assertThat(link.getUri()).isEqualTo("http://localhost/1");
+	}
 }

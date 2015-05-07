@@ -20,6 +20,11 @@ public class SanitizeParamsFilter extends LinkFilter {
 			if (pos > -1) {
 				link.setUri(link.getUri().substring(0, pos));
 			}
+			
+			pos = link.getUri().indexOf('#');
+			if (pos > -1) {
+				link.setUri(link.getUri().substring(0, pos));
+			}
 		}
 		return true;
 	}
