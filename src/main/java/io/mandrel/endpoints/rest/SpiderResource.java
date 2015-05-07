@@ -51,13 +51,13 @@ public class SpiderResource {
 	}
 
 	@ApiOperation(value = "Add a spider")
-	@RequestMapping(method = RequestMethod.POST)
+	@RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public Spider add(@RequestBody Spider spider) throws BindException {
 		return spiderService.add(spider);
 	}
 
 	@ApiOperation(value = "Update a spider", response = Spider.class)
-	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public Spider update(@PathVariable Long id, @RequestBody Spider spider) throws BindException {
 		return spiderService.update(spider);
 	}
@@ -97,7 +97,7 @@ public class SpiderResource {
 	public Optional<Spider> delete(@PathVariable Long id) {
 		return spiderService.delete(id);
 	}
-
+	
 	@ApiOperation(value = "Retrieve the stats of a spider")
 	@RequestMapping(value = "/{id}/stats", method = RequestMethod.GET)
 	public Optional<Stats> stats(@PathVariable Long id) {

@@ -13,7 +13,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,18 +37,10 @@ public class ExportResource {
 	}
 
 	@ApiOperation(value = "Export the data of the extractor of a spider using a custom exporter in the classpath")
-	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET)
-	public void export(@PathVariable Long id, @PathVariable String extractorName, DocumentExporter exporter, HttpServletResponse response) throws IOException {
+	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public void export(@PathVariable Long id, @PathVariable String extractorName, @RequestBody DocumentExporter exporter, HttpServletResponse response)
+			throws IOException {
 		internalExport(id, extractorName, exporter, response);
-	}
-
-	public void internalExport(Long id, String extractorName, DocumentExporter exporter, HttpServletResponse response) throws IOException {
-		response.setContentType(exporter.contentType());
-		try {
-			exporterService.export(id, extractorName, exporter, response.getWriter());
-		} catch (NotFoundException e) {
-			response.setStatus(HttpStatus.NOT_FOUND.value());
-		}
 	}
 
 	@ApiOperation(value = "Export the data of the extractor of a spider in a format specified in the parameter")
@@ -66,18 +60,9 @@ public class ExportResource {
 	}
 
 	@ApiOperation(value = "Export the raw data of a spider using a custom exporter in the classpath")
-	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.GET)
-	public void rawExport(@PathVariable Long id, RawExporter exporter, HttpServletResponse response) throws IOException {
+	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public void rawExport(@PathVariable Long id, @RequestBody RawExporter exporter, HttpServletResponse response) throws IOException {
 		internalRawExport(id, exporter, response);
-	}
-
-	public void internalRawExport(Long id, RawExporter exporter, HttpServletResponse response) throws IOException {
-		response.setContentType(exporter.contentType());
-		try {
-			exporterService.export(id, exporter, response.getWriter());
-		} catch (NotFoundException e) {
-			response.setStatus(HttpStatus.NOT_FOUND.value());
-		}
 	}
 
 	@ApiOperation(value = "Export the raw data of a spider in a format specified in the parameter")
@@ -93,5 +78,23 @@ public class ExportResource {
 			return;
 		}
 		internalRawExport(id, exporter, response);
+	}
+
+	protected void internalRawExport(Long id, RawExporter exporter, HttpServletResponse response) throws IOException {
+		response.setContentType(exporter.contentType());
+		try {
+			exporterService.export(id, exporter, response.getWriter());
+		} catch (NotFoundException e) {
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+		}
+	}
+
+	protected void internalExport(Long id, String extractorName, DocumentExporter exporter, HttpServletResponse response) throws IOException {
+		response.setContentType(exporter.contentType());
+		try {
+			exporterService.export(id, extractorName, exporter, response.getWriter());
+		} catch (NotFoundException e) {
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+		}
 	}
 }
