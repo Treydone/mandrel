@@ -80,6 +80,18 @@ bc. {
     "pattern": "..."
 }
 
+*Sanitize*
+Remove all the parameters in a URI (tck=..., timestamp=..., adsclick=...)
+
+Example:
+
+bc. {
+    "type":"sanitize_params"
+}
+      
+To be continued...
+- Keep only some parameters
+
 *Booleans*
 or|and|not|true|false
 Example:
@@ -221,6 +233,28 @@ bc. {
     "end_of_line_symbols":"\r\n"
 }
 
+h4. Stores
+
+bc. {
+   "stores":{
+      "metadata":{
+         "type":"internal"
+      },
+      "page":{
+         "type":"internal"
+      }
+   }
+}
+
+bc. {
+   "stores":{
+      "metadata":{
+         "type":"internal"
+      },
+      "page":null
+   }
+}
+   
 h3. Client
 
 Each spider can be configured with a specified HTTP client in order to configure:
