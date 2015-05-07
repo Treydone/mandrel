@@ -31,10 +31,10 @@ public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawEx
 	private char quoteChar = '"';
 
 	@JsonProperty("delimiter_values")
-	private int delimiterValuesChar = ',';
+	private char delimiterValuesChar = ',';
 
 	@JsonProperty("delimiter_multivalues")
-	private int delimiterMultiValuesChar = '|';
+	private char delimiterMultiValuesChar = '|';
 
 	@JsonProperty("keep_only_first_value")
 	private boolean keepOnlyFirstValue = false;

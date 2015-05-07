@@ -5,6 +5,7 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.data.content.WebPageExtractor;
 import io.mandrel.data.spider.SpiderService;
 
+import java.io.BufferedWriter;
 import java.io.Writer;
 import java.util.Optional;
 
@@ -35,7 +36,7 @@ public class ExporterService {
 			Optional<WebPageExtractor> oExtractor = spider.getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
 			if (oExtractor.isPresent()) {
 				try {
-					exporter.init(writer);
+					exporter.init(new BufferedWriter(writer));
 					WebPageExtractor extractor = oExtractor.get();
 					extractor.getDocumentStore().init(extractor);
 					extractor.getDocumentStore().byPages(id, 1000, data -> {
@@ -74,7 +75,7 @@ public class ExporterService {
 			spiderService.injectAndInit(spider);
 
 			try {
-				exporter.init(writer);
+				exporter.init(new BufferedWriter(writer));
 				spider.getStores().getPageStore().byPages(id, 1000, data -> {
 					try {
 						exporter.export(data);

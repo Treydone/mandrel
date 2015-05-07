@@ -2,11 +2,13 @@ package io.mandrel.data.content;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
+@Accessors(chain = true)
 public class FieldExtractor extends NamedDataExtractorFormatter {
 
 	private static final long serialVersionUID = 2268103421186155100L;
@@ -16,7 +18,7 @@ public class FieldExtractor extends NamedDataExtractorFormatter {
 
 	@JsonProperty("use_multiple")
 	private boolean useMultiple = false;
-	
+
 	@JsonProperty("extractor")
 	private Extractor extractor;
 

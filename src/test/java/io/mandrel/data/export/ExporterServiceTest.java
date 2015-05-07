@@ -72,9 +72,6 @@ public class ExporterServiceTest {
 		Mockito.when(spiderService.get(0)).thenReturn(Optional.of(spider));
 		// Mockito.when(store.byPages(0L, 1000, captor.capture()));
 
-		// Mockito.when(store.all(0)).thenReturn(Stream.of(new WebPage(), new
-		// WebPage()));
-
 		// Actions
 		service.export(0L, exporter, writer);
 
