@@ -33,7 +33,7 @@ public class ExtractorServiceTest {
 	private ScriptingService scriptingService;
 
 	@Mock
-	private DocumentStore dataStore;
+	private DocumentStore documentStore;
 
 	private SelectorService selectorService = new SelectorService();
 
@@ -71,7 +71,7 @@ public class ExtractorServiceTest {
 	}
 
 	@Test(expected = NullPointerException.class)
-	public void no_datastore() throws MalformedURLException {
+	public void no_DocumentStore() throws MalformedURLException {
 
 		// Arrange
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
@@ -94,7 +94,7 @@ public class ExtractorServiceTest {
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 
-		extractor.setDataStore(dataStore);
+		extractor.setDocumentStore(documentStore);
 		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
 		extractor.setFields(Arrays.asList(field));
@@ -112,7 +112,7 @@ public class ExtractorServiceTest {
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 
-		extractor.setDataStore(dataStore);
+		extractor.setDocumentStore(documentStore);
 		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
 		Extractor fieldExtractor = new Extractor();
@@ -133,7 +133,7 @@ public class ExtractorServiceTest {
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
 		WebPageExtractor extractor = new WebPageExtractor();
 
-		extractor.setDataStore(dataStore);
+		extractor.setDocumentStore(documentStore);
 		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
 		Extractor fieldExtractor = new Extractor();
@@ -156,7 +156,7 @@ public class ExtractorServiceTest {
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
 
-		extractor.setDataStore(dataStore);
+		extractor.setDocumentStore(documentStore);
 		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
 		Extractor fieldExtractor = new Extractor();
@@ -172,7 +172,7 @@ public class ExtractorServiceTest {
 		// Asserts
 		Document data = new Document();
 		data.put("date", Arrays.asList("value1", "value2"));
-		Mockito.verify(dataStore).save(0, Arrays.asList(data));
+		Mockito.verify(documentStore).save(0, Arrays.asList(data));
 	}
 
 	@Test
@@ -184,7 +184,7 @@ public class ExtractorServiceTest {
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
 
-		extractor.setDataStore(dataStore);
+		extractor.setDocumentStore(documentStore);
 
 		FieldExtractor dateField = new FieldExtractor();
 		dateField.setName("date");
@@ -211,7 +211,7 @@ public class ExtractorServiceTest {
 		Document data = new Document();
 		data.put("date", Arrays.asList("value1", "value2"));
 		data.put("key", Arrays.asList("key1"));
-		Mockito.verify(dataStore).save(0, Arrays.asList(data));
+		Mockito.verify(documentStore).save(0, Arrays.asList(data));
 	}
 
 	@Test
@@ -223,7 +223,7 @@ public class ExtractorServiceTest {
 
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
 		WebPageExtractor extractor = new WebPageExtractor();
-		extractor.setDataStore(dataStore);
+		extractor.setDocumentStore(documentStore);
 
 		FieldExtractor dateField = new FieldExtractor();
 		dateField.setName("date");
@@ -265,7 +265,7 @@ public class ExtractorServiceTest {
 		Document data3 = new Document();
 		data3.put("date", Arrays.asList("value3"));
 
-		Mockito.verify(dataStore).save(0, Arrays.asList(data1, data2, data3));
+		Mockito.verify(documentStore).save(0, Arrays.asList(data1, data2, data3));
 	}
 
 	@Test

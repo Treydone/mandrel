@@ -42,7 +42,7 @@ public class SpiderValidator implements Validator {
 				}
 
 				if (!source.check()) {
-					errors.rejectValue("sources", "sources.failed", null, "Check " + source.getName() + " failed.");
+					errors.rejectValue("sources[" + i + "]", "sources.failed", null, "Check " + source.getName() + " failed.");
 				}
 				i++;
 			}
@@ -52,24 +52,31 @@ public class SpiderValidator implements Validator {
 		// TODO
 
 		// Extractors
-		if (spider.getExtractors().getPages() != null) {
+		if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
 			int i = 0;
 			for (WebPageExtractor ex : spider.getExtractors().getPages()) {
 				if (ex.getName() == null) {
-					errors.rejectValue("extractors[" + i + "].name", "extractors.name.not.null", null, "Can not be null.");
+					errors.rejectValue("extractors.pages[" + i + "].name", "extractors.name.not.null", null, "Can not be null.");
 				}
 
-				if (!ex.getDataStore().check()) {
-					errors.rejectValue("extractors[" + i + "].datastore", "extractors.datastore.failed", null, "Check " + ex.getName() + " failed.");
+				if (ex.getDocumentStore() == null) {
+					errors.rejectValue("extractors.pages[" + i + "].documentStore", "extractors.fields.not.null", null, "Can not be null.");
 				}
+
+				// TODO init
+				// if (!ex.getDocumentStore().check()) {
+				// errors.rejectValue("extractors.pages[" + i +
+				// "].documentStore", "extractors.datastore.failed", null,
+				// "Check " + ex.getName() + " failed.");
+				// }
 
 				if (ex.getFields() == null) {
-					errors.rejectValue("extractors[" + i + "].fields", "extractors.fields.not.null", null, "Can not be null.");
+					errors.rejectValue("extractors.pages[" + i + "].fields", "extractors.fields.not.null", null, "Can not be null.");
 				}
 
 				if (ex.getMultiple() != null) {
 					if (ex.getFields().stream().filter(f -> f.isUseMultiple()).anyMatch(f -> !ex.getMultiple().getType().equals(f.getExtractor().getType()))) {
-						errors.rejectValue("extractors[" + i + "].fields", "extractors.fields.not.same.type.as.multiple", null,
+						errors.rejectValue("extractors.pages[" + i + "].fields", "extractors.fields.not.same.type.as.multiple", null,
 								"Is not the same type as the multiple.");
 					}
 				}

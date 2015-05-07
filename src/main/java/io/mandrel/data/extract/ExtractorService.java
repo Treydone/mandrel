@@ -120,13 +120,13 @@ public class ExtractorService {
 
 		// Store the result
 		if (documents != null) {
-			extractor.getDataStore().save(spiderId, documents);
+			extractor.getDocumentStore().save(spiderId, documents);
 		}
 	}
 
 	public List<Document> extractThenFormat(Map<String, Instance<?>> cachedSelectors, WebPage webPage, WebPageExtractor extractor) {
 		Preconditions.checkNotNull(extractor.getFields(), "No field for this extractor...");
-		Preconditions.checkNotNull(extractor.getDataStore(), "No datastore for this extractor...");
+		Preconditions.checkNotNull(extractor.getDocumentStore(), "No datastore for this extractor...");
 		Preconditions.checkNotNull(cachedSelectors, "Cached selectors can not be null...");
 
 		List<Document> documents = null;
@@ -139,7 +139,7 @@ public class ExtractorService {
 				documents = new ArrayList<>();
 
 				// Extract the multiple
-				List<String> segments = extract(cachedSelectors, webPage, null, extractor.getMultiple());
+				List<String> segments = extract(cachedSelectors, webPage, null, extractor.getMultiple(), DataConverter.BODY);
 
 				documents = segments.stream().map(segment -> {
 
@@ -150,10 +150,12 @@ public class ExtractorService {
 						// Extract the value
 						List<? extends Object> results = null;
 
-						if (field.isUseMultiple() && SourceType.BODY.equals(field.getExtractor().getSource())) {
-							results = extract(cachedSelectors, webPage, segment.getBytes(), field.getExtractor());
+						boolean isBody = SourceType.BODY.equals(field.getExtractor().getSource());
+						if (field.isUseMultiple() && isBody) {
+							results = extract(cachedSelectors, webPage, segment.getBytes(), field.getExtractor(), DataConverter.BODY);
 						} else {
-							results = extract(cachedSelectors, webPage, null, field.getExtractor());
+							DataConverter<?, String> converter = isBody ? DataConverter.BODY : DataConverter.DEFAULT;
+							results = extract(cachedSelectors, webPage, null, field.getExtractor(), converter);
 						}
 
 						if (results != null && !results.isEmpty()) {
@@ -174,7 +176,9 @@ public class ExtractorService {
 				for (FieldExtractor field : extractor.getFields()) {
 
 					// Extract the value
-					List<? extends Object> results = extract(cachedSelectors, webPage, null, field.getExtractor());
+					boolean isBody = SourceType.BODY.equals(field.getExtractor().getSource());
+					DataConverter<?, String> converter = isBody ? DataConverter.BODY : DataConverter.DEFAULT;
+					List<? extends Object> results = extract(cachedSelectors, webPage, null, field.getExtractor(), converter);
 
 					if (results != null && !results.isEmpty()) {
 
@@ -191,14 +195,11 @@ public class ExtractorService {
 		return documents;
 	}
 
-	public List<String> extract(Map<String, Instance<?>> selectors, WebPage webPage, byte[] segment, Extractor fieldExtractor) {
-		return extract(selectors, webPage, segment, fieldExtractor, DataConverter.BODY);
-	}
-
 	public <T, U> List<U> extract(Map<String, Instance<?>> selectors, WebPage webPage, byte[] segment, Extractor fieldExtractor, DataConverter<T, U> converter) {
 		Preconditions.checkNotNull(fieldExtractor, "There is no field extractor...");
 		Preconditions.checkNotNull(fieldExtractor.getType(), "Extractor without type");
-		Preconditions.checkNotNull(fieldExtractor.getValue(), "Extractor without value");
+		// Preconditions.checkNotNull(fieldExtractor.getValue(),
+		// "Extractor without value");
 
 		Instance<T> instance;
 		if (segment != null) {

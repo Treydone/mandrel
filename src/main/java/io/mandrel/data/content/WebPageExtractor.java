@@ -20,7 +20,7 @@ public class WebPageExtractor implements Serializable {
 	private String name;
 
 	@JsonProperty("store")
-	private DocumentStore dataStore = new InternalDocumentStore();
+	private DocumentStore documentStore = new InternalDocumentStore();
 
 	@JsonProperty("filters")
 	private Filters filters = new Filters();

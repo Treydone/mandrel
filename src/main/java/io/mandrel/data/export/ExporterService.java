@@ -27,18 +27,20 @@ public class ExporterService {
 	}
 
 	public void export(Long id, String extractorName, DocumentExporter exporter, Writer writer) {
-		Optional<Spider> optional = spiderService.get(id);
+		Optional<Spider> oSpider = spiderService.get(id);
 
-		if (optional.isPresent()) {
-			Spider spider = optional.get();
+		if (oSpider.isPresent()) {
+			Spider spider = oSpider.get();
 			spiderService.injectAndInit(spider);
-			Optional<WebPageExtractor> extractor = spider.getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
-			if (extractor.isPresent()) {
+			Optional<WebPageExtractor> oExtractor = spider.getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
+			if (oExtractor.isPresent()) {
 				try {
 					exporter.init(writer);
-					extractor.get().getDataStore().byPages(id, 1000, data -> {
+					WebPageExtractor extractor = oExtractor.get();
+					extractor.getDocumentStore().init(extractor);
+					extractor.getDocumentStore().byPages(id, 1000, data -> {
 						try {
-							exporter.export(data, extractor.get().getFields());
+							exporter.export(data, extractor.getFields());
 						} catch (Exception e) {
 							log.debug("Uhhh...", e);
 							return false;

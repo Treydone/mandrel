@@ -43,7 +43,7 @@ public class SpiderTask implements Runnable, HazelcastInstanceAware, Serializabl
 		spiderService.injectAndInit(spider);
 
 		if (spider.getExtractors().getPages() != null) {
-			spider.getExtractors().getPages().stream().forEach(ex -> ex.getDataStore().init(ex));
+			spider.getExtractors().getPages().stream().forEach(ex -> ex.getDocumentStore().init(ex));
 		}
 
 		// Block until the end

@@ -1,5 +1,6 @@
 io.mandrel.data.content.selector.XpathSelector
 io.mandrel.data.content.selector.StaticSelector
 io.mandrel.data.content.selector.SimpleUrlSelector
+io.mandrel.data.content.selector.AllUrlSelector
 io.mandrel.data.content.selector.SimpleHeaderSelector
 io.mandrel.data.content.selector.SimpleCookieSelector

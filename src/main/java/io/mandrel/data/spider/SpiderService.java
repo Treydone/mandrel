@@ -101,14 +101,17 @@ public class SpiderService {
 		if (spider.getStores().getPageStore() != null) {
 			spider.getStores().getPageStore().setHazelcastInstance(instance);
 		}
-
-		spider.getStores().getPageMetadataStore().setHazelcastInstance(instance);
+		if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
+			spider.getExtractors().getPages().forEach(ex -> ex.getDocumentStore().setHazelcastInstance(instance));
+		}
 
 		// TODO
 		Map<String, Object> properties = new HashMap<>();
 
 		spider.getStores().getPageMetadataStore().init(properties);
-		spider.getStores().getPageStore().init(properties);
+		if (spider.getStores().getPageStore() != null) {
+			spider.getStores().getPageStore().init(properties);
+		}
 	}
 
 	public BindingResult validate(Spider spider) {
@@ -248,7 +251,7 @@ public class SpiderService {
 
 			// Delete data
 				spider.getStores().getPageStore().deleteAllFor(spiderId);
-				spider.getExtractors().getPages().stream().forEach(ex -> ex.getDataStore().deleteAllFor(spiderId));
+				spider.getExtractors().getPages().stream().forEach(ex -> ex.getDocumentStore().deleteAllFor(spiderId));
 
 				// Remove spider
 				spiderRepository.delete(spiderId);

@@ -1,6 +1,6 @@
 package io.mandrel.data.source;
 
-import scala.Serializable;
+import java.io.Serializable;
 
 public interface EntryListener extends Serializable {
 

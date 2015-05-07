@@ -7,10 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
+@Accessors(chain = true)
 public class Spider implements Serializable {
 
 	private static final long serialVersionUID = 7577967853566572778L;
