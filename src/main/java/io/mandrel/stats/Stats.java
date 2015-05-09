@@ -15,6 +15,7 @@ public class Stats {
 	private final IAtomicLong totalSize;
 	private final IAtomicLong totalTimeToFetch;
 	private final Map<Integer, IAtomicLong> nbPagesByStatus = new HashMap<>();
+	private final Map<String, IAtomicLong> documentsByExtractor = new HashMap<>();
 	private final long spiderId;
 
 	private final transient HazelcastInstance instance;
@@ -60,7 +61,16 @@ public class Stats {
 			iAtomicLong = instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus);
 			nbPagesByStatus.put(httpStatus, iAtomicLong);
 		}
-		return iAtomicLong.incrementAndGet();
+		return iAtomicLong.addAndGet(1);
+	}
+
+	public long incDocumentForExtractor(String extractor, int inc) {
+		IAtomicLong iAtomicLong = documentsByExtractor.get(extractor);
+		if (iAtomicLong == null) {
+			iAtomicLong = instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor);
+			documentsByExtractor.put(extractor, iAtomicLong);
+		}
+		return iAtomicLong.addAndGet(inc);
 	}
 
 	public long getNbPendingPages() {
@@ -94,6 +104,12 @@ public class Stats {
 	public Map<Integer, Long> getPagesByStatus() {
 		Map<Integer, Long> result = new HashMap<>();
 		nbPagesByStatus.forEach((key, value) -> result.put(key, value.get()));
+		return result;
+	}
+
+	public Map<String, Long> getDocumentsByExtractor() {
+		Map<String, Long> result = new HashMap<>();
+		documentsByExtractor.forEach((key, value) -> result.put(key, value.get()));
 		return result;
 	}
 }

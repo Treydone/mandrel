@@ -31,6 +31,7 @@ import com.ning.http.client.ProxyServer.Protocol;
 import com.ning.http.client.Realm.AuthScheme;
 import com.ning.http.client.Response;
 import com.ning.http.client.cookie.Cookie;
+import com.ning.http.client.extra.ThrottleRequestFilter;
 import com.ning.http.client.providers.netty.NettyAsyncHttpProvider;
 import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
 
@@ -55,9 +56,7 @@ public class Requester {
 		AsyncHttpClientConfig cf = new AsyncHttpClientConfig.Builder().setExecutorService(threadPool).setAllowPoolingConnections(true).setMaxRequestRetry(3)
 				.setCompressionEnforced(true).setAllowPoolingConnections(true).setAllowPoolingSslConnections(true)
 				.setAsyncHttpClientProviderConfig(nettyConfig).setMaxConnectionsPerHost(settings.getConnections().getHost())
-				.setMaxConnections(settings.getConnections().getGlobal())
-				// .addRequestFilter(new ThrottleRequestFilter(20, 10000))
-				.build();
+				.setMaxConnections(settings.getConnections().getGlobal()).addRequestFilter(new ThrottleRequestFilter(40)).build();
 
 		this.client = new AsyncHttpClient(new NettyAsyncHttpProvider(cf), cf);
 	}

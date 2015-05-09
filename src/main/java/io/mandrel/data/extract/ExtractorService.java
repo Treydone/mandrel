@@ -114,7 +114,7 @@ public class ExtractorService {
 		return new HashSet<>(outlinks);
 	}
 
-	public void extractThenFormatThenStore(long spiderId, Map<String, Instance<?>> cachedSelectors, WebPage webPage, WebPageExtractor extractor) {
+	public List<Document> extractThenFormatThenStore(long spiderId, Map<String, Instance<?>> cachedSelectors, WebPage webPage, WebPageExtractor extractor) {
 
 		List<Document> documents = extractThenFormat(cachedSelectors, webPage, extractor);
 
@@ -122,6 +122,8 @@ public class ExtractorService {
 		if (documents != null) {
 			extractor.getDocumentStore().save(spiderId, documents);
 		}
+		
+		return documents;
 	}
 
 	public List<Document> extractThenFormat(Map<String, Instance<?>> cachedSelectors, WebPage webPage, WebPageExtractor extractor) {
@@ -132,7 +134,7 @@ public class ExtractorService {
 		List<Document> documents = null;
 
 		if (extractor.getFilters() == null && extractor.getFilters().getForLinks() == null || extractor.getFilters().getForLinks() != null
-				&& extractor.getFilters().getForLinks().stream().anyMatch(f -> f.isValid(new Link().setUri(webPage.getUrl().toString())))) {
+				&& extractor.getFilters().getForLinks().stream().allMatch(f -> f.isValid(new Link().setUri(webPage.getUrl().toString())))) {
 
 			if (extractor.getMultiple() != null) {
 

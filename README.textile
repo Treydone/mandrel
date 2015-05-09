@@ -20,6 +20,8 @@ h3. Installation
 
 h3. Crawling
 
+h4. The easy way
+
 Ok, we want to crawl Wikipedia. First step, we create a spider:
 @curl -X GET http://localhost:9200/spiders/wikipedia?urls=http://en.wikipedia.org@
 
@@ -43,6 +45,10 @@ Once you have done all you want with your spider, you can kill it:
 
 Before starting your spider, it may be useful to test it against a url and have a first look of the result:
 @curl -X GET http://localhost:8080/spiders/wikipedia/analyze?source=http://myurl.com/...@
+
+h4. The advanced way
+
+
 
 h3. Filtering
 

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.Accessors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,7 +24,7 @@ public abstract class Source implements Serializable {
 
 	private String name;
 
-	@JsonIgnore
+	@Getter(onMethod = @__(@JsonIgnore))
 	private transient HazelcastInstance instance;
 
 	public abstract void register(EntryListener listener);

@@ -3,12 +3,14 @@ package io.mandrel.messaging;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
+import io.mandrel.gateway.Document;
 import io.mandrel.http.Metadata;
 import io.mandrel.http.Requester;
 import io.mandrel.stats.Stats;
 import io.mandrel.stats.StatsService;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -83,8 +85,15 @@ public class UrlsQueueService {
 				Map<String, Instance<?>> cachedSelectors = new HashMap<>();
 				if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
 					log.trace(">  - Extracting documents for {}...", url);
-					spider.getExtractors().getPages().forEach(ex -> extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, webPage, ex));
+					spider.getExtractors().getPages().forEach(ex -> {
+						List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, webPage, ex);
+
+						if (documents != null) {
+							stats.incDocumentForExtractor(ex.getName(), documents.size());
+						}
+					});
 					log.trace(">  - Extracting documents for {} done!", url);
+
 				}
 
 				if (spider.getExtractors().getOutlinks() != null) {
@@ -123,6 +132,7 @@ public class UrlsQueueService {
 				log.debug("> End parsing data for {}", url);
 			}, t -> {
 				// Well...
+					log.debug(t.getMessage());
 					queueService.removePending("pendings-" + spider.getId(), url);
 				});
 		} catch (Exception e) {
