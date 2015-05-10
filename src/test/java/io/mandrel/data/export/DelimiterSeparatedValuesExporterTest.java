@@ -12,10 +12,7 @@ import java.util.List;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
 public class DelimiterSeparatedValuesExporterTest {
 
 	@Test
@@ -39,6 +36,10 @@ public class DelimiterSeparatedValuesExporterTest {
 		document2.put("key2", Arrays.asList("value22222", "value22222b"));
 		documents.add(document2);
 
+		Document document3 = new Document();
+		document3.put("key2", Arrays.asList("utf-8 *$!/èé&à@", "+\""));
+		documents.add(document3);
+
 		List<FieldExtractor> fields = new ArrayList<>();
 		fields.add(new FieldExtractor().setName("key1"));
 		fields.add(new FieldExtractor().setName("key2"));
@@ -50,6 +51,7 @@ public class DelimiterSeparatedValuesExporterTest {
 
 		// Asserts
 		String result = new String(out.toByteArray());
-		Assertions.assertThat(result).contains("key1,key2").contains("value1,value2|value2b").contains("value11111,value22222|value22222b");
+		Assertions.assertThat(result).contains("key1,key2").contains("value1,value2|value2b").contains("value11111,value22222|value22222b")
+				.contains(",\"utf-8 *$!/èé&à@|+\"");
 	}
 }

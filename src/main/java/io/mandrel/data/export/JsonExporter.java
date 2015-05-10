@@ -65,7 +65,7 @@ public class JsonExporter implements DocumentExporter, RawExporter {
 
 	@Override
 	public String contentType() {
-		return "application/json";
+		return "application/json; charset=utf-8";
 	}
 
 	@Override

@@ -99,14 +99,14 @@ public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawEx
 
 	@Override
 	public String contentType() {
-		return "text/csv";
+		return "text/csv; charset=UTF-8";
 	}
 
 	@Override
 	public void export(Collection<WebPage> documents) {
 		if (addHeader && !headerAdded) {
 			try {
-				csvWriter.writeHeader("url", "statusCode", "statusText", "lastCrawlDate", "outlinks");
+				csvWriter.writeHeader("url", "statusCode", "statusText", "lastCrawlDate", "outlinks", "headers");
 			} catch (Exception e) {
 				log.debug("Can not write header {}", csvWriter.getLineNumber(), e);
 			}
@@ -121,6 +121,7 @@ public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawEx
 			buffer.add(page.getMetadata().getStatusText());
 			buffer.add(page.getMetadata().getLastCrawlDate());
 			buffer.add(page.getMetadata().getOutlinks());
+			buffer.add(page.getMetadata().getHeaders());
 
 			try {
 				csvWriter.write(buffer);

@@ -72,7 +72,7 @@ public class UrlsQueueService {
 
 				watch.stop();
 
-				log.debug("> Start parsing data for {}", url);
+				log.trace("> Start parsing data for {}", url);
 
 				Metadata metadata = webPage.getMetadata();
 				metadata.setTimeToFetch(watch.getTotalTimeMillis());
@@ -129,7 +129,7 @@ public class UrlsQueueService {
 
 				queueService.removePending("pendings-" + spider.getId(), url);
 
-				log.debug("> End parsing data for {}", url);
+				log.trace("> End parsing data for {}", url);
 			}, t -> {
 				// Well...
 					log.debug(t.getMessage());
