@@ -19,4 +19,8 @@ public class StatsService {
 	public Stats get(long spiderId) {
 		return new Stats(instance, spiderId);
 	}
+
+	public void delete(long spiderId) {
+		get(spiderId).delete();
+	}
 }

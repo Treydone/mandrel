@@ -40,6 +40,17 @@ public class Stats {
 		totalTimeToFetch = instance.getAtomicLong(getKey(spiderId) + "-totalTimeToFetch");
 	}
 
+	public void delete() {
+		// TODO
+		totalSize.destroy();
+		nbPages.destroy();
+		totalTimeToFetch.destroy();
+		pendings.destroy();
+
+		nbPagesByStatus.forEach(httpStatus -> instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus).destroy());
+		documentsByExtractor.forEach(extractor -> instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor).destroy());
+	}
+
 	protected String getKey(long spiderId) {
 		String key = "spider-" + spiderId;
 		return key;
