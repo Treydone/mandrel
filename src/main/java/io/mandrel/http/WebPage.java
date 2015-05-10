@@ -8,9 +8,11 @@ import java.util.Map;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 @Data
 @NoArgsConstructor
+@Accessors(chain = true)
 public class WebPage implements Serializable {
 
 	private static final long serialVersionUID = 2015538123437048843L;

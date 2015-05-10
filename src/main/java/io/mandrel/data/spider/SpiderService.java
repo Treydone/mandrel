@@ -289,6 +289,7 @@ public class SpiderService {
 			if (spider.getExtractors().getPages() != null) {
 				Map<String, List<Document>> documentsByExtractor = spider.getExtractors().getPages().stream()
 						.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(cachedSelectors, webPage, ex)))
+						.filter(pair -> pair != null && pair.getKey() != null && pair.getValue() != null)
 						.collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
 				report.setDocuments(documentsByExtractor);
 			}

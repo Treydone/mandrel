@@ -1,7 +1,9 @@
 package io.mandrel.stats;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.core.HazelcastInstance;
@@ -14,8 +16,8 @@ public class Stats {
 	private final IMap<String, Boolean> pendings;
 	private final IAtomicLong totalSize;
 	private final IAtomicLong totalTimeToFetch;
-	private final Map<Integer, IAtomicLong> nbPagesByStatus = new HashMap<>();
-	private final Map<String, IAtomicLong> documentsByExtractor = new HashMap<>();
+	private final Set<Integer> nbPagesByStatus = new HashSet<>();
+	private final Set<String> documentsByExtractor = new HashSet<>();
 	private final long spiderId;
 
 	private final transient HazelcastInstance instance;
@@ -56,20 +58,14 @@ public class Stats {
 	}
 
 	public long incPageForStatus(int httpStatus) {
-		IAtomicLong iAtomicLong = nbPagesByStatus.get(Integer.valueOf(httpStatus));
-		if (iAtomicLong == null) {
-			iAtomicLong = instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus);
-			nbPagesByStatus.put(httpStatus, iAtomicLong);
-		}
+		IAtomicLong iAtomicLong = instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus);
+		nbPagesByStatus.add(httpStatus);
 		return iAtomicLong.addAndGet(1);
 	}
 
 	public long incDocumentForExtractor(String extractor, int inc) {
-		IAtomicLong iAtomicLong = documentsByExtractor.get(extractor);
-		if (iAtomicLong == null) {
-			iAtomicLong = instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor);
-			documentsByExtractor.put(extractor, iAtomicLong);
-		}
+		IAtomicLong iAtomicLong = instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor);
+		documentsByExtractor.add(extractor);
 		return iAtomicLong.addAndGet(inc);
 	}
 
@@ -103,13 +99,13 @@ public class Stats {
 
 	public Map<Integer, Long> getPagesByStatus() {
 		Map<Integer, Long> result = new HashMap<>();
-		nbPagesByStatus.forEach((key, value) -> result.put(key, value.get()));
+		nbPagesByStatus.forEach(httpStatus -> result.put(httpStatus, instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus).get()));
 		return result;
 	}
 
 	public Map<String, Long> getDocumentsByExtractor() {
 		Map<String, Long> result = new HashMap<>();
-		documentsByExtractor.forEach((key, value) -> result.put(key, value.get()));
+		documentsByExtractor.forEach(extractor -> result.put(extractor, instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor).get()));
 		return result;
 	}
 }
