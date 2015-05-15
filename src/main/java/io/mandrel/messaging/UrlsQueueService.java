@@ -9,6 +9,7 @@ import io.mandrel.http.Requester;
 import io.mandrel.stats.Stats;
 import io.mandrel.stats.StatsService;
 
+import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,8 @@ import javax.inject.Inject;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.jboss.netty.channel.ConnectTimeoutException;
+import org.jboss.netty.handler.timeout.ReadTimeoutException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -93,7 +96,6 @@ public class UrlsQueueService {
 						}
 					});
 					log.trace(">  - Extracting documents for {} done!", url);
-
 				}
 
 				if (spider.getExtractors().getOutlinks() != null) {
@@ -132,6 +134,14 @@ public class UrlsQueueService {
 				log.trace("> End parsing data for {}", url);
 			}, t -> {
 				// Well...
+					if (t instanceof ConnectTimeoutException) {
+						stats.incConnectTimeout();
+					} else if (t instanceof ReadTimeoutException) {
+						stats.incReadTimeout();
+					} else if (t instanceof ConnectException) {
+						stats.incConnectException();
+					}
+
 					log.debug(t.getMessage());
 					queueService.removePending("pendings-" + spider.getId(), url);
 				});

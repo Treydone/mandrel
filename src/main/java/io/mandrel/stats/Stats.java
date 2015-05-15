@@ -18,6 +18,11 @@ public class Stats {
 	private final IAtomicLong totalTimeToFetch;
 	private final Set<Integer> nbPagesByStatus = new HashSet<>();
 	private final Set<String> documentsByExtractor = new HashSet<>();
+
+	private final IAtomicLong readTimeout;
+	private final IAtomicLong connectTimeout;
+	private final IAtomicLong connectException;
+
 	private final long spiderId;
 
 	private final transient HazelcastInstance instance;
@@ -38,6 +43,10 @@ public class Stats {
 
 		totalSize = instance.getAtomicLong(getKey(spiderId) + "-totalSize");
 		totalTimeToFetch = instance.getAtomicLong(getKey(spiderId) + "-totalTimeToFetch");
+
+		readTimeout = instance.getAtomicLong(getKey(spiderId) + "-readTimeout");
+		connectTimeout = instance.getAtomicLong(getKey(spiderId) + "-connectTimeout");
+		connectException = instance.getAtomicLong(getKey(spiderId) + "-connectException");
 	}
 
 	public void delete() {
@@ -47,6 +56,10 @@ public class Stats {
 		totalTimeToFetch.destroy();
 		pendings.destroy();
 
+		readTimeout.destroy();
+		connectTimeout.destroy();
+		connectException.destroy();
+
 		nbPagesByStatus.forEach(httpStatus -> instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus).destroy());
 		documentsByExtractor.forEach(extractor -> instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor).destroy());
 	}
@@ -54,6 +67,18 @@ public class Stats {
 	protected String getKey(long spiderId) {
 		String key = "spider-" + spiderId;
 		return key;
+	}
+
+	public long incConnectException() {
+		return connectException.incrementAndGet();
+	}
+
+	public long incReadTimeout() {
+		return readTimeout.incrementAndGet();
+	}
+
+	public long incConnectTimeout() {
+		return connectTimeout.incrementAndGet();
 	}
 
 	public long incNbPages() {
@@ -70,7 +95,7 @@ public class Stats {
 
 	public long incPageForStatus(int httpStatus) {
 		IAtomicLong iAtomicLong = instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus);
-		nbPagesByStatus.add(httpStatus);
+		nbPagesByStatus.add(Integer.valueOf(httpStatus));
 		return iAtomicLong.addAndGet(1);
 	}
 
@@ -86,6 +111,18 @@ public class Stats {
 
 	public long getNbPages() {
 		return nbPages.get();
+	}
+
+	public long getReadTimeout() {
+		return readTimeout.get();
+	}
+
+	public long getConnectTimeout() {
+		return connectTimeout.get();
+	}
+
+	public long getConnectException() {
+		return connectException.get();
 	}
 
 	public long getTotalSize() {

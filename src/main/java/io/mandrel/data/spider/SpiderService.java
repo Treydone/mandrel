@@ -3,7 +3,7 @@ package io.mandrel.data.spider;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.State;
 import io.mandrel.common.robots.ExtendedRobotRules;
-import io.mandrel.common.robots.ExtendedRobotRulesParser;
+import io.mandrel.common.robots.RobotsTxtUtils;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
@@ -16,7 +16,6 @@ import io.mandrel.http.Requester;
 import io.mandrel.http.WebPage;
 import io.mandrel.task.TaskService;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,10 +47,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.hazelcast.core.HazelcastInstance;
 
-import crawlercommons.fetcher.http.BaseHttpFetcher;
-import crawlercommons.fetcher.http.UserAgent;
-import crawlercommons.robots.BaseRobotsParser;
-import crawlercommons.robots.RobotUtils;
 import crawlercommons.sitemaps.AbstractSiteMap;
 import crawlercommons.sitemaps.SiteMapIndex;
 import crawlercommons.sitemaps.SiteMapParser;
@@ -307,7 +302,7 @@ public class SpiderService {
 			// Robots.txt
 			URL pageURL = webPage.getUrl();
 			String robotsTxtUrl = pageURL.getProtocol() + "://" + pageURL.getHost() + ":" + pageURL.getPort() + "/robots.txt";
-			ExtendedRobotRules robotRules = getRobotRules(robotsTxtUrl);
+			ExtendedRobotRules robotRules = RobotsTxtUtils.getRobotRules(robotsTxtUrl);
 			report.setRobotRules(robotRules);
 
 			// Sitemaps
@@ -323,22 +318,6 @@ public class SpiderService {
 
 		report.setMetadata(webPage.getMetadata());
 		return report;
-	}
-
-	public ExtendedRobotRules getRobotRules(String url) {
-		ExtendedRobotRules robotRules = null;
-		BaseHttpFetcher fetcher = RobotUtils.createFetcher(new UserAgent("Mandrel", null, null), 1);
-		BaseRobotsParser parser = new ExtendedRobotRulesParser();
-		URL robotsTxtUrl = null;
-		try {
-			robotsTxtUrl = new URL(url);
-		} catch (MalformedURLException e) {
-			log.debug("Can not construct robots.txt url", e);
-		}
-		if (robotsTxtUrl != null) {
-			robotRules = (ExtendedRobotRules) RobotUtils.getRobotRules(fetcher, parser, robotsTxtUrl);
-		}
-		return robotRules;
 	}
 
 	public List<AbstractSiteMap> getSitemapsForUrl(String sitemapUrl) {

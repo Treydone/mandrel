@@ -29,7 +29,4 @@ public class Politeness implements Serializable {
 	@JsonProperty("recrawl_after")
 	private int recrawlAfterSeconds = -1;
 
-	@JsonProperty("use_sitemaps")
-	private boolean useSitemaps = true;
-
 }

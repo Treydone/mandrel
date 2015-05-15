@@ -602,7 +602,7 @@
 											<extraArgument>-Djava.net.preferIPv4Stack=true</extraArgument>
 										</extraArguments>
 									</jvmSettings>
-									<wrapperMainClass>io.mandrel.boostrap.Wrapper</wrapperMainClass>
+									<wrapperMainClass>io.mandrel.bootstrap.Wrapper</wrapperMainClass>
 									<platforms>
 										<platform>jsw</platform>
 									</platforms>

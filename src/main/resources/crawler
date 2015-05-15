@@ -27,8 +27,6 @@ To be done:
 return header Location when adding/updating a resource
 check selectors existence when adding the spider
 filter extractor by link AND by webpage
-Sitemap
-robots.txt
 Canonical url!!
 SPIDERS BY NAME OR BY ID
 REPLICATED MAP FOR SPIDERS
@@ -43,20 +41,6 @@ CONSOLE BY SPIDER!
 DnsResolver
   .site.com ----> www.site.com DNS caching
   www cname records
-
-LinkChecker
-
-UrlFetcher
-
-PageMetadataRepository
-
-WebPageRepository
-
-PlanRepository
-
-DocumentRepository
-
-StatsRegistry
 
 
 ----------------------------------- API
