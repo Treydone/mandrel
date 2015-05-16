@@ -2,6 +2,7 @@ package io.mandrel.bootstrap;
 
 import io.mandrel.common.settings.InfoSettings;
 import io.mandrel.endpoints.rest.ApiOriginFilter;
+import io.mandrel.monitor.SigarService;
 
 import java.util.Arrays;
 
@@ -53,8 +54,13 @@ public class Application extends SpringBootServletInitializer {
 		context.addApplicationListener(new EmbeddedServerPortFileWriter());
 
 		InfoSettings settings = context.getBean(InfoSettings.class);
-
 		log.info("{} ({}) started", settings.getArtifact(), settings.getVersion());
+
+		SigarService sigar = context.getBean(SigarService.class);
+		if (sigar.infos().getLimits().getOpenfiles().getMax() < 10000) {
+			log.warn("Max openfiles limit is too low (open: {}, max: {})", sigar.infos().getLimits().getOpenfiles().getCurrent(), sigar.infos().getLimits()
+					.getOpenfiles().getMax());
+		}
 
 	}
 

@@ -21,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.jboss.netty.channel.ConnectTimeoutException;
 import org.jboss.netty.handler.timeout.ReadTimeoutException;
+import org.jboss.netty.handler.timeout.TimeoutException;
+import org.jboss.netty.handler.timeout.WriteTimeoutException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -46,6 +48,10 @@ public class UrlsQueueService {
 
 	public void add(long spiderId, Set<String> urls) {
 		queueService.add("urls-" + spiderId, urls);
+	}
+
+	public void add(long spiderId, String url) {
+		queueService.add("urls-" + spiderId, url);
 	}
 
 	public void registrer(Spider spider) {
@@ -136,13 +142,16 @@ public class UrlsQueueService {
 				// Well...
 					if (t instanceof ConnectTimeoutException) {
 						stats.incConnectTimeout();
+						add(spider.getId(), url);
 					} else if (t instanceof ReadTimeoutException) {
 						stats.incReadTimeout();
-					} else if (t instanceof ConnectException) {
+						add(spider.getId(), url);
+					} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException) {
 						stats.incConnectException();
+						add(spider.getId(), url);
 					}
 
-					log.debug(t.getMessage());
+					log.debug(t.getMessage(), t);
 					queueService.removePending("pendings-" + spider.getId(), url);
 				});
 		} catch (Exception e) {

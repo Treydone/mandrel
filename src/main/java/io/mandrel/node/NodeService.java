@@ -1,5 +1,6 @@
 package io.mandrel.node;
 
+import io.mandrel.monitor.Infos;
 import io.mandrel.monitor.SigarService;
 
 import java.util.Collection;
@@ -51,7 +52,7 @@ public class NodeService {
 
 		scheduledExecutorService.scheduleAtFixedRate(() -> {
 			try {
-				Map<String, Object> infos = sigarService.infos();
+				Infos infos = sigarService.infos();
 				String uuid = instance.getLocalEndpoint().getUuid();
 
 				Node dhis = new Node();

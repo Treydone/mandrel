@@ -1,13 +1,12 @@
 package io.mandrel.monitor;
 
+import io.mandrel.monitor.Infos.Interface;
+import io.mandrel.stats.JmxUtils;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -31,8 +30,7 @@ public class SigarService {
 	public SigarService(ResourceLoader rl) {
 
 		try {
-			org.springframework.core.io.Resource[] resources = ResourcePatternUtils.getResourcePatternResolver(rl).getResources(
-					"classpath*:**/libsigar-*");
+			org.springframework.core.io.Resource[] resources = ResourcePatternUtils.getResourcePatternResolver(rl).getResources("classpath*:**/libsigar-*");
 			for (org.springframework.core.io.Resource resource : resources) {
 				log.debug("Loading native file {}", resource.getFilename());
 				try {
@@ -76,48 +74,66 @@ public class SigarService {
 		this.sigar = sigar;
 	}
 
-	public Map<String, Object> infos() throws SigarException {
+	public Infos infos() {
 
-		Map<String, Object> infos = new HashMap<>();
-		infos.put("pid", sigar.getPid());
-		infos.put("fqdn", sigar.getFQDN());
-		infos.put("hostname", sigar.getNetInfo().getHostName());
-		infos.put("uptime", sigar.getUptime().getUptime());
+		Infos infos = new Infos();
+		try {
+			infos.setPid(sigar.getPid());
+			infos.setFqdn(sigar.getFQDN());
+			infos.setHostname(sigar.getNetInfo().getHostName());
+			infos.setUptime(sigar.getUptime().getUptime());
 
-		String[] netInterfaceList = sigar.getNetInterfaceList();
-		List<Map<String, Object>> iwh = new ArrayList<>(netInterfaceList.length);
-		for (String netInterface : netInterfaceList) {
-			// Add net interface
-			NetInterfaceConfig config = sigar.getNetInterfaceConfig(netInterface);
-			Map<String, Object> netConfig = new HashMap<>();
-			netConfig.put("name", config.getName());
-			netConfig.put("type", config.getType());
-			netConfig.put("address", config.getAddress());
+			String[] netInterfaceList = sigar.getNetInterfaceList();
+			for (String netInterfaceName : netInterfaceList) {
+				// Add net interface
+				NetInterfaceConfig config = sigar.getNetInterfaceConfig(netInterfaceName);
+				Interface netInterface = new Interface();
+				netInterface.setName(config.getName());
+				netInterface.setType(config.getType());
+				netInterface.setAddress(config.getAddress());
+				infos.getInterfaces().add(netInterface);
+			}
 
-			iwh.add(netConfig);
+			// Add cpu
+			infos.getCpu().setSys(sigar.getThreadCpu().getSys());
+			infos.getCpu().setTotal(sigar.getThreadCpu().getTotal());
+			infos.getCpu().setUser(sigar.getThreadCpu().getUser());
+
+			// Add mem
+			infos.getMem().setTotal(sigar.getMem().getTotal());
+			infos.getMem().setUsed(sigar.getMem().getUsed());
+			infos.getMem().setFree(sigar.getMem().getFree());
+
+			// Add swap
+			infos.getSwap().setTotal(sigar.getSwap().getTotal());
+			infos.getSwap().setUsed(sigar.getSwap().getUsed());
+			infos.getSwap().setFree(sigar.getSwap().getFree());
+
+			// Add limits
+			infos.getLimits().getOpenfiles().setCurrent(JmxUtils.getOpenFileDescriptorCount());
+			infos.getLimits().getOpenfiles().setMax(JmxUtils.getMaxFileDescriptorCount());
+			// infos.getLimits().getOpenfiles().setCurrent(sigar.getResourceLimit().getOpenFilesCur());
+			// infos.getLimits().getOpenfiles().setMax(sigar.getResourceLimit().getOpenFilesMax());
+
+			infos.getLimits().getCpu().setCurrent(sigar.getResourceLimit().getCpuCur());
+			infos.getLimits().getCpu().setMax(sigar.getResourceLimit().getCpuMax());
+
+			infos.getLimits().getData().setCurrent(sigar.getResourceLimit().getDataCur());
+			infos.getLimits().getData().setMax(sigar.getResourceLimit().getDataMax());
+
+			infos.getLimits().getCore().setCurrent(sigar.getResourceLimit().getCoreCur());
+			infos.getLimits().getCore().setMax(sigar.getResourceLimit().getCoreMax());
+
+			infos.getLimits().getFilesize().setCurrent(sigar.getResourceLimit().getFileSizeCur());
+			infos.getLimits().getFilesize().setMax(sigar.getResourceLimit().getFileSizeMax());
+
+			infos.getLimits().getMem().setCurrent(sigar.getResourceLimit().getMemoryCur());
+			infos.getLimits().getMem().setMax(sigar.getResourceLimit().getMemoryMax());
+
+		} catch (SigarException e) {
+			// TODO ...
+			e.printStackTrace();
 		}
-		infos.put("interfaces", iwh);
-
-		// Add cpu
-		Map<String, Object> cpu = new HashMap<>();
-		infos.put("cpu", cpu);
-		cpu.put("sys", sigar.getThreadCpu().getSys());
-		cpu.put("total", sigar.getThreadCpu().getTotal());
-		cpu.put("user", sigar.getThreadCpu().getUser());
-
-		// Add mem
-		Map<String, Object> mem = new HashMap<>();
-		infos.put("mem", mem);
-		mem.put("total", sigar.getMem().getTotal());
-		mem.put("used", sigar.getMem().getUsed());
-		mem.put("free", sigar.getMem().getFree());
-
-		// Add swap
-		Map<String, Object> swap = new HashMap<>();
-		infos.put("swap", swap);
-		swap.put("total", sigar.getSwap().getTotal());
-		swap.put("used", sigar.getSwap().getUsed());
-		swap.put("free", sigar.getSwap().getFree());
 
 		return infos;
 	}
