@@ -18,7 +18,7 @@ public class ClientSettings {
 
 	@Data
 	public static class Connections {
-		private int host = -1;
+		private int perHost = -1;
 		private int global = -1;
 	}
 

@@ -1,8 +1,8 @@
 package io.mandrel.common.data;
 
 import io.mandrel.http.Cookie;
-import io.mandrel.http.dns.DnsCache;
-import io.mandrel.http.dns.InternalDnsCache;
+import io.mandrel.http.dns.CachedNameResolver;
+import io.mandrel.http.dns.NameResolver;
 import io.mandrel.http.proxy.NoProxyProxyServersSource;
 import io.mandrel.http.proxy.ProxyServersSource;
 import io.mandrel.http.ua.FixedUserAgentProvisionner;
@@ -40,8 +40,8 @@ public class Client implements Serializable {
 	@JsonProperty("user_agent_provisionner")
 	private UserAgentProvisionner userAgentProvisionner = new FixedUserAgentProvisionner("Mandrel");
 
-	@JsonProperty("dns_cache")
-	private DnsCache dnsCache = new InternalDnsCache();
+	@JsonProperty("name_resolver")
+	private NameResolver nameResolver = new CachedNameResolver();
 
 	@JsonProperty("proxy")
 	private ProxyServersSource proxyServersSource = new NoProxyProxyServersSource();

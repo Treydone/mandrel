@@ -144,7 +144,7 @@
 		<dependency>
 			<groupId>com.ning</groupId>
 			<artifactId>async-http-client</artifactId>
-			<version>1.9.20</version>
+			<version>1.9.22</version>
 		</dependency>
 
 		<!-- HZ -->

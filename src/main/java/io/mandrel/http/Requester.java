@@ -2,11 +2,14 @@ package io.mandrel.http;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.settings.ClientSettings;
+import io.mandrel.http.dns.NameResolver;
 import io.mandrel.http.proxy.ProxyServer;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -53,10 +56,10 @@ public class Requester {
 			}
 		});
 
-		AsyncHttpClientConfig cf = new AsyncHttpClientConfig.Builder().setExecutorService(threadPool).setAllowPoolingConnections(true).setMaxRequestRetry(3)
-				.setCompressionEnforced(true).setAllowPoolingConnections(true).setAllowPoolingSslConnections(true)
-				.setAsyncHttpClientProviderConfig(nettyConfig).setMaxConnectionsPerHost(settings.getConnections().getHost())
-				.setMaxConnections(settings.getConnections().getGlobal()).addRequestFilter(new ThrottleRequestFilter(40)).build();
+		AsyncHttpClientConfig cf = new AsyncHttpClientConfig.Builder().setExecutorService(threadPool).setMaxRequestRetry(3).setCompressionEnforced(true)
+				.setAllowPoolingConnections(true).setAllowPoolingSslConnections(true).setConnectionTTL(-1).setConnectTimeout(5 * 1000).setFollowRedirect(true)
+				.setAsyncHttpClientProviderConfig(nettyConfig).setMaxConnectionsPerHost(settings.getConnections().getPerHost())
+				.setMaxConnections(settings.getConnections().getGlobal()).addRequestFilter(new ThrottleRequestFilter(10)).build();
 
 		this.client = new AsyncHttpClient(new NettyAsyncHttpProvider(cf), cf);
 	}
@@ -105,7 +108,11 @@ public class Requester {
 	}
 
 	public BoundRequestBuilder prepareRequest(String url, Spider spider) {
-		BoundRequestBuilder request = client.prepareGet(spider.getClient().getDnsCache().optimizeUrl(url));
+		BoundRequestBuilder request = client.prepareGet(url);
+
+		if (spider.getClient().getNameResolver() != null) {
+			request.setNameResolver(new DelegatingNameResolver(spider.getClient().getNameResolver()));
+		}
 
 		// Add headers, cookies and ohter stuff
 		request.setRequestTimeout(spider.getClient().getRequestTimeOut());
@@ -164,5 +171,19 @@ public class Requester {
 	public static interface FailureCallback {
 
 		void on(Throwable t);
+	}
+
+	private class DelegatingNameResolver implements com.ning.http.client.NameResolver {
+
+		private NameResolver resolver;
+
+		public DelegatingNameResolver(NameResolver resolver) {
+			this.resolver = resolver;
+		}
+
+		@Override
+		public InetAddress resolve(String name) throws UnknownHostException {
+			return resolver.resolve(name);
+		}
 	}
 }
