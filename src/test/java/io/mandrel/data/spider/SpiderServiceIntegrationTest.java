@@ -9,6 +9,7 @@ import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.gateway.PageMetadataStore;
 import io.mandrel.gateway.WebPageStore;
+import io.mandrel.http.NingRequester;
 import io.mandrel.http.Requester;
 import io.mandrel.http.WebPage;
 import io.mandrel.script.ScriptingService;
@@ -51,7 +52,7 @@ public class SpiderServiceIntegrationTest {
 	public void no_filtering() throws IOException {
 
 		SpiderService spiderService = new SpiderService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
-				new Requester(new ClientSettings()), null);
+				new NingRequester(new ClientSettings()), null);
 
 		Spider spider = new Spider();
 		spider.setName("wikipedia");
@@ -82,7 +83,7 @@ public class SpiderServiceIntegrationTest {
 	public void same_domain() throws IOException {
 
 		SpiderService spiderService = new SpiderService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
-				new Requester(new ClientSettings()), null);
+				new NingRequester(new ClientSettings()), null);
 
 		Spider spider = new Spider();
 		spider.setName("wikipedia");

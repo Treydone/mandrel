@@ -140,18 +140,23 @@ public class UrlsQueueService {
 				log.trace("> End parsing data for {}", url);
 			}, t -> {
 				// Well...
-					if (t instanceof ConnectTimeoutException) {
-						stats.incConnectTimeout();
-						add(spider.getId(), url);
-					} else if (t instanceof ReadTimeoutException) {
-						stats.incReadTimeout();
-						add(spider.getId(), url);
-					} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException) {
-						stats.incConnectException();
+					if (t != null) {
+						if (t instanceof ConnectTimeoutException) {
+							stats.incConnectTimeout();
+							add(spider.getId(), url);
+						} else if (t instanceof ReadTimeoutException) {
+							stats.incReadTimeout();
+							add(spider.getId(), url);
+						} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException
+								|| t instanceof java.util.concurrent.TimeoutException) {
+							stats.incConnectException();
+							add(spider.getId(), url);
+						}
+					} else {
+						log.debug(t.getMessage(), t);
 						add(spider.getId(), url);
 					}
 
-					log.debug(t.getMessage(), t);
 					queueService.removePending("pendings-" + spider.getId(), url);
 				});
 		} catch (Exception e) {

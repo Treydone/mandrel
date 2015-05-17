@@ -3,6 +3,7 @@ package io.mandrel.data.source;
 import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.common.robots.RobotsTxtUtils;
 import io.mandrel.common.settings.ClientSettings;
+import io.mandrel.http.NingRequester;
 import io.mandrel.http.Requester;
 import io.mandrel.http.WebPage;
 
@@ -36,7 +37,7 @@ public class RobotsTxtSource extends Source {
 	public void register(EntryListener listener) {
 
 		// TODO to be injected?
-		Requester requester = new Requester(new ClientSettings());
+		Requester requester = new NingRequester(new ClientSettings());
 
 		// Robots.txt
 		ExtendedRobotRules robotRules = RobotsTxtUtils.getRobotRules(robotsTxt);
