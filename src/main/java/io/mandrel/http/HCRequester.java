@@ -1,5 +1,6 @@
 package io.mandrel.http;
 
+import io.mandrel.common.MandrelException;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.settings.ClientSettings;
 
@@ -11,10 +12,13 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.net.ssl.HostnameVerifier;
@@ -29,12 +33,14 @@ import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
-import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.MessageConstraints;
@@ -43,8 +49,9 @@ import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.DnsResolver;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.impl.DefaultHttpResponseFactory;
-import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.conn.SystemDefaultDnsResolver;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.codecs.DefaultHttpRequestWriterFactory;
@@ -69,10 +76,15 @@ import org.apache.http.nio.reactor.ConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.nio.reactor.SessionInputBuffer;
 import org.apache.http.nio.util.HeapByteBufferAllocator;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.CharArrayBuffer;
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 
 @Component
@@ -83,6 +95,8 @@ public class HCRequester implements Requester, Closeable {
 
 	private final RequestConfig defaultRequestConfig;
 
+	private final Semaphore available;
+
 	@Override
 	public void close() throws IOException {
 		client.close();
@@ -90,6 +104,8 @@ public class HCRequester implements Requester, Closeable {
 
 	@Inject
 	public HCRequester(ClientSettings settings) throws IOReactorException {
+
+		available = new Semaphore(100, true);
 
 		// Use custom message parser / writer to customize the way HTTP
 		// messages are parsed from and written out to the data stream.
@@ -156,10 +172,11 @@ public class HCRequester implements Requester, Closeable {
 		};
 
 		// Create I/O reactor configuration
-		IOReactorConfig ioReactorConfig = IOReactorConfig.custom().setIoThreadCount(Runtime.getRuntime().availableProcessors()).setConnectTimeout(30000)
-				.setSoTimeout(30000).build();
+		IOReactorConfig ioReactorConfig = IOReactorConfig.custom().setIoThreadCount(Runtime.getRuntime().availableProcessors())
+				.setConnectTimeout(settings.getTimouts().getConnection()).setSoReuseAddress(true).setSoKeepAlive(true).setTcpNoDelay(true).setSoTimeout(30000)
+				.build();
 
-		// Create a custom I/O reactort
+		// Create a custom I/O reactor
 		ConnectingIOReactor ioReactor = new DefaultConnectingIOReactor(ioReactorConfig);
 
 		// Create a connection manager with custom configuration.
@@ -186,10 +203,10 @@ public class HCRequester implements Requester, Closeable {
 		// connManager.setMaxPerRoute(new HttpRoute(new HttpHost("somehost",
 		// 80)), 20);
 
-		// Use custom cookie store if necessary.
-		// CookieStore cookieStore = new BasicCookieStore();
 		// Use custom credentials provider if necessary.
-		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+		// CredentialsProvider credentialsProvider = new
+		// BasicCredentialsProvider();
+
 		// Create global request configuration
 		defaultRequestConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.DEFAULT).setExpectContinueEnabled(true).setStaleConnectionCheckEnabled(true)
 				.setTargetPreferredAuthSchemes(Arrays.asList(AuthSchemes.NTLM, AuthSchemes.DIGEST))
@@ -198,8 +215,8 @@ public class HCRequester implements Requester, Closeable {
 		// Create an HttpClient with the given custom dependencies and
 		// configuration.
 		client = HttpAsyncClients.custom().setConnectionManager(connManager)
-		// .setDefaultCookieStore(cookieStore)
-				.setDefaultCredentialsProvider(credentialsProvider).setDefaultRequestConfig(defaultRequestConfig).build();
+		// .setDefaultCredentialsProvider(credentialsProvider)
+				.setDefaultRequestConfig(defaultRequestConfig).build();
 
 		client.start();
 	}
@@ -208,33 +225,71 @@ public class HCRequester implements Requester, Closeable {
 		if (StringUtils.isNotBlank(url)) {
 			log.debug("Requesting {}...", url);
 
-			HttpUriRequest request = prepareRequest(url, spider);
-			client.execute(request, new FutureCallback<HttpResponse>() {
-				@Override
-				public void failed(Exception ex) {
-					log.trace(ex.getMessage(), ex);
-					failureCallback.on(ex);
-				}
+			try {
+				if (available.tryAcquire(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)) {
+					HttpUriRequest request = prepareRequest(url, spider);
+					HttpContext localContext = prepareContext(spider);
 
-				@Override
-				public void completed(HttpResponse result) {
-					try {
-						log.debug("Getting response for {}", url);
-						WebPage webPage = extractWebPage(url, result);
-						successCallback.on(webPage);
-					} catch (Exception e) {
-						log.debug("Can not construct web page", e);
-						throw Throwables.propagate(e);
-					}
-				}
+					client.execute(request, localContext, new FutureCallback<HttpResponse>() {
+						@Override
+						public void failed(Exception ex) {
+							try {
+								log.trace(ex.getMessage(), ex);
+								failureCallback.on(ex);
+							} finally {
+								available.release();
+							}
+						}
 
-				@Override
-				public void cancelled() {
-					log.warn("Cancelled");
-					failureCallback.on(null);
+						@Override
+						public void completed(HttpResponse result) {
+							try {
+								log.debug("Getting response for {}", url);
+								WebPage webPage = extractWebPage(url, result, localContext);
+								successCallback.on(webPage);
+							} catch (Exception e) {
+								log.debug("Can not construct web page", e);
+								throw Throwables.propagate(e);
+							} finally {
+								available.release();
+							}
+						}
+
+						@Override
+						public void cancelled() {
+							try {
+								log.warn("Cancelled");
+								failureCallback.on(null);
+							} finally {
+								available.release();
+							}
+						}
+					});
+				} else {
+					throw new MandrelException("Can not acquire lock, too many connection!");
 				}
-			});
+			} catch (InterruptedException e) {
+				throw Throwables.propagate(e);
+			}
+
 		}
+	}
+
+	public HttpContext prepareContext(Spider spider) {
+		CookieStore store = new BasicCookieStore();
+		if (spider.getClient().getCookies() != null)
+			spider.getClient().getCookies().forEach(cookie -> {
+				BasicClientCookie theCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
+				theCookie.setDomain(cookie.getDomain());
+				theCookie.setPath(cookie.getPath());
+				theCookie.setExpiryDate(new Date(cookie.getExpires()));
+				theCookie.setSecure(cookie.isSecure());
+				store.addCookie(theCookie);
+			});
+
+		HttpContext localContext = new BasicHttpContext();
+		localContext.setAttribute(HttpClientContext.COOKIE_STORE, store);
+		return localContext;
 	}
 
 	// TODO use RxNetty with CompletableFuture
@@ -242,47 +297,48 @@ public class HCRequester implements Requester, Closeable {
 	public WebPage getBlocking(String url, Spider spider) throws Exception {
 		HttpUriRequest request = prepareRequest(url, spider);
 		HttpResponse response = client.execute(request, null).get(5000, TimeUnit.MILLISECONDS);
-		return extractWebPage(url, response);
+		return extractWebPage(url, response, null);
 	}
 
 	@Deprecated
 	public WebPage getBlocking(String url) throws Exception {
 		HttpResponse response = client.execute(new HttpGet(url), null).get(5000, TimeUnit.MILLISECONDS);
-		return extractWebPage(url, response);
+		return extractWebPage(url, response, null);
 	}
 
 	public HttpUriRequest prepareRequest(String url, Spider spider) {
 
 		HttpGet request = new HttpGet(url);
-		// Request configuration can be overridden at the request level.
-		// They will take precedence over the one set at the client level.
-		RequestConfig requestConfig = RequestConfig.copy(defaultRequestConfig).setSocketTimeout(5000).setConnectTimeout(5000).setConnectionRequestTimeout(5000)
-		// .setProxy(new HttpHost("myotherproxy", 8080))
-				.build();
-		request.setConfig(requestConfig);
-
-		// request.setInetAddress(InetAddress.)
-		// if (spider.getClient().getNameResolver() != null) {
-		// request.setNameResolver(new
-		// DelegatingNameResolver(spider.getClient().getNameResolver()));
-		// }
+		Builder builder = RequestConfig.copy(defaultRequestConfig).setSocketTimeout(5000).setConnectTimeout(5000)
+				.setConnectionRequestTimeout(spider.getClient().getRequestTimeOut()).setRedirectsEnabled(spider.getClient().isFollowRedirects());
 
 		// Add headers, cookies and ohter stuff
-		// request.setRequestTimeout(spider.getClient().getRequestTimeOut());
-		// request.setFollowRedirects(spider.getClient().isFollowRedirects());
-		// request.setHeaders(spider.getClient().getHeaders());
-		// if (spider.getClient().getCookies() != null)
-		// request.setCookies(spider
-		// .getClient()
-		// .getCookies()
-		// .stream()
-		// .map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), false,
-		// cookie.getDomain(), cookie.getPath(), cookie.getExpires(), cookie
-		// .getMaxAge(), cookie.isSecure(),
-		// cookie.isHttpOnly())).collect(Collectors.toList()));
-		// request.setQueryParams(spider.getClient().getParams());
-		//
-		// // Configure the proxy
+		if (spider.getClient().getHeaders() != null) {
+			spider.getClient().getHeaders().forEach((k, v) -> {
+				if (v != null) {
+					v.forEach(el -> request.addHeader(k, el));
+				} else {
+					request.addHeader(k, null);
+				}
+			});
+		}
+
+		HttpParams params = new BasicHttpParams();
+		if (spider.getClient().getParams() != null) {
+			spider.getClient().getParams().forEach((k, v) -> {
+				if (v != null) {
+					v.forEach(el -> params.setParameter(k, el));
+				} else {
+					params.setParameter(k, null);
+				}
+			});
+		}
+		request.setParams(params);
+
+		// Configure the proxy
+		// builder.setProxy(proxy)
+		// .setProxy(new HttpHost("myotherproxy", 8080))
+
 		// ProxyServer proxy =
 		// spider.getClient().getProxyServersSource().findProxy(spider);
 		// if (proxy != null) {
@@ -299,33 +355,32 @@ public class HCRequester implements Requester, Closeable {
 		// }
 		// request.setProxyServer(internalProxy);
 		// }
-		//
-		// // Configure the user -agent
-		// String userAgent =
-		// spider.getClient().getUserAgentProvisionner().get(url, spider);
-		// if (Strings.isNullOrEmpty(userAgent)) {
-		// request.addHeader("User-Agent", userAgent);
-		// }
+
+		// Configure the user -agent
+		String userAgent = spider.getClient().getUserAgentProvisionner().get(url, spider);
+		if (Strings.isNullOrEmpty(userAgent)) {
+			request.addHeader("User-Agent", userAgent);
+		}
+
+		request.setConfig(builder.build());
 		return request;
 	}
 
-	public WebPage extractWebPage(String url, HttpResponse result) throws MalformedURLException, IOException {
+	public WebPage extractWebPage(String url, HttpResponse result, HttpContext localContext) throws MalformedURLException, IOException {
 		Map<String, List<String>> headers = new HashMap<String, List<String>>();
 		for (Header header : result.getAllHeaders()) {
 			headers.put(header.getName(), Arrays.asList(header.getValue()));
 		}
 
-		// List<io.mandrel.http.Cookie> cookies = result
-		// .getCookies()
-		// .stream()
-		// .map(cookie -> new io.mandrel.http.Cookie(cookie.getName(),
-		// cookie.getValue(), cookie.getDomain(), cookie.getPath(),
-		// cookie.getExpires(),
-		// cookie.getMaxAge(), cookie.isSecure(),
-		// cookie.isHttpOnly())).collect(Collectors.toList());
-		WebPage webPage = new WebPage(new URL(url), result.getStatusLine().getStatusCode(), result.getStatusLine().getReasonPhrase(), headers, null,
+		CookieStore store = (CookieStore) localContext.getAttribute(HttpClientContext.COOKIE_STORE);
+
+		List<io.mandrel.http.Cookie> cookies = store
+				.getCookies()
+				.stream()
+				.map(cookie -> new io.mandrel.http.Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie.getExpiryDate()
+						.getTime(), (int) cookie.getExpiryDate().getTime(), cookie.isSecure(), false)).collect(Collectors.toList());
+		WebPage webPage = new WebPage(new URL(url), result.getStatusLine().getStatusCode(), result.getStatusLine().getReasonPhrase(), headers, cookies,
 				IOUtils.toByteArray(result.getEntity().getContent()));
 		return webPage;
 	}
-
 }
