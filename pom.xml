@@ -659,7 +659,6 @@
 							<controlDir>${basedir}/src/deb/control</controlDir>
 							<dataSet>
 								<data>
-									use the filtered one from the resources plugin
 									<src>target/generated-resources/appassembler/jsw/mandrel/bin/</src>
 									<type>directory</type>
 									<excludes>*.bat, .DS_Store, *.exe</excludes>
@@ -673,7 +672,7 @@
 								</data>
 								<data>
 									<src>target/generated-resources/appassembler/jsw/mandrel/lib/</src>
-									<includes>*.jar</includes>
+									<includes>*</includes>
 									<type>directory</type>
 									<mapper>
 										<type>perm</type>
@@ -683,11 +682,17 @@
 									</mapper>
 								</data>
 								<data>
-									<type>link</type>
-									<symlink>true</symlink>
-									<linkName>/etc/init.d/mandrel</linkName>
-									<linkTarget>/usr/share/mandrel/bin/mandrel</linkTarget>
-								</data>
+                                    <src>${project.basedir}/src/deb/init.d/</src>
+                                    <type>directory</type>
+                                    <excludes>.DS_Store</excludes>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/etc/init.d</prefix>
+                                        <filemode>755</filemode>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
 								<data>
 									<src>target/generated-resources/appassembler/jsw/mandrel/conf/</src>
 									<type>directory</type>

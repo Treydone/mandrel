@@ -22,6 +22,7 @@ case "$1" in
 	mkdir -p /var/log/mandrel
 	chown -R $MANDREL_USER:$MANDREL_GROUP /var/log/mandrel
 	chmod 755 /var/log/mandrel
+	ln -sfnv /var/log/mandrel /usr/share/mandrel/logs
 	
 	# if $2 is set, this is an upgrade
 	if ( [ -n $2 ]) ; then
