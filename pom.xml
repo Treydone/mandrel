@@ -535,6 +535,10 @@
 										<include name="**/lib/*" />
 									</fileset>
 								</move>
+								<copy toDir="${project.build.directory}/generated-resources/appassembler/jsw/mandrel/lib">
+									<fileset
+										dir="dist/lib/native"/>
+								</copy>
 								<delete dir="${project.build.directory}/tmp" />
 							</tasks>
 						</configuration>
@@ -575,9 +579,11 @@
 							<goal>generate-daemons</goal>
 						</goals>
 						<configuration>
+							<licenseHeaderFile>${basedir}/license-header.txt</licenseHeaderFile>
 							<useWildcardClassPath>true</useWildcardClassPath>
 							<repositoryLayout>flat</repositoryLayout>
 							<configurationSourceDirectory>src/main/conf</configurationSourceDirectory>
+							<endorsedDir>dist/lib/native/</endorsedDir>
 							<copyConfigurationDirectory>true</copyConfigurationDirectory>
 							<configurationDirectory>conf</configurationDirectory>
 							<logsDirectory>logs</logsDirectory>
@@ -653,7 +659,7 @@
 							<controlDir>${basedir}/src/deb/control</controlDir>
 							<dataSet>
 								<data>
-									<!-- use the filtered one from the resources plugin -->
+									use the filtered one from the resources plugin
 									<src>target/generated-resources/appassembler/jsw/mandrel/bin/</src>
 									<type>directory</type>
 									<excludes>*.bat, .DS_Store, *.exe</excludes>
@@ -710,6 +716,8 @@
 					</execution>
 				</executions>
 				<configuration>
+					<copyright>Apache 2</copyright>
+					<distribution>Apache 2</distribution>
 					<group>Application/Internet</group>
 					<prefix>/usr</prefix>
 					<changelogFile>src/changelog</changelogFile>
@@ -782,9 +790,9 @@
 							<directory>/usr/share/mandrel/</directory>
 							<sources>
 								<source>
-									<location>../</location>
+									<location>.</location>
 									<includes>
-										<include>README.md</include>
+										<include>README.textile</include>
 									</includes>
 								</source>
 							</sources>
