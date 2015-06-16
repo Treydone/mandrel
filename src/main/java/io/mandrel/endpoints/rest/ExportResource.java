@@ -82,6 +82,7 @@ public class ExportResource {
 
 	protected void internalRawExport(Long id, RawExporter exporter, HttpServletResponse response) throws IOException {
 		response.setContentType(exporter.contentType());
+		response.setHeader("Content-Disposition", "attachment; filename=\"export\"");
 		try {
 			exporterService.export(id, exporter, response.getWriter());
 		} catch (NotFoundException e) {
@@ -91,10 +92,12 @@ public class ExportResource {
 
 	protected void internalExport(Long id, String extractorName, DocumentExporter exporter, HttpServletResponse response) throws IOException {
 		response.setContentType(exporter.contentType());
+		response.setHeader("Content-Disposition", "attachment; filename=\"" + extractorName + "\"");
 		try {
 			exporterService.export(id, extractorName, exporter, response.getWriter());
 		} catch (NotFoundException e) {
 			response.setStatus(HttpStatus.NOT_FOUND.value());
 		}
+		response.flushBuffer();
 	}
 }

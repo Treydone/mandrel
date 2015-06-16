@@ -368,19 +368,27 @@ public class HCRequester implements Requester, Closeable {
 
 	public WebPage extractWebPage(String url, HttpResponse result, HttpContext localContext) throws MalformedURLException, IOException {
 		Map<String, List<String>> headers = new HashMap<String, List<String>>();
-		for (Header header : result.getAllHeaders()) {
-			headers.put(header.getName(), Arrays.asList(header.getValue()));
+		if (result.getAllHeaders() != null) {
+			for (Header header : result.getAllHeaders()) {
+				headers.put(header.getName(), Arrays.asList(header.getValue()));
+			}
 		}
 
 		CookieStore store = (CookieStore) localContext.getAttribute(HttpClientContext.COOKIE_STORE);
+		List<io.mandrel.http.Cookie> cookies = null;
+		if (store.getCookies() != null) {
+			cookies = store
+					.getCookies()
+					.stream()
+					.filter(cookie -> cookie != null)
+					.map(cookie -> new io.mandrel.http.Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(),
+							cookie.getExpiryDate() != null ? cookie.getExpiryDate().getTime() : 0, cookie.getExpiryDate() != null ? (int) cookie
+									.getExpiryDate().getTime() : 0, cookie.isSecure(), false)).collect(Collectors.toList());
+		}
 
-		List<io.mandrel.http.Cookie> cookies = store
-				.getCookies()
-				.stream()
-				.map(cookie -> new io.mandrel.http.Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie.getExpiryDate()
-						.getTime(), (int) cookie.getExpiryDate().getTime(), cookie.isSecure(), false)).collect(Collectors.toList());
-		WebPage webPage = new WebPage(new URL(url), result.getStatusLine().getStatusCode(), result.getStatusLine().getReasonPhrase(), headers, cookies,
-				IOUtils.toByteArray(result.getEntity().getContent()));
+		WebPage webPage = new WebPage(new URL(url), result.getStatusLine() != null ? result.getStatusLine().getStatusCode() : 0,
+				result.getStatusLine() != null ? result.getStatusLine().getReasonPhrase() : null, headers, cookies,
+				result.getEntity() != null ? IOUtils.toByteArray(result.getEntity().getContent()) : null);
 		return webPage;
 	}
 }

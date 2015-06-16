@@ -36,7 +36,7 @@ public class ExporterService {
 			Optional<WebPageExtractor> oExtractor = spider.getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
 			if (oExtractor.isPresent()) {
 				try {
-					exporter.init(new BufferedWriter(writer));
+					exporter.init(writer);
 					WebPageExtractor extractor = oExtractor.get();
 					extractor.getDocumentStore().init(extractor);
 					extractor.getDocumentStore().byPages(id, 1000, data -> {

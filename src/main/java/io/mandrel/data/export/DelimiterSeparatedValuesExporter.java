@@ -56,6 +56,7 @@ public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawEx
 
 	@Override
 	public void close() throws Exception {
+		csvWriter.flush();
 		csvWriter.close();
 	}
 

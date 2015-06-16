@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 import com.hazelcast.query.PagingPredicate;
 import com.hazelcast.util.IterationType;
 
@@ -25,16 +26,17 @@ public class InternalDocumentStore implements DocumentStore {
 	private static final long serialVersionUID = -2445958974306201476L;
 
 	@JsonIgnore
-	private WebPageExtractor extractor;
+	protected WebPageExtractor extractor;
 
 	@JsonIgnore
 	@Getter(value = AccessLevel.NONE)
-	private transient HazelcastInstance hazelcastInstance;
+	protected
+	transient HazelcastInstance hazelcastInstance;
 
 	@Override
 	public void save(long spiderId, Document data) {
 		if (data != null) {
-			hazelcastInstance.getMap("documentstore-" + spiderId + "-" + extractor.getName()).put(getKey(spiderId, data), data);
+			getDataMap(spiderId).put(getKey(spiderId, data), data);
 		}
 	}
 
@@ -42,7 +44,7 @@ public class InternalDocumentStore implements DocumentStore {
 	public void save(long spiderId, List<Document> data) {
 		if (data != null) {
 			data.forEach(el -> {
-				hazelcastInstance.getMap("documentstore-" + spiderId + "-" + extractor.getName()).put(getKey(spiderId, el), el);
+				getDataMap(spiderId).put(getKey(spiderId, el), el);
 			});
 		}
 	}
@@ -64,7 +66,7 @@ public class InternalDocumentStore implements DocumentStore {
 
 	@Override
 	public void deleteAllFor(long spiderId) {
-		hazelcastInstance.getMap("documentstore-" + spiderId + "-" + extractor.getName()).clear();
+		getDataMap(spiderId).clear();
 	}
 
 	@Override
@@ -93,5 +95,9 @@ public class InternalDocumentStore implements DocumentStore {
 			key = String.valueOf(hazelcastInstance.getIdGenerator("documentstore-" + spiderId + "-" + extractor.getName()).newId());
 		}
 		return key;
+	}
+
+	public IMap<String, Document> getDataMap(long spiderId) {
+		return hazelcastInstance.getMap("documentstore-" + spiderId + "-" + extractor.getName());
 	}
 }

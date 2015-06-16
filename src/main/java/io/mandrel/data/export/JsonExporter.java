@@ -35,8 +35,9 @@ public class JsonExporter implements DocumentExporter, RawExporter {
 	}
 
 	@Override
-	public void close() {
-
+	public void close() throws Exception {
+		writer.flush();
+		writer.close();
 	}
 
 	@Override

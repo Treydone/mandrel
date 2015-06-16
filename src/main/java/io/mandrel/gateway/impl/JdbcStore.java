@@ -1,78 +1,97 @@
 package io.mandrel.gateway.impl;
 
-import io.mandrel.common.data.Politeness;
-import io.mandrel.data.spider.Link;
-import io.mandrel.gateway.PageMetadataStore;
-import io.mandrel.gateway.WebPageStore;
 import io.mandrel.http.Metadata;
 import io.mandrel.http.WebPage;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Getter;
+import lombok.EqualsAndHashCode;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hazelcast.core.HazelcastInstance;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hazelcast.config.MapConfig;
+import com.hazelcast.config.MapStoreConfig;
+import com.hazelcast.config.MapStoreConfig.InitialLoadMode;
+import com.hazelcast.core.IMap;
 
 @Data
-public class JdbcStore implements WebPageStore, PageMetadataStore {
+@EqualsAndHashCode(callSuper = false)
+public class JdbcStore extends InternalStore {
 
 	private static final long serialVersionUID = -4148862105449045170L;
 
-	@JsonIgnore
-	@Getter(value = AccessLevel.NONE)
-	private transient HazelcastInstance hazelcastInstance;
+	private Map<String, String> properties = new HashMap<>();
 
-	@Override
-	public boolean check() {
-		return true;
+	@JsonProperty("table_name")
+	private String tableName;
+
+	@JsonProperty("create_query")
+	private String createQuery = "create table if not exists {0} ( id varchar(255), content blob, primary key (id) )";
+
+	@JsonProperty("insert_query")
+	private String insertQuery = "insert into {0} (id, content) values ('?', '?')";
+
+	@JsonProperty("select_key_query")
+	private String selectKeyQuery = "select id from {0}";
+
+	@JsonProperty("select_query")
+	private String selectQuery = "select * from {0}";
+
+	@JsonProperty("delete_query")
+	private String deleteQuery = "delete from {0}";
+
+	@JsonProperty("where_clause")
+	private String whereClause = "where id in ";
+
+	@JsonProperty("paging")
+	private String paging = "from ?, ?";
+
+	@JsonAnySetter
+	public void add(String key, String value) {
+		properties.put(key, value);
 	}
 
 	@Override
-	public void init(Map<String, Object> properties) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void addPage(long spiderId, String url, WebPage webPage) {
-	}
-
-	@Override
-	public void addMetadata(long spiderId, String url, Metadata metadata) {
-		// TODO Auto-generated method stub
-
+	public IMap<String, WebPage> getPageMap(long spiderId) {
+		String mapKey = "pagestore-" + spiderId;
+		prepare(mapKey);
+		return hazelcastInstance.<String, WebPage> getMap(mapKey);
 	}
 
 	@Override
-	public Set<String> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
-		// TODO Auto-generated method stub
-		return null;
+	public IMap<String, Metadata> getPageMetaMap(long spiderId) {
+		String mapKey = "pagemetastore-" + spiderId;
+		prepare(mapKey);
+		return hazelcastInstance.<String, Metadata> getMap(mapKey);
 	}
 
-	@Override
-	public void deleteAllFor(long spiderId) {
-		// TODO Auto-generated method stub
+	public void prepare(String mapKey) {
+		if (!hazelcastInstance.getConfig().getMapConfigs().containsKey(mapKey)) {
+			MapConfig mapConfig = new MapConfig();
+			MapStoreConfig mapStoreConfig = new MapStoreConfig();
+			mapStoreConfig.setClassName(JdbcBackedMap.class.getName());
+			mapStoreConfig.setFactoryClassName(JdbcBackMapFactory.class.getName());
+			mapStoreConfig.setWriteBatchSize(1000);
+			mapStoreConfig.setInitialLoadMode(InitialLoadMode.LAZY);
+			mapStoreConfig.setWriteDelaySeconds(10);
+			mapStoreConfig.setEnabled(true);
 
-	}
+			this.properties.forEach((k, v) -> mapStoreConfig.setProperty(k, v));
 
-	@Override
-	public void byPages(long spiderId, int pageSize, Callback callback) {
-		// TODO Auto-generated method stub
+			mapStoreConfig.setProperty("table_name", tableName);
+			mapStoreConfig.setProperty("create_query", createQuery);
+			mapStoreConfig.setProperty("insert_query", insertQuery);
+			mapStoreConfig.setProperty("select_key_query", selectKeyQuery);
+			mapStoreConfig.setProperty("select_query", selectQuery);
+			mapStoreConfig.setProperty("delete_query", deleteQuery);
+			mapStoreConfig.setProperty("where_clause", whereClause);
+			mapStoreConfig.setProperty("paging", paging);
 
-	}
-
-	@Override
-	public Metadata getMetadata(long spiderId, String url) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public WebPage getPage(long spiderId, String url) {
-		// TODO Auto-generated method stub
-		return null;
+			mapConfig.setMapStoreConfig(mapStoreConfig);
+			mapConfig.setName(mapKey);
+			hazelcastInstance.getConfig().addMapConfig(mapConfig);
+		}
 	}
 }
