@@ -26,7 +26,7 @@ import com.hazelcast.core.MapLoader;
 import com.hazelcast.core.MapStore;
 
 @Data
-public class JdbcBackedMap implements MapStore<String, WebPage>, MapLoader<String, WebPage> {
+public class JdbcRawBackedMap implements MapStore<String, WebPage>, MapLoader<String, WebPage> {
 
 	private final JdbcTemplate jdbcTemplate;
 

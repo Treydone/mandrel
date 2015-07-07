@@ -48,6 +48,9 @@ public class JdbcStore extends InternalStore {
 	@JsonProperty("paging")
 	private String paging = "from ?, ?";
 
+	@JsonProperty("create")
+	private boolean create = false;
+
 	@JsonAnySetter
 	public void add(String key, String value) {
 		properties.put(key, value);
@@ -71,8 +74,8 @@ public class JdbcStore extends InternalStore {
 		if (!hazelcastInstance.getConfig().getMapConfigs().containsKey(mapKey)) {
 			MapConfig mapConfig = new MapConfig();
 			MapStoreConfig mapStoreConfig = new MapStoreConfig();
-			mapStoreConfig.setClassName(JdbcBackedMap.class.getName());
-			mapStoreConfig.setFactoryClassName(JdbcBackMapFactory.class.getName());
+			mapStoreConfig.setClassName(JdbcRawBackedMap.class.getName());
+			mapStoreConfig.setFactoryClassName(JdbcRawBackMapFactory.class.getName());
 			mapStoreConfig.setWriteBatchSize(1000);
 			mapStoreConfig.setInitialLoadMode(InitialLoadMode.LAZY);
 			mapStoreConfig.setWriteDelaySeconds(10);
@@ -82,6 +85,7 @@ public class JdbcStore extends InternalStore {
 
 			mapStoreConfig.setProperty("table_name", tableName);
 			mapStoreConfig.setProperty("create_query", createQuery);
+			mapStoreConfig.setProperty("create", Boolean.toString(create));
 			mapStoreConfig.setProperty("insert_query", insertQuery);
 			mapStoreConfig.setProperty("select_key_query", selectKeyQuery);
 			mapStoreConfig.setProperty("select_query", selectQuery);

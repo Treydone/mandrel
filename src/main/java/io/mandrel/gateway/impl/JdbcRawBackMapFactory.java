@@ -20,12 +20,11 @@ import com.hazelcast.core.MapLoader;
 import com.hazelcast.core.MapStoreFactory;
 
 @Slf4j
-public class JdbcBackMapFactory implements MapStoreFactory<String, WebPage> {
+public class JdbcRawBackMapFactory implements MapStoreFactory<String, WebPage> {
 
 	@Override
 	public MapLoader<String, WebPage> newMapStore(String mapName, Properties properties) {
-		Map<String, String> configuration = properties.entrySet().stream()
-				.collect(Collectors.toMap(k -> k.getKey().toString(), v -> v.getValue().toString()));
+		Map<String, String> configuration = properties.entrySet().stream().collect(Collectors.toMap(k -> k.getKey().toString(), v -> v.getValue().toString()));
 
 		PoolConfiguration pool = new PoolProperties();
 		try {
@@ -47,9 +46,11 @@ public class JdbcBackMapFactory implements MapStoreFactory<String, WebPage> {
 
 		JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-		jdbcTemplate.update(MessageFormat.format(properties.getProperty("create_query"), tableName));
+		if (Boolean.valueOf(properties.getProperty("create", "false"))) {
+			jdbcTemplate.update(MessageFormat.format(properties.getProperty("create_query"), tableName));
+		}
 
-		JdbcBackedMap backedMap = new JdbcBackedMap(jdbcTemplate, tableName, MessageFormat.format(properties.getProperty("insert_query"), tableName),
+		JdbcRawBackedMap backedMap = new JdbcRawBackedMap(jdbcTemplate, tableName, MessageFormat.format(properties.getProperty("insert_query"), tableName),
 				MessageFormat.format(properties.getProperty("select_key_query"), tableName), MessageFormat.format(properties.getProperty("select_query"),
 						tableName), MessageFormat.format(properties.getProperty("delete_query"), tableName), properties.getProperty("where_clause"),
 				properties.getProperty("paging"));

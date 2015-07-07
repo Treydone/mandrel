@@ -9,6 +9,7 @@ import java.util.Map;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,6 +20,7 @@ import com.hazelcast.core.IMap;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
+@Slf4j
 public class JdbcDocumentStore extends InternalDocumentStore {
 
 	private static final long serialVersionUID = 5608990195947997882L;
@@ -30,9 +32,6 @@ public class JdbcDocumentStore extends InternalDocumentStore {
 
 	@JsonProperty("create_query")
 	private String createQuery = null;
-
-	@JsonProperty("insert_query")
-	private String insertQuery = "insert into {0} (id, content) values ('?', '?')";
 
 	@JsonProperty("select_key_query")
 	private String selectKeyQuery = "select id from {0}";
@@ -50,7 +49,7 @@ public class JdbcDocumentStore extends InternalDocumentStore {
 	private String paging = "from ?, ?";
 
 	@JsonProperty("create")
-	private boolean create = true;
+	private boolean create = false;
 
 	@JsonAnySetter
 	public void add(String key, String value) {
@@ -61,15 +60,17 @@ public class JdbcDocumentStore extends InternalDocumentStore {
 	public void init(WebPageExtractor webPageExtractor) {
 		super.init(webPageExtractor);
 
-		if (create) {
-			if (createQuery == null) {
-				for (FieldExtractor fieldExtractor : extractor.getFields()) {
-					fieldExtractor.getName();
+		if (createQuery == null) {
+			StringBuilder builder = new StringBuilder();
+			builder.append("create table if not exists ").append(tableName).append(" (");
 
-				}
-				// "create table if not exists"
-			} else {
+			for (FieldExtractor fieldExtractor : extractor.getFields()) {
+				builder.append(fieldExtractor.getName()).append(" text, ");
 			}
+
+			builder.append(", id varchar(255)");
+			createQuery = builder.toString();
+			log.info("Creating default table {} with schema: {}", tableName, createQuery);
 		}
 	}
 
@@ -84,8 +85,8 @@ public class JdbcDocumentStore extends InternalDocumentStore {
 		if (!hazelcastInstance.getConfig().getMapConfigs().containsKey(mapKey)) {
 			MapConfig mapConfig = new MapConfig();
 			MapStoreConfig mapStoreConfig = new MapStoreConfig();
-			mapStoreConfig.setClassName(JdbcBackedMap.class.getName());
-			mapStoreConfig.setFactoryClassName(JdbcBackMapFactory.class.getName());
+			mapStoreConfig.setClassName(JdbcRawBackedMap.class.getName());
+			mapStoreConfig.setFactoryClassName(JdbcRawBackMapFactory.class.getName());
 			mapStoreConfig.setWriteBatchSize(1000);
 			mapStoreConfig.setInitialLoadMode(InitialLoadMode.LAZY);
 			mapStoreConfig.setWriteDelaySeconds(10);
@@ -95,7 +96,7 @@ public class JdbcDocumentStore extends InternalDocumentStore {
 
 			mapStoreConfig.setProperty("table_name", tableName);
 			mapStoreConfig.setProperty("create_query", createQuery);
-			mapStoreConfig.setProperty("insert_query", insertQuery);
+			mapStoreConfig.setProperty("create", Boolean.toString(create));
 			mapStoreConfig.setProperty("select_key_query", selectKeyQuery);
 			mapStoreConfig.setProperty("select_query", selectQuery);
 			mapStoreConfig.setProperty("delete_query", deleteQuery);
