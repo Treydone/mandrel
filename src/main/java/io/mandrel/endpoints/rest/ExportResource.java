@@ -1,6 +1,7 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.NotFoundException;
+import io.mandrel.data.export.AbstractExporter;
 import io.mandrel.data.export.DelimiterSeparatedValuesExporter;
 import io.mandrel.data.export.DocumentExporter;
 import io.mandrel.data.export.ExporterService;
@@ -8,6 +9,8 @@ import io.mandrel.data.export.JsonExporter;
 import io.mandrel.data.export.RawExporter;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,15 +41,15 @@ public class ExportResource {
 
 	@ApiOperation(value = "Export the data of the extractor of a spider using a custom exporter in the classpath")
 	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void export(@PathVariable Long id, @PathVariable String extractorName, @RequestBody DocumentExporter exporter, HttpServletResponse response)
-			throws IOException {
-		internalExport(id, extractorName, exporter, response);
+	public void export(@PathVariable Long id, @PathVariable String extractorName, @RequestBody DocumentExporter exporter,
+			@RequestParam(value = "true") boolean compress, HttpServletResponse response) throws IOException {
+		internalExport(id, extractorName, exporter, response, compress);
 	}
 
 	@ApiOperation(value = "Export the data of the extractor of a spider in a format specified in the parameter")
 	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET, params = "format")
-	public void export(@PathVariable Long id, @PathVariable String extractorName, @RequestParam(required = true) String format, HttpServletResponse response)
-			throws IOException {
+	public void export(@PathVariable Long id, @PathVariable String extractorName, @RequestParam(required = true) String format,
+			@RequestParam(value = "true") boolean compress, HttpServletResponse response) throws IOException {
 		DocumentExporter exporter = null;
 		if ("csv".equals(format)) {
 			exporter = new DelimiterSeparatedValuesExporter();
@@ -56,18 +59,20 @@ public class ExportResource {
 			response.setStatus(HttpStatus.NOT_ACCEPTABLE.value());
 			return;
 		}
-		internalExport(id, extractorName, exporter, response);
+		internalExport(id, extractorName, exporter, response, compress);
 	}
 
 	@ApiOperation(value = "Export the raw data of a spider using a custom exporter in the classpath")
 	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void rawExport(@PathVariable Long id, @RequestBody RawExporter exporter, HttpServletResponse response) throws IOException {
-		internalRawExport(id, exporter, response);
+	public void rawExport(@PathVariable Long id, @RequestBody RawExporter exporter, @RequestParam(value = "true") boolean compress, HttpServletResponse response)
+			throws IOException {
+		internalRawExport(id, exporter, response, compress);
 	}
 
 	@ApiOperation(value = "Export the raw data of a spider in a format specified in the parameter")
 	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.GET, params = "format")
-	public void rawExport(@PathVariable Long id, @RequestParam(required = true) String format, HttpServletResponse response) throws IOException {
+	public void rawExport(@PathVariable Long id, @RequestParam(required = true) String format, @RequestParam(value = "true") boolean compress,
+			HttpServletResponse response) throws IOException {
 		RawExporter exporter = null;
 		if ("csv".equals(format)) {
 			exporter = new DelimiterSeparatedValuesExporter();
@@ -77,27 +82,44 @@ public class ExportResource {
 			response.setStatus(HttpStatus.NOT_ACCEPTABLE.value());
 			return;
 		}
-		internalRawExport(id, exporter, response);
+		internalRawExport(id, exporter, response, compress);
 	}
 
-	protected void internalRawExport(Long id, RawExporter exporter, HttpServletResponse response) throws IOException {
-		response.setContentType(exporter.contentType());
-		response.setHeader("Content-Disposition", "attachment; filename=\"export\"");
-		try {
-			exporterService.export(id, exporter, response.getWriter());
-		} catch (NotFoundException e) {
-			response.setStatus(HttpStatus.NOT_FOUND.value());
+	protected void internalRawExport(Long id, RawExporter exporter, HttpServletResponse response, boolean compress) throws IOException {
+		try (OutputStreamWriter writer = prepareExport(exporter, response, compress, "export")) {
+			try {
+				exporterService.export(id, exporter, writer);
+			} catch (NotFoundException e) {
+				response.setStatus(HttpStatus.NOT_FOUND.value());
+			}
+		} finally {
+			response.flushBuffer();
 		}
 	}
 
-	protected void internalExport(Long id, String extractorName, DocumentExporter exporter, HttpServletResponse response) throws IOException {
-		response.setContentType(exporter.contentType());
-		response.setHeader("Content-Disposition", "attachment; filename=\"" + extractorName + "\"");
-		try {
-			exporterService.export(id, extractorName, exporter, response.getWriter());
-		} catch (NotFoundException e) {
-			response.setStatus(HttpStatus.NOT_FOUND.value());
+	protected void internalExport(Long id, String extractorName, DocumentExporter exporter, HttpServletResponse response, boolean compress) throws IOException {
+		try (OutputStreamWriter writer = prepareExport(exporter, response, compress, extractorName)) {
+			try {
+				exporterService.export(id, extractorName, exporter, writer);
+			} catch (NotFoundException e) {
+				response.setStatus(HttpStatus.NOT_FOUND.value());
+			}
+		} finally {
+			response.flushBuffer();
 		}
-		response.flushBuffer();
+	}
+
+	public OutputStreamWriter prepareExport(AbstractExporter exporter, HttpServletResponse response, boolean compress, String name) throws IOException {
+		response.setContentType(exporter.contentType());
+		response.setHeader("Content-Disposition", "attachment; filename=\"" + name + "");
+
+		OutputStreamWriter writer;
+		if (compress) {
+			response.setHeader("Content-Encoding", "gzip");
+			writer = new OutputStreamWriter(new GZIPOutputStream(response.getOutputStream()));
+		} else {
+			writer = new OutputStreamWriter(response.getOutputStream());
+		}
+		return writer;
 	}
 }

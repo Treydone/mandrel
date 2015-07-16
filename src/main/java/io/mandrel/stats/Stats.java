@@ -1,9 +1,7 @@
 package io.mandrel.stats;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.core.HazelcastInstance;
@@ -16,8 +14,6 @@ public class Stats {
 	private final IMap<String, Boolean> pendings;
 	private final IAtomicLong totalSize;
 	private final IAtomicLong totalTimeToFetch;
-	private final Set<Integer> nbPagesByStatus = new HashSet<>();
-	private final Set<String> documentsByExtractor = new HashSet<>();
 
 	private final IAtomicLong readTimeout;
 	private final IAtomicLong connectTimeout;
@@ -60,8 +56,10 @@ public class Stats {
 		connectTimeout.destroy();
 		connectException.destroy();
 
-		nbPagesByStatus.forEach(httpStatus -> instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus).destroy());
-		documentsByExtractor.forEach(extractor -> instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor).destroy());
+		instance.<Integer> getSet(getKey(spiderId) + "-nbPagesByStatus").forEach(
+				httpStatus -> instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus).destroy());
+		instance.<String> getSet(getKey(spiderId) + "-documentsByExtractor").forEach(
+				extractor -> instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor).destroy());
 	}
 
 	protected String getKey(long spiderId) {
@@ -94,15 +92,11 @@ public class Stats {
 	}
 
 	public long incPageForStatus(int httpStatus) {
-		IAtomicLong iAtomicLong = instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus);
-		nbPagesByStatus.add(Integer.valueOf(httpStatus));
-		return iAtomicLong.addAndGet(1);
+		return instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus).addAndGet(1);
 	}
 
 	public long incDocumentForExtractor(String extractor, int inc) {
-		IAtomicLong iAtomicLong = instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor);
-		documentsByExtractor.add(extractor);
-		return iAtomicLong.addAndGet(inc);
+		return instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor).addAndGet(inc);
 	}
 
 	public long getNbPendingPages() {
@@ -147,13 +141,15 @@ public class Stats {
 
 	public Map<Integer, Long> getPagesByStatus() {
 		Map<Integer, Long> result = new HashMap<>();
-		nbPagesByStatus.forEach(httpStatus -> result.put(httpStatus, instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus).get()));
+		instance.<Integer> getSet(getKey(spiderId) + "-nbPagesByStatus").forEach(
+				httpStatus -> result.put(httpStatus, instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus).get()));
 		return result;
 	}
 
 	public Map<String, Long> getDocumentsByExtractor() {
 		Map<String, Long> result = new HashMap<>();
-		documentsByExtractor.forEach(extractor -> result.put(extractor, instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor).get()));
+		instance.<String> getSet(getKey(spiderId) + "-documentsByExtractor").forEach(
+				extractor -> result.put(extractor, instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor).get()));
 		return result;
 	}
 }
