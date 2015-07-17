@@ -1,5 +1,6 @@
 package io.mandrel.config;
 
+import io.mandrel.cluster.node.NodeService;
 import io.mandrel.common.serialization.CompressionType;
 import io.mandrel.common.serialization.KryoSerializer;
 import io.mandrel.common.settings.NetworkSettings;
@@ -10,10 +11,12 @@ import org.springframework.context.annotation.Configuration;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.hazelcast.config.Config;
+import com.hazelcast.config.EvictionPolicy;
 import com.hazelcast.config.GlobalSerializerConfig;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.InterfacesConfig;
 import com.hazelcast.config.JoinConfig;
+import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.config.TcpIpConfig;
@@ -88,6 +91,15 @@ public class HazelcastConfiguration {
 
 		// Start Hazelcast
 		HazelcastInstance instance = Hazelcast.newHazelcastInstance(config);
+
+		// Prepare Maps
+		if (!instance.getConfig().getMapConfigs().containsKey(NodeService.NODES)) {
+			MapConfig mapConfig = new MapConfig();
+			mapConfig.setEvictionPolicy(EvictionPolicy.LRU);
+			mapConfig.setMaxIdleSeconds(20);
+			mapConfig.setName(NodeService.NODES);
+			instance.getConfig().addMapConfig(mapConfig);
+		}
 
 		return instance;
 	}

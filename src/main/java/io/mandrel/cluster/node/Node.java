@@ -1,4 +1,4 @@
-package io.mandrel.node;
+package io.mandrel.cluster.node;
 
 import io.mandrel.monitor.Infos;
 

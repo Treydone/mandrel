@@ -1,5 +1,6 @@
 package io.mandrel.data.spider;
 
+import io.mandrel.cluster.idgenerator.IdGenerator;
 import io.mandrel.common.data.Spider;
 
 import java.util.Map;
@@ -8,22 +9,22 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
 
 import com.hazelcast.core.HazelcastInstance;
 
 @Component
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class SpiderRepository {
+
+	private final IdGenerator idGenerator;
 
 	private final HazelcastInstance instance;
 
-	@Inject
-	public SpiderRepository(HazelcastInstance instance) {
-		this.instance = instance;
-	}
-
 	public Spider add(Spider spider) {
-		long id = instance.getIdGenerator("spiders").newId();
+		long id = idGenerator.generateId("spiders");
 		spider.setId(id);
 		spiders(instance).put(id, spider);
 		return spider;
