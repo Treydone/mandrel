@@ -1,0 +1,39 @@
+
+@defaultMessage Convert to URI
+java.net.URL#getPath()
+java.net.URL#getFile()
+
+@defaultMessage Use java.nio.file instead of java.io.File API
+java.util.jar.JarFile
+java.util.zip.ZipFile
+java.io.File
+java.io.FileInputStream
+java.io.FileOutputStream
+java.io.PrintStream#<init>(java.lang.String,java.lang.String)
+java.io.PrintWriter#<init>(java.lang.String,java.lang.String)
+java.util.Formatter#<init>(java.lang.String,java.lang.String,java.util.Locale)
+java.io.RandomAccessFile
+java.nio.file.Path#toFile()
+
+java.nio.file.Paths @ Use PathUtils.get instead.
+java.nio.file.FileSystems#getDefault() @ use PathUtils.getDefault instead.
+
+@defaultMessage Specify a location for the temp file/directory instead.
+java.nio.file.Files#createTempDirectory(java.lang.String,java.nio.file.attribute.FileAttribute[])
+java.nio.file.Files#createTempFile(java.lang.String,java.lang.String,java.nio.file.attribute.FileAttribute[])
+
+@defaultMessage Constructing a DateTime without a time zone is dangerous - use DateTime(DateTimeZone.getDefault()) if you really want the default timezone
+org.joda.time.DateTime#<init>()
+org.joda.time.DateTime#<init>(long)
+org.joda.time.DateTime#<init>(int, int, int, int, int)
+org.joda.time.DateTime#<init>(int, int, int, int, int, int)
+org.joda.time.DateTime#<init>(int, int, int, int, int, int, int)
+org.joda.time.DateTime#now()
+
+com.google.common.collect.Iterators#emptyIterator() @ Use Collections.emptyIterator instead
+
+@defaultMessage Don't use java serialization - this can break BWC without noticing it
+java.io.ObjectOutputStream
+java.io.ObjectOutput
+java.io.ObjectInputStream
+java.io.ObjectInput
