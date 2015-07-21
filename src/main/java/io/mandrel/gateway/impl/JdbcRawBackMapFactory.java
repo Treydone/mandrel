@@ -22,6 +22,7 @@ import io.mandrel.http.WebPage;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -65,13 +66,14 @@ public class JdbcRawBackMapFactory implements MapStoreFactory<String, WebPage> {
 		JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
 		if (Boolean.valueOf(properties.getProperty("create", "false"))) {
-			jdbcTemplate.update(MessageFormat.format(properties.getProperty("create_query"), tableName));
+			jdbcTemplate.update(new MessageFormat(properties.getProperty("create_query"), Locale.ROOT).format(tableName));
 		}
 
-		JdbcRawBackedMap backedMap = new JdbcRawBackedMap(jdbcTemplate, tableName, MessageFormat.format(properties.getProperty("insert_query"), tableName),
-				MessageFormat.format(properties.getProperty("select_key_query"), tableName), MessageFormat.format(properties.getProperty("select_query"),
-						tableName), MessageFormat.format(properties.getProperty("delete_query"), tableName), properties.getProperty("where_clause"),
-				properties.getProperty("paging"));
+		JdbcRawBackedMap backedMap = new JdbcRawBackedMap(jdbcTemplate, tableName,
+				new MessageFormat(properties.getProperty("insert_query"), Locale.ROOT).format(tableName), new MessageFormat(
+						properties.getProperty("select_key_query"), Locale.ROOT).format(tableName), new MessageFormat(properties.getProperty("select_query"),
+						Locale.ROOT).format(tableName), new MessageFormat(properties.getProperty("delete_query"), Locale.ROOT).format(tableName),
+				properties.getProperty("where_clause"), properties.getProperty("paging"));
 		return backedMap;
 	}
 }

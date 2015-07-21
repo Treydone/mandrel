@@ -20,25 +20,16 @@ package io.mandrel.monitor;
 
 import io.mandrel.monitor.Infos.Interface;
 import io.mandrel.stats.JmxUtils;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
-import javax.inject.Inject;
-
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.io.IOUtils;
 import org.hyperic.sigar.NetFlags;
 import org.hyperic.sigar.NetInterfaceConfig;
 import org.hyperic.sigar.NetInterfaceStat;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Component;
+
+import com.netflix.servo.util.Throwables;
 
 @Component
 @Slf4j
@@ -46,33 +37,7 @@ public class SigarService {
 
 	private final Sigar sigar;
 
-	@Inject
-	public SigarService(ResourceLoader rl) {
-
-		try {
-			org.springframework.core.io.Resource[] resources = ResourcePatternUtils.getResourcePatternResolver(rl).getResources("classpath*:**/libsigar-*");
-			for (org.springframework.core.io.Resource resource : resources) {
-				log.debug("Loading native file {}", resource.getFilename());
-				try {
-					File temp = File.createTempFile(resource.getFilename(), "");
-					temp.deleteOnExit();
-
-					if (!temp.exists()) {
-						throw new FileNotFoundException("File " + resource.getFilename() + " can not be found");
-					}
-
-					try (FileOutputStream stream = new FileOutputStream(temp)) {
-						IOUtils.copy(resource.getInputStream(), stream);
-					}
-
-					System.load(temp.getAbsolutePath());
-				} catch (UnsatisfiedLinkError e) {
-				}
-			}
-		} catch (IOException e) {
-			log.warn("Unable to find the natives libsigar", e);
-		}
-
+	public SigarService() {
 		Sigar sigar = null;
 		try {
 			sigar = new Sigar();
@@ -81,15 +46,7 @@ public class SigarService {
 			log.debug("sigar loaded successfully");
 		} catch (Throwable t) {
 			log.debug("failed to load sigar", t);
-			if (sigar != null) {
-				try {
-					sigar.close();
-				} catch (Throwable t1) {
-					// ignore
-				} finally {
-					sigar = null;
-				}
-			}
+			throw Throwables.propagate(t);
 		}
 		this.sigar = sigar;
 	}
@@ -157,85 +114,69 @@ public class SigarService {
 
 		return infos;
 	}
-	
-    public String ifconfig() {
-        StringBuilder sb = new StringBuilder();
-        try {
-            for (String ifname : sigar.getNetInterfaceList()) {
-                NetInterfaceConfig ifconfig = null;
-                try {
-                    ifconfig = sigar.getNetInterfaceConfig(ifname);
-                } catch (SigarException e) {
-                    sb.append(ifname + "\t" + "Not Avaialbe [" + e.getMessage() + "]");
-                    continue;
-                }
-                long flags = ifconfig.getFlags();
 
-                String hwaddr = "";
-                if (!NetFlags.NULL_HWADDR.equals(ifconfig.getHwaddr())) {
-                    hwaddr = " HWaddr " + ifconfig.getHwaddr();
-                }
+	public String ifconfig() {
+		StringBuilder sb = new StringBuilder();
+		try {
+			for (String ifname : sigar.getNetInterfaceList()) {
+				NetInterfaceConfig ifconfig = null;
+				try {
+					ifconfig = sigar.getNetInterfaceConfig(ifname);
+				} catch (SigarException e) {
+					sb.append(ifname + "\t" + "Not Avaialbe [" + e.getMessage() + "]");
+					continue;
+				}
+				long flags = ifconfig.getFlags();
 
-                if (!ifconfig.getName().equals(ifconfig.getDescription())) {
-                    sb.append(ifconfig.getDescription()).append('\n');
-                }
+				String hwaddr = "";
+				if (!NetFlags.NULL_HWADDR.equals(ifconfig.getHwaddr())) {
+					hwaddr = " HWaddr " + ifconfig.getHwaddr();
+				}
 
-                sb.append(ifconfig.getName() + "\t" + "Link encap:" + ifconfig.getType() + hwaddr).append('\n');
+				if (!ifconfig.getName().equals(ifconfig.getDescription())) {
+					sb.append(ifconfig.getDescription()).append('\n');
+				}
 
-                String ptp = "";
-                if ((flags & NetFlags.IFF_POINTOPOINT) > 0) {
-                    ptp = "  P-t-P:" + ifconfig.getDestination();
-                }
+				sb.append(ifconfig.getName() + "\t" + "Link encap:" + ifconfig.getType() + hwaddr).append('\n');
 
-                String bcast = "";
-                if ((flags & NetFlags.IFF_BROADCAST) > 0) {
-                    bcast = "  Bcast:" + ifconfig.getBroadcast();
-                }
+				String ptp = "";
+				if ((flags & NetFlags.IFF_POINTOPOINT) > 0) {
+					ptp = "  P-t-P:" + ifconfig.getDestination();
+				}
 
-                sb.append("\t" +
-                        "inet addr:" + ifconfig.getAddress() +
-                        ptp + //unlikely
-                        bcast +
-                        "  Mask:" + ifconfig.getNetmask()).append('\n');
+				String bcast = "";
+				if ((flags & NetFlags.IFF_BROADCAST) > 0) {
+					bcast = "  Bcast:" + ifconfig.getBroadcast();
+				}
 
-                sb.append("\t" +
-                        NetFlags.getIfFlagsString(flags) +
-                        " MTU:" + ifconfig.getMtu() +
-                        "  Metric:" + ifconfig.getMetric()).append('\n');
-                try {
-                    NetInterfaceStat ifstat = sigar.getNetInterfaceStat(ifname);
+				sb.append("\t" + "inet addr:" + ifconfig.getAddress() + ptp + // unlikely
+						bcast + "  Mask:" + ifconfig.getNetmask()).append('\n');
 
-                    sb.append("\t" +
-                            "RX packets:" + ifstat.getRxPackets() +
-                            " errors:" + ifstat.getRxErrors() +
-                            " dropped:" + ifstat.getRxDropped() +
-                            " overruns:" + ifstat.getRxOverruns() +
-                            " frame:" + ifstat.getRxFrame()).append('\n');
+				sb.append("\t" + NetFlags.getIfFlagsString(flags) + " MTU:" + ifconfig.getMtu() + "  Metric:" + ifconfig.getMetric()).append('\n');
+				try {
+					NetInterfaceStat ifstat = sigar.getNetInterfaceStat(ifname);
 
-                    sb.append("\t" +
-                            "TX packets:" + ifstat.getTxPackets() +
-                            " errors:" + ifstat.getTxErrors() +
-                            " dropped:" + ifstat.getTxDropped() +
-                            " overruns:" + ifstat.getTxOverruns() +
-                            " carrier:" + ifstat.getTxCarrier()).append('\n');
-                    sb.append("\t" + "collisions:" +
-                            ifstat.getTxCollisions()).append('\n');
+					sb.append(
+							"\t" + "RX packets:" + ifstat.getRxPackets() + " errors:" + ifstat.getRxErrors() + " dropped:" + ifstat.getRxDropped()
+									+ " overruns:" + ifstat.getRxOverruns() + " frame:" + ifstat.getRxFrame()).append('\n');
 
-                    long rxBytes = ifstat.getRxBytes();
-                    long txBytes = ifstat.getTxBytes();
+					sb.append(
+							"\t" + "TX packets:" + ifstat.getTxPackets() + " errors:" + ifstat.getTxErrors() + " dropped:" + ifstat.getTxDropped()
+									+ " overruns:" + ifstat.getTxOverruns() + " carrier:" + ifstat.getTxCarrier()).append('\n');
+					sb.append("\t" + "collisions:" + ifstat.getTxCollisions()).append('\n');
 
-                    sb.append("\t" +
-                            "RX bytes:" + rxBytes +
-                            " (" + Sigar.formatSize(rxBytes) + ")" +
-                            "  " +
-                            "TX bytes:" + txBytes +
-                            " (" + Sigar.formatSize(txBytes) + ")").append('\n');
-                } catch (SigarException e) {
-                }
-            }
-            return sb.toString();
-        } catch (SigarException e) {
-            return "NA";
-        }
-    }
+					long rxBytes = ifstat.getRxBytes();
+					long txBytes = ifstat.getTxBytes();
+
+					sb.append(
+							"\t" + "RX bytes:" + rxBytes + " (" + Sigar.formatSize(rxBytes) + ")" + "  " + "TX bytes:" + txBytes + " ("
+									+ Sigar.formatSize(txBytes) + ")").append('\n');
+				} catch (SigarException e) {
+				}
+			}
+			return sb.toString();
+		} catch (SigarException e) {
+			return "NA";
+		}
+	}
 }

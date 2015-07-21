@@ -31,6 +31,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 @EnableAsync
@@ -45,7 +46,7 @@ public class TaskConfiguration implements AsyncConfigurer, SchedulingConfigurer 
 
 	@Bean(destroyMethod = "shutdown")
 	public ScheduledExecutorService scheduledExecutorService() {
-		return Executors.newScheduledThreadPool(4);
+		return Executors.newScheduledThreadPool(4, new CustomizableThreadFactory("mandrel-"));
 	}
 
 	@Override

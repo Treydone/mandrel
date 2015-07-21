@@ -38,6 +38,7 @@ public class ContainerApplication {
 		SpringApplication.run(ContainerApplication.class, args);
 	}
 
+	@ConditionalOnYarnContainer
 	@Component
 	@Slf4j
 	public static class HelloPojo {
@@ -45,7 +46,6 @@ public class ContainerApplication {
 		@Autowired
 		private Configuration configuration;
 
-		@ConditionalOnYarnContainer
 		public void publicVoidNoArgsMethod() throws IOException {
 			log.info("Hello from HelloPojo");
 			log.info("About to list from hdfs root content");

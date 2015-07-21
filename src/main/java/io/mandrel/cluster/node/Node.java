@@ -23,8 +23,10 @@ import io.mandrel.monitor.Infos;
 import java.io.Serializable;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
+@Accessors(chain = true)
 public class Node implements Serializable {
 	private static final long serialVersionUID = 9044434196832084086L;
 

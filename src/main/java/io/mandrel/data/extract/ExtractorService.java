@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -63,6 +64,7 @@ import org.springframework.stereotype.Component;
 
 import us.codecraft.xsoup.xevaluator.XElement;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 
 @Component
@@ -140,7 +142,7 @@ public class ExtractorService {
 		if (documents != null) {
 			extractor.getDocumentStore().save(spiderId, documents);
 		}
-		
+
 		return documents;
 	}
 
@@ -227,7 +229,7 @@ public class ExtractorService {
 			instance = ((BodySelector<T>) selector).init(webPage, segment, true);
 		} else {
 			// Reuse the previous instance selector for this web page
-			String cacheKey = fieldExtractor.getType() + "-" + fieldExtractor.getSource().toString().toLowerCase();
+			String cacheKey = fieldExtractor.getType() + "-" + fieldExtractor.getSource().toString().toLowerCase(Locale.ROOT);
 			instance = (Instance<T>) selectors.get(cacheKey);
 
 			if (instance == null) {
@@ -277,7 +279,7 @@ public class ExtractorService {
 			return results.stream().map(result -> {
 				ScriptContext bindings = scriptingService.getBindings(webPage, result);
 				try {
-					return scriptingService.execScript(new String(formatter.getValue()), engine, bindings);
+					return scriptingService.execScript(new String(formatter.getValue(), Charsets.UTF_8), engine, bindings);
 				} catch (Exception e) {
 					log.debug("Can not format '{}': {}", dataExtractorFormatter.getName(), e);
 				}

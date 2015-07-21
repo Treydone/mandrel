@@ -18,17 +18,17 @@
  */
 package io.mandrel.monitor;
 
-import io.mandrel.monitor.SigarService;
 import io.mandrel.monitor.SigarServiceTest.LocalConfiguration;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hyperic.sigar.SigarException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -40,8 +40,8 @@ public class SigarServiceTest {
 	public static class LocalConfiguration {
 
 		@Bean
-		public SigarService sigarService(ResourceLoader loader) {
-			return new SigarService(loader);
+		public SigarService sigarService() {
+			return new SigarService();
 		}
 	}
 
@@ -51,7 +51,8 @@ public class SigarServiceTest {
 	@Test
 	public void test() throws SigarException {
 
-		System.err.println(sigarService.infos());
+		System.err.println(ToStringBuilder.reflectionToString(sigarService.infos(), ToStringStyle.MULTI_LINE_STYLE).toString());
+		System.err.println(sigarService.ifconfig());
 
 	}
 }

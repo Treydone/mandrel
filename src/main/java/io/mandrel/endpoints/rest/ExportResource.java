@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.google.common.base.Charsets;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
@@ -134,9 +135,9 @@ public class ExportResource {
 		OutputStreamWriter writer;
 		if (compress) {
 			response.setHeader("Content-Encoding", "gzip");
-			writer = new OutputStreamWriter(new GZIPOutputStream(response.getOutputStream()));
+			writer = new OutputStreamWriter(new GZIPOutputStream(response.getOutputStream()), Charsets.UTF_8);
 		} else {
-			writer = new OutputStreamWriter(response.getOutputStream());
+			writer = new OutputStreamWriter(response.getOutputStream(), Charsets.UTF_8);
 		}
 		return writer;
 	}

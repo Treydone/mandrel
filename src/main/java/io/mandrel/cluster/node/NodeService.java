@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,12 @@ public class NodeService {
 
 	private final DiscoveryService discoveryService;
 
+	@PostConstruct
+	public void init() {
+		String uuid = discoveryService.dhis();
+		instance.<String, Node> getMap(NODES).put(uuid, new Node().setUuid(uuid));
+	}
+
 	public Map<String, Node> nodes() {
 		List<String> uuids = discoveryService.all();
 		return _nodes().entrySet().stream().filter(idNode -> uuids.contains(idNode.getKey()))
@@ -58,8 +65,10 @@ public class NodeService {
 	public void updateLocalNodeInfos(Infos infos) {
 		String uuid = discoveryService.dhis();
 		Node node = instance.<String, Node> getMap(NODES).get(uuid);
-		node.setInfos(infos);
-		instance.<String, Node> getMap(NODES).put(uuid, node);
+		if (node != null) {
+			node.setInfos(infos);
+			instance.<String, Node> getMap(NODES).put(uuid, node);
+		}
 	}
 
 	public Node dhis() {

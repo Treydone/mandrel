@@ -17,7 +17,6 @@
 		<!-- Dependencies -->
 		<jackson.version>2.4.5</jackson.version>
 		<cxf.version>3.0.1</cxf.version>
-		<sigar.version>1.6.5.132</sigar.version>
 		<spring-boot.version>1.2.3.RELEASE</spring-boot.version>
 		<netty.version>4.1.0.Beta5</netty.version>
 
@@ -55,6 +54,10 @@
 				<exclusion>
 					<artifactId>commons-logging</artifactId>
 					<groupId>commons-logging</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>maven-scm-provider-svnexe</artifactId>
+					<groupId>org.apache.maven.scm</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -234,13 +237,9 @@
 		<dependency>
 			<groupId>org.hyperic</groupId>
 			<artifactId>sigar</artifactId>
-			<version>${sigar.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.hyperic</groupId>
-			<artifactId>sigar-dist</artifactId>
-			<version>${sigar.version}</version>
-			<type>zip</type>
+			<version>1.6.5.132</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/sigar/sigar-1.6.5.132.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>com.netflix.servo</groupId>
@@ -270,9 +269,44 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>bootstrap</artifactId>
+			<version>3.3.4</version>
+		</dependency>
+		<dependency>
 			<groupId>org.webjars.bower</groupId>
-			<artifactId>material-design-lite</artifactId>
-			<version>1.0.0</version>
+			<artifactId>bootstrap-3-datepicker</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars.bower</groupId>
+			<artifactId>bootstrap-daterangepicker</artifactId>
+			<version>1.3.22</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>font-awesome</artifactId>
+			<version>4.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>fastclick</artifactId>
+			<version>1.0.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>ionicons</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>jquery</artifactId>
+			<version>2.1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>jQuery-slimScroll</artifactId>
+			<version>1.3.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
@@ -323,7 +357,7 @@
 		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+			<artifactId>spring-boot-starter-freemarker</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.data</groupId>
@@ -351,6 +385,10 @@
 				<exclusion>
 					<artifactId>log4j</artifactId>
 					<groupId>log4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>slf4j-log4j12</artifactId>
+					<groupId>org.slf4j</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -620,56 +658,6 @@
 				</executions>
 			</plugin>
 
-			<!-- need to copy/unzip the native libraries to the target directory and 
-				tell SystemInfoFactory where they are -->
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
-				<executions>
-					<execution>
-						<phase>process-classes</phase>
-						<configuration>
-							<tasks>
-								<echo>SIGAR java library version used is ${sigar.version}</echo>
-								<echo>Copying/unzipping SIGAR native libraries (version
-									${sigar.version}) to local build directory</echo>
-								<delete dir="${project.build.directory}/tmp" />
-								<delete dir="dist/lib/native" />
-								<mkdir dir="${project.build.directory}/tmp" />
-								<copy toDir="${project.build.directory}/tmp">
-									<fileset
-										dir="${settings.localRepository}/org/hyperic/sigar-dist/${sigar.version}"
-										includes="*.zip" />
-								</copy>
-								<unzip dest="${project.build.directory}/tmp">
-									<fileset dir="${project.build.directory}/tmp" includes="*.zip" />
-									<patternset>
-										<include name="**/lib/*.so" />
-										<include name="**/lib/*.sl" />
-										<include name="**/lib/*.dll" />
-										<include name="**/lib/*.dylib" />
-									</patternset>
-								</unzip>
-								<mkdir dir="${project.build.directory}/tmp" />
-								<move todir="dist/lib/native" flatten="true">
-									<fileset dir="${project.build.directory}/tmp">
-										<include name="**/lib/*" />
-									</fileset>
-								</move>
-								<copy
-									toDir="${project.build.directory}/generated-resources/appassembler/jsw/mandrel/lib">
-									<fileset dir="dist/lib/native" />
-								</copy>
-								<delete dir="${project.build.directory}/tmp" />
-							</tasks>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
@@ -685,6 +673,28 @@
 								<source>dist</source>
 							</sources>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.jasig.maven</groupId>
+				<artifactId>maven-notice-plugin</artifactId>
+				<version>1.0.6</version>
+				<configuration>
+					<noticeTemplate>NOTICE.template</noticeTemplate>
+					<licenseMapping>
+						<param>${mandrel.tools.directory}/license-check/license-mappings.xml</param>
+					</licenseMapping>
+					<generateChildNotices>false</generateChildNotices>
+				</configuration>
+				<executions>
+					<execution>
+						<id>check-license</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>

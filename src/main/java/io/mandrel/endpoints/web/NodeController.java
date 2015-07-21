@@ -19,9 +19,6 @@
 package io.mandrel.endpoints.web;
 
 import io.mandrel.cluster.node.NodeService;
-import io.mandrel.data.spider.SpiderService;
-
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -29,21 +26,25 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@RequestMapping(value = "/")
+@RequestMapping(value = "/nodes")
 @Controller
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class HomeController {
-
-	private final SpiderService spiderService;
+public class NodeController {
 
 	private final NodeService nodeService;
 
 	@RequestMapping
-	public String home(Model model) {
-		model.addAttribute("spiders", spiderService.list().collect(Collectors.toList()));
+	public String nodes(Model model) {
 		model.addAttribute("nodes", nodeService.nodes());
-		return "views/home";
+		return "views/nodes";
+	}
+
+	@RequestMapping("/{id}")
+	public String node(@PathVariable String id, Model model) {
+		model.addAttribute("node", nodeService.node(id));
+		return "views/node";
 	}
 }
