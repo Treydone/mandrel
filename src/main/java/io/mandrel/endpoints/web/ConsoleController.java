@@ -29,6 +29,6 @@ public class ConsoleController {
 
 	@RequestMapping
 	public String console(Map<String, Object> model) {
-		return "console";
+		return "views/console";
 	}
 }

@@ -124,69 +124,41 @@
           
       <div class="row">
         <div class="col-md-12">
-          <ul class="timeline">
+          <ul class="timeline" id="timeline">
 			  <#list events?keys as key>
-			  	<li class="time-label">
+			  	<li class="time-label" id="time-label-${key}">
                   <span class="bg-gray">
                    ${key}
                   </span>
                 </li>
-					<#assign eventsForData = events?values[key_index]>
-					<#list eventsForData as event>
-						<li>
-						<#assign icon = "fa-rotate-left">
-						<#assign color = "bg-green">
-						<#assign text = "">
-						<#assign footer = "">
-						<#assign data = "">
-						<#switch event.type>
-							<#case "NODE_STARTED">
-								<#assign icon = "fa-laptop">
-								<#assign color = "bg-green">
-								<#assign text = '<a href="/nodes/${event.nodeId}">${event.nodeId}</a> successfully joined the cluster'>
-								<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" href="/nodes/${event.nodeId}">View node</a>'>
-								<#break>
-							<#case "NODE_STOPPED">
-								<#assign icon = "fa-laptop">
-								<#assign color = "bg-red">
-								<#assign text = '<a href="/nodes/${event.nodeId}">${event.nodeId}</a> successfully joined the cluster'>
-								<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" href="/nodes/${event.nodeId}">View node</a>'>
-								<#break>
-							<#case "SPIDER_NEW">
-								<#assign icon = "fa-tasks">
-	 							<#break>
-	 						<#case "SPIDER_STARTED">
-	 							<#assign icon = "fa-tasks">
-	 							<#break>
-	 						<#case "SPIDER_ENDED">
-	 							<#assign icon = "fa-tasks">
-	 							<#break>
-	 						<#case "SPIDER_CANCELLED">
-	 							<#assign icon = "fa-tasks">
-	 							<#break>
-							<#default>
-								<#break>
-						</#switch>
-						  <i class="fa ${icon} ${color}"></i>
-		                  <div class="timeline-item">
-		                    <span class="time"><i class="fa fa-clock-o"></i> ${event.time}</span>
-		                    <h3 class="timeline-header">${text}</h3>
-		                    <div class="timeline-body">
-		                      ${data}
-		                    </div>
-		                    <div class="timeline-footer">
-		                      ${footer}
-		                    </div>
-		                  </div>
-						</li>
-		          	</#list>
+				<#assign eventsForData = events?values[key_index]>
+				<#list eventsForData as event>
+					<#include "event.ftl">
+	          	</#list>
 			  </#list>
-            <li>
+            <li id="timeline-end">
               <i class="fa fa-clock-o bg-gray"></i>
             </li>
           </ul>
         </div><!-- /.col -->
       </div>
+      
+      <script src="/webjars/sockjs-client/0.3.4-1/sockjs.min.js"></script>
+      <script src="/webjars/stomp-websocket/2.3.1-1/stomp.min.js"></script>
+      <script>
+		var path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')+1);
+		var sock = new SockJS(path + '../sockjs');
+		var stompClient = Stomp.over(sock);
+
+		stompClient.connect({}, function(frame) {
+			stompClient.subscribe("/topic/global", function(msg) {
+				var timeline = document.getElementById('timeline');
+				var element = timeline.getElementsByTagName('li')[0];
+				console.log(element);
+				element.insertAdjacentHTML('afterend', msg.body);
+			});
+		});		
+		</script>
 
 </#macro>
 

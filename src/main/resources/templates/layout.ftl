@@ -307,6 +307,7 @@
     <script src="/webjars/fastclick/1.0.6/fastclick.js" type="text/javascript"></script>
     <script src="/public/js/app.min.js" type="text/javascript"></script>
     <script src="/public/js/demo.js" type="text/javascript"></script>
+    
   </body>
 </html>
 </#macro>

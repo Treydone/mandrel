@@ -20,6 +20,7 @@ package io.mandrel.endpoints.web;
 
 import io.mandrel.cluster.node.NodeService;
 import io.mandrel.data.spider.SpiderService;
+import io.mandrel.messaging.StompService;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.TimelineService;
 
@@ -30,9 +31,11 @@ import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
+import org.joda.time.DateTime;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RequestMapping(value = "/")
 @Controller
@@ -45,6 +48,8 @@ public class HomeController {
 
 	private final TimelineService timelineService;
 
+	private final StompService stompService;
+
 	@RequestMapping
 	public String home(Model model) {
 		model.addAttribute("spiders", spiderService.list().collect(Collectors.toList()));
@@ -52,5 +57,11 @@ public class HomeController {
 		List<Event> page = timelineService.page(0, 20);
 		model.addAttribute("events", page.stream().collect(Collectors.groupingBy(event -> event.getTime().toLocalDate().toString())));
 		return "views/home";
+	}
+
+	@RequestMapping("/publish")
+	public String push(@RequestParam String title, @RequestParam String text) {
+		stompService.publish(new Event().setText(text).setTitle(title).setTime(DateTime.now()));
+		return "redirect:/";
 	}
 }

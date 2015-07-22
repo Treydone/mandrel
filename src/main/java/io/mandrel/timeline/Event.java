@@ -9,11 +9,13 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public abstract class Event implements Serializable {
+public class Event implements Serializable {
 
 	private static final long serialVersionUID = -6126722656700114179L;
 
 	private DateTime time;
 
-	private String data;
+	private String title;
+
+	private String text;
 }
