@@ -21,8 +21,8 @@ package io.mandrel.http;
 import io.mandrel.common.MandrelException;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.settings.ClientSettings;
+import io.mandrel.http.proxy.ProxyServer;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -38,16 +38,18 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Consts;
 import org.apache.http.Header;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
@@ -100,35 +102,37 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.CharArrayBuffer;
-import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 
-@Component
 @Slf4j
-public class HCRequester implements Requester, Closeable {
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class HCRequester extends Requester {
 
-	private final CloseableHttpAsyncClient client;
+	@JsonIgnore
+	private CloseableHttpAsyncClient client;
 
-	private final RequestConfig defaultRequestConfig;
+	@JsonIgnore
+	private RequestConfig defaultRequestConfig;
 
-	private final Semaphore available;
+	@JsonIgnore
+	private Semaphore available;
 
-	@Override
+	@JsonIgnore
+	private ClientSettings settings;
+
 	public void close() throws IOException {
 		client.close();
 	}
 
-	@Inject
-	public HCRequester(ClientSettings settings) throws IOReactorException {
+	public void init() {
 
-		available = new Semaphore(100, true);
+		available = new Semaphore(strategy.getMaxParallel(), true);
 
-		// Use custom message parser / writer to customize the way HTTP
-		// messages are parsed from and written out to the data stream.
 		NHttpMessageParserFactory<HttpResponse> responseParserFactory = new DefaultHttpResponseParserFactory() {
-
 			@Override
 			public NHttpMessageParser<HttpResponse> create(final SessionInputBuffer buffer, final MessageConstraints constraints) {
 				LineParser lineParser = new BasicLineParser() {
@@ -141,61 +145,44 @@ public class HCRequester implements Requester, Closeable {
 							return new BasicHeader(buffer.toString(), null);
 						}
 					}
-
 				};
 				return new DefaultHttpResponseParser(buffer, lineParser, DefaultHttpResponseFactory.INSTANCE, constraints);
 			}
-
 		};
 		NHttpMessageWriterFactory<HttpRequest> requestWriterFactory = new DefaultHttpRequestWriterFactory();
 
-		// Use a custom connection factory to customize the process of
-		// initialization of outgoing HTTP connections. Beside standard
-		// connection
-		// configuration parameters HTTP connection factory can define message
-		// parser / writer routines to be employed by individual connections.
 		NHttpConnectionFactory<ManagedNHttpClientConnection> connFactory = new ManagedNHttpClientConnectionFactory(requestWriterFactory, responseParserFactory,
 				HeapByteBufferAllocator.INSTANCE);
 
-		// Client HTTP connection objects when fully initialized can be bound to
-		// an arbitrary network socket. The process of network socket
-		// initialization, its connection to a remote address and binding to a
-		// local one is
-		// controlled by a connection socket factory.
-
-		// SSL context for secure connections can be created either based on
-		// system or application specific properties.
 		SSLContext sslcontext = SSLContexts.createSystemDefault();
-		// Use custom hostname verifier to customize SSL hostname verification.
 		HostnameVerifier hostnameVerifier = new DefaultHostnameVerifier();
 
-		// Create a registry of custom connection session strategies for
-		// supported
-		// protocol schemes.
 		Registry<SchemeIOSessionStrategy> sessionStrategyRegistry = RegistryBuilder.<SchemeIOSessionStrategy> create()
 				.register("http", NoopIOSessionStrategy.INSTANCE).register("https", new SSLIOSessionStrategy(sslcontext, null, null, hostnameVerifier)).build();
 
-		// Use custom DNS resolver to override the system DNS resolution.
 		DnsResolver dnsResolver = new SystemDefaultDnsResolver() {
-
 			@Override
 			public InetAddress[] resolve(final String host) throws UnknownHostException {
 				if (host.equalsIgnoreCase("localhost")) {
 					return new InetAddress[] { InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }) };
 				} else {
-					return super.resolve(host);
+					return new InetAddress[] { strategy.getNameResolver().resolve(host) };
 				}
 			}
-
 		};
 
 		// Create I/O reactor configuration
 		IOReactorConfig ioReactorConfig = IOReactorConfig.custom().setIoThreadCount(Runtime.getRuntime().availableProcessors())
-				.setConnectTimeout(settings.getTimouts().getConnection()).setSoReuseAddress(true).setSoKeepAlive(true).setTcpNoDelay(true).setSoTimeout(30000)
-				.build();
+				.setConnectTimeout(settings.getTimouts().getConnection()).setSoReuseAddress(strategy.isReuseAddress()).setSoKeepAlive(strategy.isKeepAlive())
+				.setTcpNoDelay(strategy.isTcpNoDelay()).setSoTimeout(strategy.getSocketTimeout()).build();
 
 		// Create a custom I/O reactor
-		ConnectingIOReactor ioReactor = new DefaultConnectingIOReactor(ioReactorConfig);
+		ConnectingIOReactor ioReactor;
+		try {
+			ioReactor = new DefaultConnectingIOReactor(ioReactorConfig);
+		} catch (IOReactorException e) {
+			throw Throwables.propagate(e);
+		}
 
 		// Create a connection manager with custom configuration.
 		PoolingNHttpClientConnectionManager connManager = new PoolingNHttpClientConnectionManager(ioReactor, connFactory, sessionStrategyRegistry, dnsResolver);
@@ -203,24 +190,18 @@ public class HCRequester implements Requester, Closeable {
 		// Create message constraints
 		// TODO
 		MessageConstraints messageConstraints = MessageConstraints.custom().setMaxHeaderCount(-1).setMaxLineLength(-1).build();
+
 		// Create connection configuration
 		ConnectionConfig connectionConfig = ConnectionConfig.custom().setMalformedInputAction(CodingErrorAction.IGNORE)
 				.setUnmappableInputAction(CodingErrorAction.IGNORE).setCharset(Consts.UTF_8).setMessageConstraints(messageConstraints).build();
-		// Configure the connection manager to use connection configuration
-		// either by default or for a specific host.
 		connManager.setDefaultConnectionConfig(connectionConfig);
-		// TODO
-		// connManager.setConnectionConfig(new HttpHost("somehost", 80),
-		// ConnectionConfig.DEFAULT);
 
 		// Configure total max or per route limits for persistent connections
 		// that can be kept in the pool or leased by the connection manager.
-		connManager.setMaxTotal(100);
-		connManager.setDefaultMaxPerRoute(100);
-		// TODO
-		// connManager.setMaxPerRoute(new HttpRoute(new HttpHost("somehost",
-		// 80)), 20);
+		connManager.setMaxTotal(strategy.getMaxPersistentConnections());
+		connManager.setDefaultMaxPerRoute(strategy.getMaxPersistentConnections());
 
+		// TODO
 		// Use custom credentials provider if necessary.
 		// CredentialsProvider credentialsProvider = new
 		// BasicCredentialsProvider();
@@ -228,7 +209,9 @@ public class HCRequester implements Requester, Closeable {
 		// Create global request configuration
 		defaultRequestConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.DEFAULT).setExpectContinueEnabled(true).setStaleConnectionCheckEnabled(true)
 				.setTargetPreferredAuthSchemes(Arrays.asList(AuthSchemes.NTLM, AuthSchemes.DIGEST))
-				.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC)).setMaxRedirects(3).setSocketTimeout(10000).setConnectTimeout(10000).build();
+				.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC)).setMaxRedirects(strategy.getMaxRedirects())
+				.setSocketTimeout(strategy.getSocketTimeout()).setConnectTimeout(strategy.getConnectTimeout())
+				.setConnectionRequestTimeout(strategy.getRequestTimeOut()).setRedirectsEnabled(strategy.isFollowRedirects()).build();
 
 		// Create an HttpClient with the given custom dependencies and
 		// configuration.
@@ -295,8 +278,8 @@ public class HCRequester implements Requester, Closeable {
 
 	public HttpContext prepareContext(Spider spider) {
 		CookieStore store = new BasicCookieStore();
-		if (spider.getClient().getCookies() != null)
-			spider.getClient().getCookies().forEach(cookie -> {
+		if (strategy.getCookies() != null)
+			strategy.getCookies().forEach(cookie -> {
 				BasicClientCookie theCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
 				theCookie.setDomain(cookie.getDomain());
 				theCookie.setPath(cookie.getPath());
@@ -325,14 +308,13 @@ public class HCRequester implements Requester, Closeable {
 	}
 
 	public HttpUriRequest prepareRequest(String url, Spider spider) {
+		Builder builder = RequestConfig.copy(defaultRequestConfig);
 
 		HttpGet request = new HttpGet(url);
-		Builder builder = RequestConfig.copy(defaultRequestConfig).setSocketTimeout(5000).setConnectTimeout(5000)
-				.setConnectionRequestTimeout(spider.getClient().getRequestTimeOut()).setRedirectsEnabled(spider.getClient().isFollowRedirects());
 
 		// Add headers, cookies and ohter stuff
-		if (spider.getClient().getHeaders() != null) {
-			spider.getClient().getHeaders().forEach((k, v) -> {
+		if (strategy.getHeaders() != null) {
+			strategy.getHeaders().forEach((k, v) -> {
 				if (v != null) {
 					v.forEach(el -> request.addHeader(k, el));
 				} else {
@@ -342,8 +324,8 @@ public class HCRequester implements Requester, Closeable {
 		}
 
 		HttpParams params = new BasicHttpParams();
-		if (spider.getClient().getParams() != null) {
-			spider.getClient().getParams().forEach((k, v) -> {
+		if (strategy.getParams() != null) {
+			strategy.getParams().forEach((k, v) -> {
 				if (v != null) {
 					v.forEach(el -> params.setParameter(k, el));
 				} else {
@@ -353,31 +335,18 @@ public class HCRequester implements Requester, Closeable {
 		}
 		request.setParams(params);
 
-		// Configure the proxy
-		// builder.setProxy(proxy)
-		// .setProxy(new HttpHost("myotherproxy", 8080))
-
-		// ProxyServer proxy =
-		// spider.getClient().getProxyServersSource().findProxy(spider);
-		// if (proxy != null) {
-		// com.ning.http.client.ProxyServer internalProxy = new
-		// com.ning.http.client.ProxyServer(Protocol.valueOf(proxy.getProtocol().getProtocol()
-		// .toUpperCase()), proxy.getHost(), proxy.getPort(),
-		// proxy.getPrincipal(), proxy.getPassword());
-		// internalProxy.setCharset(proxy.getCharset());
-		// internalProxy.setNtlmDomain(proxy.getNtlmDomain());
-		// internalProxy.setNtlmHost(proxy.getNtlmHost());
-		// internalProxy.setScheme(AuthScheme.valueOf(proxy.getScheme().name().toUpperCase()));
-		// if (proxy.getNonProxyHosts() != null) {
-		// proxy.getNonProxyHosts().forEach(internalProxy::addNonProxyHost);
-		// }
-		// request.setProxyServer(internalProxy);
-		// }
-
 		// Configure the user -agent
-		String userAgent = spider.getClient().getUserAgentProvisionner().get(url, spider);
+		String userAgent = strategy.getUserAgentProvisionner().get(url, spider);
 		if (Strings.isNullOrEmpty(userAgent)) {
 			request.addHeader("User-Agent", userAgent);
+		}
+
+		// Configure the proxy
+		ProxyServer proxy = strategy.getProxyServersSource().findProxy(spider);
+		if (proxy != null) {
+			// TODO Auth!
+			HttpHost proxyHost = new HttpHost(proxy.getHost(), proxy.getPort(), proxy.getProtocol().getProtocol());
+			builder.setProxy(proxyHost);
 		}
 
 		request.setConfig(builder.build());

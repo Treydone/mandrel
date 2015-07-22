@@ -209,7 +209,7 @@ public class SpiderService {
 			// }
 
 				spider.getSources().stream().filter(s -> s.check()).forEach(prepareSource(spiderId, spider));
-
+				
 				taskService.prepareSimpleExecutor(String.valueOf(spiderId));
 				taskService.executeOnAllMembers(String.valueOf(spiderId), new SpiderTask(spider));
 

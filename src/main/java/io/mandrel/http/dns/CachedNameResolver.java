@@ -46,4 +46,7 @@ public class CachedNameResolver implements NameResolver {
 			}
 		}) : null;
 	}
+
+	public void init() {
+	}
 }

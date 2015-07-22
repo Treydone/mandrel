@@ -19,6 +19,7 @@
 package io.mandrel.http.proxy;
 
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.lifecycle.Initializable;
 
 import java.io.Serializable;
 
@@ -27,8 +28,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes({ @Type(value = NoProxyProxyServersSource.class, name = "no") })
-public interface ProxyServersSource extends Serializable {
+@JsonSubTypes({ @Type(value = NoProxyProxyServersSource.class, name = "no"), @Type(value = StaticProxyServersSource.class, name = "static") })
+public interface ProxyServersSource extends Serializable, Initializable {
 
 	ProxyServer findProxy(Spider spider);
 }

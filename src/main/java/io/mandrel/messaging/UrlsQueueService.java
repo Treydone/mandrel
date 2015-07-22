@@ -21,6 +21,7 @@ package io.mandrel.messaging;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
+import io.mandrel.due.DuplicateUrlEliminator;
 import io.mandrel.gateway.Document;
 import io.mandrel.http.Metadata;
 import io.mandrel.http.Requester;
@@ -35,6 +36,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.jboss.netty.channel.ConnectTimeoutException;
@@ -46,6 +48,7 @@ import org.springframework.util.StopWatch;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class UrlsQueueService {
 
 	private final QueueService queueService;
@@ -56,13 +59,7 @@ public class UrlsQueueService {
 
 	private final ExtractorService extractorService;
 
-	@Inject
-	public UrlsQueueService(QueueService queueService, Requester requester, ExtractorService extractorService, StatsService statsService) {
-		this.queueService = queueService;
-		this.requester = requester;
-		this.extractorService = extractorService;
-		this.statsService = statsService;
-	}
+	private final DuplicateUrlEliminator duplicateUrlEliminator;
 
 	public void add(long spiderId, Set<String> urls) {
 		queueService.add("urls-" + spiderId, urls);
@@ -77,7 +74,7 @@ public class UrlsQueueService {
 
 		Stats stats = statsService.get(spider.getId());
 		queueService.<String> registrer("urls-" + spider.getId(), url -> {
-			long maxPages = spider.getClient().getPoliteness().getMaxPages();
+			long maxPages = spider.getClient().getStrategy().getPoliteness().getMaxPages();
 			if (maxPages > 0 && (stats.getNbPages() + stats.getNbPendingPages()) > maxPages) {
 				log.debug("Max pages reached for {} ({})", spider.getName(), spider.getId());
 				return true;
@@ -93,7 +90,7 @@ public class UrlsQueueService {
 			watch.start();
 
 			// Mark as pending
-			queueService.markAsPending("pendings-" + spider.getId(), url, Boolean.TRUE);
+			duplicateUrlEliminator.markAsPending("pendings-" + spider.getId(), url, Boolean.TRUE);
 
 			requester.get(url, spider, webPage -> {
 
@@ -133,11 +130,7 @@ public class UrlsQueueService {
 						// spider
 						// TODO
 
-							// Add outlinks to queue if they
-							// are not already present
-							allFilteredOutlinks = queueService.deduplicate("urls-" + spider.getId(), allFilteredOutlinks);
-
-							allFilteredOutlinks = queueService.filterPendings("pendings-" + spider.getId(), allFilteredOutlinks);
+							allFilteredOutlinks = duplicateUrlEliminator.filterPendings("pendings-" + spider.getId(), allFilteredOutlinks);
 							add(spider.getId(), allFilteredOutlinks);
 						});
 					log.trace(">  - Extracting outlinks done for {}!", url);
@@ -153,7 +146,7 @@ public class UrlsQueueService {
 				spider.getStores().getPageMetadataStore().addMetadata(spider.getId(), webPage.getUrl().toString(), metadata);
 				log.trace(">  - Storing metadata for {} done!", url);
 
-				queueService.removePending("pendings-" + spider.getId(), url);
+				duplicateUrlEliminator.removePending("pendings-" + spider.getId(), url);
 
 				log.trace("> End parsing data for {}", url);
 			}, t -> {
@@ -171,14 +164,13 @@ public class UrlsQueueService {
 							add(spider.getId(), url);
 						}
 					} else {
-						log.debug(t.getMessage(), t);
 						add(spider.getId(), url);
 					}
 
-					queueService.removePending("pendings-" + spider.getId(), url);
+					duplicateUrlEliminator.removePending("pendings-" + spider.getId(), url);
 				});
 		} catch (Exception e) {
-			queueService.removePending("pendings-" + spider.getId(), url);
+			duplicateUrlEliminator.removePending("pendings-" + spider.getId(), url);
 			log.debug("Can not fetch url {} due to {}", new Object[] { url, e.toString() }, e);
 		}
 	}

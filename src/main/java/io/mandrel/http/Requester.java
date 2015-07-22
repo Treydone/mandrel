@@ -19,16 +19,30 @@
 package io.mandrel.http;
 
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Strategy;
+import io.mandrel.common.lifecycle.Initializable;
 
-public interface Requester {
+import java.io.Closeable;
 
-	void get(String url, Spider spider, SuccessCallback successCallback, FailureCallback failureCallback);
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({ @Type(value = HCRequester.class, name = "hc")
+// , @Type(value = NingRequester.class, name = "ning")
+})
+public abstract class Requester implements Closeable, Initializable {
+
+	protected Strategy strategy;
+
+	public abstract void get(String url, Spider spider, SuccessCallback successCallback, FailureCallback failureCallback);
 
 	@Deprecated
-	WebPage getBlocking(String url, Spider spider) throws Exception;
+	public abstract WebPage getBlocking(String url, Spider spider) throws Exception;
 
 	@Deprecated
-	WebPage getBlocking(String url) throws Exception;
+	public abstract WebPage getBlocking(String url) throws Exception;
 
 	@FunctionalInterface
 	public static interface SuccessCallback {

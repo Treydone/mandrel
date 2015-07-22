@@ -100,7 +100,8 @@ public class ExtractorService {
 
 		Set<String> allFilteredOutlinks = null;
 		if (filteredOutlinks != null) {
-			allFilteredOutlinks = spider.getStores().getPageMetadataStore().filter(spider.getId(), filteredOutlinks, spider.getClient().getPoliteness());
+			allFilteredOutlinks = spider.getStores().getPageMetadataStore()
+					.filter(spider.getId(), filteredOutlinks, spider.getClient().getStrategy().getPoliteness());
 		}
 		log.trace("And filtering {}", filteredOutlinks);
 		return Pair.of(outlinks, allFilteredOutlinks);

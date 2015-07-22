@@ -31,4 +31,7 @@ public class InternalNameResolver implements NameResolver {
 	public InetAddress resolve(String name) throws UnknownHostException {
 		return InetAddress.getByName(name);
 	}
+
+	public void init() {
+	}
 }

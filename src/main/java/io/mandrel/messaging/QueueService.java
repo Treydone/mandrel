@@ -19,97 +19,26 @@
 package io.mandrel.messaging;
 
 import java.util.Collection;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import javax.inject.Inject;
+public interface QueueService {
 
-import lombok.extern.slf4j.Slf4j;
+	/**
+	 * Add an item if they are not already present in the queue.
+	 * 
+	 * @param queueName
+	 * @param data
+	 */
+	<T> void add(String queueName, T data);
 
-import org.springframework.stereotype.Component;
+	/**
+	 * Add items if they are not already present in the queue.
+	 * 
+	 * @param queueName
+	 * @param data
+	 */
+	<T> void add(String queueName, Collection<T> data);
 
-import com.hazelcast.config.MapConfig;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
-import com.hazelcast.core.IQueue;
-
-@Component
-@Slf4j
-public class QueueService {
-
-	private final HazelcastInstance instance;
-
-	@Inject
-	public QueueService(HazelcastInstance instance) {
-		this.instance = instance;
-	}
-
-	public <T> void markAsPending(String queueName, String identifier, T data) {
-		if (identifier != null) {
-			prepareIfNotDefined(queueName);
-
-			IMap<String, T> pendings = instance.getMap(queueName);
-			pendings.put(identifier, data);
-		}
-	}
-
-	public <T> void removePending(String queueName, String identifier) {
-		if (identifier != null) {
-			prepareIfNotDefined(queueName);
-
-			IMap<String, T> pendings = instance.getMap(queueName);
-			pendings.remove(identifier);
-		}
-	}
-
-	public <T> Set<T> filterPendings(String queueName, Collection<T> identifiers) {
-		if (identifiers != null) {
-			prepareIfNotDefined(queueName);
-
-			IMap<String, T> pendings = instance.getMap(queueName);
-			return identifiers.stream().filter(el -> !pendings.containsKey(el)).collect(Collectors.toSet());
-		}
-		return null;
-	}
-
-	protected void prepareIfNotDefined(String queueName) {
-		if (instance.getConfig().getQueueConfigs().containsKey(queueName)) {
-			// Create map of pendings with TTL of 10 secs
-			MapConfig mapConfig = new MapConfig();
-			mapConfig.setName(queueName).setBackupCount(1).setTimeToLiveSeconds(10).setStatisticsEnabled(true);
-			instance.getConfig().addMapConfig(mapConfig);
-		}
-	}
-
-	public <T> void add(String queueName, T data) {
-		if (data != null) {
-			IQueue<T> queue = instance.getQueue(queueName);
-			queue.offer(data);
-		}
-	}
-
-	public <T> void add(String queueName, Collection<T> data) {
-		if (data != null) {
-			IQueue<T> queue = instance.getQueue(queueName);
-			data.forEach(t -> queue.offer(t));
-		}
-	}
-
-	public <T> void remove(String queueName, Collection<T> data) {
-		if (data != null) {
-			IQueue<T> queue = instance.getQueue(queueName);
-			queue.removeAll(data);
-		}
-	}
-
-	public <T> Set<T> deduplicate(String queueName, Collection<T> data) {
-		if (data != null) {
-			IQueue<T> queue = instance.getQueue(queueName);
-			return data.stream().filter(el -> !queue.contains(el)).collect(Collectors.toSet());
-		}
-		return null;
-	}
+	<T> void remove(String queueName, Collection<T> data);
 
 	/**
 	 * Blocking call (while true) on a queue.
@@ -117,51 +46,7 @@ public class QueueService {
 	 * @param queueName
 	 * @param callback
 	 */
-	public <T> void registrer(String queueName, Callback<T> callback) {
-		boolean loop = true;
-		int nbSuccessiveExceptions = 0;
-		// TODO should be parameterized
-		int maxAllowedSuccessiveExceptions = 10;
-
-		int nbSuccessiveWait = 0;
-		// TODO should be parameterized
-		int maxAllowedSuccessiveWait = 10;
-
-		while (loop) {
-			try {
-				// Block until message arrive
-				T message = instance.<T> getQueue(queueName).poll(5, TimeUnit.SECONDS);
-				if (message != null) {
-					loop = !callback.onMessage(message);
-					nbSuccessiveWait = 0;
-				} else {
-					log.debug("No more message, waiting...");
-
-					try {
-						Thread.sleep(5000);
-					} catch (Exception e1) {
-						log.warn("Wut?", e1);
-					}
-
-					nbSuccessiveWait++;
-					if (nbSuccessiveWait >= maxAllowedSuccessiveWait) {
-						log.warn("Too many succesive wait, breaking the loop");
-						break;
-					}
-				}
-				nbSuccessiveExceptions = 0;
-			} catch (Exception e) {
-				log.warn("Wut?", e);
-
-				nbSuccessiveExceptions++;
-				if (nbSuccessiveExceptions >= maxAllowedSuccessiveExceptions) {
-					log.warn("Too many succesive exceptions, breaking the loop");
-					break;
-				}
-			}
-		}
-		log.warn("Loop has been stopped");
-	}
+	public <T> void registrer(String queueName, Callback<T> callback);
 
 	@FunctionalInterface
 	public static interface Callback<T> {
