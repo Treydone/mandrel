@@ -20,7 +20,10 @@ package io.mandrel.endpoints.web;
 
 import io.mandrel.cluster.node.NodeService;
 import io.mandrel.data.spider.SpiderService;
+import io.mandrel.timeline.Event;
+import io.mandrel.timeline.TimelineService;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -40,10 +43,14 @@ public class HomeController {
 
 	private final NodeService nodeService;
 
+	private final TimelineService timelineService;
+
 	@RequestMapping
 	public String home(Model model) {
 		model.addAttribute("spiders", spiderService.list().collect(Collectors.toList()));
 		model.addAttribute("nodes", nodeService.nodes());
+		List<Event> page = timelineService.page(0, 20);
+		model.addAttribute("events", page.stream().collect(Collectors.groupingBy(event -> event.getTime().toLocalDate().toString())));
 		return "views/home";
 	}
 }

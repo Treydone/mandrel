@@ -33,6 +33,9 @@ import io.mandrel.gateway.Document;
 import io.mandrel.http.Requester;
 import io.mandrel.http.WebPage;
 import io.mandrel.task.TaskService;
+import io.mandrel.timeline.SpiderEvent;
+import io.mandrel.timeline.SpiderEvent.SpiderEventType;
+import io.mandrel.timeline.TimelineService;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -53,6 +56,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.joda.time.DateTime;
 import org.kohsuke.randname.RandomNameGenerator;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -83,6 +87,8 @@ public class SpiderService {
 	private final Requester requester;
 
 	private final HazelcastInstance instance;
+
+	private final TimelineService timelineService;
 
 	private Validator spiderValidator = new SpiderValidator();
 
@@ -209,12 +215,16 @@ public class SpiderService {
 			// }
 
 				spider.getSources().stream().filter(s -> s.check()).forEach(prepareSource(spiderId, spider));
-				
+
 				taskService.prepareSimpleExecutor(String.valueOf(spiderId));
 				taskService.executeOnAllMembers(String.valueOf(spiderId), new SpiderTask(spider));
 
 				spider.setState(State.STARTED);
 				spiderRepository.update(spider);
+
+				timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_STARTED)
+						.setTime(DateTime.now()));
+
 				return spider;
 
 			});
@@ -243,6 +253,10 @@ public class SpiderService {
 
 			// Update status
 				spider.setState(State.CANCELLED);
+
+				timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_CANCELLED)
+						.setTime(DateTime.now()));
+
 				return spiderRepository.update(spider);
 			});
 	}

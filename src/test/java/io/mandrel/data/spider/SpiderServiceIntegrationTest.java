@@ -29,6 +29,7 @@ import io.mandrel.gateway.WebPageStore;
 import io.mandrel.http.HCRequester;
 import io.mandrel.http.WebPage;
 import io.mandrel.script.ScriptingService;
+import io.mandrel.timeline.TimelineService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,6 +62,9 @@ public class SpiderServiceIntegrationTest {
 	@Mock
 	private PageMetadataStore metadataStore;
 
+	@Mock
+	private TimelineService timelineService;
+
 	@Captor
 	private ArgumentCaptor<Set<Link>> captor;
 
@@ -68,7 +72,7 @@ public class SpiderServiceIntegrationTest {
 	public void no_filtering() throws IOException {
 
 		SpiderService spiderService = new SpiderService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
-				new HCRequester(), null);
+				new HCRequester(), null, timelineService);
 
 		Spider spider = new Spider();
 		spider.setName("wikipedia");
@@ -99,7 +103,7 @@ public class SpiderServiceIntegrationTest {
 	public void same_domain() throws IOException {
 
 		SpiderService spiderService = new SpiderService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
-				new HCRequester(), null);
+				new HCRequester(), null, timelineService);
 
 		Spider spider = new Spider();
 		spider.setName("wikipedia");

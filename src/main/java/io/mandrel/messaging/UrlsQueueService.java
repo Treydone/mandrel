@@ -24,7 +24,6 @@ import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.due.DuplicateUrlEliminator;
 import io.mandrel.gateway.Document;
 import io.mandrel.http.Metadata;
-import io.mandrel.http.Requester;
 import io.mandrel.stats.Stats;
 import io.mandrel.stats.StatsService;
 
@@ -52,8 +51,6 @@ import org.springframework.util.StopWatch;
 public class UrlsQueueService {
 
 	private final QueueService queueService;
-
-	private final Requester requester;
 
 	private final StatsService statsService;
 
@@ -92,83 +89,93 @@ public class UrlsQueueService {
 			// Mark as pending
 			duplicateUrlEliminator.markAsPending("pendings-" + spider.getId(), url, Boolean.TRUE);
 
-			requester.get(url, spider, webPage -> {
+			spider.getClient()
+					.getRequester()
+					.get(url,
+							spider,
+							webPage -> {
 
-				watch.stop();
+								watch.stop();
 
-				log.trace("> Start parsing data for {}", url);
+								log.trace("> Start parsing data for {}", url);
 
-				Metadata metadata = webPage.getMetadata();
-				metadata.setTimeToFetch(watch.getTotalTimeMillis());
+								Metadata metadata = webPage.getMetadata();
+								metadata.setTimeToFetch(watch.getTotalTimeMillis());
 
-				stats.incNbPages();
-				stats.incPageForStatus(metadata.getStatusCode());
-				stats.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
-				stats.incTotalSize(webPage.getBody().length);
+								stats.incNbPages();
+								stats.incPageForStatus(metadata.getStatusCode());
+								stats.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
+								stats.incTotalSize(webPage.getBody().length);
 
-				Map<String, Instance<?>> cachedSelectors = new HashMap<>();
-				if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
-					log.trace(">  - Extracting documents for {}...", url);
-					spider.getExtractors().getPages().forEach(ex -> {
-						List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, webPage, ex);
+								Map<String, Instance<?>> cachedSelectors = new HashMap<>();
+								if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
+									log.trace(">  - Extracting documents for {}...", url);
+									spider.getExtractors().getPages().forEach(ex -> {
+										List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, webPage, ex);
 
-						if (documents != null) {
-							stats.incDocumentForExtractor(ex.getName(), documents.size());
-						}
-					});
-					log.trace(">  - Extracting documents for {} done!", url);
-				}
+										if (documents != null) {
+											stats.incDocumentForExtractor(ex.getName(), documents.size());
+										}
+									});
+									log.trace(">  - Extracting documents for {} done!", url);
+								}
 
-				if (spider.getExtractors().getOutlinks() != null) {
-					log.trace(">  - Extracting outlinks for {}...", url);
-					spider.getExtractors().getOutlinks().forEach(ol -> {
-						Set<String> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, url, cachedSelectors, webPage, ol).getRight();
+								if (spider.getExtractors().getOutlinks() != null) {
+									log.trace(">  - Extracting outlinks for {}...", url);
+									spider.getExtractors()
+											.getOutlinks()
+											.forEach(
+													ol -> {
+														Set<String> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, url,
+																cachedSelectors, webPage, ol).getRight();
 
-						metadata.setOutlinks(allFilteredOutlinks);
+														metadata.setOutlinks(allFilteredOutlinks);
 
-						// Respect politeness for this
-						// spider
-						// TODO
+														// Respect politeness
+														// for this
+														// spider
+														// TODO
 
-							allFilteredOutlinks = duplicateUrlEliminator.filterPendings("pendings-" + spider.getId(), allFilteredOutlinks);
-							add(spider.getId(), allFilteredOutlinks);
+														allFilteredOutlinks = duplicateUrlEliminator.filterPendings("pendings-" + spider.getId(),
+																allFilteredOutlinks);
+														add(spider.getId(), allFilteredOutlinks);
+													});
+									log.trace(">  - Extracting outlinks done for {}!", url);
+								}
+
+								if (spider.getStores().getPageStore() != null) {
+									log.trace(">  - Storing page {}...", url);
+									spider.getStores().getPageStore().addPage(spider.getId(), webPage.getUrl().toString(), webPage);
+									log.trace(">  - Storing page {} done!", url);
+								}
+
+								log.trace(">  - Storing metadata for {}...", url);
+								spider.getStores().getPageMetadataStore().addMetadata(spider.getId(), webPage.getUrl().toString(), metadata);
+								log.trace(">  - Storing metadata for {} done!", url);
+
+								duplicateUrlEliminator.removePending("pendings-" + spider.getId(), url);
+
+								log.trace("> End parsing data for {}", url);
+							}, t -> {
+								// Well...
+							if (t != null) {
+								if (t instanceof ConnectTimeoutException) {
+									stats.incConnectTimeout();
+									add(spider.getId(), url);
+								} else if (t instanceof ReadTimeoutException) {
+									stats.incReadTimeout();
+									add(spider.getId(), url);
+								} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException
+										|| t instanceof java.util.concurrent.TimeoutException) {
+									stats.incConnectException();
+									add(spider.getId(), url);
+								}
+							} else {
+								add(spider.getId(), url);
+							}
+
+							duplicateUrlEliminator.removePending("pendings-" + spider.getId(), url);
 						});
-					log.trace(">  - Extracting outlinks done for {}!", url);
-				}
-
-				if (spider.getStores().getPageStore() != null) {
-					log.trace(">  - Storing page {}...", url);
-					spider.getStores().getPageStore().addPage(spider.getId(), webPage.getUrl().toString(), webPage);
-					log.trace(">  - Storing page {} done!", url);
-				}
-
-				log.trace(">  - Storing metadata for {}...", url);
-				spider.getStores().getPageMetadataStore().addMetadata(spider.getId(), webPage.getUrl().toString(), metadata);
-				log.trace(">  - Storing metadata for {} done!", url);
-
-				duplicateUrlEliminator.removePending("pendings-" + spider.getId(), url);
-
-				log.trace("> End parsing data for {}", url);
-			}, t -> {
-				// Well...
-					if (t != null) {
-						if (t instanceof ConnectTimeoutException) {
-							stats.incConnectTimeout();
-							add(spider.getId(), url);
-						} else if (t instanceof ReadTimeoutException) {
-							stats.incReadTimeout();
-							add(spider.getId(), url);
-						} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException
-								|| t instanceof java.util.concurrent.TimeoutException) {
-							stats.incConnectException();
-							add(spider.getId(), url);
-						}
-					} else {
-						add(spider.getId(), url);
-					}
-
-					duplicateUrlEliminator.removePending("pendings-" + spider.getId(), url);
-				});
 		} catch (Exception e) {
 			duplicateUrlEliminator.removePending("pendings-" + spider.getId(), url);
 			log.debug("Can not fetch url {} due to {}", new Object[] { url, e.toString() }, e);

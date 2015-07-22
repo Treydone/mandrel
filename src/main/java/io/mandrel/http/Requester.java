@@ -24,6 +24,9 @@ import io.mandrel.common.lifecycle.Initializable;
 
 import java.io.Closeable;
 
+import lombok.Setter;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -34,6 +37,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 })
 public abstract class Requester implements Closeable, Initializable {
 
+	@JsonIgnore
+	@Setter
 	protected Strategy strategy;
 
 	public abstract void get(String url, Spider spider, SuccessCallback successCallback, FailureCallback failureCallback);

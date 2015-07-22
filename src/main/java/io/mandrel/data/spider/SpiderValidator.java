@@ -67,7 +67,12 @@ public class SpiderValidator implements Validator {
 		}
 
 		// Client
-		// TODO
+		if (spider.getClient() == null) {
+			errors.rejectValue("client", "client.not.null", null, "Can not be null.");
+			if (spider.getClient().getRequester() == null) {
+				errors.rejectValue("client.requester", "client.requester.not.null", null, "Can not be null.");
+			}
+		}
 
 		// Extractors
 		if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {

@@ -18,11 +18,6 @@
  */
 package io.mandrel.messaging;
 
-import io.mandrel.data.extract.ExtractorService;
-import io.mandrel.due.DuplicateUrlEliminator;
-import io.mandrel.http.Requester;
-import io.mandrel.stats.StatsService;
-
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +32,6 @@ import org.springframework.stereotype.Component;
 
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 
 @Component

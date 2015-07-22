@@ -121,92 +121,72 @@
               </div>
 		</div>
 	</div>
-	<div class="row">
-            <div class="col-md-12">
-              <!-- The time line -->
-              <ul class="timeline">
-                <!-- timeline time label -->
-                <li class="time-label">
+          
+      <div class="row">
+        <div class="col-md-12">
+          <ul class="timeline">
+			  <#list events?keys as key>
+			  	<li class="time-label">
                   <span class="bg-gray">
-                    10 Feb. 2014
+                   ${key}
                   </span>
                 </li>
-                <!-- /.timeline-label -->
-                <!-- timeline item -->
-                <li>
-                  <i class="fa fa-tasks bg-red"></i>
-                  <div class="timeline-item">
-                    <span class="time"><i class="fa fa-clock-o"></i> 12:05</span>
-                    <h3 class="timeline-header no-border"><a href="#">IMDB - test</a> has been cancelled</h3>
-                    <div class="timeline-body">
-                      Etsy doostang zoodles disqus groupon greplin oooj voxy zoodles,
-                      weebly ning heekya handango imeem plugg dopplr jibjab, movity
-                      jajah plickers sifteo edmodo ifttt zimbra. Babblely odeo kaboodle
-                      quora plaxo ideeli hulu weebly balihoo...
-                    </div>
-                    <div class="timeline-footer">
-                      <a class="btn btn-primary btn-xs">Read more</a>
-                      <a class="btn btn-danger btn-xs">Delete</a>
-                    </div>
-                  </div>
-                </li>
-                <!-- END timeline item -->
-                <!-- timeline item -->
-                <li>
-                  <i class="fa fa-tasks bg-aqua"></i>
-                  <div class="timeline-item">
-                    <span class="time"><i class="fa fa-clock-o"></i> 5 mins ago</span>
-                    <h3 class="timeline-header no-border"><a href="#">IMDB - test</a> added to spiders</h3>
-                  </div>
-                </li>
-                <!-- END timeline item -->
-                <!-- timeline item -->
-                <li>
-                  <i class="fa fa-laptop bg-green"></i>
-                  <div class="timeline-item">
-                    <span class="time"><i class="fa fa-clock-o"></i> 27 mins ago</span>
-                    <h3 class="timeline-header"><a href="#">Jay White</a> successfully joined the cluster</h3>
-                    <div class="timeline-body">
-                      Take me to your leader!
-                      Switzerland is small and neutral!
-                      We are more like Germany, ambitious and misunderstood!
-                    </div>
-                    <div class="timeline-footer">
-                      <a class="btn btn-warning btn-flat btn-xs">View comment</a>
-                    </div>
-                  </div>
-                </li>
-                <!-- END timeline item -->
-                <!-- timeline time label -->
-                <li class="time-label">
-                  <span class="bg-gray">
-                    3 Jan. 2014
-                  </span>
-                </li>
-                <!-- /.timeline-label -->
-                <!-- timeline item -->
-                <li>
-                  <i class="fa fa-laptop bg-green"></i>
-                  <div class="timeline-item">
-                    <span class="time"><i class="fa fa-clock-o"></i> 27 mins ago</span>
-                    <h3 class="timeline-header"><a href="#">Jay White</a> successfully joined the cluster</h3>
-                    <div class="timeline-body">
-                      Take me to your leader!
-                      Switzerland is small and neutral!
-                      We are more like Germany, ambitious and misunderstood!
-                    </div>
-                    <div class="timeline-footer">
-                      <a class="btn btn-warning btn-flat btn-xs">View comment</a>
-                    </div>
-                  </div>
-                </li>
-                <!-- END timeline item -->
-                <li>
-                  <i class="fa fa-clock-o bg-gray"></i>
-                </li>
-              </ul>
-            </div><!-- /.col -->
-          </div>
+					<#assign eventsForData = events?values[key_index]>
+					<#list eventsForData as event>
+						<li>
+						<#assign icon = "fa-rotate-left">
+						<#assign color = "bg-green">
+						<#assign text = "">
+						<#assign footer = "">
+						<#assign data = "">
+						<#switch event.type>
+							<#case "NODE_STARTED">
+								<#assign icon = "fa-laptop">
+								<#assign color = "bg-green">
+								<#assign text = '<a href="/nodes/${event.nodeId}">${event.nodeId}</a> successfully joined the cluster'>
+								<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" href="/nodes/${event.nodeId}">View node</a>'>
+								<#break>
+							<#case "NODE_STOPPED">
+								<#assign icon = "fa-laptop">
+								<#assign color = "bg-red">
+								<#assign text = '<a href="/nodes/${event.nodeId}">${event.nodeId}</a> successfully joined the cluster'>
+								<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" href="/nodes/${event.nodeId}">View node</a>'>
+								<#break>
+							<#case "SPIDER_NEW">
+								<#assign icon = "fa-tasks">
+	 							<#break>
+	 						<#case "SPIDER_STARTED">
+	 							<#assign icon = "fa-tasks">
+	 							<#break>
+	 						<#case "SPIDER_ENDED">
+	 							<#assign icon = "fa-tasks">
+	 							<#break>
+	 						<#case "SPIDER_CANCELLED">
+	 							<#assign icon = "fa-tasks">
+	 							<#break>
+							<#default>
+								<#break>
+						</#switch>
+						  <i class="fa ${icon} ${color}"></i>
+		                  <div class="timeline-item">
+		                    <span class="time"><i class="fa fa-clock-o"></i> ${event.time}</span>
+		                    <h3 class="timeline-header">${text}</h3>
+		                    <div class="timeline-body">
+		                      ${data}
+		                    </div>
+		                    <div class="timeline-footer">
+		                      ${footer}
+		                    </div>
+		                  </div>
+						</li>
+		          	</#list>
+			  </#list>
+            <li>
+              <i class="fa fa-clock-o bg-gray"></i>
+            </li>
+          </ul>
+        </div><!-- /.col -->
+      </div>
 
 </#macro>
 
