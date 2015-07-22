@@ -18,6 +18,7 @@
  */
 package io.mandrel.endpoints.web;
 
+import io.mandrel.common.data.Spider;
 import io.mandrel.data.spider.SpiderService;
 
 import java.util.stream.Collectors;
@@ -28,8 +29,11 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 @RequestMapping(value = "/spiders")
 @Controller
@@ -48,5 +52,20 @@ public class SpiderController {
 	public String spider(@PathVariable long id, Model model) {
 		model.addAttribute("spiders", spiderService.get(id));
 		return "views/spider";
+	}
+
+	@RequestMapping("/add")
+	public String prepare() {
+		return "views/spider_add";
+	}
+
+	@RequestMapping(value = "/add", method = RequestMethod.POST)
+	public String create(Model model, @RequestBody Spider spider) {
+		try {
+			spiderService.add(spider);
+		} catch (BindException e) {
+			return "views/spider_add";
+		}
+		return "redirect:/spiders";
 	}
 }

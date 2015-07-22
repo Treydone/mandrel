@@ -1,5 +1,7 @@
 package io.mandrel.timeline;
 
+import io.mandrel.messaging.StompService;
+
 import java.util.List;
 
 import javax.inject.Inject;
@@ -16,10 +18,13 @@ import com.hazelcast.core.IList;
 public class HazelcastTimelineService implements TimelineService {
 
 	private final HazelcastInstance instance;
+	
+	private final StompService stompService;
 
 	@Override
 	public void add(Event event) {
 		instance.getList("timeline").add(event);
+		stompService.publish(event);
 	}
 
 	@Override

@@ -147,6 +147,9 @@ public class SpiderService {
 			throw new BindException(errors);
 		}
 
+		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_STARTED)
+				.setTime(DateTime.now()));
+
 		return spiderRepository.update(spider);
 	}
 

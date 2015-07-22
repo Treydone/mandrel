@@ -112,12 +112,15 @@
 				    </#list>
                   </tbody></table>
                 </div>
+                <#if spiders?size < 1>
                 <div class="box-body">
                   <div class="callout callout-success">
-                    <h4>I am a success callout!</h4>
-                    <p>This is a green callout.</p>
+                    <h4>There is not running spider!</h4>
+                    <p>It is time to work now, create a new spider.</p>
+                    <a href="/spiders/add"><button type="button" class="btn btn-outline"><i class="fa fa-plus"></i> Create one!</button></a>
                   </div>
                 </div><!-- /.box-body -->
+                </#if>
               </div>
 		</div>
 	</div>
