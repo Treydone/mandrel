@@ -98,6 +98,11 @@
               </a>
             </li>
             <li>
+              <a href="/console">
+                <i class="fa fa-terminal"></i> <span>Console</span>
+              </a>
+            </li>
+            <li>
               <a href="/webjars/swagger-ui/2.0.24/index.html">
                 <i class="fa fa-cloud"></i> <span>API</span>
               </a>

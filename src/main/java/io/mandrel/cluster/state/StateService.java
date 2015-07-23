@@ -33,6 +33,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
 
+import com.hazelcast.core.HazelcastInstance;
+
 /**
  * Periodically update the state of this node in the state repository.
  * 
@@ -49,6 +51,8 @@ public class StateService {
 
 	private final NodeService nodeService;
 
+	private final HazelcastInstance instance;
+
 	@PostConstruct
 	public void init() {
 		scheduledExecutorService.scheduleAtFixedRate(() -> {
@@ -63,5 +67,9 @@ public class StateService {
 		} catch (Exception e) {
 			log.warn("Can not set the infos for the endpoint", e);
 		}
+	}
+
+	public long getClusterTime() {
+		return instance.getCluster().getClusterTime();
 	}
 }

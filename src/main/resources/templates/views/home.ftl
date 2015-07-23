@@ -24,7 +24,7 @@
 	        <span class="info-box-icon bg-aqua"><i class="fa fa-signal"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Bandwidth</span>
-	          <span class="info-box-number">1,410 kb/s</span>
+	          <span class="info-box-number">${metrics.totalSizeTotal / clusterTime}</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -33,7 +33,7 @@
 	        <span class="info-box-icon bg-green"><i class="fa fa-download"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Total size</span>
-	          <span class="info-box-number">410 Mb</span>
+	          <span class="info-box-number">${metrics.totalSizeTotal}</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -42,7 +42,7 @@
 	        <span class="info-box-icon bg-yellow"><i class="fa fa-files-o"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Total pages</span>
-	          <span class="info-box-number">13,648</span>
+	          <span class="info-box-number">${metrics.nbPagesTotal}</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
