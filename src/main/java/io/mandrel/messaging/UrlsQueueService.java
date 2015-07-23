@@ -24,8 +24,9 @@ import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.due.DuplicateUrlEliminator;
 import io.mandrel.gateway.Document;
 import io.mandrel.http.Metadata;
-import io.mandrel.stats.Stats;
-import io.mandrel.stats.StatsService;
+import io.mandrel.metrics.GlobalMetrics;
+import io.mandrel.metrics.MetricsService;
+import io.mandrel.metrics.SpiderMetrics;
 
 import java.net.ConnectException;
 import java.util.HashMap;
@@ -52,7 +53,7 @@ public class UrlsQueueService {
 
 	private final QueueService queueService;
 
-	private final StatsService statsService;
+	private final MetricsService metricsService;
 
 	private final ExtractorService extractorService;
 
@@ -69,19 +70,20 @@ public class UrlsQueueService {
 	public void registrer(Spider spider) {
 		log.debug("Registering spider {} ({})", spider.getName(), spider.getId());
 
-		Stats stats = statsService.get(spider.getId());
+		SpiderMetrics spiderMetrics = metricsService.spider(spider.getId());
+		GlobalMetrics globalMetrics = metricsService.global();
 		queueService.<String> registrer("urls-" + spider.getId(), url -> {
 			long maxPages = spider.getClient().getStrategy().getPoliteness().getMaxPages();
-			if (maxPages > 0 && (stats.getNbPages() + stats.getNbPendingPages()) > maxPages) {
+			if (maxPages > 0 && (spiderMetrics.getNbPages() + spiderMetrics.getNbPendingPages()) > maxPages) {
 				log.debug("Max pages reached for {} ({})", spider.getName(), spider.getId());
 				return true;
 			}
-			doRequest(spider, url, stats);
+			doRequest(spider, url, spiderMetrics, globalMetrics);
 			return false;
 		});
 	}
 
-	private void doRequest(Spider spider, String url, Stats stats) {
+	private void doRequest(Spider spider, String url, SpiderMetrics spiderMetrics, GlobalMetrics globalMetrics) {
 		try {
 			StopWatch watch = new StopWatch();
 			watch.start();
@@ -102,10 +104,18 @@ public class UrlsQueueService {
 								Metadata metadata = webPage.getMetadata();
 								metadata.setTimeToFetch(watch.getTotalTimeMillis());
 
-								stats.incNbPages();
-								stats.incPageForStatus(metadata.getStatusCode());
-								stats.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
-								stats.incTotalSize(webPage.getBody().length);
+								spiderMetrics.incNbPages();
+								globalMetrics.incNbPages();
+								
+								spiderMetrics.incPageForStatus(metadata.getStatusCode());
+								globalMetrics.incPageForStatus(metadata.getStatusCode());
+								
+								spiderMetrics.incPageForHost(metadata.getUrl().getHost());
+								globalMetrics.incPageForHost(metadata.getUrl().getHost());
+								
+								spiderMetrics.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
+								spiderMetrics.incTotalSize(webPage.getBody().length);
+								globalMetrics.incTotalSize(webPage.getBody().length);
 
 								Map<String, Instance<?>> cachedSelectors = new HashMap<>();
 								if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
@@ -114,7 +124,7 @@ public class UrlsQueueService {
 										List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, webPage, ex);
 
 										if (documents != null) {
-											stats.incDocumentForExtractor(ex.getName(), documents.size());
+											spiderMetrics.incDocumentForExtractor(ex.getName(), documents.size());
 										}
 									});
 									log.trace(">  - Extracting documents for {} done!", url);
@@ -160,14 +170,14 @@ public class UrlsQueueService {
 								// Well...
 							if (t != null) {
 								if (t instanceof ConnectTimeoutException) {
-									stats.incConnectTimeout();
+									spiderMetrics.incConnectTimeout();
 									add(spider.getId(), url);
 								} else if (t instanceof ReadTimeoutException) {
-									stats.incReadTimeout();
+									spiderMetrics.incReadTimeout();
 									add(spider.getId(), url);
 								} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException
 										|| t instanceof java.util.concurrent.TimeoutException) {
-									stats.incConnectException();
+									spiderMetrics.incConnectException();
 									add(spider.getId(), url);
 								}
 							} else {

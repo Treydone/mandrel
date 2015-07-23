@@ -21,6 +21,7 @@ package io.mandrel.endpoints.web;
 import io.mandrel.cluster.node.NodeService;
 import io.mandrel.data.spider.SpiderService;
 import io.mandrel.messaging.StompService;
+import io.mandrel.metrics.MetricsService;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.TimelineService;
 
@@ -50,8 +51,11 @@ public class HomeController {
 
 	private final StompService stompService;
 
+	private final MetricsService metricsService;
+
 	@RequestMapping
 	public String home(Model model) {
+		model.addAttribute("metrics", metricsService.global());
 		model.addAttribute("spiders", spiderService.list().collect(Collectors.toList()));
 		model.addAttribute("nodes", nodeService.nodes());
 		List<Event> page = timelineService.page(0, 20);

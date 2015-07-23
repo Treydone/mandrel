@@ -16,17 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.stats;
+package io.mandrel.metrics;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IAtomicLong;
 import com.hazelcast.core.IMap;
 
-public class Stats {
+public class SpiderMetrics {
 
 	private final IAtomicLong nbPages;
 	private final IMap<String, Boolean> pendings;
@@ -41,11 +42,11 @@ public class Stats {
 
 	private final transient HazelcastInstance instance;
 
-	public Stats(HazelcastInstance instance, long spiderId) {
+	public SpiderMetrics(HazelcastInstance instance, long spiderId) {
 		this.instance = instance;
 		this.spiderId = spiderId;
 
-		nbPages = instance.getAtomicLong(getKey(spiderId) + "-nbPages");
+		Set<String> keys = instance.getSet(getKey(spiderId, "-keys"));
 
 		if (instance.getConfig().getQueueConfigs().containsKey("pendings-" + spiderId)) {
 			// Create map of pendings with TTL of 10 secs
@@ -55,33 +56,32 @@ public class Stats {
 		}
 		pendings = instance.getMap("pendings-" + spiderId);
 
-		totalSize = instance.getAtomicLong(getKey(spiderId) + "-totalSize");
-		totalTimeToFetch = instance.getAtomicLong(getKey(spiderId) + "-totalTimeToFetch");
+		nbPages = instance.getAtomicLong(getKey(spiderId, "-nbPages"));
+		keys.add(getKey(spiderId, "-nbPages"));
+		totalSize = instance.getAtomicLong(getKey(spiderId, "-totalSize"));
+		keys.add(getKey(spiderId, "-totalSize"));
+		totalTimeToFetch = instance.getAtomicLong(getKey(spiderId, "-totalTimeToFetch"));
+		keys.add(getKey(spiderId, "-totalTimeToFetch"));
 
-		readTimeout = instance.getAtomicLong(getKey(spiderId) + "-readTimeout");
-		connectTimeout = instance.getAtomicLong(getKey(spiderId) + "-connectTimeout");
-		connectException = instance.getAtomicLong(getKey(spiderId) + "-connectException");
+		readTimeout = instance.getAtomicLong(getKey(spiderId, "-readTimeout"));
+		keys.add(getKey(spiderId, "-readTimeout"));
+		connectTimeout = instance.getAtomicLong(getKey(spiderId, "-connectTimeout"));
+		keys.add(getKey(spiderId, "-connectTimeout"));
+		connectException = instance.getAtomicLong(getKey(spiderId, "-connectException"));
+		keys.add(getKey(spiderId, "-connectException"));
 	}
 
 	public void delete() {
-		// TODO
-		totalSize.destroy();
-		nbPages.destroy();
-		totalTimeToFetch.destroy();
-		pendings.destroy();
+		instance.<String> getSet(getKey(spiderId, "-keys")).forEach(key -> instance.getAtomicLong(key).destroy());
 
-		readTimeout.destroy();
-		connectTimeout.destroy();
-		connectException.destroy();
-
-		instance.<Integer> getSet(getKey(spiderId) + "-nbPagesByStatus").forEach(
-				httpStatus -> instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus).destroy());
-		instance.<String> getSet(getKey(spiderId) + "-documentsByExtractor").forEach(
-				extractor -> instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor).destroy());
+		instance.<Integer> getSet(getKey(spiderId, "-nbPagesByStatus")).forEach(
+				httpStatus -> instance.getAtomicLong(getKey(spiderId, "-status-" + httpStatus)).destroy());
+		instance.<String> getSet(getKey(spiderId, "-documentsByExtractor")).forEach(
+				extractor -> instance.getAtomicLong(getKey(spiderId, "-extractor-" + extractor)).destroy());
 	}
 
-	protected String getKey(long spiderId) {
-		String key = "spider-" + spiderId;
+	protected String getKey(long spiderId, String prefix) {
+		String key = "metrics-spider-" + spiderId + prefix;
 		return key;
 	}
 
@@ -107,14 +107,6 @@ public class Stats {
 
 	public long incTotalTimeToFetch(long time) {
 		return totalTimeToFetch.addAndGet(time);
-	}
-
-	public long incPageForStatus(int httpStatus) {
-		return instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus).addAndGet(1);
-	}
-
-	public long incDocumentForExtractor(String extractor, int inc) {
-		return instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor).addAndGet(inc);
 	}
 
 	public long getNbPendingPages() {
@@ -153,21 +145,47 @@ public class Stats {
 		return getTotalTimeToFetch() / getNbPages();
 	}
 
-	public long getAverageBandwidth() {
-		return getTotalSize() / getTotalTimeToFetch();
+	public long incPageForStatus(int httpStatus) {
+		return instance.getAtomicLong(getKey(spiderId, "-status-" + httpStatus)).addAndGet(1);
 	}
 
 	public Map<Integer, Long> getPagesByStatus() {
 		Map<Integer, Long> result = new HashMap<>();
-		instance.<Integer> getSet(getKey(spiderId) + "-nbPagesByStatus").forEach(
-				httpStatus -> result.put(httpStatus, instance.getAtomicLong(getKey(spiderId) + "-status-" + httpStatus).get()));
+		instance.<Integer> getSet(getKey(spiderId, "-nbPagesByStatus")).forEach(
+				httpStatus -> result.put(httpStatus, instance.getAtomicLong(getKey(spiderId, "-status-" + httpStatus)).get()));
 		return result;
+	}
+
+	public long incDocumentForExtractor(String extractor, int inc) {
+		return instance.getAtomicLong(getKey(spiderId, "-extractor-" + extractor)).addAndGet(inc);
 	}
 
 	public Map<String, Long> getDocumentsByExtractor() {
 		Map<String, Long> result = new HashMap<>();
-		instance.<String> getSet(getKey(spiderId) + "-documentsByExtractor").forEach(
-				extractor -> result.put(extractor, instance.getAtomicLong(getKey(spiderId) + "-extractor-" + extractor).get()));
+		instance.<String> getSet(getKey(spiderId, "-documentsByExtractor")).forEach(
+				extractor -> result.put(extractor, instance.getAtomicLong(getKey(spiderId, "-extractor-" + extractor)).get()));
 		return result;
+	}
+
+	public Map<Integer, Long> getPagesByHost() {
+		Map<Integer, Long> result = new HashMap<>();
+		instance.<Integer> getSet(getKey(spiderId, "-nbPagesByHost")).forEach(
+				host -> result.put(host, instance.getAtomicLong(getKey(spiderId, "-hosts-" + host)).get()));
+		return result;
+	}
+
+	public long incPageForHost(String host) {
+		return instance.getAtomicLong(getKey(spiderId, "-hosts-" + host)).addAndGet(1);
+	}
+
+	public Map<Integer, Long> getPagesByContentType() {
+		Map<Integer, Long> result = new HashMap<>();
+		instance.<Integer> getSet(getKey(spiderId, "-nbPagesByContentType")).forEach(
+				contentType -> result.put(contentType, instance.getAtomicLong(getKey(spiderId, "-contentType-" + contentType)).get()));
+		return result;
+	}
+
+	public long incPageForContentType(String contentType) {
+		return instance.getAtomicLong(getKey(spiderId, "-contentType-" + contentType)).addAndGet(1);
 	}
 }

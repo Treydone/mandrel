@@ -45,6 +45,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.validation.Errors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 
 @ContextConfiguration(classes = LocalConfiguration.class)
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -151,5 +153,15 @@ public class SpiderServiceTest {
 
 		System.err.println(errors);
 
+	}
+
+	@Test
+	public void schema() throws IOException {
+		ObjectMapper objectMapper = new ObjectMapper();
+		SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
+		objectMapper.acceptJsonFormatVisitor(objectMapper.constructType(Spider.class), visitor);
+		JsonSchema jsonSchema = visitor.finalSchema();
+
+		System.err.println(objectMapper.writeValueAsString(jsonSchema));
 	}
 }

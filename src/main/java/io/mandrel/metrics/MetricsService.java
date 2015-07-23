@@ -16,29 +16,36 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.stats;
+package io.mandrel.metrics;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Component;
 
 import com.hazelcast.core.HazelcastInstance;
 
 @Component
-public class StatsService {
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+public class MetricsService {
 
 	private final HazelcastInstance instance;
 
-	@Inject
-	public StatsService(HazelcastInstance instance) {
-		this.instance = instance;
+	private GlobalMetrics global;
+
+	@PostConstruct
+	public void init() {
+		global = new GlobalMetrics(instance);
 	}
 
-	public Stats get(long spiderId) {
-		return new Stats(instance, spiderId);
+	public GlobalMetrics global() {
+		return global;
 	}
 
-	public void delete(long spiderId) {
-		get(spiderId).delete();
+	public SpiderMetrics spider(long spiderId) {
+		return new SpiderMetrics(instance, spiderId);
 	}
+
 }

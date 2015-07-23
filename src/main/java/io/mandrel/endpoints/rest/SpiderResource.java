@@ -21,8 +21,8 @@ package io.mandrel.endpoints.rest;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.spider.Analysis;
 import io.mandrel.data.spider.SpiderService;
-import io.mandrel.stats.Stats;
-import io.mandrel.stats.StatsService;
+import io.mandrel.metrics.MetricsService;
+import io.mandrel.metrics.SpiderMetrics;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,10 +48,10 @@ public class SpiderResource {
 
 	private final SpiderService spiderService;
 
-	private final StatsService statsService;
+	private final MetricsService statsService;
 
 	@Autowired
-	public SpiderResource(SpiderService spiderService, StatsService statsService) {
+	public SpiderResource(SpiderService spiderService, MetricsService statsService) {
 		this.spiderService = spiderService;
 		this.statsService = statsService;
 	}
@@ -118,7 +118,7 @@ public class SpiderResource {
 
 	@ApiOperation(value = "Retrieve the stats of a spider")
 	@RequestMapping(value = "/{id}/stats", method = RequestMethod.GET)
-	public Optional<Stats> stats(@PathVariable Long id) {
-		return spiderService.get(id).map(spider -> statsService.get(spider.getId()));
+	public Optional<SpiderMetrics> stats(@PathVariable Long id) {
+		return spiderService.get(id).map(spider -> statsService.spider(spider.getId()));
 	}
 }

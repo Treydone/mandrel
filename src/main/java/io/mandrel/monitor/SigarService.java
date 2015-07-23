@@ -19,7 +19,6 @@
 package io.mandrel.monitor;
 
 import io.mandrel.monitor.Infos.Interface;
-import io.mandrel.stats.JmxUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import org.hyperic.sigar.NetFlags;

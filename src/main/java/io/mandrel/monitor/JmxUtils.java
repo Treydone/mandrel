@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.stats;
+package io.mandrel.monitor;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
