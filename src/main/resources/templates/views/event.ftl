@@ -20,16 +20,24 @@
 									<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" href="/nodes/${event.nodeId}">View node</a>'>
 									<#break>
 								<#case "SPIDER_NEW">
-									<#assign icon = "fa-tasks">
+		 							<#assign icon = "fa-tasks">
+		 							<#assign title = '<a href="/spiders/${event.spiderId}">${event.spiderName}</a> has been added to the spiders'>
+									<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spiderId}">View spider</a>'>
 		 							<#break>
 		 						<#case "SPIDER_STARTED">
 		 							<#assign icon = "fa-tasks">
+		 							<#assign title = '<a href="/spiders/${event.spiderId}">${event.spiderName}</a> has been started'>
+									<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spiderId}">View spider</a>'>
 		 							<#break>
 		 						<#case "SPIDER_ENDED">
 		 							<#assign icon = "fa-tasks">
+		 							<#assign title = '<a href="/spiders/${event.spiderId}">${event.spiderName}</a> just ended!'>
+									<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spiderId}">View spider</a>'>
 		 							<#break>
 		 						<#case "SPIDER_CANCELLED">
 		 							<#assign icon = "fa-tasks">
+		 							<#assign title = '<a href="/spiders/${event.spiderId}">${event.spiderName}</a> has been cancelled'>
+									<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spiderId}">View spider</a>'>
 		 							<#break>
 								<#default>
 									<#break>

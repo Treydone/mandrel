@@ -15,6 +15,24 @@
           </ol>
 </#macro>
 
+<#macro js>
+	  <script src="/webjars/sockjs-client/0.3.4-1/sockjs.min.js"></script>
+      <script src="/webjars/stomp-websocket/2.3.1-1/stomp.min.js"></script>
+      <script>
+		var path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')+1);
+		var sock = new SockJS(path + '../sockjs');
+		var stompClient = Stomp.over(sock);
+
+		stompClient.connect({}, function(frame) {
+			stompClient.subscribe("/topic/global", function(msg) {
+				var timeline = document.getElementById('timeline');
+				var element = timeline.getElementsByTagName('li')[0];
+				element.insertAdjacentHTML('afterend', msg.body);
+			});
+		});		
+		</script>
+</#macro>
+
 <#macro page_body>
 
 	<div class="row">
@@ -102,10 +120,27 @@
                     </tr>
                     <#list spiders as spider>
                 		<tr>
-	                      <td><a href="/spider/${spider.id}">${spider.id}</a></td>
-	                      <td>${spider.status}</td>
+	                      <td><a href="/spiders/${spider.id}">${spider.id}</a></td>
+	                      <td>${spider.name}</td>
 	                      <td>11-7-2014</td>
-	                      <td><span class="label label-success">Approved</span></td>
+	                      <#switch spider.state>
+								<#case "NEW">
+									<#assign label = "primary">
+									<#break>
+								<#case "STARTED">
+									<#assign label = "info">
+									<#break>
+								<#case "ENDED">
+									<#assign label = "success">
+		 							<#break>
+		 						<#case "CANCELLED">
+		 							<#assign label = "danger">
+		 							<#break>
+								<#default>
+									<#assign label = "warning">
+									<#break>
+							</#switch>
+	                      <td><span class="label label-${label}">${spider.state}</span></td>
 	                      <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
 	                    </tr>
 				    </#list>
@@ -145,22 +180,6 @@
         </div><!-- /.col -->
       </div>
       
-      <script src="/webjars/sockjs-client/0.3.4-1/sockjs.min.js"></script>
-      <script src="/webjars/stomp-websocket/2.3.1-1/stomp.min.js"></script>
-      <script>
-		var path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')+1);
-		var sock = new SockJS(path + '../sockjs');
-		var stompClient = Stomp.over(sock);
-
-		stompClient.connect({}, function(frame) {
-			stompClient.subscribe("/topic/global", function(msg) {
-				var timeline = document.getElementById('timeline');
-				var element = timeline.getElementsByTagName('li')[0];
-				element.insertAdjacentHTML('afterend', msg.body);
-			});
-		});		
-		</script>
-
 </#macro>
 
 <@display_page/>

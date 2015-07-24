@@ -23,6 +23,10 @@
           </ol>
 </#macro>
 
+<#macro js>
+
+</#macro>
+
 <#macro display_page>
 <!DOCTYPE html>
 <html>
@@ -32,6 +36,7 @@
     <link href="/webjars/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="/webjars/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
     <link href="/webjars/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css" />
+    <link href="/public/css/jquery-jvectormap-1.2.2.css" rel="stylesheet" type="text/css" />
     <link href="/public/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
     <link href="/public/css/_all-skins.min.css" rel="stylesheet" type="text/css" />
     
@@ -310,9 +315,14 @@
     <!-- <script src="/webjars/bootstrap-daterangepicker/1.3.22/daterangepicker.js" type="text/javascript"></script>
     <script src="/webjars/bootstrap-3-datepicker/1.4.0/dist/js/bootstrap-datepicker.js" type="text/javascript"></script> -->
     <script src="/webjars/fastclick/1.0.6/fastclick.js" type="text/javascript"></script>
+    <script src="/webjars/chartjs/1.0.2/Chart.min.js" type="text/javascript"></script>
+    <script src="/webjars/jquery.sparkline/2.1.2/jquery.sparkline.min.js" type="text/javascript"></script>
+    <script src="/public/js/jquery-jvectormap-1.2.2.min.js" type="text/javascript"></script>
+    <script src="/public/js/jquery-jvectormap-world-mill-en.js" type="text/javascript"></script>
     <script src="/public/js/app.min.js" type="text/javascript"></script>
     <script src="/public/js/demo.js" type="text/javascript"></script>
     
+    <@js/>
   </body>
 </html>
 </#macro>

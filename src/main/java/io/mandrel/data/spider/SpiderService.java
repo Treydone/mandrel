@@ -190,6 +190,9 @@ public class SpiderService {
 
 		spider = spiderRepository.add(spider);
 
+		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_NEW)
+				.setTime(DateTime.now()));
+
 		return spider;
 	}
 
