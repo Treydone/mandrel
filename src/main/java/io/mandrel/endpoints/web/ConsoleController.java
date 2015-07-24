@@ -18,17 +18,37 @@
  */
 package io.mandrel.endpoints.web;
 
-import java.util.Map;
+import io.mandrel.monitor.console.ConsoleService;
+
+import javax.inject.Inject;
+
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @RequestMapping("/console")
 @Controller
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ConsoleController {
 
+	private final ConsoleService consoleService;
+
 	@RequestMapping
-	public String console(Map<String, Object> model) {
+	public String console(Model model) {
 		return "views/console";
+	}
+
+	@RequestMapping("/deactivate")
+	public String deactivate() {
+		consoleService.deactivate();
+		return "redirect:/console";
+	}
+
+	@RequestMapping("/activate")
+	public String activate() {
+		consoleService.activate();
+		return "redirect:/console";
 	}
 }

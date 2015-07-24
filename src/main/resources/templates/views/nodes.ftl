@@ -11,8 +11,8 @@
             <small>where the job is done</small>
           </h1>
           <ol class="breadcrumb">
-            <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li class="active">Home</li>
+            <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li class="active">Nodes</li>
           </ol>
 </#macro>
 

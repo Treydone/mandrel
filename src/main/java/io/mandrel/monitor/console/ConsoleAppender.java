@@ -18,14 +18,16 @@
  */
 package io.mandrel.monitor.console;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 
-import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
+import ch.qos.logback.core.Layout;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -33,20 +35,9 @@ public class ConsoleAppender extends AppenderBase<ILoggingEvent> {
 
 	private SimpMessageSendingOperations messagingTemplate;
 
-	private PatternLayout layout;
-	private String pattern;
-	private boolean outputPatternAsHeader;
+	private Layout<ILoggingEvent> layout;
 
-	@Override
-	public void start() {
-		PatternLayout patternLayout = new PatternLayout();
-		patternLayout.setContext(context);
-		patternLayout.setPattern(getPattern());
-		patternLayout.setOutputPatternAsHeader(outputPatternAsHeader);
-		patternLayout.start();
-		this.layout = patternLayout;
-		super.start();
-	}
+	private AtomicBoolean activated = new AtomicBoolean(true);
 
 	@Override
 	protected void append(ILoggingEvent event) {
@@ -54,6 +45,16 @@ public class ConsoleAppender extends AppenderBase<ILoggingEvent> {
 			return;
 		}
 
-		messagingTemplate.convertAndSend("/topic/tail", layout.doLayout(event));
+		if (isActivated()) {
+			messagingTemplate.convertAndSend("/topic/tail", layout.doLayout(event));
+		}
+	}
+
+	public boolean isActivated() {
+		return activated.get();
+	}
+
+	public void setActivated(boolean activated) {
+		this.activated.set(activated);
 	}
 }

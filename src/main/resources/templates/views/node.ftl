@@ -5,6 +5,18 @@
   <title>Node</title>
 </#macro>
 
+<#macro content_header>
+		<h1>
+            Nodes
+            <small>where the job is done</small>
+          </h1>
+          <ol class="breadcrumb">
+            <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li><a href="/nodes"><i class="fa fa-dashboard"></i> Nodes</a></li>
+            <li class="active">${node.uuid}</li>
+          </ol>
+</#macro>
+
 <#macro page_body>
 	
 	<div class="row">

@@ -11,8 +11,7 @@
             <small>it all starts here</small>
           </h1>
           <ol class="breadcrumb">
-            <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li class="active">Home</li>
+            <li class="active"><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
           </ol>
 </#macro>
 
@@ -157,7 +156,6 @@
 			stompClient.subscribe("/topic/global", function(msg) {
 				var timeline = document.getElementById('timeline');
 				var element = timeline.getElementsByTagName('li')[0];
-				console.log(element);
 				element.insertAdjacentHTML('afterend', msg.body);
 			});
 		});		
