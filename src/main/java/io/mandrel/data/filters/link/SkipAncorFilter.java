@@ -35,4 +35,9 @@ public class SkipAncorFilter extends LinkFilter {
 	public boolean isValid(Link link) {
 		return link != null && StringUtils.isNotBlank(link.getUri()) && (!link.getUri().contains("#") || link.getUri().contains("#/"));
 	}
+
+	@Override
+	public String getType() {
+		return "skip_ancor";
+	}
 }

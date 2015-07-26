@@ -33,4 +33,9 @@ public class LargeFilter extends WebPageFilter {
 		// TODO
 		return true;
 	}
+
+	@Override
+	public String getType() {
+		return "large";
+	}
 }

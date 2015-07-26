@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Lists;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IList;
 
@@ -18,7 +19,7 @@ import com.hazelcast.core.IList;
 public class HazelcastTimelineService implements TimelineService {
 
 	private final HazelcastInstance instance;
-	
+
 	private final StompService stompService;
 
 	@Override
@@ -35,6 +36,8 @@ public class HazelcastTimelineService implements TimelineService {
 		if (from > total) {
 			return null;
 		}
-		return timeline.subList(from, Math.min(size, total));
+
+		List<Event> subList = timeline.subList(Math.max(0, total - from - size), total - from);
+		return Lists.reverse(subList);
 	}
 }

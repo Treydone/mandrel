@@ -46,4 +46,8 @@ public class FixedSource extends Source {
 	public FixedSource() {
 		super();
 	}
+
+	public String getType() {
+		return "fixed";
+	}
 }

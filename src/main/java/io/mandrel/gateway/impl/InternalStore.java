@@ -131,4 +131,9 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 	public IMap<String, Metadata> getPageMetaMap(long spiderId) {
 		return hazelcastInstance.<String, Metadata> getMap("pagemetastore-" + spiderId);
 	}
+
+	@Override
+	public String getType() {
+		return "internal";
+	}
 }

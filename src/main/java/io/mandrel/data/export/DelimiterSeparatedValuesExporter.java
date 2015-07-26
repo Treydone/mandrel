@@ -151,4 +151,9 @@ public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawEx
 			buffer.clear();
 		});
 	}
+
+	@Override
+	public String getType() {
+		return "csv";
+	}
 }

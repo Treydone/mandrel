@@ -23,6 +23,8 @@ import java.io.Writer;
 
 public interface AbstractExporter extends Serializable {
 
+	String getType();
+	
 	String contentType();
 
 	void init(Writer writer) throws Exception;

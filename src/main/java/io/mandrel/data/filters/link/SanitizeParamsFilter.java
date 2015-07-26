@@ -95,4 +95,9 @@ public class SanitizeParamsFilter extends LinkFilter {
 		}
 		return true;
 	}
+
+	@Override
+	public String getType() {
+		return "sanitize_params";
+	}
 }

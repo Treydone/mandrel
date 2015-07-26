@@ -20,8 +20,10 @@ package io.mandrel.data.source;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 @Data
+@Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 public class JdbcSource extends Source {
 
@@ -36,5 +38,9 @@ public class JdbcSource extends Source {
 
 	public boolean check() {
 		return true;
+	}
+
+	public String getType() {
+		return "jdbc";
 	}
 }

@@ -58,4 +58,9 @@ public class UrlPatternFilter extends LinkFilter {
 		compiledPattern = Pattern.compile(pattern);
 		return this;
 	}
+
+	@Override
+	public String getType() {
+		return "pattern";
+	}
 }

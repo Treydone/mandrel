@@ -39,4 +39,8 @@ public class FixedUserAgentProvisionner implements UserAgentProvisionner {
 		return ua;
 	}
 
+	@Override
+	public String getType() {
+		return "fixed";
+	}
 }

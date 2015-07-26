@@ -107,4 +107,8 @@ public class StaticProxyServersSource implements ProxyServersSource {
 		}
 	}
 
+	@Override
+	public String getType() {
+		return "static";
+	}
 }

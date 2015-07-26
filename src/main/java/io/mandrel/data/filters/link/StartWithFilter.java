@@ -37,4 +37,9 @@ public class StartWithFilter extends LinkFilter {
 	public boolean isValid(Link link) {
 		return link != null && StringUtils.isNotBlank(link.getUri()) && link.getUri().startsWith(getPattern());
 	}
+	
+	@Override
+	public String getType() {
+		return "start_with";
+	}
 }

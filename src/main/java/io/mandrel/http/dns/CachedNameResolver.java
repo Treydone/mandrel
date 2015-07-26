@@ -49,4 +49,9 @@ public class CachedNameResolver implements NameResolver {
 
 	public void init() {
 	}
+
+	@Override
+	public String getType() {
+		return "cached";
+	}
 }

@@ -91,4 +91,9 @@ public class JsonExporter implements DocumentExporter, RawExporter {
 	public void export(Collection<WebPage> documents) {
 
 	}
+
+	@Override
+	public String getType() {
+		return "json";
+	}
 }

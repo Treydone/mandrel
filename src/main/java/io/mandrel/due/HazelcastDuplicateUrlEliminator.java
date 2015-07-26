@@ -58,27 +58,6 @@ public class HazelcastDuplicateUrlEliminator implements DuplicateUrlEliminator {
 		}
 	}
 
-	public <T> void add(String queueName, T data) {
-		if (data != null) {
-			IQueue<T> queue = instance.getQueue(queueName);
-			queue.offer(data);
-		}
-	}
-
-	public <T> void add(String queueName, Collection<T> data) {
-		if (data != null) {
-			IQueue<T> queue = instance.getQueue(queueName);
-			data.forEach(t -> queue.offer(t));
-		}
-	}
-
-	public <T> void remove(String queueName, Collection<T> data) {
-		if (data != null) {
-			IQueue<T> queue = instance.getQueue(queueName);
-			queue.removeAll(data);
-		}
-	}
-
 	public <T> Set<T> deduplicate(String queueName, Collection<T> data) {
 		if (data != null) {
 			IQueue<T> queue = instance.getQueue(queueName);

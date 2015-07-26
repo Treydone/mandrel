@@ -116,4 +116,9 @@ public class JdbcStore extends InternalStore {
 			hazelcastInstance.getConfig().addMapConfig(mapConfig);
 		}
 	}
+
+	@Override
+	public String getType() {
+		return "jdbc";
+	}
 }

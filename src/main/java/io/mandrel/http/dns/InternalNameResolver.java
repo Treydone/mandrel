@@ -34,4 +34,9 @@ public class InternalNameResolver implements NameResolver {
 
 	public void init() {
 	}
+
+	@Override
+	public String getType() {
+		return "simple";
+	}
 }

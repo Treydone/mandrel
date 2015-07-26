@@ -38,6 +38,7 @@ import io.mandrel.timeline.SpiderEvent.SpiderEventType;
 import io.mandrel.timeline.TimelineService;
 
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -188,6 +189,7 @@ public class SpiderService {
 			throw new BindException(errors);
 		}
 
+		spider.setAdded(LocalDateTime.now());
 		spider = spiderRepository.add(spider);
 
 		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_NEW)
@@ -226,6 +228,7 @@ public class SpiderService {
 				taskService.executeOnAllMembers(String.valueOf(spiderId), new SpiderTask(spider));
 
 				spider.setState(State.STARTED);
+				spider.setStarted(LocalDateTime.now());
 				spiderRepository.update(spider);
 
 				timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_STARTED)
@@ -258,6 +261,7 @@ public class SpiderService {
 			taskService.shutdownAllExecutorService(spider);
 
 			// Update status
+				spider.setCancelled(LocalDateTime.now());
 				spider.setState(State.CANCELLED);
 
 				timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_CANCELLED)
@@ -273,6 +277,7 @@ public class SpiderService {
 			taskService.shutdownAllExecutorService(spider);
 
 			// Update status
+				spider.setEnded(LocalDateTime.now());
 				spider.setState(State.ENDED);
 				return spiderRepository.update(spider);
 			});

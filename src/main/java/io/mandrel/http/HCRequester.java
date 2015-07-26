@@ -378,4 +378,9 @@ public class HCRequester extends Requester {
 				result.getEntity() != null ? IOUtils.toByteArray(result.getEntity().getContent()) : null);
 		return webPage;
 	}
+
+	@Override
+	public String getType() {
+		return "hc";
+	}
 }

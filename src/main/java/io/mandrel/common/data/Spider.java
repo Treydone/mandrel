@@ -21,6 +21,7 @@ package io.mandrel.common.data;
 import io.mandrel.data.source.Source;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,18 @@ public class Spider implements Serializable {
 
 	@JsonProperty("status")
 	private State state = State.NEW;
+
+	@JsonProperty("added")
+	private LocalDateTime added;
+
+	@JsonProperty("started")
+	private LocalDateTime started;
+
+	@JsonProperty("ended")
+	private LocalDateTime ended;
+
+	@JsonProperty("cancelled")
+	private LocalDateTime cancelled;
 
 	@JsonProperty("sources")
 	private List<Source> sources = new ArrayList<>();

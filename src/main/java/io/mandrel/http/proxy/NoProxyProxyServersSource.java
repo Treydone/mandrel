@@ -32,4 +32,9 @@ public class NoProxyProxyServersSource implements ProxyServersSource {
 
 	public void init() {
 	}
+
+	@Override
+	public String getType() {
+		return "no";
+	}
 }

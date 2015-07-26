@@ -28,10 +28,12 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
 @JsonSubTypes({ @Type(value = DNSNameResolver.class, name = "defaut"), @Type(value = InternalNameResolver.class, name = "simple"),
 		@Type(value = CachedNameResolver.class, name = "cached") })
 public interface NameResolver extends Serializable, Initializable {
+
+	String getType();
 
 	InetAddress resolve(String host) throws UnknownHostException;
 }

@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.hazelcast.core.HazelcastInstance;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
 @JsonSubTypes({ @Type(value = JmsSource.class, name = "jms"), @Type(value = FixedSource.class, name = "fixed"),
 		@Type(value = RobotsTxtSource.class, name = "sitemaps"), @Type(value = CsvSource.class, name = "csv"), @Type(value = JdbcSource.class, name = "jdbc") })
 @Data
@@ -43,6 +43,8 @@ public abstract class Source implements Serializable {
 
 	@JsonProperty("name")
 	private String name;
+
+	public abstract String getType();
 
 	@Getter(onMethod = @__(@JsonIgnore))
 	private transient HazelcastInstance instance;
@@ -58,5 +60,4 @@ public abstract class Source implements Serializable {
 	public void init(Map<String, Object> properties) {
 
 	}
-
 }

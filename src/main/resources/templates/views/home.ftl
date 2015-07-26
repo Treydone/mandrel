@@ -68,7 +68,7 @@
 	        <span class="info-box-icon bg-red"><i class="fa fa-star-o"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Spiders completed</span>
-	          <span class="info-box-number">93,139</span>
+	          <span class="info-box-number">0</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -114,15 +114,17 @@
                     <tbody><tr>
                       <th>ID</th>
                       <th>Name</th>
-                      <th>Date</th>
+                      <th>Added</th>
+                      <th>Started</th>
                       <th>Status</th>
-                      <th>Reason</th>
+                      <th>Description</th>
                     </tr>
                     <#list spiders as spider>
                 		<tr>
 	                      <td><a href="/spiders/${spider.id}">${spider.id}</a></td>
 	                      <td>${spider.name}</td>
-	                      <td>11-7-2014</td>
+	                      <td>${spider.added}</td>
+	                      <td>${(spider.started)!"not started"}</td>
 	                      <#switch spider.state>
 								<#case "NEW">
 									<#assign label = "primary">
@@ -141,7 +143,13 @@
 									<#break>
 							</#switch>
 	                      <td><span class="label label-${label}">${spider.state}</span></td>
-	                      <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
+	                      <td>Sources:
+	                      <#if spider.sources??>
+	                      <#list spider.sources as source>
+	                      	${source.name} /
+	                      </#list>
+	                      </#if>
+	                      </td>
 	                    </tr>
 				    </#list>
                   </tbody></table>

@@ -48,8 +48,7 @@ public class InternalDocumentStore implements DocumentStore {
 
 	@JsonIgnore
 	@Getter(value = AccessLevel.NONE)
-	protected
-	transient HazelcastInstance hazelcastInstance;
+	protected transient HazelcastInstance hazelcastInstance;
 
 	@Override
 	public void save(long spiderId, Document data) {
@@ -117,5 +116,10 @@ public class InternalDocumentStore implements DocumentStore {
 
 	public IMap<String, Document> getDataMap(long spiderId) {
 		return hazelcastInstance.getMap("documentstore-" + spiderId + "-" + extractor.getName());
+	}
+
+	@Override
+	public String getType() {
+		return "internal";
 	}
 }

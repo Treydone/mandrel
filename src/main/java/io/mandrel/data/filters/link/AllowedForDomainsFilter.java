@@ -44,4 +44,9 @@ public class AllowedForDomainsFilter extends LinkFilter {
 		}
 		return false;
 	}
+
+	@Override
+	public String getType() {
+		return "allowed_for_domains";
+	}
 }

@@ -82,6 +82,11 @@ public class ExporterServiceTest {
 
 			public void close() {
 			}
+
+			@Override
+			public String getType() {
+				return null;
+			}
 		};
 
 		Spider spider = new Spider();

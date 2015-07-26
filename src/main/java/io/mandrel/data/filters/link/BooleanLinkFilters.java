@@ -36,6 +36,11 @@ public interface BooleanLinkFilters {
 		public boolean isValid(Link link) {
 			return true;
 		}
+
+		@Override
+		public String getType() {
+			return "true";
+		}
 	}
 
 	@Data
@@ -46,6 +51,11 @@ public interface BooleanLinkFilters {
 
 		public boolean isValid(Link link) {
 			return false;
+		}
+
+		@Override
+		public String getType() {
+			return "false";
 		}
 	}
 
@@ -60,6 +70,11 @@ public interface BooleanLinkFilters {
 		public boolean isValid(Link link) {
 			return !filter.isValid(link);
 		}
+
+		@Override
+		public String getType() {
+			return "not";
+		}
 	}
 
 	@Data
@@ -73,6 +88,11 @@ public interface BooleanLinkFilters {
 		public boolean isValid(Link link) {
 			return filters.stream().anyMatch(f -> f.isValid(link));
 		}
+
+		@Override
+		public String getType() {
+			return "or";
+		}
 	}
 
 	@Data
@@ -85,6 +105,11 @@ public interface BooleanLinkFilters {
 
 		public boolean isValid(Link link) {
 			return filters.stream().allMatch(f -> f.isValid(link));
+		}
+
+		@Override
+		public String getType() {
+			return "and";
 		}
 	}
 }

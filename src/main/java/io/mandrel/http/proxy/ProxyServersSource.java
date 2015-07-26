@@ -27,9 +27,11 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
 @JsonSubTypes({ @Type(value = NoProxyProxyServersSource.class, name = "no"), @Type(value = StaticProxyServersSource.class, name = "static") })
 public interface ProxyServersSource extends Serializable, Initializable {
+
+	String getType();
 
 	ProxyServer findProxy(Spider spider);
 }

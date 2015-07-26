@@ -94,4 +94,9 @@ public class CassandraStore implements WebPageStore, PageMetadataStore {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public String getType() {
+		return "cassandra";
+	}
 }

@@ -41,21 +41,19 @@ public class DNSNameResolver implements NameResolver {
 
 	private static final long serialVersionUID = -623963740271067479L;
 
-	private static final List<InetSocketAddress> DEFAULT_SERVERS = Arrays.asList(
-			new InetSocketAddress("8.8.8.8", 53), // Google Public DNS
-			new InetSocketAddress("8.8.4.4", 53), 
-			new InetSocketAddress("208.67.222.222", 53), // OpenDNS
-			new InetSocketAddress("208.67.220.220", 53), 
-			new InetSocketAddress("37.235.1.174", 53), // FreeDNS
-			new InetSocketAddress("37.235.1.177", 53)
-	);
+	private static final List<InetSocketAddress> DEFAULT_SERVERS = Arrays.asList(new InetSocketAddress("8.8.8.8", 53), // Google
+																														// Public
+																														// DNS
+			new InetSocketAddress("8.8.4.4", 53), new InetSocketAddress("208.67.222.222", 53), // OpenDNS
+			new InetSocketAddress("208.67.220.220", 53), new InetSocketAddress("37.235.1.174", 53), // FreeDNS
+			new InetSocketAddress("37.235.1.177", 53));
 
 	@JsonIgnore
 	private EventLoopGroup group;
 
 	@JsonIgnore
 	private DnsNameResolver resolver;
-	
+
 	private List<InetSocketAddress> servers = DEFAULT_SERVERS;
 	private int maxTriesPerQuery = DEFAULT_SERVERS.size();
 	private int minTtl = Integer.MAX_VALUE;
@@ -77,5 +75,10 @@ public class DNSNameResolver implements NameResolver {
 			unknownHostException.setStackTrace(e.getStackTrace());
 			throw unknownHostException;
 		}
+	}
+
+	@Override
+	public String getType() {
+		return "default";
 	}
 }

@@ -127,4 +127,8 @@ public class JdbcDocumentStore extends InternalDocumentStore {
 		}
 	}
 
+	@Override
+	public String getType() {
+		return "jdbc";
+	}
 }

@@ -36,6 +36,11 @@ public interface BooleanWebPageFilters {
 		public boolean isValid(WebPage webPage) {
 			return true;
 		}
+
+		@Override
+		public String getType() {
+			return "true";
+		}
 	}
 
 	@Data
@@ -46,6 +51,11 @@ public interface BooleanWebPageFilters {
 
 		public boolean isValid(WebPage webPage) {
 			return false;
+		}
+
+		@Override
+		public String getType() {
+			return "false";
 		}
 	}
 
@@ -60,6 +70,11 @@ public interface BooleanWebPageFilters {
 		public boolean isValid(WebPage webPage) {
 			return !filter.isValid(webPage);
 		}
+
+		@Override
+		public String getType() {
+			return "not";
+		}
 	}
 
 	@Data
@@ -73,6 +88,11 @@ public interface BooleanWebPageFilters {
 		public boolean isValid(WebPage webPage) {
 			return filters.stream().anyMatch(f -> f.isValid(webPage));
 		}
+
+		@Override
+		public String getType() {
+			return "or";
+		}
 	}
 
 	@Data
@@ -85,6 +105,11 @@ public interface BooleanWebPageFilters {
 
 		public boolean isValid(WebPage webPage) {
 			return filters.stream().allMatch(f -> f.isValid(webPage));
+		}
+
+		@Override
+		public String getType() {
+			return "and";
 		}
 	}
 }

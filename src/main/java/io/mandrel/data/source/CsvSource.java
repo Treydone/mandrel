@@ -20,14 +20,16 @@ package io.mandrel.data.source;
 
 import java.util.List;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.VFS;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.extern.slf4j.Slf4j;
-
 @Data
+@Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @Slf4j
 public class CsvSource extends Source {
@@ -55,5 +57,9 @@ public class CsvSource extends Source {
 				return false;
 			}
 		});
+	}
+
+	public String getType() {
+		return "csv";
 	}
 }

@@ -69,7 +69,11 @@ public class CassandraDocumentStore implements DocumentStore {
 	@Override
 	public void byPages(long spiderId, int pageSize, Callback callback) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	@Override
+	public String getType() {
+		return "cassandra";
+	}
 }
