@@ -57,7 +57,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.joda.time.DateTime;
 import org.kohsuke.randname.RandomNameGenerator;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -149,7 +148,7 @@ public class SpiderService {
 		}
 
 		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_STARTED)
-				.setTime(DateTime.now()));
+				.setTime(LocalDateTime.now()));
 
 		return spiderRepository.update(spider);
 	}
@@ -193,7 +192,7 @@ public class SpiderService {
 		spider = spiderRepository.add(spider);
 
 		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_NEW)
-				.setTime(DateTime.now()));
+				.setTime(LocalDateTime.now()));
 
 		return spider;
 	}
@@ -232,7 +231,7 @@ public class SpiderService {
 				spiderRepository.update(spider);
 
 				timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_STARTED)
-						.setTime(DateTime.now()));
+						.setTime(LocalDateTime.now()));
 
 				return spider;
 
@@ -265,7 +264,7 @@ public class SpiderService {
 				spider.setState(State.CANCELLED);
 
 				timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_CANCELLED)
-						.setTime(DateTime.now()));
+						.setTime(LocalDateTime.now()));
 
 				return spiderRepository.update(spider);
 			});

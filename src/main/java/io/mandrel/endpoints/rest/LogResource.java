@@ -20,6 +20,7 @@ package io.mandrel.endpoints.rest;
 
 import io.mandrel.task.TaskService;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -66,7 +67,7 @@ public class LogResource {
 	public void set(@RequestParam String logger, @RequestParam String level) {
 		taskService.executeOnAllMembers(() -> {
 			LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-			loggerContext.getLogger(logger).setLevel(Level.toLevel(level.toUpperCase()));
+			loggerContext.getLogger(logger).setLevel(Level.toLevel(level.toUpperCase(Locale.ROOT)));
 		});
 	}
 }

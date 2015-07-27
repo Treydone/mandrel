@@ -8,6 +8,20 @@
 	<name>Mandrel</name>
 	<description>The crawler at scale</description>
 
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<scm>
+		<connection>scm:git:git@github.com:Treydone/mandrel.git</connection>
+		<developerConnection>scm:git:git@github.com:Treydone/mandrel.git</developerConnection>
+		<url>http://github.com/Treydone/mandrel</url>
+	</scm>
+
 	<properties>
 		<!-- General Properties -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -414,6 +428,22 @@
 					<artifactId>slf4j-log4j12</artifactId>
 					<groupId>org.slf4j</groupId>
 				</exclusion>
+				<exclusion>
+					<artifactId>spring-data-hadoop-hbase</artifactId>
+					<groupId>org.springframework.data</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-data-hadoop-pig</artifactId>
+					<groupId>org.springframework.data</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-data-hadoop-hive</artifactId>
+					<groupId>org.springframework.data</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-data-hadoop-batch</artifactId>
+					<groupId>org.springframework.data</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<!-- <dependency> -->
@@ -565,10 +595,11 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
+			<!-- <plugin> -->
+			<!-- <groupId>org.springframework.boot</groupId> -->
+			<!-- <artifactId>spring-boot-maven-plugin</artifactId> -->
+			<!-- </plugin> -->
+
 			<plugin>
 				<groupId>pl.project13.maven</groupId>
 				<artifactId>git-commit-id-plugin</artifactId>
@@ -598,17 +629,21 @@
 				<version>2.7</version>
 				<executions>
 					<execution>
-						<id>copy-resources</id>
-						<phase>generate-resources</phase>
+						<id>generate-resources</id>
+						<phase>process-resources</phase>
 						<goals>
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${basedir}/src/main/conf</outputDirectory>
+							<outputDirectory>${project.build.directory}/generated-resources/conf</outputDirectory>
 							<resources>
 								<resource>
 									<directory>src/main/resources</directory>
 									<filtering>true</filtering>
+									<includes>
+										<include>*.yml</include>
+										<include>*.xml</include>
+									</includes>
 								</resource>
 							</resources>
 						</configuration>
@@ -650,53 +685,6 @@
 						<goals>
 							<goal>check</goal>
 						</goals>
-					</execution>
-					<execution>
-						<id>check-forbidden-test-apis</id>
-						<configuration>
-							<targetVersion>${java.version}</targetVersion>
-							<!-- disallow undocumented classes like sun.misc.Unsafe: -->
-							<internalRuntimeForbidden>true</internalRuntimeForbidden>
-							<!-- if the used Java version is too new, don't fail, just do nothing: -->
-							<failOnUnsupportedJava>false</failOnUnsupportedJava>
-							<bundledSignatures>
-								<!-- This will automatically choose the right signatures based on 
-									'targetVersion': -->
-								<bundledSignature>jdk-unsafe</bundledSignature>
-								<bundledSignature>jdk-deprecated</bundledSignature>
-							</bundledSignatures>
-							<signaturesFiles>
-								<!-- <signaturesFile>${mandrel.tools.directory}/forbidden/test-signatures.txt</signaturesFile> -->
-								<signaturesFile>${mandrel.tools.directory}/forbidden/all-signatures.txt</signaturesFile>
-							</signaturesFiles>
-							<signatures>${forbidden.test.signatures}</signatures>
-							<suppressAnnotations>
-								<annotation>**.SuppressForbidden</annotation>
-							</suppressAnnotations>
-						</configuration>
-						<phase>test-compile</phase>
-						<goals>
-							<goal>testCheck</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>add-source</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>dist</source>
-							</sources>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -815,6 +803,21 @@ org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UT
 			</plugin>
 
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<includes>
+						<include>**/*</include>
+					</includes>
+					<excludes>
+						<exlude>*.yml</exlude>
+						<exlude>*.xml</exlude>
+					</excludes>
+				</configuration>
+			</plugin>
+
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>appassembler-maven-plugin</artifactId>
 				<version>1.9</version>
@@ -829,14 +832,13 @@ org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UT
 							<licenseHeaderFile>${basedir}/license-header.txt</licenseHeaderFile>
 							<useWildcardClassPath>true</useWildcardClassPath>
 							<repositoryLayout>flat</repositoryLayout>
-							<configurationSourceDirectory>src/main/conf</configurationSourceDirectory>
-							<endorsedDir>dist/lib/native/</endorsedDir>
+							<configurationSourceDirectory>${project.build.directory}/generated-resources/conf</configurationSourceDirectory>
 							<copyConfigurationDirectory>true</copyConfigurationDirectory>
 							<configurationDirectory>conf</configurationDirectory>
 							<logsDirectory>logs</logsDirectory>
 							<programs>
 								<program>
-									<mainClass>com.mycompany.app.App</mainClass>
+									<mainClass>io.mandrel.cluster.yarn.ClientApplication</mainClass>
 									<id>yarn-deploy</id>
 								</program>
 							</programs>
@@ -851,6 +853,7 @@ org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UT
 										<maxMemorySize>1024</maxMemorySize>
 										<maxStackSize>128</maxStackSize>
 										<extraArguments>
+											<extraArgument>-Dlogback.configurationFile=/usr/share/mandrel/conf/logback.xml</extraArgument>
 											<extraArgument>-Dlogging.file=logs/application.log</extraArgument>
 											<extraArgument>-Dlogging.mode=file</extraArgument>
 											<extraArgument>-server</extraArgument>
@@ -892,6 +895,28 @@ org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UT
 									</generatorConfigurations>
 								</daemon>
 							</daemons>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.7</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/generated-resources/appassembler/jsw/mandrel/lib</outputDirectory>
+							<resources>
+								<resource>
+									<directory>lib/sigar</directory>
+								</resource>
+							</resources>
 						</configuration>
 					</execution>
 				</executions>

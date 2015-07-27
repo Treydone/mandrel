@@ -107,8 +107,7 @@ public class SigarService {
 			infos.getLimits().getMem().setMax(sigar.getResourceLimit().getMemoryMax());
 
 		} catch (SigarException e) {
-			// TODO ...
-			e.printStackTrace();
+			throw Throwables.propagate(e);
 		}
 
 		return infos;

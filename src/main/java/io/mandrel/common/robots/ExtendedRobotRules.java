@@ -19,7 +19,7 @@
 package io.mandrel.common.robots;
 
 import java.io.Serializable;
-import java.net.URL;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -134,9 +134,9 @@ public class ExtendedRobotRules extends BaseRobotRules {
     private String getPath(String url, boolean getWithQuery) {
 
         try {
-            URL urlObj = new URL(url);
-            String path = urlObj.getPath();
-            String query = urlObj.getQuery();
+            URI uriObj = new URI(url);
+            String path = uriObj.getPath();
+            String query = uriObj.getQuery();
             if (getWithQuery && query != null){
                 path += "?" + query;
             }

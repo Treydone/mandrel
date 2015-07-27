@@ -175,7 +175,7 @@ public class ExtractorService {
 
 						boolean isBody = SourceType.BODY.equals(field.getExtractor().getSource());
 						if (field.isUseMultiple() && isBody) {
-							results = extract(cachedSelectors, webPage, segment.getBytes(), field.getExtractor(), DataConverter.BODY);
+							results = extract(cachedSelectors, webPage, segment.getBytes(Charsets.UTF_8), field.getExtractor(), DataConverter.BODY);
 						} else {
 							DataConverter<?, String> converter = isBody ? DataConverter.BODY : DataConverter.DEFAULT;
 							results = extract(cachedSelectors, webPage, null, field.getExtractor(), converter);

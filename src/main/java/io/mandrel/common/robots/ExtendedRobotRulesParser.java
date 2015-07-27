@@ -429,7 +429,7 @@ public class ExtendedRobotRulesParser extends BaseRobotsParser {
 				break;
 
 			case MISSING:
-				reportWarning(String.format("Unknown line in robots.txt file (size %d): %s", content.length, line), url);
+				reportWarning(String.format(Locale.ROOT, "Unknown line in robots.txt file (size %d): %s", content.length, line), url);
 				parseState.setFinishedAgentFields(true);
 				break;
 
@@ -500,7 +500,7 @@ public class ExtendedRobotRulesParser extends BaseRobotsParser {
 
 		// Handle the case when there are multiple target names are passed
 		// TODO should we do lowercase comparison of target name? Assuming yes.
-		String[] targetNames = state.getTargetName().toLowerCase().split(",");
+		String[] targetNames = state.getTargetName().toLowerCase(Locale.ROOT).split(",");
 
 		for (int count = 0; count < targetNames.length; count++) {
 			// Extract possible match names from our target agent name, since it
@@ -512,7 +512,7 @@ public class ExtendedRobotRulesParser extends BaseRobotsParser {
 			String[] agentNames = token.getData().split("[ \t,]");
 			for (String agentName : agentNames) {
 				// TODO should we do case-insensitive matching? Probably yes.
-				agentName = agentName.trim().toLowerCase();
+				agentName = agentName.trim().toLowerCase(Locale.ROOT);
 				if (agentName.isEmpty()) {
 					// Ignore empty names
 				} else if (agentName.equals("*") && !state.isMatchedWildcard()) {

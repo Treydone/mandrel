@@ -24,6 +24,7 @@ import io.mandrel.timeline.NodeEvent;
 import io.mandrel.timeline.NodeEvent.NodeEventType;
 import io.mandrel.timeline.TimelineService;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,6 @@ import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
-import org.joda.time.DateTime;
 import org.springframework.stereotype.Component;
 
 import com.hazelcast.core.HazelcastInstance;
@@ -57,12 +57,12 @@ public class NodeService {
 	public void init() {
 		String uuid = discoveryService.dhis();
 		instance.<String, Node> getMap(NODES).put(uuid, new Node().setUuid(uuid));
-		timelineService.add(new NodeEvent().setNodeId(uuid).setType(NodeEventType.NODE_STARTED).setTime(DateTime.now()));
+		timelineService.add(new NodeEvent().setNodeId(uuid).setType(NodeEventType.NODE_STARTED).setTime(LocalDateTime.now()));
 	}
 
 	@PreDestroy
 	public void destroy() {
-		timelineService.add(new NodeEvent().setNodeId(discoveryService.dhis()).setType(NodeEventType.NODE_STOPPED).setTime(DateTime.now()));
+		timelineService.add(new NodeEvent().setNodeId(discoveryService.dhis()).setType(NodeEventType.NODE_STOPPED).setTime(LocalDateTime.now()));
 	}
 
 	public Map<String, Node> nodes() {

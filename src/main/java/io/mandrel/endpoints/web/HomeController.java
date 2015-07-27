@@ -26,6 +26,7 @@ import io.mandrel.metrics.MetricsService;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.TimelineService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +34,6 @@ import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
-import org.joda.time.DateTime;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -69,7 +69,7 @@ public class HomeController {
 
 	@RequestMapping("/publish")
 	public String push(@RequestParam String title, @RequestParam String text) {
-		stompService.publish(new Event().setText(text).setTitle(title).setTime(DateTime.now()));
+		stompService.publish(new Event().setText(text).setTitle(title).setTime(LocalDateTime.now()));
 		return "redirect:/";
 	}
 }

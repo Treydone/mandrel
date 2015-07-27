@@ -1081,4 +1081,9 @@
 		<artifactId>zookeeper</artifactId>
 		<license>The Apache Software License, Version 2.0</license>
 	</artifact>
+	<artifact>
+		<groupId>jdk.tools</groupId>
+		<artifactId>jdk.tools</artifactId>
+		<license>Oracle</license>
+	</artifact>
 </license-lookup>
