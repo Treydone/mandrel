@@ -7,13 +7,13 @@
 
 <#macro content_header>
 		<h1>
-            Spiders
+            Spider '${spider.name}'
             <small>how the job is done</small>
           </h1>
           <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
             <li><a href="/spiders"><i class="fa fa-dashboard"></i> Spiders</a></li>
-            <li class="active">The Evil Spider</li>
+            <li class="active">${spider.name}</li>
           </ol>
 </#macro>
 
@@ -21,47 +21,36 @@
 		<script>
 			'use strict';
 			$(function () {
-			  // Get context with jQuery - using jQuery's .get() method.
-			  var pieChartCanvas = $("#pieChart").get(0).getContext("2d");
-			  var pieChart = new Chart(pieChartCanvas);
-			  var PieData = [
-			    {
-			      value: 700,
-			      color: "#f56954",
-			      highlight: "#f56954",
-			      label: "Chrome"
-			    },
-			    {
-			      value: 500,
-			      color: "#00a65a",
-			      highlight: "#00a65a",
-			      label: "IE"
-			    },
-			    {
-			      value: 400,
-			      color: "#f39c12",
-			      highlight: "#f39c12",
-			      label: "FireFox"
-			    },
-			    {
-			      value: 600,
-			      color: "#00c0ef",
-			      highlight: "#00c0ef",
-			      label: "Safari"
-			    },
-			    {
-			      value: 300,
-			      color: "#3c8dbc",
-			      highlight: "#3c8dbc",
-			      label: "Opera"
-			    },
-			    {
-			      value: 100,
-			      color: "#d2d6de",
-			      highlight: "#d2d6de",
-			      label: "Navigator"
-			    }
-			  ];
+			  var pagesByStatusChartCanvas = $("#pagesByStatusChart").get(0).getContext("2d");
+			  var pagesByStatusChart = new Chart(pagesByStatusChartCanvas);
+	            
+	            var pagesByStatus = [
+				<#list metrics.pagesByStatus?keys as key>
+					<#assign value = metrics.pagesByStatus[key]>
+					{
+				      value: ${value},
+				      color: "#f56954",
+				      highlight: "#f56954",
+				      label: "${key}"
+				    }<#sep>, </#sep>
+				</#list>
+				];
+				
+				var pagesByHostChartCanvas = $("#pagesByHostChart").get(0).getContext("2d");
+				  var pagesByHostChart = new Chart(pagesByHostChartCanvas);
+				    
+				    var pagesByHost = [
+					<#list metrics.pagesByHost?keys as key>
+						<#assign value = metrics.pagesByHost[key]>
+						{
+					      value: ${value},
+					      color: "#f56954",
+					      highlight: "#f56954",
+					      label: "${key}"
+					    }<#sep>, </#sep>
+					</#list>
+					];
+  
 			  var pieOptions = {
 			    //Boolean - Whether we should show a stroke on each segment
 			    segmentShowStroke: true,
@@ -90,7 +79,8 @@
 			  };
 			  //Create pie or douhnut chart
 			  // You can switch between pie and douhnut using the method below.  
-			  pieChart.Doughnut(PieData, pieOptions);
+			  pagesByStatusChart.Doughnut(pagesByStatus, pieOptions);
+			  pagesByHostChart.Doughnut(pagesByHost, pieOptions);
 			  
 			  /* jVector Maps
 			   * ------------
@@ -206,13 +196,128 @@
 
 <#macro page_body>
 
+	<div class="row">
+	    <div class="col-md-3 col-sm-6 col-xs-12">
+	      <div class="info-box">
+	        <span class="info-box-icon bg-aqua"><i class="fa fa-signal"></i></span>
+	        <div class="info-box-content">
+	          <span class="info-box-text">Bandwidth</span>
+	          <span class="info-box-number">${printBytesSize(metrics.totalSize / clusterTime)}/s</span>
+	        </div><!-- /.info-box-content -->
+	      </div><!-- /.info-box -->
+	    </div><!-- /.col -->
+	    <div class="col-md-3 col-sm-6 col-xs-12">
+	      <div class="info-box">
+	        <span class="info-box-icon bg-green"><i class="fa fa-download"></i></span>
+	        <div class="info-box-content">
+	          <span class="info-box-text">Total size</span>
+	          <span class="info-box-number">${printBytesSize(metrics.totalSize)}</span>
+	        </div><!-- /.info-box-content -->
+	      </div><!-- /.info-box -->
+	    </div><!-- /.col -->
+	    <div class="col-md-3 col-sm-6 col-xs-12">
+	      <div class="info-box">
+	        <span class="info-box-icon bg-yellow"><i class="fa fa-files-o"></i></span>
+	        <div class="info-box-content">
+	          <span class="info-box-text">Total pages</span>
+	          <span class="info-box-number">${metrics.nbPages}</span>
+	        </div><!-- /.info-box-content -->
+	      </div><!-- /.info-box -->
+	    </div><!-- /.col -->
+	    <div class="col-md-3 col-sm-6 col-xs-12">
+	      <div class="info-box">
+	        <span class="info-box-icon bg-red"><i class="fa fa-star-o"></i></span>
+	        <div class="info-box-content">
+	          <span class="info-box-text">Timeout</span>
+	          <span class="info-box-number">${metrics.connectTimeout + metrics.readTimeout}</span>
+	        </div><!-- /.info-box-content -->
+	      </div><!-- /.info-box -->
+	    </div><!-- /.col -->
+	  </div>
+	  
 		<div class="row">
             <!-- Left col -->
             <div class="col-md-8">
+            	<div class="row">
+            		<div class="col-md-12">
+					  <div class="box">
+					    <div class="box-header">
+					      <h3 class="box-title">Actions</h3>
+					    </div>
+					    <div class="box-body">
+					      <a class="btn btn-app">
+					        <i class="fa fa-edit"></i> Edit
+					      </a>
+					      <a class="btn btn-app">
+					        <i class="fa fa-play"></i> Play
+					      </a>
+					      <a class="btn btn-app">
+					        <i class="fa fa-repeat"></i> Repeat
+					      </a>
+					      <a class="btn btn-app">
+					        <i class="fa fa-pause"></i> Pause
+					      </a>
+					    </div><!-- /.box-body -->
+					  </div><!-- /.box -->
+					 </div>
+            	</div>
+            	<div class="row">
+		            <div class="col-md-6">
+			            <div class="box box-default">
+			                <div class="box-header with-border">
+			                  <h3 class="box-title">Http Responses Codes</h3>
+			                </div><!-- /.box-header -->
+			                <div class="box-body">
+			                  <div class="row">
+			                    <div class="col-md-8">
+			                      <div class="chart-responsive">
+			                        <canvas id="pagesByStatusChart" height="150"></canvas>
+			                      </div><!-- ./chart-responsive -->
+			                    </div><!-- /.col -->
+			                  </div><!-- /.row -->
+			                </div><!-- /.box-body -->
+			              </div><!-- /.box -->
+			            </div>
+			            <div class="col-md-6">
+			              <div class="box box-default">
+			                <div class="box-header with-border">
+			                  <h3 class="box-title">Pages by host</h3>
+			                </div><!-- /.box-header -->
+			                <div class="box-body">
+			                  <div class="row">
+			                    <div class="col-md-8">
+			                      <div class="chart-responsive">
+			                        <canvas id="pagesByHostChart" height="150"></canvas>
+			                      </div><!-- ./chart-responsive -->
+			                    </div><!-- /.col -->
+			                  </div><!-- /.row -->
+			                </div><!-- /.box-body -->
+			              </div><!-- /.box -->
+		          		</div>
+		          </div>
+		          
+		          <!-- general form elements disabled -->
+              <div class="box box-warning">
+                <div class="box-header with-border">
+                  <h3 class="box-title">General Elements</h3>
+                </div><!-- /.box-header -->
+                <div class="box-body">
+                  <form role="form">
+
+                    <!-- textarea -->
+                    <div class="form-group">
+                      <label>Textarea</label>
+                      <textarea class="form-control" rows="20">${json}</textarea>
+                    </div>
+
+                  </form>
+                </div><!-- /.box-body -->
+              </div><!-- /.box -->
+		          
               <!-- MAP & BOX PANE -->
               <div class="box box-success">
                 <div class="box-header with-border">
-                  <h3 class="box-title">Visitors Report</h3>
+                  <h3 class="box-title">IP Locations Report</h3>
                   <div class="box-tools pull-right">
                     <button class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                     <button class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -252,97 +357,62 @@
             </div><!-- /.col -->
 
             <div class="col-md-4">
-              <!-- Info Boxes Style 2 -->
-              <div class="info-box bg-yellow">
-                <span class="info-box-icon"><i class="ion ion-ios-pricetag-outline"></i></span>
-                <div class="info-box-content">
-                  <span class="info-box-text">Inventory</span>
-                  <span class="info-box-number">5,200</span>
-                  <div class="progress">
-                    <div class="progress-bar" style="width: 50%"></div>
-                  </div>
-                  <span class="progress-description">
-                    50% Increase in 30 Days
-                  </span>
-                </div><!-- /.info-box-content -->
-              </div><!-- /.info-box -->
-              <div class="info-box bg-green">
-                <span class="info-box-icon"><i class="ion ion-ios-heart-outline"></i></span>
-                <div class="info-box-content">
-                  <span class="info-box-text">Mentions</span>
-                  <span class="info-box-number">92,050</span>
-                  <div class="progress">
-                    <div class="progress-bar" style="width: 20%"></div>
-                  </div>
-                  <span class="progress-description">
-                    20% Increase in 30 Days
-                  </span>
-                </div><!-- /.info-box-content -->
-              </div><!-- /.info-box -->
-              <div class="info-box bg-red">
-                <span class="info-box-icon"><i class="ion ion-ios-cloud-download-outline"></i></span>
-                <div class="info-box-content">
-                  <span class="info-box-text">Downloads</span>
-                  <span class="info-box-number">114,381</span>
-                  <div class="progress">
-                    <div class="progress-bar" style="width: 70%"></div>
-                  </div>
-                  <span class="progress-description">
-                    70% Increase in 30 Days
-                  </span>
-                </div><!-- /.info-box-content -->
-              </div><!-- /.info-box -->
-              <div class="info-box bg-aqua">
-                <span class="info-box-icon"><i class="ion-ios-chatbubble-outline"></i></span>
-                <div class="info-box-content">
-                  <span class="info-box-text">Direct Messages</span>
-                  <span class="info-box-number">163,921</span>
-                  <div class="progress">
-                    <div class="progress-bar" style="width: 40%"></div>
-                  </div>
-                  <span class="progress-description">
-                    40% Increase in 30 Days
-                  </span>
-                </div><!-- /.info-box-content -->
-              </div><!-- /.info-box -->
-
-
-			
-              <div class="box box-default">
-                <div class="box-header with-border">
-                  <h3 class="box-title">Browser Usage</h3>
-                  <div class="box-tools pull-right">
-                    <button class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
-                    <button class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-                  </div>
-                </div><!-- /.box-header -->
-                <div class="box-body">
-                  <div class="row">
-                    <div class="col-md-8">
-                      <div class="chart-responsive">
-                        <canvas id="pieChart" height="160" width="318" style="width: 318px; height: 160px;"></canvas>
-                      </div><!-- ./chart-responsive -->
-                    </div><!-- /.col -->
-                    <div class="col-md-4">
-                      <ul class="chart-legend clearfix">
-                        <li><i class="fa fa-circle-o text-red"></i> Chrome</li>
-                        <li><i class="fa fa-circle-o text-green"></i> IE</li>
-                        <li><i class="fa fa-circle-o text-yellow"></i> FireFox</li>
-                        <li><i class="fa fa-circle-o text-aqua"></i> Safari</li>
-                        <li><i class="fa fa-circle-o text-light-blue"></i> Opera</li>
-                        <li><i class="fa fa-circle-o text-gray"></i> Navigator</li>
-                      </ul>
-                    </div><!-- /.col -->
-                  </div><!-- /.row -->
-                </div><!-- /.box-body -->
-                <div class="box-footer no-padding">
-                  <ul class="nav nav-pills nav-stacked">
-                    <li><a href="#">United States of America <span class="pull-right text-red"><i class="fa fa-angle-down"></i> 12%</span></a></li>
-                    <li><a href="#">India <span class="pull-right text-green"><i class="fa fa-angle-up"></i> 4%</span></a></li>
-                    <li><a href="#">China <span class="pull-right text-yellow"><i class="fa fa-angle-left"></i> 0%</span></a></li>
-                  </ul>
-                </div><!-- /.footer -->
-              </div><!-- /.box -->
+	        	<div class="small-box bg-aqua disabled">
+	                <div class="inner">
+	                  <h3>${metrics.nbPages}</h3>
+	                  <p>Raw data</p>
+	                </div>
+	                <div class="icon">
+	                  <i class="ion ion-ios-cloud-download-outline"></i>
+	                </div>
+	                <#if spider.stores.pageStore??>
+	                <div class="margin">
+	                    <div class="btn-group">
+	                      <button type="button" class="btn btn-default">Download</button>
+	                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+	                        <span class="caret"></span>
+	                        <span class="sr-only">Toggle Dropdown</span>
+	                      </button>
+	                      <ul class="dropdown-menu" role="menu">
+	                        <li><a href="/spiders/${spider.id}/raw/export?format=json">JSON</a></li>
+	                        <li><a href="/spiders/${spider.id}/raw/export?format=csv">CSV</a></li>
+	                      </ul>
+	                    </div>
+	                  </div>
+	                  <a href="#" class="small-box-footer">
+	                  More info <i class="fa fa-arrow-circle-right"></i>
+	                </a>
+		            </#if>
+	              </div>
+	              <#if spider.extractors?? && spider.extractors.pages??>
+		              <#list spider.extractors.pages as extractor>
+		              <div class="small-box bg-orange disabled">
+		                <div class="inner">
+		                  <h3>${(metrics.documentsByExtractor[extractor.name])!"0"}</h3>
+		                  <p>Extractor '${extractor.name}'</p>
+		                </div>
+		                <div class="icon">
+		                  <i class="ion ion-ios-pricetag-outline"></i>
+		                </div>
+		                <div class="margin">
+		                    <div class="btn-group">
+		                      <button type="button" class="btn btn-default">Download</button>
+		                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+		                        <span class="caret"></span>
+		                        <span class="sr-only">Toggle Dropdown</span>
+		                      </button>
+		                      <ul class="dropdown-menu" role="menu">
+		                        <li><a href="/spiders/${spider.id}/export/${extractor.name}?format=json">JSON</a></li>
+		                        <li><a href="/spiders/${spider.id}/export/${extractor.name}?format=csv">CSV</a></li>
+		                      </ul>
+		                    </div>
+		                  </div>
+		                  <a href="#" class="small-box-footer">
+		                  More info <i class="fa fa-arrow-circle-right"></i>
+		                </a>
+		              </div>
+		              </#list>
+	              </#if>
             </div><!-- /.col -->
           </div>
 

@@ -1,3 +1,5 @@
+<#include "./functions.ftl">
+
 <#macro common_page_head>
   <meta charset="utf-8">
 </#macro>

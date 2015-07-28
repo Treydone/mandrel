@@ -41,7 +41,7 @@
 	        <span class="info-box-icon bg-aqua"><i class="fa fa-signal"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Bandwidth</span>
-	          <span class="info-box-number">${metrics.totalSizeTotal / clusterTime}</span>
+	          <span class="info-box-number">${printBytesSize(metrics.totalSizeTotal / clusterTime)}/s</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -50,7 +50,7 @@
 	        <span class="info-box-icon bg-green"><i class="fa fa-download"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Total size</span>
-	          <span class="info-box-number">${metrics.totalSizeTotal}</span>
+	          <span class="info-box-number">${printBytesSize(metrics.totalSizeTotal)}</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -87,7 +87,7 @@
                       <th>Hostname</th>
                       <th>FQDN</th>
                       <th>Status</th>
-                      <th>Reason</th>
+                      <th>Memory</th>
                     </tr>
                     <#assign keys = nodes?keys>
 					<#list keys as key>
@@ -97,7 +97,7 @@
 	                      <td>${node.infos.hostname}</td>
 	                      <td>${node.infos.fqdn}</td>
 	                      <td><span class="label label-success">OK</span></td>
-	                      <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
+	                      <td>${node.infos.jvmInfo.mem.heapInit.printableValue}/${node.infos.jvmInfo.mem.heapMax.printableValue} (${node.infos.jvmInfo.mem.nonHeapInit.printableValue}/${node.infos.jvmInfo.mem.nonHeapMax.printableValue})</td>
 	                    </tr>
 				    </#list>
                   </tbody></table>

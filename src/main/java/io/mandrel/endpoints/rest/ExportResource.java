@@ -28,6 +28,8 @@ import io.mandrel.data.export.RawExporter;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
@@ -130,7 +132,7 @@ public class ExportResource {
 
 	public OutputStreamWriter prepareExport(AbstractExporter exporter, HttpServletResponse response, boolean compress, String name) throws IOException {
 		response.setContentType(exporter.contentType());
-		response.setHeader("Content-Disposition", "attachment; filename=\"" + name + "");
+		response.setHeader("Content-Disposition", "attachment; filename=\"" + name + "-" + DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()) + "\"");
 
 		OutputStreamWriter writer;
 		if (compress) {

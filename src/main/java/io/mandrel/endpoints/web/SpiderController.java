@@ -20,6 +20,7 @@ package io.mandrel.endpoints.web;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.spider.SpiderService;
+import io.mandrel.metrics.MetricsService;
 
 import java.util.stream.Collectors;
 
@@ -35,12 +36,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @RequestMapping(value = "/spiders")
 @Controller
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class SpiderController {
 
 	private final SpiderService spiderService;
+
+	private final MetricsService metricsService;
+
+	private final ObjectMapper mapper;
 
 	@RequestMapping
 	public String spiders(Model model) {
@@ -49,8 +57,11 @@ public class SpiderController {
 	}
 
 	@RequestMapping("/{id}")
-	public String spider(@PathVariable long id, Model model) {
-		model.addAttribute("spiders", spiderService.get(id));
+	public String spider(@PathVariable long id, Model model) throws Exception {
+		Spider spider = spiderService.get(id).get();
+		model.addAttribute("spider", spider);
+		model.addAttribute("json", mapper.writer(new DefaultPrettyPrinter()).writeValueAsString(spider));
+		model.addAttribute("metrics", metricsService.spider(id));
 		return "views/spider";
 	}
 

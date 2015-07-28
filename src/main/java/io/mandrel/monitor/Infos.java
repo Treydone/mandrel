@@ -18,6 +18,8 @@
  */
 package io.mandrel.monitor;
 
+import io.mandrel.common.unit.ByteSizeValue;
+
 import java.io.Serializable;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -131,13 +133,13 @@ public class Infos implements Serializable {
 			info.vmVendor = runtimeMXBean.getVmVendor();
 			info.vmVersion = runtimeMXBean.getVmVersion();
 			info.mem = new JvmMemory();
-			info.mem.heapInit = memoryMXBean.getHeapMemoryUsage().getInit() < 0 ? 0 : memoryMXBean.getHeapMemoryUsage().getInit();
-			info.mem.heapMax = memoryMXBean.getHeapMemoryUsage().getMax() < 0 ? 0 : memoryMXBean.getHeapMemoryUsage().getMax();
-			info.mem.nonHeapInit = memoryMXBean.getNonHeapMemoryUsage().getInit() < 0 ? 0 : memoryMXBean.getNonHeapMemoryUsage().getInit();
-			info.mem.nonHeapMax = memoryMXBean.getNonHeapMemoryUsage().getMax() < 0 ? 0 : memoryMXBean.getNonHeapMemoryUsage().getMax();
+			info.mem.heapInit = new ByteSizeValue(memoryMXBean.getHeapMemoryUsage().getInit() < 0 ? 0 : memoryMXBean.getHeapMemoryUsage().getInit());
+			info.mem.heapMax = new ByteSizeValue(memoryMXBean.getHeapMemoryUsage().getMax() < 0 ? 0 : memoryMXBean.getHeapMemoryUsage().getMax());
+			info.mem.nonHeapInit = new ByteSizeValue(memoryMXBean.getNonHeapMemoryUsage().getInit() < 0 ? 0 : memoryMXBean.getNonHeapMemoryUsage().getInit());
+			info.mem.nonHeapMax = new ByteSizeValue(memoryMXBean.getNonHeapMemoryUsage().getMax() < 0 ? 0 : memoryMXBean.getNonHeapMemoryUsage().getMax());
 			try {
 				Class<?> vmClass = Class.forName("sun.misc.VM");
-				info.mem.directMemoryMax = (Long) vmClass.getMethod("maxDirectMemory").invoke(null);
+				info.mem.directMemoryMax = new ByteSizeValue((Long) vmClass.getMethod("maxDirectMemory").invoke(null));
 			} catch (Throwable t) {
 				// ignore
 			}
@@ -258,11 +260,11 @@ public class Infos implements Serializable {
 		public static class JvmMemory implements Serializable {
 			private static final long serialVersionUID = 3934246727825595616L;
 
-			private long heapInit = 0;
-			private long heapMax = 0;
-			private long nonHeapInit = 0;
-			private long nonHeapMax = 0;
-			private long directMemoryMax = 0;
+			private ByteSizeValue heapInit = new ByteSizeValue(0);
+			private ByteSizeValue heapMax = new ByteSizeValue(0);
+			private ByteSizeValue nonHeapInit = new ByteSizeValue(0);
+			private ByteSizeValue nonHeapMax = new ByteSizeValue(0);
+			private ByteSizeValue directMemoryMax = new ByteSizeValue(0);
 		}
 	}
 }

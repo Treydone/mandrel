@@ -82,7 +82,6 @@
 	                      <th>Hostname</th>
 	                      <th>FQDN</th>
 	                      <th>Status</th>
-	                      <th>Reason</th>
 	                      <th>Started</th>
 	                      <th>Java</th>
 	                      <th>Memory</th>
@@ -95,10 +94,9 @@
 		                      <td>${node.infos.hostname}</td>
 		                      <td>${node.infos.fqdn}</td>
 		                      <td><span class="label label-success">OK</span></td>
-		                      <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
 		                      <td>${node.infos.jvmInfo.startTime}</td>
 		                      <td>${node.infos.jvmInfo.vmName} <b>${node.infos.jvmInfo.version}</b> ${node.infos.jvmInfo.vmVersion} from ${node.infos.jvmInfo.vmVendor}</td>
-		                      <td>${node.infos.jvmInfo.mem.heapInit}/${node.infos.jvmInfo.mem.heapMax} (${node.infos.jvmInfo.mem.nonHeapInit}/${node.infos.jvmInfo.mem.nonHeapMax})</td>
+		                      <td>${node.infos.jvmInfo.mem.heapInit.printableValue}/${node.infos.jvmInfo.mem.heapMax.printableValue} (${node.infos.jvmInfo.mem.nonHeapInit.printableValue}/${node.infos.jvmInfo.mem.nonHeapMax.printableValue})</td>
 		                    </tr>
 					    </#list>
 	                  </tbody></table>
