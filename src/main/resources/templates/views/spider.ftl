@@ -21,65 +21,82 @@
 		<script>
 			'use strict';
 			$(function () {
-			  var pagesByStatusChartCanvas = $("#pagesByStatusChart").get(0).getContext("2d");
-			  var pagesByStatusChart = new Chart(pagesByStatusChartCanvas);
-	            
-	            var pagesByStatus = [
-				<#list metrics.pagesByStatus?keys as key>
-					<#assign value = metrics.pagesByStatus[key]>
+			
+			  var pagesByHostChartCanvas = $("#pagesByHostChart").get(0).getContext("2d");
+			  var pagesByHostChart = new Chart(pagesByHostChartCanvas);
+			    
+			    var pagesByHost = [
+				<#list metrics.pagesByHost?keys as key>
+					<#assign value = metrics.pagesByHost[key]>
+					<#if key?starts_with("1")>
+					  <#assign color="#00c0ef">
+					<#elseif key?starts_with("2")>
+					  <#assign color="#00a65a">
+					<#elseif key?starts_with("3")>
+					  <#assign color="#3c8dbc">
+					<#elseif key?starts_with("4")>
+					  <#assign color="#f39c12">
+					<#elseif key?starts_with("5")>
+					  <#assign color="#f56954">
+					<#else>
+					  <#assign color="#d2d6de">
+					</#if>
 					{
-				      value: ${value},
+					  value: ${value},
 				      color: "#f56954",
 				      highlight: "#f56954",
 				      label: "${key}"
 				    }<#sep>, </#sep>
 				</#list>
 				];
+			  
+			  var pagesByStatusChartCanvas = $("#pagesByStatusChart").get(0).getContext("2d");
+			  var pagesByStatusChart = new Chart(pagesByStatusChartCanvas);
+	            
+	            var pagesByStatus = [
+				<#list metrics.pagesByStatus?keys as key>
+					<#assign value = metrics.pagesByStatus[key]>
+					<#if key?starts_with("1")>
+					  <#assign color="#00c0ef">
+					<#elseif key?starts_with("2")>
+					  <#assign color="#00a65a">
+					<#elseif key?starts_with("3")>
+					  <#assign color="#3c8dbc">
+					<#elseif key?starts_with("4")>
+					  <#assign color="#f39c12">
+					<#elseif key?starts_with("5")>
+					  <#assign color="#f56954">
+					<#else>
+					  <#assign color="#d2d6de">
+					</#if>
+					{
+				      value: ${value},
+				      color: "${color}",
+				      highlight: "${color}",
+				      label: "${key}"
+				    }<#sep>, </#sep>
+				</#list>
+				];
 				
-				var pagesByHostChartCanvas = $("#pagesByHostChart").get(0).getContext("2d");
-				  var pagesByHostChart = new Chart(pagesByHostChartCanvas);
-				    
-				    var pagesByHost = [
-					<#list metrics.pagesByHost?keys as key>
-						<#assign value = metrics.pagesByHost[key]>
-						{
-					      value: ${value},
-					      color: "#f56954",
-					      highlight: "#f56954",
-					      label: "${key}"
-					    }<#sep>, </#sep>
-					</#list>
-					];
-  
 			  var pieOptions = {
-			    //Boolean - Whether we should show a stroke on each segment
 			    segmentShowStroke: true,
-			    //String - The colour of each segment stroke
 			    segmentStrokeColor: "#fff",
-			    //Number - The width of each segment stroke
 			    segmentStrokeWidth: 1,
-			    //Number - The percentage of the chart that we cut out of the middle
 			    percentageInnerCutout: 50, // This is 0 for Pie charts
-			    //Number - Amount of animation steps
 			    animationSteps: 100,
-			    //String - Animation easing effect
 			    animationEasing: "easeOutBounce",
-			    //Boolean - Whether we animate the rotation of the Doughnut
 			    animateRotate: true,
-			    //Boolean - Whether we animate scaling the Doughnut from the centre
 			    animateScale: false,
-			    //Boolean - whether to make the chart responsive to window resizing
 			    responsive: true,
-			    // Boolean - whether to maintain the starting aspect ratio or not when responsive, if set to false, will take up entire container
 			    maintainAspectRatio: false,
-			    //String - A legend template
 			    legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<segments.length; i++){%><li><span style=\"background-color:<%=segments[i].fillColor%>\"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>",
-			    //String - A tooltip template
-			    tooltipTemplate: "<%=value %> <%=label%> users"
+			    tooltipTemplate: "<%=value %> <%=label%>"
 			  };
 			  //Create pie or douhnut chart
 			  // You can switch between pie and douhnut using the method below.  
+			  pieOptions['tooltipTemplate'] = "<%=value %> pages for http status <%=label%>";
 			  pagesByStatusChart.Doughnut(pagesByStatus, pieOptions);
+			  pieOptions['tooltipTemplate'] = "<%=value %> pages for host <%=label%>";
 			  pagesByHostChart.Doughnut(pagesByHost, pieOptions);
 			  
 			  /* jVector Maps
@@ -202,7 +219,7 @@
 	        <span class="info-box-icon bg-aqua"><i class="fa fa-signal"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Bandwidth</span>
-	          <span class="info-box-number">${printBytesSize(metrics.totalSize / clusterTime)}/s</span>
+	          <span class="info-box-number">${printBytesSize(metrics.totalSize / (clusterTime - now * 1000))}/s</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -245,17 +262,20 @@
 					      <h3 class="box-title">Actions</h3>
 					    </div>
 					    <div class="box-body">
-					      <a class="btn btn-app">
+					      <a class="btn btn-app <#if spider.state != "NEW">disabled</#if>">
 					        <i class="fa fa-edit"></i> Edit
 					      </a>
-					      <a class="btn btn-app">
-					        <i class="fa fa-play"></i> Play
+					      <a class="btn btn-app <#if spider.state != "NEW">disabled</#if>" href="/spiders/${spider.id}/start">
+					        <i class="fa fa-play"></i> Start
 					      </a>
-					      <a class="btn btn-app">
-					        <i class="fa fa-repeat"></i> Repeat
-					      </a>
-					      <a class="btn btn-app">
+					      <a class="btn btn-app <#if spider.state != "STARTED">disabled</#if>" href="/spiders/${spider.id}/pause">
 					        <i class="fa fa-pause"></i> Pause
+					      </a>
+					      <a class="btn btn-app <#if spider.state != "NEW" && spider.state != "STARTED">disabled</#if>" href="/spiders/${spider.id}/cancel">
+					        <i class="fa fa-exclamation-triangle"></i> Cancel
+					      </a>
+					      <a class="btn btn-app <#if spider.state != "CANCELLED" && spider.state != "ENDED">disabled</#if>" href="/spiders/${spider.id}/delete">
+					        <i class="fa fa-eraser"></i> Delete
 					      </a>
 					    </div><!-- /.box-body -->
 					  </div><!-- /.box -->
@@ -274,6 +294,16 @@
 			                        <canvas id="pagesByStatusChart" height="150"></canvas>
 			                      </div><!-- ./chart-responsive -->
 			                    </div><!-- /.col -->
+			                    <div class="col-md-4">
+			                      <ul class="chart-legend clearfix">
+			                        <li><i class="fa fa-circle-o text-aqua"></i> 1xx</li>
+			                        <li><i class="fa fa-circle-o text-green"></i> 2xx</li>
+			                        <li><i class="fa fa-circle-o text-blue"></i> 3xx</li>
+			                        <li><i class="fa fa-circle-o text-yellow"></i> 4xx</li>
+			                        <li><i class="fa fa-circle-o text-red"></i> 5xx</li>
+			                        <li><i class="fa fa-circle-o text-gray"></i> Unknown</li>
+			                      </ul>
+			                    </div><!-- /.col -->
 			                  </div><!-- /.row -->
 			                </div><!-- /.box-body -->
 			              </div><!-- /.box -->
@@ -289,6 +319,13 @@
 			                      <div class="chart-responsive">
 			                        <canvas id="pagesByHostChart" height="150"></canvas>
 			                      </div><!-- ./chart-responsive -->
+			                    </div><!-- /.col -->
+			                    <div class="col-md-4">
+			                      <ul class="chart-legend clearfix">
+				                    <#list metrics.pagesByHost?keys as key>
+			                        <li><i class="fa fa-circle-o text-red"></i> ${key}</li>
+			                        </#list>
+			                      </ul>
 			                    </div><!-- /.col -->
 			                  </div><!-- /.row -->
 			                </div><!-- /.box-body -->
@@ -368,14 +405,14 @@
 	                <#if spider.stores.pageStore??>
 	                <div class="margin">
 	                    <div class="btn-group">
-	                      <button type="button" class="btn btn-default">Download</button>
 	                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+	                        Download
 	                        <span class="caret"></span>
 	                        <span class="sr-only">Toggle Dropdown</span>
 	                      </button>
 	                      <ul class="dropdown-menu" role="menu">
-	                        <li><a href="/spiders/${spider.id}/raw/export?format=json">JSON</a></li>
-	                        <li><a href="/spiders/${spider.id}/raw/export?format=csv">CSV</a></li>
+	                        <li><a href="/api/v1/spiders/${spider.id}/raw/export?format=json" target="_blank">JSON</a></li>
+	                        <li><a href="/api/v1/spiders/${spider.id}/raw/export?format=csv" target="_blank">CSV</a></li>
 	                      </ul>
 	                    </div>
 	                  </div>
@@ -396,14 +433,14 @@
 		                </div>
 		                <div class="margin">
 		                    <div class="btn-group">
-		                      <button type="button" class="btn btn-default">Download</button>
 		                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+		                        Download
 		                        <span class="caret"></span>
 		                        <span class="sr-only">Toggle Dropdown</span>
 		                      </button>
 		                      <ul class="dropdown-menu" role="menu">
-		                        <li><a href="/spiders/${spider.id}/export/${extractor.name}?format=json">JSON</a></li>
-		                        <li><a href="/spiders/${spider.id}/export/${extractor.name}?format=csv">CSV</a></li>
+		                        <li><a href="/api/v1/spiders/${spider.id}/export/${extractor.name}?format=json" target="_blank">JSON</a></li>
+		                        <li><a href="/api/v1/spiders/${spider.id}/export/${extractor.name}?format=csv" target="_blank">CSV</a></li>
 		                      </ul>
 		                    </div>
 		                  </div>

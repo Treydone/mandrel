@@ -86,6 +86,8 @@
               <h3 class="box-title">Text Emphasis</h3>
             </div><!-- /.box-header -->
             <div class="box-body">
+            	${networkSettings.group.name}
+            	${networkSettings.group.password}
               <p class="lead">Lead to emphasize importance</p>
               <p class="text-green">Text green to emphasize success</p>
               <p class="text-aqua">Text aqua to emphasize info</p>

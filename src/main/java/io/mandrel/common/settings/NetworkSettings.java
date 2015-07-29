@@ -35,14 +35,14 @@ public class NetworkSettings {
 
 	@Data
 	public static class Group {
-		private String name;
-		private String password;
+		private String name = "Mandrel";
+		private String password = "M@ndR3L";
 	}
 
 	@Data
 	public static class Discovery {
 		private Unicast unicast;
-		private Multicast multicast;
+		private Multicast multicast = new Multicast();
 		private Ec2 ec2;
 
 		@Data
@@ -81,8 +81,8 @@ public class NetworkSettings {
 	}
 
 	private List<String> interfaces;
-	private Group group;
+	private Group group = new Group();
 	private Tcp tcp;
-	private Discovery discovery;
+	private Discovery discovery = new Discovery();
 
 }

@@ -34,7 +34,7 @@ import com.hazelcast.core.HazelcastInstance;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
 @JsonSubTypes({ @Type(value = JmsSource.class, name = "jms"), @Type(value = FixedSource.class, name = "fixed"),
-		@Type(value = RobotsTxtSource.class, name = "sitemaps"), @Type(value = CsvSource.class, name = "csv"), @Type(value = JdbcSource.class, name = "jdbc") })
+		@Type(value = RobotsTxtSource.class, name = "robots.txt"), @Type(value = CsvSource.class, name = "csv"), @Type(value = JdbcSource.class, name = "jdbc") })
 @Data
 @Accessors(chain = true)
 public abstract class Source implements Serializable {

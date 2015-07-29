@@ -33,7 +33,7 @@ public class Client implements Serializable {
 	private static final long serialVersionUID = -4242505953994309024L;
 
 	@JsonProperty("strategy")
-	private Strategy strategy;
+	private Strategy strategy = new Strategy();
 
 	@JsonProperty("requester")
 	private Requester requester = new HCRequester();

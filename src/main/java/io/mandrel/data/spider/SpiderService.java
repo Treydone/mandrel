@@ -287,7 +287,9 @@ public class SpiderService {
 			taskService.shutdownAllExecutorService(spider);
 
 			// Delete data
-				spider.getStores().getPageStore().deleteAllFor(spiderId);
+				if (spider.getStores().getPageStore() != null) {
+					spider.getStores().getPageStore().deleteAllFor(spiderId);
+				}
 				spider.getExtractors().getPages().stream().forEach(ex -> ex.getDocumentStore().deleteAllFor(spiderId));
 
 				// Remove spider

@@ -27,6 +27,7 @@ import java.util.Map;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,6 +38,7 @@ import com.hazelcast.spring.context.SpringAware;
 
 @SpringAware
 @Setter
+@Slf4j
 public class SourceTask implements Runnable, HazelcastInstanceAware, Serializable {
 
 	private static final long serialVersionUID = -6204571043673228240L;
@@ -59,13 +61,18 @@ public class SourceTask implements Runnable, HazelcastInstanceAware, Serializabl
 	@Override
 	public void run() {
 		// TODO
-		Map<String, Object> properties = null;
 
-		source.setInstance(hazelcastInstance);
-		source.init(properties);
+		try {
+			Map<String, Object> properties = null;
 
-		source.register(lst -> {
-			urlsQueueService.add(spiderId, Sets.newHashSet(lst));
-		});
+			source.setInstance(hazelcastInstance);
+			source.init(properties);
+
+			source.register(lst -> {
+				urlsQueueService.add(spiderId, Sets.newHashSet(lst));
+			});
+		} catch (Exception e) {
+			log.warn("Can not start source", e);
+		}
 	}
 }

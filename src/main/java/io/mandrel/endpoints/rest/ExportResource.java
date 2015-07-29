@@ -63,14 +63,14 @@ public class ExportResource {
 	@ApiOperation(value = "Export the data of the extractor of a spider using a custom exporter in the classpath")
 	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public void export(@PathVariable Long id, @PathVariable String extractorName, @RequestBody DocumentExporter exporter,
-			@RequestParam(value = "true") boolean compress, HttpServletResponse response) throws IOException {
+			@RequestParam(defaultValue = "true") boolean compress, HttpServletResponse response) throws IOException {
 		internalExport(id, extractorName, exporter, response, compress);
 	}
 
 	@ApiOperation(value = "Export the data of the extractor of a spider in a format specified in the parameter")
 	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET, params = "format")
 	public void export(@PathVariable Long id, @PathVariable String extractorName, @RequestParam(required = true) String format,
-			@RequestParam(value = "true") boolean compress, HttpServletResponse response) throws IOException {
+			@RequestParam(defaultValue = "true") boolean compress, HttpServletResponse response) throws IOException {
 		DocumentExporter exporter = null;
 		if ("csv".equals(format)) {
 			exporter = new DelimiterSeparatedValuesExporter();
@@ -85,14 +85,14 @@ public class ExportResource {
 
 	@ApiOperation(value = "Export the raw data of a spider using a custom exporter in the classpath")
 	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void rawExport(@PathVariable Long id, @RequestBody RawExporter exporter, @RequestParam(value = "true") boolean compress, HttpServletResponse response)
-			throws IOException {
+	public void rawExport(@PathVariable Long id, @RequestBody RawExporter exporter, @RequestParam(defaultValue = "true") boolean compress,
+			HttpServletResponse response) throws IOException {
 		internalRawExport(id, exporter, response, compress);
 	}
 
 	@ApiOperation(value = "Export the raw data of a spider in a format specified in the parameter")
 	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.GET, params = "format")
-	public void rawExport(@PathVariable Long id, @RequestParam(required = true) String format, @RequestParam(value = "true") boolean compress,
+	public void rawExport(@PathVariable Long id, @RequestParam(required = true) String format, @RequestParam(defaultValue = "true") boolean compress,
 			HttpServletResponse response) throws IOException {
 		RawExporter exporter = null;
 		if ("csv".equals(format)) {
@@ -132,7 +132,8 @@ public class ExportResource {
 
 	public OutputStreamWriter prepareExport(AbstractExporter exporter, HttpServletResponse response, boolean compress, String name) throws IOException {
 		response.setContentType(exporter.contentType());
-		response.setHeader("Content-Disposition", "attachment; filename=\"" + name + "-" + DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()) + "\"");
+		response.setHeader("Content-Disposition", "attachment; filename=\"" + name + "-" + DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now())
+				+ (compress ? ".gzip" : "") + "\"");
 
 		OutputStreamWriter writer;
 		if (compress) {

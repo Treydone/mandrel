@@ -122,7 +122,7 @@
                     <#list spiders as spider>
                 		<tr>
 	                      <td><a href="/spiders/${spider.id}">${spider.id}</a></td>
-	                      <td>${spider.name}</td>
+	                      <td><a href="/spiders/${spider.id}">${spider.name}</a></td>
 	                      <td>${spider.added}</td>
 	                      <td>${(spider.started)!"not started"}</td>
 	                      <#switch spider.state>

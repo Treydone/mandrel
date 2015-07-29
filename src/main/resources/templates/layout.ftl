@@ -55,7 +55,7 @@
     <![endif]-->
     <@page_head/>
   </head>
-  <body class="skin-blue sidebar-mini">
+  <body class="sidebar-mini skin-black-light">
     <!-- Site wrapper -->
     <div class="wrapper">
 
@@ -86,6 +86,12 @@
         <!-- sidebar: style can be found in sidebar.less -->
         <section class="sidebar">
           <!-- Sidebar user panel -->
+          <div class="user-panel">
+            <div class="pull-left info">
+              <p>Cluster: ${networkSettings.group.name}</p>
+              <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+            </div>
+          </div>
           <!-- sidebar menu: : style can be found in sidebar.less -->
           <ul class="sidebar-menu">
             <li class="header">MAIN NAVIGATION</li>
@@ -138,9 +144,9 @@
 
       <footer class="main-footer">
         <div class="pull-right hidden-xs">
-          <b>Version</b> 2.2.0
+          <b>Version</b> ${infoSettings.version}
         </div>
-        <strong>Copyright &copy; 2014-2015 <a href="http://almsaeedstudio.com">Almsaeed Studio</a>.</strong> All rights reserved.
+        <strong><a href="http://github.com/Treydone/mandrel">Mandrel</a></strong> (from ${infoSettings.commit.originUrl}/${infoSettings.commit.branch} - ${infoSettings.commit.id} at ${infoSettings.commit.time})
       </footer>
 
       <!-- Control Sidebar -->
@@ -314,15 +320,14 @@
     <script src="/webjars/jquery/2.1.4/jquery.min.js" type="text/javascript"></script>
     <script src="/webjars/bootstrap/3.3.4/js/bootstrap.min.js" type="text/javascript"></script>
     <script src="/webjars/jQuery-slimScroll/1.3.3/jquery.slimscroll.min.js" type="text/javascript"></script>
-    <!-- <script src="/webjars/bootstrap-daterangepicker/1.3.22/daterangepicker.js" type="text/javascript"></script>
-    <script src="/webjars/bootstrap-3-datepicker/1.4.0/dist/js/bootstrap-datepicker.js" type="text/javascript"></script> -->
+    <script src="/webjars/bootstrap-daterangepicker/1.3.22/daterangepicker.js" type="text/javascript"></script>
+    <script src="/webjars/bootstrap-3-datepicker/1.4.0/dist/js/bootstrap-datepicker.js" type="text/javascript"></script>
     <script src="/webjars/fastclick/1.0.6/fastclick.js" type="text/javascript"></script>
     <script src="/webjars/chartjs/1.0.2/Chart.min.js" type="text/javascript"></script>
     <script src="/webjars/jquery.sparkline/2.1.2/jquery.sparkline.min.js" type="text/javascript"></script>
     <script src="/public/js/jquery-jvectormap-1.2.2.min.js" type="text/javascript"></script>
     <script src="/public/js/jquery-jvectormap-world-mill-en.js" type="text/javascript"></script>
     <script src="/public/js/app.min.js" type="text/javascript"></script>
-    <script src="/public/js/demo.js" type="text/javascript"></script>
     
     <@js/>
   </body>

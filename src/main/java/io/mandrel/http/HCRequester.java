@@ -20,7 +20,6 @@ package io.mandrel.http;
 
 import io.mandrel.common.MandrelException;
 import io.mandrel.common.data.Spider;
-import io.mandrel.common.settings.ClientSettings;
 import io.mandrel.http.proxy.ProxyServer;
 
 import java.io.IOException;
@@ -41,7 +40,6 @@ import java.util.stream.Collectors;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
@@ -108,21 +106,19 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 
 @Slf4j
-@Data
 @EqualsAndHashCode(callSuper = false)
 public class HCRequester extends Requester {
 
-	@JsonIgnore
-	private CloseableHttpAsyncClient client;
+	private static final long serialVersionUID = 2246117088546279535L;
 
 	@JsonIgnore
-	private RequestConfig defaultRequestConfig;
+	private transient CloseableHttpAsyncClient client;
 
 	@JsonIgnore
-	private Semaphore available;
+	private transient RequestConfig defaultRequestConfig;
 
 	@JsonIgnore
-	private ClientSettings settings;
+	private transient Semaphore available;
 
 	public void close() throws IOException {
 		client.close();
@@ -173,7 +169,7 @@ public class HCRequester extends Requester {
 
 		// Create I/O reactor configuration
 		IOReactorConfig ioReactorConfig = IOReactorConfig.custom().setIoThreadCount(Runtime.getRuntime().availableProcessors())
-				.setConnectTimeout(settings.getTimouts().getConnection()).setSoReuseAddress(strategy.isReuseAddress()).setSoKeepAlive(strategy.isKeepAlive())
+				.setConnectTimeout(strategy.getConnectTimeout()).setSoReuseAddress(strategy.isReuseAddress()).setSoKeepAlive(strategy.isKeepAlive())
 				.setTcpNoDelay(strategy.isTcpNoDelay()).setSoTimeout(strategy.getSocketTimeout()).build();
 
 		// Create a custom I/O reactor

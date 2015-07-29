@@ -46,9 +46,6 @@ import org.springframework.yarn.boot.YarnAppmasterAutoConfiguration;
 import org.springframework.yarn.boot.YarnClientAutoConfiguration;
 import org.springframework.yarn.boot.YarnContainerAutoConfiguration;
 
-//@SpringBootApplication(exclude = { AppmasterApplication.class, YarnAppmasterAutoConfiguration.class, ContainerApplication.class,
-//		YarnContainerAutoConfiguration.class, ClientApplication.class, YarnClientAutoConfiguration.class })
-//@ComponentScan(basePackages = "io.mandrel", excludeFilters = { @Filter(type = FilterType.REGEX, pattern = "io.mandrel.cluster.yarn") })
 @SpringBootApplication(exclude = { YarnAppmasterAutoConfiguration.class, YarnContainerAutoConfiguration.class, YarnClientAutoConfiguration.class })
 @ComponentScan(basePackages = "io.mandrel", excludeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = { AppmasterApplication.class,
 		ContainerApplication.class, ClientApplication.class }) })

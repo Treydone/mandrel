@@ -48,6 +48,13 @@ info:
     name: @project.name@
     description: @project.description@
     version: @project.version@
+    commit:
+        id: @git.commit.id@
+        message: @git.commit.message.full@
+        time: @git.commit.time@
+        branch: @git.branch@
+        dirty: @git.dirty@
+        originUrl: @git.remote.origin.url@
 
 endpoints:
     shutdown:

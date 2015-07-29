@@ -36,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.netflix.servo.util.Throwables;
 
 import crawlercommons.sitemaps.AbstractSiteMap;
 import crawlercommons.sitemaps.SiteMapIndex;
@@ -52,6 +53,9 @@ public class RobotsTxtSource extends Source {
 	@JsonProperty("robots_txt")
 	private String robotsTxt;
 
+	@JsonProperty("max_depth")
+	private int maxDepth = 2;
+
 	@Override
 	public void register(EntryListener listener) {
 
@@ -59,22 +63,37 @@ public class RobotsTxtSource extends Source {
 		Requester requester = new HCRequester();
 
 		// Robots.txt
-		ExtendedRobotRules robotRules = RobotsTxtUtils.getRobotRules(robotsTxt);
+		ExtendedRobotRules robotRules;
+
+		try {
+			robotRules = RobotsTxtUtils.getRobotRules(robotsTxt);
+		} catch (Exception e) {
+			log.warn("Can not get robots.txt rules {}", new Object[] { robotsTxt }, e);
+			return;
+		}
 
 		// Sitemaps
 		if (robotRules != null && robotRules.getSitemaps() != null) {
 			robotRules.getSitemaps().forEach(url -> {
-				getSitemapsForUrl(url, listener, requester);
+				getSitemapsForUrl(url, listener, requester, 0);
 			});
 		}
 	}
 
-	public List<AbstractSiteMap> getSitemapsForUrl(String sitemapUrl, EntryListener listener, Requester requester) {
+	public List<AbstractSiteMap> getSitemapsForUrl(String sitemapUrl, EntryListener listener, Requester requester, int depth) {
 		List<AbstractSiteMap> sitemaps = new ArrayList<>();
 
 		SiteMapParser siteMapParser = new SiteMapParser();
+
+		WebPage page;
 		try {
-			WebPage page = requester.getBlocking(sitemapUrl);
+			page = requester.getBlocking(sitemapUrl);
+		} catch (Exception e) {
+			log.warn("Can not get the sitemap {}", new Object[] { sitemapUrl }, e);
+			throw Throwables.propagate(e);
+		}
+
+		try {
 			List<String> headers = page.getMetadata().getHeaders().get(HttpHeaders.CONTENT_TYPE);
 			String contentType = headers != null && headers.size() > 0 ? headers.get(0) : "text/xml";
 
@@ -82,10 +101,9 @@ public class RobotsTxtSource extends Source {
 
 			if (sitemap.isIndex()) {
 				SiteMapIndex index = (SiteMapIndex) sitemap;
-				if (index.getSitemaps() != null) {
-					// Recursive calls
-					// TODO manage the infinite loop...
-					index.getSitemaps().forEach(s -> getSitemapsForUrl(s.getUrl().toString(), listener, requester));
+				if (index.getSitemaps() != null && depth < maxDepth) {
+					int newDepth = depth++;
+					index.getSitemaps().forEach(s -> getSitemapsForUrl(s.getUrl().toString(), listener, requester, newDepth));
 				}
 			} else {
 				listener.onItem(sitemap.getUrl().toString());
@@ -102,6 +120,6 @@ public class RobotsTxtSource extends Source {
 	}
 
 	public String getType() {
-		return "sitemaps";
+		return "robots.txt";
 	}
 }

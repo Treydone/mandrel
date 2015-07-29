@@ -32,5 +32,15 @@ public class InfoSettings {
 	private String version;
 	private String name;
 	private String description;
+	private Commit commit;
 
+	@Data
+	public static class Commit {
+		private String id;
+		private String message;
+		private String time;
+		private String branch;
+		private String dirty;
+		private String originUrl;
+	}
 }

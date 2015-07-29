@@ -23,6 +23,7 @@ import io.mandrel.common.data.Strategy;
 import io.mandrel.common.lifecycle.Initializable;
 
 import java.io.Closeable;
+import java.io.Serializable;
 
 import lombok.Setter;
 
@@ -33,7 +34,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
 @JsonSubTypes({ @Type(value = HCRequester.class, name = "hc") })
-public abstract class Requester implements Closeable, Initializable {
+public abstract class Requester implements Closeable, Initializable, Serializable {
+
+	private static final long serialVersionUID = 5555714976936124127L;
 
 	@JsonIgnore
 	@Setter
