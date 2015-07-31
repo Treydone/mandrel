@@ -26,7 +26,7 @@ import org.junit.Test;
 
 public class StartWithFilterTest {
 
-	private StartWithFilter filter = new StartWithFilter().setPattern("http://localhost/1");
+	private StartWithFilter filter = new StartWithFilter().setValue("http://localhost/1");
 
 	@Test
 	public void no_link() {

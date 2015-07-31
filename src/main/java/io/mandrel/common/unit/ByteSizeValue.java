@@ -1,5 +1,7 @@
 package io.mandrel.common.unit;
 
+import io.mandrel.common.MandrelIllegalArgumentException;
+
 import java.io.Serializable;
 
 public class ByteSizeValue implements Serializable {
@@ -19,10 +21,10 @@ public class ByteSizeValue implements Serializable {
 		this.sizeUnit = sizeUnit;
 	}
 
-	public int bytesAsInt() throws IllegalArgumentException {
+	public int bytesAsInt() throws MandrelIllegalArgumentException {
 		long bytes = bytes();
 		if (bytes > Integer.MAX_VALUE) {
-			throw new IllegalArgumentException("size [" + toString() + "] is bigger than max int");
+			throw new MandrelIllegalArgumentException("size [" + toString() + "] is bigger than max int");
 		}
 		return (int) bytes;
 	}

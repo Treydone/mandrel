@@ -112,7 +112,7 @@ public class SpiderServiceTest {
 
 		// URL
 		UrlPatternFilter filter = new UrlPatternFilter();
-		filter.setPattern(".*");
+		filter.setValue(".*");
 
 		String json = objectMapper.writeValueAsString(filter);
 		System.err.println(json);

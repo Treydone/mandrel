@@ -24,10 +24,12 @@ import java.util.List;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 public interface BooleanLinkFilters {
 
 	@Data
+	@Accessors(chain = true)
 	@EqualsAndHashCode(callSuper = false)
 	public class TrueFilter extends LinkFilter {
 
@@ -44,6 +46,7 @@ public interface BooleanLinkFilters {
 	}
 
 	@Data
+	@Accessors(chain = true)
 	@EqualsAndHashCode(callSuper = false)
 	public class FalseFilter extends LinkFilter {
 
@@ -60,6 +63,7 @@ public interface BooleanLinkFilters {
 	}
 
 	@Data
+	@Accessors(chain = true)
 	@EqualsAndHashCode(callSuper = false)
 	public class NotFilter extends LinkFilter {
 
@@ -78,6 +82,7 @@ public interface BooleanLinkFilters {
 	}
 
 	@Data
+	@Accessors(chain = true)
 	@EqualsAndHashCode(callSuper = false)
 	public class OrFilter extends LinkFilter {
 
@@ -96,6 +101,7 @@ public interface BooleanLinkFilters {
 	}
 
 	@Data
+	@Accessors(chain = true)
 	@EqualsAndHashCode(callSuper = false)
 	public class AndFilter extends LinkFilter {
 

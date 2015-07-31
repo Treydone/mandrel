@@ -28,9 +28,9 @@ public class UrlPatternFitlerTest {
 
 	private UrlPatternFilter _static = UrlPatternFilter.STATIC;
 
-	private UrlPatternFilter _custom = new UrlPatternFilter().setPattern("http://localhost/users/(\\d+).html");
+	private UrlPatternFilter _custom = new UrlPatternFilter().setValue("http://localhost/users/(\\d+).html");
 
-	private UrlPatternFilter _custom2 = new UrlPatternFilter().setPattern("http://localhost/users/(\\d+).html(.*)");
+	private UrlPatternFilter _custom2 = new UrlPatternFilter().setValue("http://localhost/users/(\\d+).html(.*)");
 
 	@Test
 	public void static_no_link() {

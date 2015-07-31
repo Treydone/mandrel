@@ -32,10 +32,10 @@ public class StartWithFilter extends LinkFilter {
 
 	private static final long serialVersionUID = -5195589618123470396L;
 
-	private String pattern;
+	private String value;
 
 	public boolean isValid(Link link) {
-		return link != null && StringUtils.isNotBlank(link.getUri()) && link.getUri().startsWith(getPattern());
+		return link != null && StringUtils.isNotBlank(link.getUri()) && link.getUri().startsWith(getValue());
 	}
 	
 	@Override

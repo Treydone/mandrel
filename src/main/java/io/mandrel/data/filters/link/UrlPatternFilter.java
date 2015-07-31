@@ -37,12 +37,12 @@ public class UrlPatternFilter extends LinkFilter {
 
 	private static final long serialVersionUID = -5195589618123470396L;
 
-	public static UrlPatternFilter STATIC = new UrlPatternFilter().setPattern(
+	public static UrlPatternFilter STATIC = new UrlPatternFilter().setValue(
 			".*(\\.(css|js|bmp|gif|jpe?g|png|tiff?|mid|mp2|mp3|mp4|wav|avi|mov|mpeg|ram|m4v|pdf|rm|smil|wmv|swf|wma|zip|rar|gz))$").setInvert(true);
 
 	@JsonIgnore
 	private Pattern compiledPattern;
-	private String pattern;
+	private String value;
 	private boolean invert = false;
 
 	public boolean isValid(Link link) {
@@ -53,8 +53,8 @@ public class UrlPatternFilter extends LinkFilter {
 		return invert ? !match : match;
 	}
 
-	public UrlPatternFilter setPattern(String pattern) {
-		this.pattern = pattern;
+	public UrlPatternFilter setValue(String pattern) {
+		this.value = pattern;
 		compiledPattern = Pattern.compile(pattern);
 		return this;
 	}

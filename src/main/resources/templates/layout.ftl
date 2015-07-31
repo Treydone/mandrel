@@ -120,6 +120,11 @@
                 <i class="fa fa-cloud"></i> <span>API</span>
               </a>
             </li>
+            <div class="description-block">
+                          <div class="sparkbar pad" data-color="#fff">90,50,90,70,61,83,63</div>
+                          <h5 class="description-header">70%</h5>
+                          <span class="description-text">Organic</span>
+                        </div>
           </ul>
         </section>
         <!-- /.sidebar -->
