@@ -20,6 +20,7 @@ package io.mandrel.data.filters.link;
 
 import io.mandrel.data.spider.Link;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -39,7 +40,7 @@ public class SanitizeParamsFilter extends LinkFilter {
 
 	private static final long serialVersionUID = -8284466714206360251L;
 
-	private List<String> exclusions;
+	private List<String> exclusions = new ArrayList<>();
 
 	private final static Pattern QUERY = Pattern.compile("&");
 
