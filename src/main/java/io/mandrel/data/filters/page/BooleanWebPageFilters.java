@@ -29,38 +29,6 @@ public interface BooleanWebPageFilters {
 
 	@Data
 	@EqualsAndHashCode(callSuper = false)
-	public class TrueFilter extends WebPageFilter {
-
-		private static final long serialVersionUID = 2874603296721730595L;
-
-		public boolean isValid(WebPage webPage) {
-			return true;
-		}
-
-		@Override
-		public String getType() {
-			return "true";
-		}
-	}
-
-	@Data
-	@EqualsAndHashCode(callSuper = false)
-	public class FalseFilter extends WebPageFilter {
-
-		private static final long serialVersionUID = -1371552939630443549L;
-
-		public boolean isValid(WebPage webPage) {
-			return false;
-		}
-
-		@Override
-		public String getType() {
-			return "false";
-		}
-	}
-
-	@Data
-	@EqualsAndHashCode(callSuper = false)
 	public class NotFilter extends WebPageFilter {
 
 		private static final long serialVersionUID = -2429186996142024643L;
