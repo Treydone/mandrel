@@ -1,6 +1,5 @@
 package io.mandrel.common.querydsl;
 
-import io.mandrel.OtherTest.SingleLineDslParser;
 import io.mandrel.common.MandrelParseException;
 import io.mandrel.data.filters.link.BooleanLinkFilters.AndFilter;
 import io.mandrel.data.filters.link.BooleanLinkFilters.OrFilter;
@@ -28,7 +27,7 @@ public abstract class DslParser {
 	public static LinkFilter parseLinkFilter(String input) {
 
 		PropertyUtils.addBeanIntrospector(new FluentPropertyBeanIntrospector());
-		SingleLineDslParser parser = Parboiled.createParser(SingleLineDslParser.class);
+		LinkFilterDslParser parser = Parboiled.createParser(LinkFilterDslParser.class);
 
 		ParsingResult<LinkFilter> result = new RecoveringParseRunner<LinkFilter>(parser.Root()).run(input);
 
@@ -66,7 +65,7 @@ public abstract class DslParser {
 
 		public Rule Filter() {
 			Var<LinkFilter> filter = new Var<>();
-			return FirstOf(Sequence(WhiteSpace(), "startwith", filter.set(new StartWithFilter()), Options(filter), push(filter.get())),
+			return FirstOf(Sequence(WhiteSpace(), "start_with", filter.set(new StartWithFilter()), Options(filter), push(filter.get())),
 					Sequence(WhiteSpace(), "pattern", filter.set(new UrlPatternFilter()), Options(filter), push(filter.get())));
 		}
 
@@ -79,15 +78,27 @@ public abstract class DslParser {
 		}
 
 		public Rule Properties(Var<LinkFilter> filter) {
-			return Sequence(Property(filter), ZeroOrMore(Ch(','), Property(filter)));
+			Var<String> value = new Var<String>();
+			return FirstOf(Sequence(Value(value), setValue(filter, "value", value.get())), Sequence(Property(filter), ZeroOrMore(Ch(','), Property(filter))));
 		}
 
 		public Rule Property(Var<LinkFilter> filter) {
 			Var<String> key = new Var<String>();
 			Var<String> value = new Var<String>();
-			Rule sequence = Sequence(WhiteSpace(), Chars(), key.set(match()), Ch(':'), WhiteSpace(), Ch('"'), Chars(), value.set(match()), Ch('"'),
-					setValue(filter, key.get(), value.get()));
+			Rule sequence = Sequence(WhiteSpace(), Chars(), key.set(match()), WhiteSpace(), ValueSep(), Value(value), setValue(filter, key.get(), value.get()));
 			return sequence;
+		}
+
+		public Rule Value(Var<String> value) {
+			return Sequence(WhiteSpace(), PropertySep(), Chars(), value.set(match()), PropertySep(), WhiteSpace());
+		}
+
+		public Rule ValueSep() {
+			return Ch(':');
+		}
+
+		public Rule PropertySep() {
+			return Ch('\'');
 		}
 
 		public boolean setValue(Var<LinkFilter> filter, String key, String value) {
@@ -100,7 +111,7 @@ public abstract class DslParser {
 		}
 
 		public Rule Chars() {
-			return OneOrMore(CharRange('a', 'z'));
+			return OneOrMore(FirstOf(CharRange('a', 'z'), CharRange('A', 'Z'), CharRange('0', '9'), "_", "$"));
 		}
 
 		public Rule WhiteSpace() {
