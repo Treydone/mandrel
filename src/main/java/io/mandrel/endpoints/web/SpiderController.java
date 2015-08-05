@@ -19,11 +19,9 @@
 package io.mandrel.endpoints.web;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.data.spider.Analysis;
 import io.mandrel.data.spider.SpiderService;
 import io.mandrel.metrics.MetricsService;
 
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -37,11 +35,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wordnik.swagger.annotations.ApiOperation;
 
 @RequestMapping(value = "/spiders")
 @Controller

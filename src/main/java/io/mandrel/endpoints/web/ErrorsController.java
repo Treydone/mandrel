@@ -26,7 +26,6 @@ public class ErrorsController {
 	@RequestMapping("/error")
 	public String error(Model model, HttpServletRequest request) {
 		RequestAttributes requestAttributes = new ServletRequestAttributes(request);
-		model.addAttribute("path", request.getContextPath());
 		model.addAttribute("time", LocalDateTime.now());
 		model.addAllAttributes(errorAttributes.getErrorAttributes(requestAttributes, true));
 		return "views/error";

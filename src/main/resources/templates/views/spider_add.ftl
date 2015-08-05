@@ -27,7 +27,6 @@
 
 <#macro page_body>
 
-
             <div id="type-source-modal" class="modal fade" role="dialog">
               <div class="modal-dialog" role="document">
                 <div class="modal-content">
