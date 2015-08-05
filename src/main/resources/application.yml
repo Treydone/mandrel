@@ -25,7 +25,7 @@ spring:
             check-template-location: false
     mustache:
         suffix: .html
-    
+            
 graphite:
     enabled: false
     port: 2003

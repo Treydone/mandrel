@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.DefaultErrorAttributes;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -48,6 +50,11 @@ public class WebConfiguration extends WebMvcConfigurerAdapter {
 
 	@Autowired
 	private MandrelHandlerInterceptor interceptor;
+
+	@Bean
+	public DefaultErrorAttributes errorAttributes() {
+		return new DefaultErrorAttributes();
+	}
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {

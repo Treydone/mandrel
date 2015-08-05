@@ -34,7 +34,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.system.ApplicationPidFileWriter;
 import org.springframework.boot.actuate.system.EmbeddedServerPortFileWriter;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.ErrorMvcAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
+import org.springframework.boot.context.embedded.ErrorPage;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -46,7 +49,8 @@ import org.springframework.yarn.boot.YarnAppmasterAutoConfiguration;
 import org.springframework.yarn.boot.YarnClientAutoConfiguration;
 import org.springframework.yarn.boot.YarnContainerAutoConfiguration;
 
-@SpringBootApplication(exclude = { YarnAppmasterAutoConfiguration.class, YarnContainerAutoConfiguration.class, YarnClientAutoConfiguration.class })
+@SpringBootApplication(exclude = { ErrorMvcAutoConfiguration.class, YarnAppmasterAutoConfiguration.class, YarnContainerAutoConfiguration.class,
+		YarnClientAutoConfiguration.class })
 @ComponentScan(basePackages = "io.mandrel", excludeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = { AppmasterApplication.class,
 		ContainerApplication.class, ClientApplication.class }) })
 @Slf4j
@@ -60,6 +64,13 @@ public class Application extends SpringBootServletInitializer {
 		filterRegistrationBean.setFilter(new ApiOriginFilter());
 		filterRegistrationBean.setUrlPatterns(Arrays.asList("/*"));
 		return filterRegistrationBean;
+	}
+
+	@Bean
+	public EmbeddedServletContainerCustomizer containerCustomizer() {
+		return container -> {
+			container.addErrorPages(new ErrorPage("/error"));
+		};
 	}
 
 	@Override

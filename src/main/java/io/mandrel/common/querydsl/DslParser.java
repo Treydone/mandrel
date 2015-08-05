@@ -1,6 +1,7 @@
 package io.mandrel.common.querydsl;
 
 import io.mandrel.common.MandrelParseException;
+import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.BooleanLinkFilters.AndFilter;
 import io.mandrel.data.filters.link.BooleanLinkFilters.OrFilter;
 import io.mandrel.data.filters.link.LinkFilter;
@@ -70,7 +71,8 @@ public abstract class DslParser {
 			return FirstOf(Sequence(WhiteSpace(), "start_with", filter.set(new StartWithFilter()), Options(filter), push(filter.get())),
 					Sequence(WhiteSpace(), "pattern", filter.set(new UrlPatternFilter()), Options(filter), push(filter.get())),
 					Sequence(WhiteSpace(), "skip_ancor", filter.set(new SkipAncorFilter()), push(filter.get())),
-					Sequence(WhiteSpace(), "sanitize_params", filter.set(new SanitizeParamsFilter()), Options(filter), push(filter.get())));
+					Sequence(WhiteSpace(), "sanitize_params", filter.set(new SanitizeParamsFilter()), Options(filter), push(filter.get())),
+					Sequence(WhiteSpace(), "allowed_for_domains", filter.set(new AllowedForDomainsFilter()), Options(filter), push(filter.get())));
 		}
 
 		public Rule Options(Var<LinkFilter> filter) {

@@ -12,7 +12,7 @@
           </h1>
           <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li><a href="/spiders"><i class="fa fa-dashboard"></i> Spiders</a></li>
+            <li><a href="/spiders"><i class="fa fa-tasks"></i> Spiders</a></li>
             <li class="active">${spider.name}</li>
           </ol>
 </#macro>

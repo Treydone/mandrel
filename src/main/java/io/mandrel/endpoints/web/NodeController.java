@@ -19,6 +19,7 @@
 package io.mandrel.endpoints.web;
 
 import io.mandrel.cluster.node.NodeService;
+import io.mandrel.metrics.MetricsService;
 
 import javax.inject.Inject;
 
@@ -35,10 +36,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class NodeController {
 
 	private final NodeService nodeService;
+	
+	private final MetricsService metricsService;
 
 	@RequestMapping
 	public String nodes(Model model) {
 		model.addAttribute("nodes", nodeService.nodes());
+		model.addAttribute("metrics", metricsService.global());
 		return "views/nodes";
 	}
 
