@@ -57,4 +57,6 @@ public interface DocumentStore extends Checkable, Serializable, HazelcastInstanc
 
 	void byPages(long spiderId, int pageSize, Callback callback);
 
+	Collection<Document> byPages(long spiderId, int pageSize);
+
 }

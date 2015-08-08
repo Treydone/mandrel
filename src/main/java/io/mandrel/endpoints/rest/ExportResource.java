@@ -32,9 +32,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.zip.GZIPOutputStream;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -51,14 +53,10 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @Api("/spiders")
 @RequestMapping(value = Apis.PREFIX + "/spiders")
 @Controller
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ExportResource {
 
 	private final ExporterService exporterService;
-
-	@Autowired
-	public ExportResource(ExporterService exporterService) {
-		this.exporterService = exporterService;
-	}
 
 	@ApiOperation(value = "Export the data of the extractor of a spider using a custom exporter in the classpath")
 	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)

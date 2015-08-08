@@ -26,13 +26,14 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import lombok.RequiredArgsConstructor;
+
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
@@ -42,17 +43,11 @@ import com.wordnik.swagger.annotations.ApiOperation;
 
 @Api("/logs")
 @RequestMapping(value = Apis.PREFIX + "/logs", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-@Controller
-@ResponseBody
+@RestController
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class LogResource {
 
 	private final TaskService taskService;
-
-	@Inject
-	public LogResource(TaskService taskService) {
-		super();
-		this.taskService = taskService;
-	}
 
 	@ApiOperation(value = "List the loggers with their level")
 	@RequestMapping

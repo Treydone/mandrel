@@ -27,13 +27,12 @@ import io.mandrel.http.ua.FixedUserAgentProvisionner;
 import io.mandrel.http.ua.UserAgentProvisionner;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Set;
 
 import lombok.Data;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 public class Strategy implements Serializable {
@@ -68,10 +67,10 @@ public class Strategy implements Serializable {
 	private int maxPersistentConnections = 100;
 
 	@JsonProperty("headers")
-	private Map<String, Collection<String>> headers;
+	private Set<Header> headers;
 
 	@JsonProperty("params")
-	private Map<String, List<String>> params;
+	private Set<Param> params;
 
 	@JsonProperty("follow_redirects")
 	private boolean followRedirects = true;

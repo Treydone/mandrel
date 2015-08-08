@@ -20,6 +20,8 @@ package io.mandrel.http;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 @Data
@@ -27,13 +29,28 @@ public class Cookie implements Serializable {
 
 	private static final long serialVersionUID = -5911842148311031909L;
 
+	@JsonProperty("name")
 	private String name;
+	
+	@JsonProperty("value")
 	private String value;
+	
+	@JsonProperty("domain")
 	private String domain;
+	
+	@JsonProperty("path")
 	private String path;
+	
+	@JsonProperty("expires")
 	private long expires;
+	
+	@JsonProperty("max_age")
 	private int maxAge;
+	
+	@JsonProperty("secure")
 	private boolean secure;
+	
+	@JsonProperty("http_only")
 	private boolean httpOnly;
 
 	public Cookie(String name, String value, String domain, String path, long expires, int maxAge, boolean secure, boolean httpOnly) {

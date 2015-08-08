@@ -310,22 +310,18 @@ public class HCRequester extends Requester {
 
 		// Add headers, cookies and ohter stuff
 		if (strategy.getHeaders() != null) {
-			strategy.getHeaders().forEach((k, v) -> {
-				if (v != null) {
-					v.forEach(el -> request.addHeader(k, el));
-				} else {
-					request.addHeader(k, null);
+			strategy.getHeaders().forEach(header -> {
+				if (header != null) {
+					request.addHeader(header.getName(), header.getValue());
 				}
 			});
 		}
 
 		HttpParams params = new BasicHttpParams();
 		if (strategy.getParams() != null) {
-			strategy.getParams().forEach((k, v) -> {
-				if (v != null) {
-					v.forEach(el -> params.setParameter(k, el));
-				} else {
-					params.setParameter(k, null);
+			strategy.getParams().forEach(param -> {
+				if (param != null) {
+					params.setParameter(param.getName(), param.getValue());
 				}
 			});
 		}

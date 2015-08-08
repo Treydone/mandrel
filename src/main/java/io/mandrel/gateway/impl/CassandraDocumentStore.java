@@ -22,6 +22,7 @@ import io.mandrel.data.content.WebPageExtractor;
 import io.mandrel.gateway.Document;
 import io.mandrel.gateway.DocumentStore;
 
+import java.util.Collection;
 import java.util.List;
 
 import lombok.AccessLevel;
@@ -75,5 +76,11 @@ public class CassandraDocumentStore implements DocumentStore {
 	@Override
 	public String getType() {
 		return "cassandra";
+	}
+
+	@Override
+	public Collection<Document> byPages(long spiderId, int pageSize) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

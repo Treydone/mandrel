@@ -25,6 +25,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 @Data
@@ -32,6 +34,9 @@ public class Filters implements Serializable {
 
 	private static final long serialVersionUID = -482772147190412226L;
 
+	@JsonProperty("pages")
 	private List<WebPageFilter> forPages = new ArrayList<>();
+	
+	@JsonProperty("links")
 	private List<LinkFilter> forLinks = new ArrayList<>();
 }

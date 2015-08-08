@@ -28,7 +28,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.inject.Inject;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.MediaType;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,17 +47,12 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @Api("/spiders")
 @RequestMapping(value = Apis.PREFIX + "/spiders", produces = MediaType.APPLICATION_JSON_VALUE)
 @RestController
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class SpiderResource {
 
 	private final SpiderService spiderService;
 
 	private final MetricsService statsService;
-
-	@Autowired
-	public SpiderResource(SpiderService spiderService, MetricsService statsService) {
-		this.spiderService = spiderService;
-		this.statsService = statsService;
-	}
 
 	@ApiOperation(value = "List all the spiders", response = Spider.class, responseContainer = "List")
 	@RequestMapping(method = RequestMethod.GET)
