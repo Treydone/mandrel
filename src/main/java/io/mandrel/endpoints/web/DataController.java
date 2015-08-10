@@ -20,12 +20,14 @@ package io.mandrel.endpoints.web;
 
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
+import io.mandrel.data.content.WebPageExtractor;
 import io.mandrel.data.spider.SpiderService;
 import io.mandrel.endpoints.PageRequest;
 import io.mandrel.endpoints.PageResponse;
 import io.mandrel.gateway.Document;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -55,27 +57,29 @@ public class DataController {
 	public String view(@PathVariable Long id, @PathVariable String extractor, Model model) {
 		Spider spider = spiderService.get(id).get();
 		model.addAttribute("spider", spider);
-		model.addAttribute("extractor", extractor);
+		model.addAttribute("extractor",
+				spider.getExtractors().getPages().stream().filter(ex -> extractor.equals(ex.getName())).findFirst()
+						.orElseThrow(() -> new NotFoundException("")));
 		return "views/data_spider";
 	}
 
 	@RequestMapping(value = "/spiders/{id}/data/{extractor}", method = RequestMethod.POST)
 	@ResponseBody
-	public PageResponse<Document> data(@PathVariable Long id, @PathVariable String extractor, PageRequest request, Model model) {
+	public PageResponse data(@PathVariable Long id, @PathVariable String extractor, PageRequest request, Model model) {
 		Spider spider = spiderService.get(id).get();
 
 		spiderService.injectAndInit(spider);
-		Collection<Document> page = spider.getExtractors().getPages().stream().filter(ex -> extractor.equals(ex.getName())).findFirst().map(ex -> {
-			ex.getDocumentStore().init(ex);
-			return ex.getDocumentStore().byPages(spider.getId(), 20);
-		}).orElseThrow(() -> new NotFoundException(""));
 
-		Long total = spider.getExtractors().getPages().stream().filter(ex -> extractor.equals(ex.getName())).findFirst().map(ex -> {
-			ex.getDocumentStore().init(ex);
-			return ex.getDocumentStore().total(spider.getId());
-		}).orElseThrow(() -> new NotFoundException("")).longValue();
+		WebPageExtractor theExtractor = spider.getExtractors().getPages().stream().filter(ex -> extractor.equals(ex.getName())).findFirst()
+				.orElseThrow(() -> new NotFoundException(""));
 
-		PageResponse<Document> dataPage = PageResponse.of(page);
+		theExtractor.getDocumentStore().init(theExtractor);
+
+		Collection<Document> page = theExtractor.getDocumentStore().byPages(spider.getId(), request.getLength(), request.getStart() / request.getLength());
+		page.forEach(doc -> theExtractor.getFields().forEach(f -> doc.putIfAbsent(f.getName(), Collections.emptyList())));
+		Long total = theExtractor.getDocumentStore().total(spider.getId());
+
+		PageResponse dataPage = PageResponse.of(page);
 		dataPage.setDraw(request.getDraw());
 		dataPage.setRecordsTotal(total);
 		dataPage.setRecordsFiltered(total);

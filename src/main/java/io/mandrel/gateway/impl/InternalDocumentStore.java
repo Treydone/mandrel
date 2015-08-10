@@ -24,6 +24,7 @@ import io.mandrel.gateway.DocumentStore;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -106,9 +107,10 @@ public class InternalDocumentStore implements DocumentStore {
 	}
 
 	@Override
-	public Collection<Document> byPages(long spiderId, int pageSize) {
+	public Collection<Document> byPages(long spiderId, int pageSize, int pageNumber) {
 		PagingPredicate predicate = new PagingPredicate(pageSize);
 		predicate.setIterationType(IterationType.VALUE);
+		IntStream.range(0, pageNumber).forEach(i -> predicate.nextPage());
 		return hazelcastInstance.<String, Document> getMap("documentstore-" + spiderId + "-" + extractor.getName()).values(predicate);
 	}
 

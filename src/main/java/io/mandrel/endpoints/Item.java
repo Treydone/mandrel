@@ -1,19 +1,28 @@
 package io.mandrel.endpoints;
 
+import io.mandrel.gateway.Document;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-public class Item<T> {
+@EqualsAndHashCode(callSuper = false)
+@Accessors(chain = true)
+public class Item extends Document {
 
-	private String DT_RowId;
-	private String DT_RowClass;
+	private static final long serialVersionUID = 6406152284787009438L;
 
-	@JsonUnwrapped
-	private final T data;
+	@JsonProperty("DT_RowId")
+	private String rowId;
 
-	public static <T> Item<T> of(T data) {
-		return new Item<T>(data);
+	@JsonProperty("DT_RowClass")
+	private String rowClass;
+
+	public static Item of(Document data) {
+		Item item = new Item();
+		item.putAll(data);
+		return item;
 	}
 }

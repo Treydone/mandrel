@@ -79,7 +79,7 @@ public class CassandraDocumentStore implements DocumentStore {
 	}
 
 	@Override
-	public Collection<Document> byPages(long spiderId, int pageSize) {
+	public Collection<Document> byPages(long spiderId, int pageSize, int pageNumber) {
 		// TODO Auto-generated method stub
 		return null;
 	}

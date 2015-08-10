@@ -23,8 +23,8 @@
 </#macro>
 
 <#macro js>
-	<script src="/webjars/datatables/1.10.7/js/jquery.dataTables.min.js"></script>
-	<script src="/public/js/dataTables.bootstrap.min.js" type="text/javascript"></script>
+	<script src="/webjars/datatables/1.10.7/js/jquery.dataTables.js"></script>
+	<script src="/public/js/dataTables.bootstrap.js" type="text/javascript"></script>
 	<script>
 		$(document).ready(function() {
 		    $('#datatable').dataTable( {
@@ -34,15 +34,19 @@
 		        "scrollX": true,
 		        "searching": false,
 		        "ajax": {
-		            "url": "/spiders/${spider.id}/data/${extractor}",
+		            "url": "/spiders/${spider.id}/data/${extractor.name}",
 		            "type": "POST"
 		        },
 		        "columns": [
-		            { "data": "first_name" },
-		            { "data": "last_name" },
-		            { "data": "position" },
-		            { "data": "office" },
-		            { "data": "salary" }
+		        	<#list extractor.fields as field>
+                  	{ 
+                  		"data": "${field.name}[, ]",
+                  		"orderable": false,
+                  		"render": function ( data, type, full, meta ) {
+					      return type === 'display' && data.length > 40 ? '<span title="'+data+'">'+data.substr( 0, 38 )+'...</span>' : data;
+					    }
+                  	}<#sep>,</#sep>
+                  	</#list> 
 		        ]
 		    } );
 		} );		
@@ -54,35 +58,25 @@
             <div class="col-xs-12">
               <div class="box">
                 <div class="box-header">
-                  <h3 class="box-title">Data Table With Full Features</h3>
+                  <h3 class="box-title">Table</h3>
                 </div><!-- /.box-header -->
                 <div class="box-body">
                   <table id="datatable" class="table table-bordered table-striped">
                     <thead>
                       <tr>
-                        <th>Rendering engine</th>
-                        <th>Browser</th>
-                        <th>Platform(s)</th>
-                        <th>Engine version</th>
-                        <th>CSS grade</th>
+                      	<#list extractor.fields as field>
+                      	<th>${field.name}</th>
+                      	</#list> 
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>Trident</td>
-                        <td>Internet Explorer 4.0</td>
-                        <td>Win 95+</td>
-                        <td> 4</td>
-                        <td>X</td>
-                      </tr>
                     </tbody>
                     <tfoot>
                       <tr>
-                        <th>Rendering engine</th>
-                        <th>Browser</th>
-                        <th>Platform(s)</th>
-                        <th>Engine version</th>
-                        <th>CSS grade</th>
+                        <#list extractor.fields as field>
+                      	<th>${field.name}</th>
+                      	</#list> 
+                      </tr>
                       </tr>
                     </tfoot>
                   </table>
