@@ -83,4 +83,10 @@ public class CassandraDocumentStore implements DocumentStore {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public long total(long spiderId) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

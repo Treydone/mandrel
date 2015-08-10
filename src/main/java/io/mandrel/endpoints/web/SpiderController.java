@@ -62,7 +62,6 @@ public class SpiderController {
 		model.addAttribute("spider", spider);
 		model.addAttribute("json", mapper.writer(new DefaultPrettyPrinter()).writeValueAsString(spider));
 		model.addAttribute("metrics", metricsService.spider(id));
-		System.err.println(mapper.writer(new DefaultPrettyPrinter()).writeValueAsString(metricsService.spider(id)));
 		return "views/spider";
 	}
 

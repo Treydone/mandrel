@@ -47,7 +47,7 @@
                     <dt>Message</dt>
                     <dd>${message}</dd>
                     <dt>Trace</dt>
-                    <dd>${trace}</dd>
+                    <dd>${trace!""}</dd>
               	</dl>
             </div>
           </div>

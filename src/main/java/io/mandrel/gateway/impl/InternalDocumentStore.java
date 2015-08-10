@@ -101,6 +101,11 @@ public class InternalDocumentStore implements DocumentStore {
 	}
 
 	@Override
+	public long total(long spiderId) {
+		return hazelcastInstance.<String, Document> getMap("documentstore-" + spiderId + "-" + extractor.getName()).size();
+	}
+
+	@Override
 	public Collection<Document> byPages(long spiderId, int pageSize) {
 		PagingPredicate predicate = new PagingPredicate(pageSize);
 		predicate.setIterationType(IterationType.VALUE);

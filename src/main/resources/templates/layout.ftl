@@ -29,6 +29,14 @@
 
 </#macro>
 
+<#macro css>
+
+</#macro>
+
+<#macro aftercss>
+
+</#macro>
+
 <#macro display_page>
 <!DOCTYPE html>
 <html>
@@ -39,6 +47,8 @@
     <link href="/webjars/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
     <link href="/webjars/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css" />
     <link href="/public/css/jquery-jvectormap-1.2.2.css" rel="stylesheet" type="text/css" />
+    
+    <@css/>
     <link href="/public/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
     <link href="/public/css/_all-skins.min.css" rel="stylesheet" type="text/css" />
     
@@ -76,7 +86,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-	      <div class="sparkbar" style="margin-left: 47px;"></div>
+	      <div id="mainbar" style="margin-left: 47px;"></div>
         </nav>
       </header>
 
@@ -109,6 +119,11 @@
             <li>
               <a href="/spiders">
                 <i class="fa fa-tasks"></i> <span>Spiders</span>
+              </a>
+            </li>
+            <li>
+              <a href="/data">
+                <i class="fa fa-database"></i> <span>Data</span>
               </a>
             </li>
             <li>
@@ -328,10 +343,9 @@
     <script src="/webjars/jquery.sparkline/2.1.2/jquery.sparkline.min.js" type="text/javascript"></script>
     <script src="/public/js/jquery-jvectormap-1.2.2.min.js" type="text/javascript"></script>
     <script src="/public/js/jquery-jvectormap-world-mill-en.js" type="text/javascript"></script>
-    <script src="/public/js/app.min.js" type="text/javascript"></script>
     
     <script>
-    	$('.sparkbar')
+    	$('#mainbar')
     		.sparkline([90,50,90,70,83,63,90,50,90,0,0,0,0,0,0,0,061,83,63,90,50,90,70,61,83,63,90,50,90,70,61,83,63,90,50,90,0,0,0,0,90,50,90,70,83,63,90,50,90,0,0,0,0,0,0,0,061,83,63,90,50,90,70,61,83,63,90,50,90,70,61,83,63,90,50,90,0,0,0,0,0,0,0,0,0,0,70,61,83,63,90,50,90,70,61,83,63,90,50,90,70,61,83,63,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,90,50,90,70,0,0,0,0,0,0,0,0,0,061,83,63,90,50,90,70,61,83,63,90,50,90,70,61,83,63,90,50,90,0,0,0,0,0,0,0,0,0,0,70,61,83,63,90,50,90,70,61,83,63,90,50,90,70,61,83,63,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,70,61,83,63,90,50,90,70,61,83,63,90,50,90,70,61,83,63,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,70,61,83,63,90,50,90,70,61,83,63,90,50,90,70,61,83,63,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], { 
     			type: 'bar',
     			barColor: '#000',
@@ -340,6 +354,7 @@
     		 });
     </script>
     <@js/>
+    <script src="/public/js/app.min.js" type="text/javascript"></script>
   </body>
 </html>
 </#macro>

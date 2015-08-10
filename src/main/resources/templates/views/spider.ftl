@@ -444,8 +444,8 @@
 		                      </ul>
 		                    </div>
 		                  </div>
-		                  <a href="#" class="small-box-footer">
-		                  More info <i class="fa fa-arrow-circle-right"></i>
+		                  <a href="/spiders/${spider.id}/data/${extractor.name}" class="small-box-footer">
+		                  View data <i class="fa fa-arrow-circle-right"></i>
 		                </a>
 		              </div>
 		              </#list>
