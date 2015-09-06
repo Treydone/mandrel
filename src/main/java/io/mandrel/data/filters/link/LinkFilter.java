@@ -32,7 +32,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({ @Type(value = BooleanLinkFilters.AndFilter.class, name = "and"), @Type(value = BooleanLinkFilters.OrFilter.class, name = "or"),
 		@Type(value = BooleanLinkFilters.NotFilter.class, name = "not"), @Type(value = AllowedForDomainsFilter.class, name = "allowed_for_domains"),
 		@Type(value = SkipAncorFilter.class, name = "skip_ancor"), @Type(value = UrlPatternFilter.class, name = "pattern"),
-		@Type(value = StartWithFilter.class, name = "start_with"), @Type(value = SanitizeParamsFilter.class, name = "sanitize_params") })
+		@Type(value = StartWithFilter.class, name = "start_with"), @Type(value = SanitizeParamsFilter.class, name = "sanitize_params"),
+		@Type(value = QueryLinkFilter.class, name = "query") })
 @Data
 public abstract class LinkFilter implements Serializable {
 
