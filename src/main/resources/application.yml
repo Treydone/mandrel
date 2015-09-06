@@ -1,18 +1,7 @@
-environments:
-    dev:
-        url: http://dev.bar.com
-        name: Developer Setup
-    prod:
-        url: http://foo.bar.com
-        name: My Cool App    
-
 network:
     discovery:
         multicast:
             enabled: false
-
-http:
-    port: 8080
 
 server:
     port: 8080
@@ -20,17 +9,7 @@ server:
     
 spring:
     pidfile: application.pid
-    groovy:
-        template:
-            check-template-location: false
-    mustache:
-        suffix: .html
-            
-graphite:
-    enabled: false
-    port: 2003
-    host: localhost
-    
+ 
 logging:
     console:
         enabled: true

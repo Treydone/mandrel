@@ -102,6 +102,7 @@ import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.CharArrayBuffer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 
@@ -119,6 +120,15 @@ public class HCRequester extends Requester {
 
 	@JsonIgnore
 	private transient Semaphore available;
+	
+	@JsonProperty("max_line_length")
+	private int maxLineLength = -1;
+	
+	@JsonProperty("max_header_count")
+	private int maxHeaderCount = -1;
+	
+	@JsonProperty("io_thread_count")
+	private int ioThreadCount = Runtime.getRuntime().availableProcessors();
 
 	public void close() throws IOException {
 		client.close();
@@ -168,7 +178,8 @@ public class HCRequester extends Requester {
 		};
 
 		// Create I/O reactor configuration
-		IOReactorConfig ioReactorConfig = IOReactorConfig.custom().setIoThreadCount(Runtime.getRuntime().availableProcessors())
+		
+		IOReactorConfig ioReactorConfig = IOReactorConfig.custom().setIoThreadCount(ioThreadCount)
 				.setConnectTimeout(strategy.getConnectTimeout()).setSoReuseAddress(strategy.isReuseAddress()).setSoKeepAlive(strategy.isKeepAlive())
 				.setTcpNoDelay(strategy.isTcpNoDelay()).setSoTimeout(strategy.getSocketTimeout()).build();
 
@@ -184,8 +195,7 @@ public class HCRequester extends Requester {
 		PoolingNHttpClientConnectionManager connManager = new PoolingNHttpClientConnectionManager(ioReactor, connFactory, sessionStrategyRegistry, dnsResolver);
 
 		// Create message constraints
-		// TODO
-		MessageConstraints messageConstraints = MessageConstraints.custom().setMaxHeaderCount(-1).setMaxLineLength(-1).build();
+		MessageConstraints messageConstraints = MessageConstraints.custom().setMaxHeaderCount(maxHeaderCount).setMaxLineLength(maxLineLength).build();
 
 		// Create connection configuration
 		ConnectionConfig connectionConfig = ConnectionConfig.custom().setMalformedInputAction(CodingErrorAction.IGNORE)
@@ -268,7 +278,6 @@ public class HCRequester extends Requester {
 			} catch (InterruptedException e) {
 				throw Throwables.propagate(e);
 			}
-
 		}
 	}
 

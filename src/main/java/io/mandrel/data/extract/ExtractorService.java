@@ -181,12 +181,7 @@ public class ExtractorService {
 							results = extract(cachedSelectors, webPage, null, field.getExtractor(), converter);
 						}
 
-						if (results != null && !results.isEmpty()) {
-							results = format(webPage, field, results);
-
-							// Add it
-							document.put(field.getName(), results);
-						}
+						fillDocument(webPage, document, field, results);
 					}
 
 					return document;
@@ -203,12 +198,7 @@ public class ExtractorService {
 					DataConverter<?, String> converter = isBody ? DataConverter.BODY : DataConverter.DEFAULT;
 					List<? extends Object> results = extract(cachedSelectors, webPage, null, field.getExtractor(), converter);
 
-					if (results != null && !results.isEmpty()) {
-
-						results = format(webPage, field, results);
-						// Add it
-						document.put(field.getName(), results);
-					}
+					fillDocument(webPage, document, field, results);
 				}
 
 				documents = Arrays.asList(document);
@@ -216,6 +206,20 @@ public class ExtractorService {
 			}
 		}
 		return documents;
+	}
+
+	public void fillDocument(WebPage webPage, Document document, FieldExtractor field, List<? extends Object> results) {
+		if (results != null && !results.isEmpty()) {
+
+			if (field.isFirstOnly()) {
+				results = results.subList(0, 1);
+			}
+
+			results = format(webPage, field, results);
+
+			// Add it
+			document.put(field.getName(), results);
+		}
 	}
 
 	public <T, U> List<U> extract(Map<String, Instance<?>> selectors, WebPage webPage, byte[] segment, Extractor fieldExtractor, DataConverter<T, U> converter) {

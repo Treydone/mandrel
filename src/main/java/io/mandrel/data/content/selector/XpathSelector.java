@@ -34,6 +34,7 @@ import us.codecraft.xsoup.xevaluator.DefaultXElements;
 import us.codecraft.xsoup.xevaluator.XElement;
 import us.codecraft.xsoup.xevaluator.XPathEvaluator;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -59,9 +60,9 @@ public class XpathSelector extends BodySelector<XElement> {
 		Element element;
 		try {
 			if (!isSegment) {
-				element = Jsoup.parse(new ByteArrayInputStream(data), "UTF-8", webPage.getUrl().toString());
+				element = Jsoup.parse(new ByteArrayInputStream(data), Charsets.UTF_8.name(), webPage.getUrl().toString());
 			} else {
-				element = Jsoup.parseBodyFragment(new String(data, "UTF-8"), webPage.getUrl().toString()).body();
+				element = Jsoup.parseBodyFragment(new String(data, Charsets.UTF_8), webPage.getUrl().toString()).body();
 			}
 		} catch (IOException e) {
 			throw Throwables.propagate(e);

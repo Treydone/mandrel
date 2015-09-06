@@ -37,6 +37,9 @@ public class FieldExtractor extends NamedDataExtractorFormatter {
 	@JsonProperty("use_multiple")
 	private boolean useMultiple = false;
 
+	@JsonProperty("first_only")
+	private boolean firstOnly = true;
+
 	@JsonProperty("extractor")
 	private Extractor extractor;
 
