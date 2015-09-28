@@ -20,9 +20,9 @@ package io.mandrel.data.export;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.spider.SpiderService;
-import io.mandrel.gateway.WebPageStore;
-import io.mandrel.gateway.WebPageStore.Callback;
-import io.mandrel.http.WebPage;
+import io.mandrel.gateway.BlobStore;
+import io.mandrel.gateway.BlobStore.Callback;
+import io.mandrel.requests.WebPage;
 
 import java.io.Writer;
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class ExporterServiceTest {
 	private Writer writer;
 
 	@Mock
-	private WebPageStore store;
+	private BlobStore store;
 
 	@Captor
 	private ArgumentCaptor<Callback> captor;

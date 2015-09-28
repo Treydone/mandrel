@@ -19,7 +19,7 @@
 package io.mandrel.common.data;
 
 import io.mandrel.data.filters.link.LinkFilter;
-import io.mandrel.data.filters.page.WebPageFilter;
+import io.mandrel.data.filters.page.DataObjectFilter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class Filters implements Serializable {
 	private static final long serialVersionUID = -482772147190412226L;
 
 	@JsonProperty("pages")
-	private List<WebPageFilter> forPages = new ArrayList<>();
+	private List<DataObjectFilter> forPages = new ArrayList<>();
 	
 	@JsonProperty("links")
 	private List<LinkFilter> forLinks = new ArrayList<>();

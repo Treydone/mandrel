@@ -38,8 +38,8 @@ public class Politeness implements Serializable {
 	@JsonProperty("max_pages")
 	private long maxPages = 100;
 
-	// @JsonProperty("wait")
-	// private long wait = 100;
+	@JsonProperty("wait")
+	private long wait = 100;
 
 	@JsonProperty("ignore_robots_txt")
 	private boolean ignoreRobotsTxt = false;

@@ -20,7 +20,8 @@ package io.mandrel.data.export;
 
 import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.gateway.Document;
-import io.mandrel.http.WebPage;
+import io.mandrel.requests.Bag;
+import io.mandrel.requests.Metadata;
 
 import java.io.Writer;
 import java.util.ArrayList;
@@ -122,7 +123,7 @@ public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawEx
 	}
 
 	@Override
-	public void export(Collection<WebPage> documents) {
+	public void export(Collection<Bag<? extends Metadata>> documents) {
 		if (addHeader && !headerAdded) {
 			try {
 				csvWriter.writeHeader("url", "statusCode", "statusText", "lastCrawlDate", "outlinks", "headers");
@@ -135,12 +136,11 @@ public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawEx
 		List<Object> buffer = new ArrayList<>(6);
 
 		documents.forEach(page -> {
-			buffer.add(page.getUrl());
+			buffer.add(page.getMetadata().getUri());
 			buffer.add(page.getMetadata().getStatusCode());
 			buffer.add(page.getMetadata().getStatusText());
 			buffer.add(page.getMetadata().getLastCrawlDate());
 			buffer.add(page.getMetadata().getOutlinks());
-			buffer.add(page.getMetadata().getHeaders());
 
 			try {
 				csvWriter.write(buffer);

@@ -19,7 +19,7 @@
 package io.mandrel.gateway.impl;
 
 import io.mandrel.data.content.FieldExtractor;
-import io.mandrel.data.content.WebPageExtractor;
+import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.gateway.Document;
 
 import java.sql.Types;
@@ -62,7 +62,7 @@ public class JdbcDocumentBackedMap implements MapStore<String, Document>, MapLoa
 	private final boolean onlyFirstElement;
 
 	@JsonIgnore
-	private WebPageExtractor webPageExtractor;
+	private MetadataExtractor webPageExtractor;
 
 	private RowMapper<Document> getRowMapper() {
 		return (row, nb) -> {

@@ -18,8 +18,7 @@
  */
 package io.mandrel.gateway;
 
-import io.mandrel.data.content.WebPageExtractor;
-import io.mandrel.gateway.impl.CassandraDocumentStore;
+import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.gateway.impl.InternalDocumentStore;
 import io.mandrel.gateway.impl.JdbcDocumentStore;
 import io.mandrel.monitor.health.Checkable;
@@ -34,17 +33,16 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.hazelcast.core.HazelcastInstanceAware;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
-@JsonSubTypes({ @Type(value = InternalDocumentStore.class, name = "internal"), @Type(value = JdbcDocumentStore.class, name = "jdbc"),
-		@Type(value = CassandraDocumentStore.class, name = "cassandra") })
+@JsonSubTypes({ @Type(value = InternalDocumentStore.class, name = "internal"), @Type(value = JdbcDocumentStore.class, name = "jdbc") })
 public interface DocumentStore extends Checkable, Serializable, HazelcastInstanceAware {
 
 	String getType();
 
-	void init(WebPageExtractor webPageExtractor);
+	void init(MetadataExtractor webPageExtractor);
 
-	void save(long spiderId, Document doc);
+	void save(long spiderId, Document document);
 
-	void save(long spiderId, List<Document> data);
+	void save(long spiderId, List<Document> documents);
 
 	void deleteAllFor(long spiderId);
 
@@ -60,5 +58,4 @@ public interface DocumentStore extends Checkable, Serializable, HazelcastInstanc
 	Collection<Document> byPages(long spiderId, int pageSize, int pageNumber);
 
 	long total(long spiderId);
-
 }

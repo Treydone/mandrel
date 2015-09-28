@@ -28,7 +28,7 @@ import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.LinkFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
 import io.mandrel.data.filters.page.LargeFilter;
-import io.mandrel.data.filters.page.WebPageFilter;
+import io.mandrel.data.filters.page.DataObjectFilter;
 import io.mandrel.data.spider.SpiderServiceTest.LocalConfiguration;
 
 import java.io.IOException;
@@ -128,7 +128,7 @@ public class SpiderServiceTest {
 
 		String json = objectMapper.writeValueAsString(filter);
 		System.err.println(json);
-		WebPageFilter read = objectMapper.readValue(json, WebPageFilter.class);
+		DataObjectFilter read = objectMapper.readValue(json, DataObjectFilter.class);
 		assertEquals(filter, read);
 	}
 

@@ -25,7 +25,7 @@ import io.mandrel.data.content.Formatter;
 import io.mandrel.data.content.NamedDataExtractorFormatter;
 import io.mandrel.data.content.OutlinkExtractor;
 import io.mandrel.data.content.SourceType;
-import io.mandrel.data.content.WebPageExtractor;
+import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.data.content.selector.BodySelector;
 import io.mandrel.data.content.selector.CookieSelector;
 import io.mandrel.data.content.selector.DataConverter;
@@ -37,8 +37,8 @@ import io.mandrel.data.content.selector.SelectorService;
 import io.mandrel.data.content.selector.UrlSelector;
 import io.mandrel.data.spider.Link;
 import io.mandrel.gateway.Document;
-import io.mandrel.http.Cookie;
-import io.mandrel.http.WebPage;
+import io.mandrel.requests.Metadata;
+import io.mandrel.requests.http.Cookie;
 import io.mandrel.script.ScriptingService;
 
 import java.util.ArrayList;
@@ -82,10 +82,10 @@ public class ExtractorService {
 		this.selectorService = selectorService;
 	}
 
-	public Pair<Set<Link>, Set<String>> extractAndFilterOutlinks(Spider spider, String url, Map<String, Instance<?>> cachedSelectors, WebPage webPage,
+	public Pair<Set<Link>, Set<String>> extractAndFilterOutlinks(Spider spider, String url, Map<String, Instance<?>> cachedSelectors, Metadata data,
 			OutlinkExtractor ol) {
 		// Find outlinks in page
-		Set<Link> outlinks = extractOutlinks(cachedSelectors, webPage, ol);
+		Set<Link> outlinks = extractOutlinks(cachedSelectors, data, ol);
 		log.trace("Finding outlinks for url {}: {}", url, outlinks);
 
 		// Filter outlinks
@@ -100,16 +100,15 @@ public class ExtractorService {
 
 		Set<String> allFilteredOutlinks = null;
 		if (filteredOutlinks != null) {
-			allFilteredOutlinks = spider.getStores().getPageMetadataStore()
-					.filter(spider.getId(), filteredOutlinks, spider.getClient().getStrategy().getPoliteness());
+			allFilteredOutlinks = spider.getStores().getMetadataStore().filter(spider.getId(), filteredOutlinks, spider.getClient().getPoliteness());
 		}
 		log.trace("And filtering {}", filteredOutlinks);
 		return Pair.of(outlinks, allFilteredOutlinks);
 	}
 
-	public Set<Link> extractOutlinks(Map<String, Instance<?>> cachedSelectors, WebPage webPage, OutlinkExtractor extractor) {
+	public Set<Link> extractOutlinks(Map<String, Instance<?>> cachedSelectors, Metadata data, OutlinkExtractor extractor) {
 
-		List<Link> outlinks = extract(cachedSelectors, webPage, null, extractor.getExtractor(), new DataConverter<XElement, Link>() {
+		List<Link> outlinks = extract(cachedSelectors, data, null, extractor.getExtractor(), new DataConverter<XElement, Link>() {
 			public Link convert(XElement element) {
 				Link link = new Link();
 
@@ -129,15 +128,15 @@ public class ExtractorService {
 		});
 
 		if (outlinks != null && !outlinks.isEmpty()) {
-			outlinks = (List<Link>) format(webPage, extractor, outlinks);
+			outlinks = (List<Link>) format(data, extractor, outlinks);
 		}
 
 		return new HashSet<>(outlinks);
 	}
 
-	public List<Document> extractThenFormatThenStore(long spiderId, Map<String, Instance<?>> cachedSelectors, WebPage webPage, WebPageExtractor extractor) {
+	public List<Document> extractThenFormatThenStore(long spiderId, Map<String, Instance<?>> cachedSelectors, Metadata data, MetadataExtractor extractor) {
 
-		List<Document> documents = extractThenFormat(cachedSelectors, webPage, extractor);
+		List<Document> documents = extractThenFormat(cachedSelectors, data, extractor);
 
 		// Store the result
 		if (documents != null) {
@@ -147,7 +146,7 @@ public class ExtractorService {
 		return documents;
 	}
 
-	public List<Document> extractThenFormat(Map<String, Instance<?>> cachedSelectors, WebPage webPage, WebPageExtractor extractor) {
+	public List<Document> extractThenFormat(Map<String, Instance<?>> cachedSelectors, Metadata data, MetadataExtractor extractor) {
 		Preconditions.checkNotNull(extractor.getFields(), "No field for this extractor...");
 		Preconditions.checkNotNull(extractor.getDocumentStore(), "No datastore for this extractor...");
 		Preconditions.checkNotNull(cachedSelectors, "Cached selectors can not be null...");
@@ -155,14 +154,14 @@ public class ExtractorService {
 		List<Document> documents = null;
 
 		if (extractor.getFilters() == null && extractor.getFilters().getForLinks() == null || extractor.getFilters().getForLinks() != null
-				&& extractor.getFilters().getForLinks().stream().allMatch(f -> f.isValid(new Link().setUri(webPage.getUrl().toString())))) {
+				&& extractor.getFilters().getForLinks().stream().allMatch(f -> f.isValid(new Link().setUri(data.getUri())))) {
 
 			if (extractor.getMultiple() != null) {
 
 				documents = new ArrayList<>();
 
 				// Extract the multiple
-				List<String> segments = extract(cachedSelectors, webPage, null, extractor.getMultiple(), DataConverter.BODY);
+				List<String> segments = extract(cachedSelectors, data, null, extractor.getMultiple(), DataConverter.BODY);
 
 				documents = segments.stream().map(segment -> {
 
@@ -175,13 +174,13 @@ public class ExtractorService {
 
 						boolean isBody = SourceType.BODY.equals(field.getExtractor().getSource());
 						if (field.isUseMultiple() && isBody) {
-							results = extract(cachedSelectors, webPage, segment.getBytes(Charsets.UTF_8), field.getExtractor(), DataConverter.BODY);
+							results = extract(cachedSelectors, data, segment.getBytes(Charsets.UTF_8), field.getExtractor(), DataConverter.BODY);
 						} else {
 							DataConverter<?, String> converter = isBody ? DataConverter.BODY : DataConverter.DEFAULT;
-							results = extract(cachedSelectors, webPage, null, field.getExtractor(), converter);
+							results = extract(cachedSelectors, data, null, field.getExtractor(), converter);
 						}
 
-						fillDocument(webPage, document, field, results);
+						fillDocument(data, document, field, results);
 					}
 
 					return document;
@@ -196,9 +195,9 @@ public class ExtractorService {
 					// Extract the value
 					boolean isBody = SourceType.BODY.equals(field.getExtractor().getSource());
 					DataConverter<?, String> converter = isBody ? DataConverter.BODY : DataConverter.DEFAULT;
-					List<? extends Object> results = extract(cachedSelectors, webPage, null, field.getExtractor(), converter);
+					List<? extends Object> results = extract(cachedSelectors, data, null, field.getExtractor(), converter);
 
-					fillDocument(webPage, document, field, results);
+					fillDocument(data, document, field, results);
 				}
 
 				documents = Arrays.asList(document);
@@ -208,21 +207,21 @@ public class ExtractorService {
 		return documents;
 	}
 
-	public void fillDocument(WebPage webPage, Document document, FieldExtractor field, List<? extends Object> results) {
+	public void fillDocument(Metadata data, Document document, FieldExtractor field, List<? extends Object> results) {
 		if (results != null && !results.isEmpty()) {
 
 			if (field.isFirstOnly()) {
 				results = results.subList(0, 1);
 			}
 
-			results = format(webPage, field, results);
+			results = format(data, field, results);
 
 			// Add it
 			document.put(field.getName(), results);
 		}
 	}
 
-	public <T, U> List<U> extract(Map<String, Instance<?>> selectors, WebPage webPage, byte[] segment, Extractor fieldExtractor, DataConverter<T, U> converter) {
+	public <T, U> List<U> extract(Map<String, Instance<?>> selectors, Metadata data, byte[] segment, Extractor fieldExtractor, DataConverter<T, U> converter) {
 		Preconditions.checkNotNull(fieldExtractor, "There is no field extractor...");
 		Preconditions.checkNotNull(fieldExtractor.getType(), "Extractor without type");
 		// Preconditions.checkNotNull(fieldExtractor.getValue(),
@@ -231,7 +230,7 @@ public class ExtractorService {
 		Instance<T> instance;
 		if (segment != null) {
 			Selector<T> selector = getSelector(fieldExtractor);
-			instance = ((BodySelector<T>) selector).init(webPage, segment, true);
+			instance = ((BodySelector<T>) selector).init(data, segment, true);
 		} else {
 			// Reuse the previous instance selector for this web page
 			String cacheKey = fieldExtractor.getType() + "-" + fieldExtractor.getSource().toString().toLowerCase(Locale.ROOT);
@@ -241,21 +240,21 @@ public class ExtractorService {
 				Selector<T> selector = getSelector(fieldExtractor);
 
 				if (SourceType.BODY.equals(fieldExtractor.getSource())) {
-					instance = ((BodySelector<T>) selector).init(webPage, webPage.getBody(), false);
+					instance = ((BodySelector<T>) selector).init(data, data.getBody(), false);
 				} else if (SourceType.HEADERS.equals(fieldExtractor.getSource())) {
-					instance = ((HeaderSelector<T>) selector).init(webPage, webPage.getMetadata().getHeaders());
+					instance = ((HeaderSelector<T>) selector).init(data, data.getMetadata().getHeaders());
 				} else if (SourceType.URL.equals(fieldExtractor.getSource())) {
-					instance = ((UrlSelector<T>) selector).init(webPage, webPage.getUrl());
+					instance = ((UrlSelector<T>) selector).init(data, data.getUri());
 				} else if (SourceType.COOKIE.equals(fieldExtractor.getSource())) {
 					instance = ((CookieSelector<T>) selector).init(
-							webPage,
-							webPage.getMetadata()
+							data,
+							data.getMetadata()
 									.getCookies()
 									.stream()
 									.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie.getExpires(),
 											cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList()));
 				} else if (SourceType.EMPTY.equals(fieldExtractor.getSource())) {
-					instance = ((EmptySelector<T>) selector).init(webPage);
+					instance = ((EmptySelector<T>) selector).init(data);
 				}
 
 				selectors.put(cacheKey, instance);
@@ -273,7 +272,7 @@ public class ExtractorService {
 		return selector;
 	}
 
-	public List<? extends Object> format(WebPage webPage, NamedDataExtractorFormatter dataExtractorFormatter, List<? extends Object> results) {
+	public List<? extends Object> format(Metadata data, NamedDataExtractorFormatter dataExtractorFormatter, List<? extends Object> results) {
 		// ... and format it if necessary
 		Formatter formatter = dataExtractorFormatter.getFormatter();
 		if (formatter != null) {
@@ -282,7 +281,7 @@ public class ExtractorService {
 			ScriptEngine engine = scriptingService.getEngineByName(formatter.getType());
 
 			return results.stream().map(result -> {
-				ScriptContext bindings = scriptingService.getBindings(webPage, result);
+				ScriptContext bindings = scriptingService.getBindings(data, result);
 				try {
 					return scriptingService.execScript(new String(formatter.getValue(), Charsets.UTF_8), engine, bindings);
 				} catch (Exception e) {

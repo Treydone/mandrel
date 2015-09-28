@@ -20,10 +20,10 @@ package io.mandrel.gateway.impl;
 
 import io.mandrel.common.data.Politeness;
 import io.mandrel.data.spider.Link;
-import io.mandrel.gateway.PageMetadataStore;
-import io.mandrel.gateway.WebPageStore;
-import io.mandrel.http.Metadata;
-import io.mandrel.http.WebPage;
+import io.mandrel.gateway.BlobStore;
+import io.mandrel.gateway.MetadataStore;
+import io.mandrel.requests.Bag;
+import io.mandrel.requests.Metadata;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -44,7 +44,7 @@ import com.hazelcast.query.PagingPredicate;
 import com.hazelcast.util.IterationType;
 
 @Data
-public class InternalStore implements WebPageStore, PageMetadataStore {
+public class InternalStore implements BlobStore, MetadataStore {
 
 	private static final long serialVersionUID = -775049235484042261L;
 
@@ -55,26 +55,32 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 	public InternalStore() {
 	}
 
+	@Override
 	public boolean check() {
 		return true;
 	}
 
+	@Override
 	public void init(Map<String, Object> properties) {
 
 	}
 
-	public void addPage(long spiderId, String url, WebPage webPage) {
-		getPageMap(spiderId).put(url, webPage);
+	@Override
+	public void addMetadata(long spiderId, String url, Metadata webPage) {
+		getPageMetaMap(spiderId).put(url, webPage);
 	}
 
-	public WebPage getPage(long spiderId, String url) {
+	@Override
+	public void addBag(long spiderId, String url, Bag<? extends Metadata> bag) {
+		getPageMap(spiderId).set(url, bag);
+	}
+
+	@Override
+	public Bag<? extends Metadata> getBag(long spiderId, String url) {
 		return getPageMap(spiderId).get(url);
 	}
 
-	public void addMetadata(long spiderId, String url, Metadata metadata) {
-		getPageMetaMap(spiderId).set(url, metadata);
-	}
-
+	@Override
 	public Set<String> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
 
 		if (outlinks == null) {
@@ -101,6 +107,7 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 		}).map(l -> l.getUri()).collect(Collectors.toSet());
 	}
 
+	@Override
 	public void deleteAllFor(long spiderId) {
 		getPageMap(spiderId).destroy();
 		getPageMetaMap(spiderId).destroy();
@@ -113,7 +120,7 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 
 		boolean loop = true;
 		while (loop) {
-			Collection<WebPage> values = getPageMap(spiderId).values(predicate);
+			Collection<Bag<? extends Metadata>> values = getPageMap(spiderId).values(predicate);
 			loop = callback.on(values);
 			predicate.nextPage();
 		}
@@ -124,12 +131,12 @@ public class InternalStore implements WebPageStore, PageMetadataStore {
 		return getPageMetaMap(spiderId).get(url);
 	}
 
-	public IMap<String, WebPage> getPageMap(long spiderId) {
-		return hazelcastInstance.<String, WebPage> getMap("pagestore-" + spiderId);
+	public IMap<String, Bag<? extends Metadata>> getPageMap(long spiderId) {
+		return hazelcastInstance.<String, Bag<? extends Metadata>> getMap("blob-" + spiderId);
 	}
 
 	public IMap<String, Metadata> getPageMetaMap(long spiderId) {
-		return hazelcastInstance.<String, Metadata> getMap("pagemetastore-" + spiderId);
+		return hazelcastInstance.<String, Metadata> getMap("metadata-" + spiderId);
 	}
 
 	@Override

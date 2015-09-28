@@ -18,25 +18,23 @@
  */
 package io.mandrel.gateway.impl;
 
-import io.mandrel.http.WebPage;
+import io.mandrel.requests.Bag;
+import io.mandrel.requests.Metadata;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import lombok.Data;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.support.SqlLobValue;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.pool.KryoFactory;
 import com.esotericsoftware.kryo.pool.KryoPool;
@@ -44,7 +42,7 @@ import com.hazelcast.core.MapLoader;
 import com.hazelcast.core.MapStore;
 
 @Data
-public class JdbcRawBackedMap implements MapStore<String, WebPage>, MapLoader<String, WebPage> {
+public class JdbcRawBackedMap implements MapStore<String, Bag<? extends Metadata>>, MapLoader<String, Bag<? extends Metadata>> {
 
 	private final JdbcTemplate jdbcTemplate;
 
@@ -65,7 +63,7 @@ public class JdbcRawBackedMap implements MapStore<String, WebPage>, MapLoader<St
 	private KryoFactory factory = new KryoFactory() {
 		public Kryo create() {
 			Kryo kryo = new Kryo();
-			kryo.register(WebPage.class);
+			// kryo.register(Bag<? extends Metadata>.class);
 			return kryo;
 		}
 	};
@@ -73,27 +71,36 @@ public class JdbcRawBackedMap implements MapStore<String, WebPage>, MapLoader<St
 	private KryoPool pool = new KryoPool.Builder(factory).softReferences().build();
 
 	@Override
-	public WebPage load(String key) {
+	public Bag<? extends Metadata> load(String key) {
 		Kryo kryo = pool.borrow();
 		try {
-			return jdbcTemplate.queryForObject(selectKeyQuery + " " + whereClause + " ('" + key + "')",
-					(row, nb) -> kryo.readObject(new Input(row.getBlob(2).getBinaryStream()), WebPage.class));
-		} catch (IncorrectResultSizeDataAccessException e) {
+			// return jdbcTemplate.queryForObject(selectKeyQuery + " " +
+			// whereClause + " ('" + key + "')",
+			// (row, nb) -> kryo.readObject(new
+			// Input(row.getBlob(2).getBinaryStream()), Bag<? extends
+			// Metadata>.class));
 			return null;
+//		} catch (IncorrectResultSizeDataAccessException e) {
+//			return null;
 		} finally {
 			pool.release(kryo);
 		}
 	}
 
 	@Override
-	public Map<String, WebPage> loadAll(Collection<String> keys) {
+	public Map<String, Bag<? extends Metadata>> loadAll(Collection<String> keys) {
 		Kryo kryo = pool.borrow();
 		try {
-			List<WebPage> results = jdbcTemplate.query(selectQuery + " " + whereClause + " ('" + StringUtils.join(keys, "','") + "')",
-					(row, nb) -> kryo.readObject(new Input(row.getBlob(2).getBinaryStream()), WebPage.class));
-			if (results != null) {
-				return results.stream().collect(Collectors.toMap(w -> w.getUrl().toString(), w -> w));
-			}
+			// List<Bag<? extends Metadata>> results =
+			// jdbcTemplate.query(selectQuery + " " + whereClause + " ('" +
+			// StringUtils.join(keys, "','") + "')",
+			// (row, nb) -> kryo.readObject(new
+			// Input(row.getBlob(2).getBinaryStream()), Bag<? extends
+			// Metadata>.class));
+			// if (results != null) {
+			// return results.stream().collect(Collectors.toMap(w ->
+			// w.getUrl().toString(), w -> w));
+			// }
 			return null;
 		} finally {
 			pool.release(kryo);
@@ -104,11 +111,15 @@ public class JdbcRawBackedMap implements MapStore<String, WebPage>, MapLoader<St
 	public Set<String> loadAllKeys() {
 		Kryo kryo = pool.borrow();
 		try {
-			List<WebPage> results = jdbcTemplate.query(selectQuery,
-					(row, nb) -> kryo.readObject(new Input(row.getBlob(2).getBinaryStream()), WebPage.class));
-			if (results != null) {
-				return results.stream().map(w -> w.getUrl().toString()).collect(Collectors.toSet());
-			}
+			// List<Bag<? extends Metadata>> results =
+			// jdbcTemplate.query(selectQuery,
+			// (row, nb) -> kryo.readObject(new
+			// Input(row.getBlob(2).getBinaryStream()), Bag<? extends
+			// Metadata>.class));
+			// if (results != null) {
+			// return results.stream().map(w ->
+			// w.getUrl().toString()).collect(Collectors.toSet());
+			// }
 			return null;
 		} finally {
 			pool.release(kryo);
@@ -116,7 +127,7 @@ public class JdbcRawBackedMap implements MapStore<String, WebPage>, MapLoader<St
 	}
 
 	@Override
-	public void store(String key, WebPage value) {
+	public void store(String key, Bag<? extends Metadata> value) {
 		Kryo kryo = pool.borrow();
 		try {
 			LobHandler lobHandler = new DefaultLobHandler();
@@ -129,7 +140,7 @@ public class JdbcRawBackedMap implements MapStore<String, WebPage>, MapLoader<St
 	}
 
 	@Override
-	public void storeAll(Map<String, WebPage> map) {
+	public void storeAll(Map<String, Bag<? extends Metadata>> map) {
 		Kryo kryo = pool.borrow();
 		try {
 			map.entrySet().forEach(e -> {

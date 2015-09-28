@@ -22,12 +22,12 @@ import io.mandrel.data.content.Extractor;
 import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.data.content.OutlinkExtractor;
 import io.mandrel.data.content.SourceType;
-import io.mandrel.data.content.WebPageExtractor;
+import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.data.content.selector.SelectorService;
 import io.mandrel.data.spider.Link;
 import io.mandrel.gateway.Document;
 import io.mandrel.gateway.DocumentStore;
-import io.mandrel.http.WebPage;
+import io.mandrel.requests.WebPage;
 import io.mandrel.script.ScriptingService;
 
 import java.net.MalformedURLException;
@@ -67,7 +67,7 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
-		WebPageExtractor extractor = new WebPageExtractor();
+		MetadataExtractor extractor = new MetadataExtractor();
 
 		// Actions
 		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
@@ -80,7 +80,7 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
-		WebPageExtractor extractor = new WebPageExtractor();
+		MetadataExtractor extractor = new MetadataExtractor();
 
 		// Actions
 		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
@@ -93,7 +93,7 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
-		WebPageExtractor extractor = new WebPageExtractor();
+		MetadataExtractor extractor = new MetadataExtractor();
 
 		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
@@ -110,7 +110,7 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
-		WebPageExtractor extractor = new WebPageExtractor();
+		MetadataExtractor extractor = new MetadataExtractor();
 
 		extractor.setDocumentStore(documentStore);
 		FieldExtractor field = new FieldExtractor();
@@ -128,7 +128,7 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
-		WebPageExtractor extractor = new WebPageExtractor();
+		MetadataExtractor extractor = new MetadataExtractor();
 
 		extractor.setDocumentStore(documentStore);
 		FieldExtractor field = new FieldExtractor();
@@ -149,7 +149,7 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
-		WebPageExtractor extractor = new WebPageExtractor();
+		MetadataExtractor extractor = new MetadataExtractor();
 
 		extractor.setDocumentStore(documentStore);
 		FieldExtractor field = new FieldExtractor();
@@ -172,7 +172,7 @@ public class ExtractorServiceTest {
 		byte[] stream = "<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes();
 
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
-		WebPageExtractor extractor = new WebPageExtractor();
+		MetadataExtractor extractor = new MetadataExtractor();
 
 		extractor.setDocumentStore(documentStore);
 		FieldExtractor field = new FieldExtractor();
@@ -200,7 +200,7 @@ public class ExtractorServiceTest {
 		byte[] stream = "<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes();
 
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
-		WebPageExtractor extractor = new WebPageExtractor();
+		MetadataExtractor extractor = new MetadataExtractor();
 
 		extractor.setDocumentStore(documentStore);
 
@@ -240,7 +240,7 @@ public class ExtractorServiceTest {
 				.getBytes();
 
 		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
-		WebPageExtractor extractor = new WebPageExtractor();
+		MetadataExtractor extractor = new MetadataExtractor();
 		extractor.setDocumentStore(documentStore);
 
 		FieldExtractor dateField = new FieldExtractor();

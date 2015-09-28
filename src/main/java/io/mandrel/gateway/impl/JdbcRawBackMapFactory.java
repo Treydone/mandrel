@@ -18,7 +18,8 @@
  */
 package io.mandrel.gateway.impl;
 
-import io.mandrel.http.WebPage;
+import io.mandrel.requests.Bag;
+import io.mandrel.requests.Metadata;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
@@ -39,10 +40,10 @@ import com.hazelcast.core.MapLoader;
 import com.hazelcast.core.MapStoreFactory;
 
 @Slf4j
-public class JdbcRawBackMapFactory implements MapStoreFactory<String, WebPage> {
+public class JdbcRawBackMapFactory implements MapStoreFactory<String, Bag<? extends Metadata>> {
 
 	@Override
-	public MapLoader<String, WebPage> newMapStore(String mapName, Properties properties) {
+	public MapLoader<String, Bag<? extends Metadata>> newMapStore(String mapName, Properties properties) {
 		Map<String, String> configuration = properties.entrySet().stream().collect(Collectors.toMap(k -> k.getKey().toString(), v -> v.getValue().toString()));
 
 		PoolConfiguration pool = new PoolProperties();

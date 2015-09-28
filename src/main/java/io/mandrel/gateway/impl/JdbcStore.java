@@ -18,8 +18,8 @@
  */
 package io.mandrel.gateway.impl;
 
-import io.mandrel.http.Metadata;
-import io.mandrel.http.WebPage;
+import io.mandrel.requests.Bag;
+import io.mandrel.requests.Metadata;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -75,10 +75,10 @@ public class JdbcStore extends InternalStore {
 	}
 
 	@Override
-	public IMap<String, WebPage> getPageMap(long spiderId) {
+	public IMap<String, Bag<? extends Metadata>> getPageMap(long spiderId) {
 		String mapKey = "pagestore-" + spiderId;
 		prepare(mapKey);
-		return hazelcastInstance.<String, WebPage> getMap(mapKey);
+		return hazelcastInstance.<String, Bag<? extends Metadata>> getMap(mapKey);
 	}
 
 	@Override

@@ -20,18 +20,11 @@ package io.mandrel.data.spider;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.State;
-import io.mandrel.common.robots.ExtendedRobotRules;
-import io.mandrel.common.robots.RobotsTxtUtils;
-import io.mandrel.data.content.selector.Selector.Instance;
-import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.SkipAncorFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
 import io.mandrel.data.source.FixedSource;
 import io.mandrel.data.source.Source;
-import io.mandrel.gateway.Document;
-import io.mandrel.http.Requester;
-import io.mandrel.http.WebPage;
 import io.mandrel.task.TaskService;
 import io.mandrel.timeline.SpiderEvent;
 import io.mandrel.timeline.SpiderEvent.SpiderEventType;
@@ -39,13 +32,11 @@ import io.mandrel.timeline.TimelineService;
 
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,9 +47,7 @@ import javax.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.kohsuke.randname.RandomNameGenerator;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindException;
@@ -66,12 +55,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
 import com.hazelcast.core.HazelcastInstance;
-
-import crawlercommons.sitemaps.AbstractSiteMap;
-import crawlercommons.sitemaps.SiteMapIndex;
-import crawlercommons.sitemaps.SiteMapParser;
 
 @Component
 @Slf4j
@@ -81,10 +65,6 @@ public class SpiderService {
 	private final SpiderRepository spiderRepository;
 
 	private final TaskService taskService;
-
-	private final ExtractorService extractorService;
-
-	private final Requester requester;
 
 	private final HazelcastInstance instance;
 
@@ -116,9 +96,9 @@ public class SpiderService {
 	}
 
 	public void injectAndInit(Spider spider) {
-		spider.getStores().getPageMetadataStore().setHazelcastInstance(instance);
-		if (spider.getStores().getPageStore() != null) {
-			spider.getStores().getPageStore().setHazelcastInstance(instance);
+		spider.getStores().getMetadataStore().setHazelcastInstance(instance);
+		if (spider.getStores().getBlobStore() != null) {
+			spider.getStores().getBlobStore().setHazelcastInstance(instance);
 		}
 		if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
 			spider.getExtractors().getPages().forEach(ex -> ex.getDocumentStore().setHazelcastInstance(instance));
@@ -127,9 +107,9 @@ public class SpiderService {
 		// TODO
 		Map<String, Object> properties = new HashMap<>();
 
-		spider.getStores().getPageMetadataStore().init(properties);
-		if (spider.getStores().getPageStore() != null) {
-			spider.getStores().getPageStore().init(properties);
+		spider.getStores().getMetadataStore().init(properties);
+		if (spider.getStores().getBlobStore() != null) {
+			spider.getStores().getBlobStore().init(properties);
 		}
 	}
 
@@ -287,8 +267,8 @@ public class SpiderService {
 			taskService.shutdownAllExecutorService(spider);
 
 			// Delete data
-				if (spider.getStores().getPageStore() != null) {
-					spider.getStores().getPageStore().deleteAllFor(spiderId);
+				if (spider.getStores().getBlobStore() != null) {
+					spider.getStores().getBlobStore().deleteAllFor(spiderId);
 				}
 				spider.getExtractors().getPages().stream().forEach(ex -> ex.getDocumentStore().deleteAllFor(spiderId));
 
@@ -297,92 +277,5 @@ public class SpiderService {
 
 				return spider;
 			});
-	}
-
-	public Optional<Analysis> analyze(Long id, String source) {
-		return get(id).map(spider -> {
-
-			WebPage webPage;
-			try {
-				webPage = requester.getBlocking(source, spider);
-			} catch (Exception e) {
-				throw Throwables.propagate(e);
-			}
-			log.trace("Getting response for {}", source);
-
-			Analysis report = buildReport(spider, webPage);
-
-			return report;
-		});
-	}
-
-	protected Analysis buildReport(Spider spider, WebPage webPage) {
-
-		injectAndInit(spider);
-
-		Analysis report = new Analysis();
-		if (spider.getExtractors() != null) {
-			Map<String, Instance<?>> cachedSelectors = new HashMap<>();
-
-			// Page extraction
-			if (spider.getExtractors().getPages() != null) {
-				Map<String, List<Document>> documentsByExtractor = spider.getExtractors().getPages().stream()
-						.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(cachedSelectors, webPage, ex)))
-						.filter(pair -> pair != null && pair.getKey() != null && pair.getValue() != null)
-						.collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
-				report.setDocuments(documentsByExtractor);
-			}
-
-			// Link extraction
-			if (spider.getExtractors().getOutlinks() != null) {
-				Map<String, Pair<Set<Link>, Set<String>>> outlinksByExtractor = spider.getExtractors().getOutlinks().stream().map(ol -> {
-					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(spider, webPage.getUrl().toString(), cachedSelectors, webPage, ol));
-				}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
-
-				report.setOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getLeft()));
-				report.setFilteredOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getRight()));
-			}
-
-			// Robots.txt
-			URL pageURL = webPage.getUrl();
-			String robotsTxtUrl = pageURL.getProtocol() + "://" + pageURL.getHost() + ":" + pageURL.getPort() + "/robots.txt";
-			ExtendedRobotRules robotRules = RobotsTxtUtils.getRobotRules(robotsTxtUrl);
-			report.setRobotRules(robotRules);
-
-			// Sitemaps
-			if (robotRules != null && robotRules.getSitemaps() != null) {
-				Map<String, List<AbstractSiteMap>> sitemaps = new HashMap<>();
-				robotRules.getSitemaps().forEach(url -> {
-					List<AbstractSiteMap> results = getSitemapsForUrl(url);
-					sitemaps.put(url, results);
-				});
-				report.setSitemaps(sitemaps);
-			}
-		}
-
-		report.setMetadata(webPage.getMetadata());
-		return report;
-	}
-
-	public List<AbstractSiteMap> getSitemapsForUrl(String sitemapUrl) {
-		List<AbstractSiteMap> sitemaps = new ArrayList<>();
-
-		SiteMapParser siteMapParser = new SiteMapParser();
-		try {
-			WebPage page = requester.getBlocking(sitemapUrl);
-			List<String> headers = page.getMetadata().getHeaders().get(HttpHeaders.CONTENT_TYPE);
-			String contentType = headers != null && headers.size() > 0 ? headers.get(0) : "text/xml";
-
-			AbstractSiteMap sitemap = siteMapParser.parseSiteMap(contentType, page.getBody(), new URL(sitemapUrl));
-
-			if (sitemap.isIndex()) {
-				sitemaps.addAll(((SiteMapIndex) sitemap).getSitemaps());
-			} else {
-				sitemaps.add(sitemap);
-			}
-		} catch (Exception e) {
-			log.debug("", e);
-		}
-		return sitemaps;
 	}
 }

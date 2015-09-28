@@ -18,7 +18,7 @@
  */
 package io.mandrel.gateway.impl;
 
-import io.mandrel.data.content.WebPageExtractor;
+import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.gateway.Document;
 import io.mandrel.gateway.DocumentStore;
 
@@ -45,7 +45,7 @@ public class InternalDocumentStore implements DocumentStore {
 	private static final long serialVersionUID = -2445958974306201476L;
 
 	@JsonIgnore
-	protected WebPageExtractor extractor;
+	protected MetadataExtractor extractor;
 
 	@JsonIgnore
 	@Getter(value = AccessLevel.NONE)
@@ -68,7 +68,7 @@ public class InternalDocumentStore implements DocumentStore {
 	}
 
 	@Override
-	public void init(WebPageExtractor webPageExtractor) {
+	public void init(MetadataExtractor webPageExtractor) {
 		this.extractor = webPageExtractor;
 	}
 

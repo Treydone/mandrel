@@ -20,6 +20,7 @@ package io.mandrel.data.spider;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.messaging.UrlsQueueService;
+import io.mandrel.requests.Requester;
 
 import java.io.Serializable;
 
@@ -63,15 +64,16 @@ public class SpiderTask implements Runnable, HazelcastInstanceAware, Serializabl
 		try {
 			spiderService.injectAndInit(spider);
 
-			// Prepare client
-			if (spider.getClient().getStrategy().getNameResolver() != null) {
-				spider.getClient().getStrategy().getNameResolver().init();
+			for (Requester<?> requester : spider.getClient().getRequesters()) {
+				// Prepare client
+				if (requester.getStrategy().getNameResolver() != null) {
+					requester.getStrategy().getNameResolver().init();
+				}
+				if (requester.getStrategy().getProxyServersSource() != null) {
+					requester.getStrategy().getProxyServersSource().init();
+				}
+				requester.init();
 			}
-			if (spider.getClient().getStrategy().getProxyServersSource() != null) {
-				spider.getClient().getStrategy().getProxyServersSource().init();
-			}
-			spider.getClient().getRequester().setStrategy(spider.getClient().getStrategy());
-			spider.getClient().getRequester().init();
 
 			if (spider.getExtractors().getPages() != null) {
 				spider.getExtractors().getPages().stream().forEach(ex -> ex.getDocumentStore().init(ex));

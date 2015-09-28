@@ -18,15 +18,15 @@
  */
 package io.mandrel.data.content.selector;
 
-import io.mandrel.http.Cookie;
-import io.mandrel.http.WebPage;
+import io.mandrel.requests.Metadata;
+import io.mandrel.requests.http.Cookie;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class SimpleCookieSelector extends CookieSelector<String> {
 
-	public Instance<String> init(WebPage webpage, List<Cookie> cookies) {
+	public Instance<String> init(Metadata data, List<Cookie> cookies) {
 		return new Instance<String>() {
 			@Override
 			public <T> List<T> select(String value, DataConverter<String, T> converter) {

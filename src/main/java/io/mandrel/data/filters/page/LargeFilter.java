@@ -18,17 +18,17 @@
  */
 package io.mandrel.data.filters.page;
 
-import io.mandrel.http.WebPage;
+import io.mandrel.requests.Metadata;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class LargeFilter extends WebPageFilter {
+public class LargeFilter extends DataObjectFilter {
 
 	private static final long serialVersionUID = -5624619977747831604L;
 
-	public boolean isValid(WebPage webPage) {
+	public boolean isValid(Metadata webPage) {
 		// webPage.getMetadata().getHeaders().getFirstValue("Content-Length");
 		// TODO
 		return true;

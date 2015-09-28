@@ -21,13 +21,14 @@ package io.mandrel.data.spider;
 import io.mandrel.common.data.Constants;
 import io.mandrel.common.data.Politeness;
 import io.mandrel.common.data.Spider;
+import io.mandrel.data.analysis.Analysis;
 import io.mandrel.data.content.selector.SelectorService;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
-import io.mandrel.gateway.PageMetadataStore;
-import io.mandrel.gateway.WebPageStore;
-import io.mandrel.http.HCRequester;
-import io.mandrel.http.WebPage;
+import io.mandrel.gateway.MetadataStore;
+import io.mandrel.gateway.BlobStore;
+import io.mandrel.requests.WebPage;
+import io.mandrel.requests.http.HttpRequester;
 import io.mandrel.script.ScriptingService;
 import io.mandrel.timeline.TimelineService;
 
@@ -57,10 +58,10 @@ public class SpiderServiceIntegrationTest {
 	private SpiderRepository spiderRepository;
 
 	@Mock
-	private WebPageStore pageStore;
+	private BlobStore pageStore;
 
 	@Mock
-	private PageMetadataStore metadataStore;
+	private MetadataStore metadataStore;
 
 	@Mock
 	private TimelineService timelineService;
@@ -72,7 +73,7 @@ public class SpiderServiceIntegrationTest {
 	public void no_filtering() throws IOException {
 
 		SpiderService spiderService = new SpiderService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
-				new HCRequester(), null, timelineService);
+				new HttpRequester(), null, timelineService);
 
 		Spider spider = new Spider();
 		spider.setName("wikipedia");
@@ -103,7 +104,7 @@ public class SpiderServiceIntegrationTest {
 	public void same_domain() throws IOException {
 
 		SpiderService spiderService = new SpiderService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
-				new HCRequester(), null, timelineService);
+				new HttpRequester(), null, timelineService);
 
 		Spider spider = new Spider();
 		spider.setName("wikipedia");

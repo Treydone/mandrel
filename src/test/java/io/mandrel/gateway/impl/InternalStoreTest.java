@@ -22,8 +22,8 @@ import io.mandrel.common.data.Politeness;
 import io.mandrel.common.serialization.CompressionType;
 import io.mandrel.common.serialization.KryoSerializer;
 import io.mandrel.data.spider.Link;
-import io.mandrel.http.Metadata;
-import io.mandrel.http.WebPage;
+import io.mandrel.requests.Metadata;
+import io.mandrel.requests.WebPage;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -102,7 +102,7 @@ public class InternalStoreTest {
 		WebPage webPage = new WebPage(new URL("http://wikipedia.org/0"), 200, "OK", null, null, "<html></html>".getBytes());
 		store.addPage(0, "http://wikipedia.org/0", webPage);
 
-		WebPage result = store.getPage(0, "http://wikipedia.org/0");
+		WebPage result = store.getBag(0, "http://wikipedia.org/0");
 
 		Assertions.assertThat(result).isEqualTo(webPage);
 	}

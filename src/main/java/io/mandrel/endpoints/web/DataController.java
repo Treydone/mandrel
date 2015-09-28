@@ -20,7 +20,7 @@ package io.mandrel.endpoints.web;
 
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
-import io.mandrel.data.content.WebPageExtractor;
+import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.data.spider.SpiderService;
 import io.mandrel.endpoints.PageRequest;
 import io.mandrel.endpoints.PageResponse;
@@ -70,7 +70,7 @@ public class DataController {
 
 		spiderService.injectAndInit(spider);
 
-		WebPageExtractor theExtractor = spider.getExtractors().getPages().stream().filter(ex -> extractor.equals(ex.getName())).findFirst()
+		MetadataExtractor theExtractor = spider.getExtractors().getPages().stream().filter(ex -> extractor.equals(ex.getName())).findFirst()
 				.orElseThrow(() -> new NotFoundException(""));
 
 		theExtractor.getDocumentStore().init(theExtractor);

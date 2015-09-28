@@ -20,8 +20,8 @@ package io.mandrel.common.data;
 
 import java.io.Serializable;
 
-import io.mandrel.gateway.PageMetadataStore;
-import io.mandrel.gateway.WebPageStore;
+import io.mandrel.gateway.MetadataStore;
+import io.mandrel.gateway.BlobStore;
 import io.mandrel.gateway.impl.InternalStore;
 import lombok.Data;
 
@@ -33,8 +33,8 @@ public class Stores implements Serializable {
 	private static final long serialVersionUID = -6386148207535019331L;
 
 	@JsonProperty("metadata")
-	private PageMetadataStore pageMetadataStore = new InternalStore();
+	private MetadataStore metadataStore = new InternalStore();
 
-	@JsonProperty("page")
-	private WebPageStore pageStore = new InternalStore();
+	@JsonProperty("blob")
+	private BlobStore blobStore = new InternalStore();
 }

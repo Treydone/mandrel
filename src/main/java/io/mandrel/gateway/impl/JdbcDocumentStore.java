@@ -19,7 +19,7 @@
 package io.mandrel.gateway.impl;
 
 import io.mandrel.data.content.FieldExtractor;
-import io.mandrel.data.content.WebPageExtractor;
+import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.gateway.Document;
 
 import java.util.HashMap;
@@ -75,7 +75,7 @@ public class JdbcDocumentStore extends InternalDocumentStore {
 	}
 
 	@Override
-	public void init(WebPageExtractor webPageExtractor) {
+	public void init(MetadataExtractor webPageExtractor) {
 		super.init(webPageExtractor);
 
 		if (createQuery == null) {

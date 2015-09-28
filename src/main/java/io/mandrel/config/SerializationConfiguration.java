@@ -19,18 +19,17 @@
 package io.mandrel.config;
 
 import io.mandrel.data.spider.Link;
+import io.mandrel.gateway.BlobStore;
 import io.mandrel.gateway.Document;
 import io.mandrel.gateway.DocumentStore;
-import io.mandrel.gateway.PageMetadataStore;
-import io.mandrel.gateway.WebPageStore;
-import io.mandrel.gateway.impl.CassandraDocumentStore;
-import io.mandrel.gateway.impl.CassandraStore;
+import io.mandrel.gateway.MetadataStore;
 import io.mandrel.gateway.impl.InternalDocumentStore;
 import io.mandrel.gateway.impl.InternalStore;
 import io.mandrel.gateway.impl.JdbcDocumentStore;
 import io.mandrel.gateway.impl.JdbcStore;
-import io.mandrel.http.Metadata;
-import io.mandrel.http.WebPage;
+import io.mandrel.requests.Metadata;
+import io.mandrel.requests.ftp.FtpMetadata;
+import io.mandrel.requests.http.HttpMetadata;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,10 +42,10 @@ import com.esotericsoftware.kryo.pool.KryoPool;
 public class SerializationConfiguration {
 
 	// TODO Find another way...
-	private final static Class<?>[] clazzes = { WebPage.class, Metadata.class, Link.class,
+	private final static Class<?>[] clazzes = { Metadata.class, HttpMetadata.class, FtpMetadata.class, Link.class,
 			//
-			Document.class, DocumentStore.class, WebPageStore.class, PageMetadataStore.class, CassandraDocumentStore.class, CassandraStore.class,
-			InternalDocumentStore.class, InternalStore.class, JdbcDocumentStore.class, JdbcStore.class,
+			Document.class, DocumentStore.class, BlobStore.class, MetadataStore.class, InternalDocumentStore.class, InternalStore.class,
+			JdbcDocumentStore.class, JdbcStore.class,
 	//
 
 	};

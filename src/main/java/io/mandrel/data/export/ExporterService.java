@@ -20,7 +20,7 @@ package io.mandrel.data.export;
 
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
-import io.mandrel.data.content.WebPageExtractor;
+import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.data.spider.SpiderService;
 
 import java.io.BufferedWriter;
@@ -51,11 +51,11 @@ public class ExporterService {
 		if (oSpider.isPresent()) {
 			Spider spider = oSpider.get();
 			spiderService.injectAndInit(spider);
-			Optional<WebPageExtractor> oExtractor = spider.getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
+			Optional<MetadataExtractor> oExtractor = spider.getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
 			if (oExtractor.isPresent()) {
 				try {
 					exporter.init(writer);
-					WebPageExtractor extractor = oExtractor.get();
+					MetadataExtractor extractor = oExtractor.get();
 					extractor.getDocumentStore().init(extractor);
 					extractor.getDocumentStore().byPages(id, 1000, data -> {
 						try {
@@ -94,7 +94,7 @@ public class ExporterService {
 
 			try {
 				exporter.init(new BufferedWriter(writer));
-				spider.getStores().getPageStore().byPages(id, 1000, data -> {
+				spider.getStores().getBlobStore().byPages(id, 1000, data -> {
 					try {
 						exporter.export(data);
 					} catch (Exception e) {

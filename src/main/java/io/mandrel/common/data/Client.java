@@ -18,10 +18,13 @@
  */
 package io.mandrel.common.data;
 
-import io.mandrel.http.HCRequester;
-import io.mandrel.http.Requester;
+import io.mandrel.requests.Requester;
+import io.mandrel.requests.ftp.FtpRequester;
+import io.mandrel.requests.http.HttpRequester;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 
 import lombok.Data;
 
@@ -32,9 +35,13 @@ public class Client implements Serializable {
 
 	private static final long serialVersionUID = -4242505953994309024L;
 
-	@JsonProperty("strategy")
-	private Strategy strategy = new Strategy();
+	@JsonProperty("politeness")
+	private Politeness politeness = new Politeness();
 
-	@JsonProperty("requester")
-	private Requester requester = new HCRequester();
+	@JsonProperty("requesters")
+	private List<Requester<?>> requesters = Arrays.asList(new HttpRequester(), new FtpRequester());
+	
+	public Requester<?> getRequester(String protocol) {
+		return requesters.stream().filter(requester -> requester.getProtocols().contains(protocol)).findFirst().get();
+	}
 }

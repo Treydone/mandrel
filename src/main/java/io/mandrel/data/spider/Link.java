@@ -19,6 +19,7 @@
 package io.mandrel.data.spider;
 
 import java.io.Serializable;
+import java.net.URI;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

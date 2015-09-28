@@ -20,7 +20,7 @@ package io.mandrel.data.spider;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Stores;
-import io.mandrel.data.content.WebPageExtractor;
+import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.data.source.Source;
 
 import org.springframework.validation.Errors;
@@ -39,15 +39,15 @@ public class SpiderValidator implements Validator {
 		// Stores
 		Stores stores = spider.getStores();
 
-		if (stores.getPageMetadataStore() == null) {
+		if (stores.getMetadataStore() == null) {
 			errors.rejectValue("stores.pageMetadataStore", "stores.pageMetadataStore.not.null", null, "Can not be null.");
 		} else {
-			if (!stores.getPageMetadataStore().check()) {
-				errors.rejectValue("stores.pageMetadataStore", "stores.pageMetadataStore.failed", null, "PageMetadataStore failed check.");
+			if (!stores.getMetadataStore().check()) {
+				errors.rejectValue("stores.pageMetadataStore", "stores.pageMetadataStore.failed", null, "MetadataStore failed check.");
 			}
 		}
 
-		if (stores.getPageStore() != null && !stores.getPageMetadataStore().check()) {
+		if (!stores.getMetadataStore().check()) {
 			errors.rejectValue("stores.pageStore", "stores.pageStore.failed", null, "PageStore failed check.");
 		}
 
@@ -69,15 +69,16 @@ public class SpiderValidator implements Validator {
 		// Client
 		if (spider.getClient() == null) {
 			errors.rejectValue("client", "client.not.null", null, "Can not be null.");
-			if (spider.getClient().getRequester() == null) {
-				errors.rejectValue("client.requester", "client.requester.not.null", null, "Can not be null.");
-			}
+			// if (spider.getClient().getRequester() == null) {
+			// errors.rejectValue("client.requester",
+			// "client.requester.not.null", null, "Can not be null.");
+			// }
 		}
 
 		// Extractors
 		if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
 			int i = 0;
-			for (WebPageExtractor ex : spider.getExtractors().getPages()) {
+			for (MetadataExtractor ex : spider.getExtractors().getPages()) {
 				if (ex.getName() == null) {
 					errors.rejectValue("extractors.pages[" + i + "].name", "extractors.name.not.null", null, "Can not be null.");
 				}

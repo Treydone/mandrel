@@ -20,7 +20,7 @@ package io.mandrel.script;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import io.mandrel.http.WebPage;
+import io.mandrel.requests.WebPage;
 import io.mandrel.script.ScriptingService;
 
 import java.net.URL;

@@ -19,7 +19,7 @@
 package io.mandrel.common.data;
 
 import io.mandrel.data.content.OutlinkExtractor;
-import io.mandrel.data.content.WebPageExtractor;
+import io.mandrel.data.content.MetadataExtractor;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -35,7 +35,7 @@ public class Extractors implements Serializable {
 	private static final long serialVersionUID = -8343604385890261256L;
 
 	@JsonProperty("pages")
-	private List<WebPageExtractor> pages;
+	private List<MetadataExtractor> pages;
 
 	@JsonProperty("outlinks")
 	private List<OutlinkExtractor> outlinks = Arrays.asList(new OutlinkExtractor(Constants._DEFAULT_OUTLINKS_EXTRATOR));

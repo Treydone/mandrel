@@ -22,8 +22,8 @@ import static org.junit.Assert.assertEquals;
 import io.mandrel.config.BindConfiguration;
 import io.mandrel.data.filters.WebPageFiltersTest.LocalConfiguration;
 import io.mandrel.data.filters.page.LargeFilter;
-import io.mandrel.data.filters.page.WebPageFilter;
-import io.mandrel.data.filters.page.BooleanWebPageFilters.NotFilter;
+import io.mandrel.data.filters.page.DataObjectFilter;
+import io.mandrel.data.filters.page.BooleanDataObjectFilters.NotFilter;
 
 import java.io.IOException;
 
@@ -58,7 +58,7 @@ public class WebPageFiltersTest {
 
 		String json = objectMapper.writeValueAsString(filter);
 		System.err.println(json);
-		WebPageFilter read = objectMapper.readValue(json, WebPageFilter.class);
+		DataObjectFilter read = objectMapper.readValue(json, DataObjectFilter.class);
 		assertEquals(filter, read);
 	}
 
@@ -70,7 +70,7 @@ public class WebPageFiltersTest {
 
 		String json = objectMapper.writeValueAsString(filter);
 		System.err.println(json);
-		WebPageFilter read = objectMapper.readValue(json, WebPageFilter.class);
+		DataObjectFilter read = objectMapper.readValue(json, DataObjectFilter.class);
 		assertEquals(filter, read);
 	}
 }

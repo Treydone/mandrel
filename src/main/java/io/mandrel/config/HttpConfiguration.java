@@ -18,9 +18,7 @@
  */
 package io.mandrel.config;
 
-import io.mandrel.common.data.Strategy;
-import io.mandrel.http.HCRequester;
-import io.mandrel.http.Requester;
+import io.mandrel.requests.http.HttpRequester;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,9 +27,8 @@ import org.springframework.context.annotation.Configuration;
 public class HttpConfiguration {
 
 	@Bean
-	public Requester defaultRequester() {
-		HCRequester hcRequester = new HCRequester();
-		hcRequester.setStrategy(new Strategy());
+	public HttpRequester defaultRequester() {
+		HttpRequester hcRequester = new HttpRequester();
 		hcRequester.init();
 		return hcRequester;
 	}

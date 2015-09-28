@@ -20,10 +20,11 @@ package io.mandrel.data.source;
 
 import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.common.robots.RobotsTxtUtils;
-import io.mandrel.http.HCRequester;
-import io.mandrel.http.Requester;
-import io.mandrel.http.WebPage;
+import io.mandrel.requests.Requester;
+import io.mandrel.requests.http.HttpRequester;
+import io.mandrel.requests.http.HttpMetadata;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +61,7 @@ public class RobotsTxtSource extends Source {
 	public void register(EntryListener listener) {
 
 		// TODO to be injected?
-		Requester requester = new HCRequester();
+		Requester<HttpMetadata> requester = new HttpRequester();
 
 		// Robots.txt
 		ExtendedRobotRules robotRules;
@@ -80,21 +81,21 @@ public class RobotsTxtSource extends Source {
 		}
 	}
 
-	public List<AbstractSiteMap> getSitemapsForUrl(String sitemapUrl, EntryListener listener, Requester requester, int depth) {
+	public List<AbstractSiteMap> getSitemapsForUrl(String sitemapUrl, EntryListener listener, Requester<HttpMetadata> requester, int depth) {
 		List<AbstractSiteMap> sitemaps = new ArrayList<>();
 
 		SiteMapParser siteMapParser = new SiteMapParser();
 
-		WebPage page;
+		HttpMetadata page;
 		try {
-			page = requester.getBlocking(sitemapUrl);
+			page = requester.getBlocking(new URI(sitemapUrl));
 		} catch (Exception e) {
 			log.warn("Can not get the sitemap {}", new Object[] { sitemapUrl }, e);
 			throw Throwables.propagate(e);
 		}
 
 		try {
-			List<String> headers = page.getMetadata().getHeaders().get(HttpHeaders.CONTENT_TYPE);
+			List<String> headers = page.getHeaders().get(HttpHeaders.CONTENT_TYPE);
 			String contentType = headers != null && headers.size() > 0 ? headers.get(0) : "text/xml";
 
 			AbstractSiteMap sitemap = siteMapParser.parseSiteMap(contentType, page.getBody(), new URL(sitemapUrl));

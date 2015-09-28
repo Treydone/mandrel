@@ -1,8 +1,148 @@
-network:
+# Node configuration
+node:
+    data: true
+    worker: true
+
+# Network configuration
+cluster:
+    group:
+        name: Mandrel
+	    password: M@ndR3L
+	reuseAddress: true
+    tcp:
+        noDelay: true
+        keepAlive: true
     discovery:
         multicast:
             enabled: false
+            group: 224.2.2.4    
+            port: 54328
+            timeToLive: 3
+            timeout: 3
+        unicast:
+            enabled: false
+        ec2:
+            enabled: false
 
+# Client, Requesters & Strategies
+client: 
+    strategies:
+        default: &default_strategy
+		    request_time_out: 10000
+		    socket_timeout: 10000
+	    	connect_timeout: 10000
+		    reuse_address: true
+		    tcp_no_delay: true
+		    keep_alive: true
+		    max_parallel: 100
+		    max_persistent_connections: 100
+		    name_resolver:
+		        type: default
+		    proxy:
+		        type: no
+		    
+        http: &http_default_strategy
+             <<: *default_strategy
+            max_redirects: 3
+            follow_redirects: true
+            use_head: false
+            headers:
+    	        'Accept-Language': 'en-us,en-gb,en;q=0.7,*;q=0.3'
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                'Accept-Encoding': 'gzip, deflate, sdch'
+            user_agent_provisionner:
+                type: fixed
+                ua: Mandrel @project.version@
+#            user_agent_provisionner:
+#                type: real
+
+    requesters:
+        - class: io.mandrel.requests.http.HttpRequester
+          max_line_length: -1
+          max_header_count: -1
+          io_thread_count: 8
+          protocols:
+              - http
+              - https
+          strategy:
+              <<: *http_default_strategy
+        - class: io.mandrel.requests.ftp.FtpRequester
+          protocols:
+              - ftp
+              - ftps
+              - tftp
+          strategy:
+              <<: *default_strategy
+#        - class: io.mandrel.requests.ldap.LdapRequester
+#          protocols:
+#              - ldap
+#              - ldaps
+#          strategy:
+#              <<: *default_strategy
+#        - class: io.mandrel.requests.file.FileRequester
+#          protocols:
+#              - file
+#              - hdfs
+#              - s3
+#              - gfs
+#              - nfs
+#          strategy:
+#              <<: *default_strategy
+
+chain:
+    #- spider_traps_detector
+        # - creation of indefinitely deep directory structures like
+        # - huge params value
+        # - too many params
+    - link_depth_limitation
+        value: 5
+    #- sanitize_params # Remove all params except some exclusions
+    - canonizer
+        rules:
+            - path_clean # Removal of "." and ".." segments
+            - lowercase # Lowercases the URI
+            - strip_userinfo # Strip any 'userinfo' found on http/https URLs.
+            - strip_www # Strip the first 'www.' found
+            - strip_session_ids # Strip known session ids. Example: jsessionid=XXXXX
+            - strip_session_ids # Strip cold fusion session ids
+            - strip_extra_slashes# Strip any extra slashes, '/', found in the path. Use this rule to equate 'http://www.archive.org//A//B/index.html' and 'http://www.archive.org/A/B/index.html'."
+            - fixup_query # Strip any trailing question mark
+    - path_ascending # Path-ascending crawling, when given a seed URL of http://foo.org/a/b/page.html, it will attempt to crawl /a/b/, /a/, and /
+    - allowed_for_hosts/domains
+    - skip_extensions # .css, .js...
+    
+frontier:
+	revisit:
+#        type: no
+#            max_retry: 3
+        type: fixed
+            default: 1d
+            fetch_error:
+                max_retry: 3
+                next_attempt: 2h
+            parsing_error:
+                max_retry: 3
+                next_attempt: 7d
+            on_global_error:
+                max_retry: 3
+                next_attempt: 7d
+            send_last_seen_info: true (Last-Modified-Since/ETag header for HttpRequester...)
+    type: simple
+    type: priority
+        levels:
+            - level: 0
+              filter: match('/item')
+            - level: 1
+              filter: match('/user')
+            - level: 2
+              default: true
+            - level: 3
+              filter: match('/search')
+        politeness:
+            max_pages: 100
+            wait: 100
+            ignore_robots_txt: false
+                    
 server:
     port: 8080
     #address:
@@ -40,4 +180,3 @@ endpoints:
         enabled: true
     health:
         time-to-live: 5000
-
