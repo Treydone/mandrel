@@ -16,27 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.requests.http;
+package io.mandrel.frontier;
 
-import io.mandrel.requests.Metadata;
-
-import java.util.List;
-import java.util.Map;
+import java.io.Serializable;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-@NoArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-@Accessors(chain = true)
-public class HttpMetadata extends Metadata {
+public class Politeness implements Serializable {
 
-	private static final long serialVersionUID = 5135889383837728071L;
+	private static final long serialVersionUID = -3487435400772289245L;
 
-	private Map<String, List<String>> headers;
-	private List<Cookie> cookies;
+	@JsonProperty("global_rate")
+	private long globalRate = 1000;
+
+	@JsonProperty("per_node_rate")
+	private long perNodeRate = 500;
+
+	@JsonProperty("max_pages")
+	private long maxPages = 100;
+
+	@JsonProperty("wait")
+	private long wait = 100;
+
+	@JsonProperty("ignore_robots_txt")
+	private boolean ignoreRobotsTxt = false;
+
+	@JsonProperty("recrawl_after")
+	private int recrawlAfterSeconds = -1;
 
 }

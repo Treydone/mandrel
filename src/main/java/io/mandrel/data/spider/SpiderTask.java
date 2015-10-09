@@ -19,7 +19,7 @@
 package io.mandrel.data.spider;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.messaging.UrlsQueueService;
+import io.mandrel.frontier.FrontierService;
 import io.mandrel.requests.Requester;
 
 import java.io.Serializable;
@@ -45,7 +45,7 @@ public class SpiderTask implements Runnable, HazelcastInstanceAware, Serializabl
 	private Spider spider;
 
 	@Autowired
-	private transient UrlsQueueService urlsQueueService;
+	private transient FrontierService urlsQueueService;
 
 	@Autowired
 	private transient SpiderService spiderService;

@@ -20,8 +20,8 @@ package io.mandrel.data.analysis;
 
 import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.data.spider.Link;
-import io.mandrel.gateway.Document;
-import io.mandrel.requests.Metadata;
+import io.mandrel.document.Document;
+import io.mandrel.metadata.FetchMetadata;
 
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class Analysis {
 	private Map<String, List<Document>> documents;
 	private Map<String, Set<Link>> outlinks;
 	private Map<String, Set<String>> filteredOutlinks;
-	private Metadata metadata;
+	private FetchMetadata metadata;
 	private Map<String, List<AbstractSiteMap>> sitemaps;
 	private ExtendedRobotRules robotRules;
 }

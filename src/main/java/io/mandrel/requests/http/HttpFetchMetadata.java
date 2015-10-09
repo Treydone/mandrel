@@ -16,35 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.common.data;
+package io.mandrel.requests.http;
 
-import java.io.Serializable;
+import io.mandrel.metadata.FetchMetadata;
+
+import java.util.List;
+import java.util.Map;
 
 import lombok.Data;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 @Data
-public class Politeness implements Serializable {
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
+@Accessors(chain = true)
+public class HttpFetchMetadata extends FetchMetadata {
 
-	private static final long serialVersionUID = -3487435400772289245L;
+	private static final long serialVersionUID = 5135889383837728071L;
 
-	// @JsonProperty("global_rate")
-	// private long globalRate = 1000;
-	//
-	// @JsonProperty("per_node_rate")
-	// private long perNodeRate = 500;
-
-	@JsonProperty("max_pages")
-	private long maxPages = 100;
-
-	@JsonProperty("wait")
-	private long wait = 100;
-
-	@JsonProperty("ignore_robots_txt")
-	private boolean ignoreRobotsTxt = false;
-
-	@JsonProperty("recrawl_after")
-	private int recrawlAfterSeconds = -1;
+	private Map<String, List<String>> headers;
+	
+	private List<Cookie> cookies;
 
 }

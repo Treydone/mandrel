@@ -1,6 +1,6 @@
 package io.mandrel.endpoints;
 
-import io.mandrel.gateway.Document;
+import io.mandrel.document.Document;
 
 import java.util.Collection;
 import java.util.List;

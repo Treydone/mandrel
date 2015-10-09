@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.gateway;
+package io.mandrel.blob;
 
-import io.mandrel.gateway.impl.InternalStore;
+import io.mandrel.blob.impl.BlobInternalStore;
+import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.monitor.health.Checkable;
 import io.mandrel.requests.Bag;
-import io.mandrel.requests.Metadata;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -33,14 +33,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.hazelcast.core.HazelcastInstanceAware;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
-@JsonSubTypes({ @Type(value = InternalStore.class, name = "internal") })
+@JsonSubTypes({ @Type(value = BlobInternalStore.class, name = "internal") })
 public interface BlobStore extends Checkable, Serializable, HazelcastInstanceAware {
 
 	String getType();
 
-	void addBag(long spiderId, String url, Bag<? extends Metadata> bag);
+	void addBag(long spiderId, String url, Bag<? extends FetchMetadata> bag);
 
-	Bag<? extends Metadata> getBag(long spiderId, String url);
+	Bag<? extends FetchMetadata> getBag(long spiderId, String url);
 
 	void deleteAllFor(long spiderId);
 
@@ -50,7 +50,7 @@ public interface BlobStore extends Checkable, Serializable, HazelcastInstanceAwa
 
 	@FunctionalInterface
 	public static interface Callback {
-		boolean on(Collection<Bag<? extends Metadata>> elements);
+		boolean on(Collection<Bag<? extends FetchMetadata>> elements);
 	}
 
 	void byPages(long spiderId, int pageSize, Callback callback);

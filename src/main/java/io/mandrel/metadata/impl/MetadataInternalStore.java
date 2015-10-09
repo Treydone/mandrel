@@ -16,17 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.gateway.impl;
+package io.mandrel.metadata.impl;
 
-import io.mandrel.common.data.Politeness;
 import io.mandrel.data.spider.Link;
-import io.mandrel.gateway.BlobStore;
-import io.mandrel.gateway.MetadataStore;
-import io.mandrel.requests.Bag;
-import io.mandrel.requests.Metadata;
+import io.mandrel.frontier.Politeness;
+import io.mandrel.metadata.FetchMetadata;
+import io.mandrel.metadata.MetadataStore;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,11 +37,9 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import com.hazelcast.query.PagingPredicate;
-import com.hazelcast.util.IterationType;
 
 @Data
-public class InternalStore implements BlobStore, MetadataStore {
+public class MetadataInternalStore implements MetadataStore {
 
 	private static final long serialVersionUID = -775049235484042261L;
 
@@ -52,7 +47,7 @@ public class InternalStore implements BlobStore, MetadataStore {
 	@Getter(value = AccessLevel.NONE)
 	protected transient HazelcastInstance hazelcastInstance;
 
-	public InternalStore() {
+	public MetadataInternalStore() {
 	}
 
 	@Override
@@ -66,18 +61,8 @@ public class InternalStore implements BlobStore, MetadataStore {
 	}
 
 	@Override
-	public void addMetadata(long spiderId, String url, Metadata webPage) {
-		getPageMetaMap(spiderId).put(url, webPage);
-	}
-
-	@Override
-	public void addBag(long spiderId, String url, Bag<? extends Metadata> bag) {
-		getPageMap(spiderId).set(url, bag);
-	}
-
-	@Override
-	public Bag<? extends Metadata> getBag(long spiderId, String url) {
-		return getPageMap(spiderId).get(url);
+	public void addMetadata(long spiderId, String url, FetchMetadata webPage) {
+		getMetadata(spiderId).put(url, webPage);
 	}
 
 	@Override
@@ -88,12 +73,12 @@ public class InternalStore implements BlobStore, MetadataStore {
 		}
 
 		Set<String> uris = outlinks.stream().filter(ol -> ol != null && StringUtils.isNotBlank(ol.getUri())).map(ol -> ol.getUri()).collect(Collectors.toSet());
-		Map<String, Metadata> all = getPageMetaMap(spiderId).getAll(uris);
+		Map<String, FetchMetadata> all = getMetadata(spiderId).getAll(uris);
 
 		int recrawlAfterSeconds = politeness.getRecrawlAfterSeconds();
 		LocalDateTime now = LocalDateTime.now();
 		return outlinks.stream().filter(outlink -> {
-			Metadata entry = all.get(outlink.getUri());
+			FetchMetadata entry = all.get(outlink.getUri());
 
 			if (entry == null) {
 				return true;
@@ -108,35 +93,17 @@ public class InternalStore implements BlobStore, MetadataStore {
 	}
 
 	@Override
+	public FetchMetadata getMetadata(long spiderId, String url) {
+		return getMetadata(spiderId).get(url);
+	}
+
+	@Override
 	public void deleteAllFor(long spiderId) {
-		getPageMap(spiderId).destroy();
-		getPageMetaMap(spiderId).destroy();
+		getMetadata(spiderId).destroy();
 	}
 
-	@Override
-	public void byPages(long spiderId, int pageSize, Callback callback) {
-		PagingPredicate predicate = new PagingPredicate(pageSize);
-		predicate.setIterationType(IterationType.VALUE);
-
-		boolean loop = true;
-		while (loop) {
-			Collection<Bag<? extends Metadata>> values = getPageMap(spiderId).values(predicate);
-			loop = callback.on(values);
-			predicate.nextPage();
-		}
-	}
-
-	@Override
-	public Metadata getMetadata(long spiderId, String url) {
-		return getPageMetaMap(spiderId).get(url);
-	}
-
-	public IMap<String, Bag<? extends Metadata>> getPageMap(long spiderId) {
-		return hazelcastInstance.<String, Bag<? extends Metadata>> getMap("blob-" + spiderId);
-	}
-
-	public IMap<String, Metadata> getPageMetaMap(long spiderId) {
-		return hazelcastInstance.<String, Metadata> getMap("metadata-" + spiderId);
+	public IMap<String, FetchMetadata> getMetadata(long spiderId) {
+		return hazelcastInstance.<String, FetchMetadata> getMap("metadata-" + spiderId);
 	}
 
 	@Override

@@ -19,7 +19,7 @@
 package io.mandrel.data.spider;
 
 import io.mandrel.data.source.Source;
-import io.mandrel.messaging.UrlsQueueService;
+import io.mandrel.frontier.FrontierService;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -47,7 +47,7 @@ public class SourceTask implements Runnable, HazelcastInstanceAware, Serializabl
 	private Source source;
 
 	@Autowired
-	private transient UrlsQueueService urlsQueueService;
+	private transient FrontierService urlsQueueService;
 
 	@Autowired
 	@Getter(value = AccessLevel.NONE)

@@ -112,7 +112,7 @@ import com.google.common.collect.Sets;
 @Slf4j
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class HttpRequester extends Requester<HttpMetadata> {
+public class HttpRequester extends Requester<HttpFetchMetadata> {
 
 	private static final long serialVersionUID = 2246117088546279535L;
 
@@ -235,7 +235,7 @@ public class HttpRequester extends Requester<HttpMetadata> {
 		client.start();
 	}
 
-	public void get(URI uri, Spider spider, SuccessCallback<HttpMetadata> successCallback, FailureCallback failureCallback) {
+	public void get(URI uri, Spider spider, SuccessCallback<HttpFetchMetadata> successCallback, FailureCallback failureCallback) {
 		if (uri != null) {
 			log.debug("Requesting {}...", uri);
 
@@ -259,7 +259,7 @@ public class HttpRequester extends Requester<HttpMetadata> {
 						public void completed(HttpResponse result) {
 							try {
 								log.debug("Getting response for {}", uri);
-								HttpMetadata webPage = extractWebPage(uri, result, localContext);
+								HttpFetchMetadata webPage = extractWebPage(uri, result, localContext);
 								successCallback.on(webPage);
 							} catch (Exception e) {
 								log.debug("Can not construct web page", e);
@@ -307,14 +307,14 @@ public class HttpRequester extends Requester<HttpMetadata> {
 
 	// TODO use RxNetty with CompletableFuture
 	@Deprecated
-	public HttpMetadata getBlocking(URI uri, Spider spider) throws Exception {
+	public HttpFetchMetadata getBlocking(URI uri, Spider spider) throws Exception {
 		HttpUriRequest request = prepareRequest(uri, spider);
 		HttpResponse response = client.execute(request, null).get(5000, TimeUnit.MILLISECONDS);
 		return extractWebPage(uri, response, null);
 	}
 
 	@Deprecated
-	public HttpMetadata getBlocking(URI uri) throws Exception {
+	public HttpFetchMetadata getBlocking(URI uri) throws Exception {
 		HttpResponse response = client.execute(new HttpGet(uri), null).get(5000, TimeUnit.MILLISECONDS);
 		return extractWebPage(uri, response, null);
 	}
@@ -361,7 +361,7 @@ public class HttpRequester extends Requester<HttpMetadata> {
 		return request;
 	}
 
-	public HttpMetadata extractWebPage(URI uri, HttpResponse result, HttpContext localContext) throws MalformedURLException, IOException {
+	public HttpFetchMetadata extractWebPage(URI uri, HttpResponse result, HttpContext localContext) throws MalformedURLException, IOException {
 		Map<String, List<String>> headers = new HashMap<String, List<String>>();
 		if (result.getAllHeaders() != null) {
 			for (Header header : result.getAllHeaders()) {
@@ -381,7 +381,7 @@ public class HttpRequester extends Requester<HttpMetadata> {
 							.getTime() : 0, cookie.isSecure(), false)).collect(Collectors.toList());
 		}
 
-		HttpMetadata webPage = new HttpMetadata().setHeaders(headers).setCookies(cookies);
+		HttpFetchMetadata webPage = new HttpFetchMetadata().setHeaders(headers).setCookies(cookies);
 		webPage.setUri(uri).setStatusCode(result.getStatusLine() != null ? result.getStatusLine().getStatusCode() : 0)
 				.setStatusText(result.getStatusLine() != null ? result.getStatusLine().getReasonPhrase() : null);
 

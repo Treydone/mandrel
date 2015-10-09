@@ -36,8 +36,8 @@ import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.content.selector.SelectorService;
 import io.mandrel.data.content.selector.UrlSelector;
 import io.mandrel.data.spider.Link;
-import io.mandrel.gateway.Document;
-import io.mandrel.requests.Metadata;
+import io.mandrel.document.Document;
+import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.requests.http.Cookie;
 import io.mandrel.script.ScriptingService;
 
@@ -82,7 +82,7 @@ public class ExtractorService {
 		this.selectorService = selectorService;
 	}
 
-	public Pair<Set<Link>, Set<String>> extractAndFilterOutlinks(Spider spider, String url, Map<String, Instance<?>> cachedSelectors, Metadata data,
+	public Pair<Set<Link>, Set<String>> extractAndFilterOutlinks(Spider spider, String url, Map<String, Instance<?>> cachedSelectors, FetchMetadata data,
 			OutlinkExtractor ol) {
 		// Find outlinks in page
 		Set<Link> outlinks = extractOutlinks(cachedSelectors, data, ol);
@@ -106,7 +106,7 @@ public class ExtractorService {
 		return Pair.of(outlinks, allFilteredOutlinks);
 	}
 
-	public Set<Link> extractOutlinks(Map<String, Instance<?>> cachedSelectors, Metadata data, OutlinkExtractor extractor) {
+	public Set<Link> extractOutlinks(Map<String, Instance<?>> cachedSelectors, FetchMetadata data, OutlinkExtractor extractor) {
 
 		List<Link> outlinks = extract(cachedSelectors, data, null, extractor.getExtractor(), new DataConverter<XElement, Link>() {
 			public Link convert(XElement element) {
@@ -134,7 +134,7 @@ public class ExtractorService {
 		return new HashSet<>(outlinks);
 	}
 
-	public List<Document> extractThenFormatThenStore(long spiderId, Map<String, Instance<?>> cachedSelectors, Metadata data, MetadataExtractor extractor) {
+	public List<Document> extractThenFormatThenStore(long spiderId, Map<String, Instance<?>> cachedSelectors, FetchMetadata data, MetadataExtractor extractor) {
 
 		List<Document> documents = extractThenFormat(cachedSelectors, data, extractor);
 
@@ -146,7 +146,7 @@ public class ExtractorService {
 		return documents;
 	}
 
-	public List<Document> extractThenFormat(Map<String, Instance<?>> cachedSelectors, Metadata data, MetadataExtractor extractor) {
+	public List<Document> extractThenFormat(Map<String, Instance<?>> cachedSelectors, FetchMetadata data, MetadataExtractor extractor) {
 		Preconditions.checkNotNull(extractor.getFields(), "No field for this extractor...");
 		Preconditions.checkNotNull(extractor.getDocumentStore(), "No datastore for this extractor...");
 		Preconditions.checkNotNull(cachedSelectors, "Cached selectors can not be null...");
@@ -207,7 +207,7 @@ public class ExtractorService {
 		return documents;
 	}
 
-	public void fillDocument(Metadata data, Document document, FieldExtractor field, List<? extends Object> results) {
+	public void fillDocument(FetchMetadata data, Document document, FieldExtractor field, List<? extends Object> results) {
 		if (results != null && !results.isEmpty()) {
 
 			if (field.isFirstOnly()) {
@@ -221,7 +221,7 @@ public class ExtractorService {
 		}
 	}
 
-	public <T, U> List<U> extract(Map<String, Instance<?>> selectors, Metadata data, byte[] segment, Extractor fieldExtractor, DataConverter<T, U> converter) {
+	public <T, U> List<U> extract(Map<String, Instance<?>> selectors, FetchMetadata data, byte[] segment, Extractor fieldExtractor, DataConverter<T, U> converter) {
 		Preconditions.checkNotNull(fieldExtractor, "There is no field extractor...");
 		Preconditions.checkNotNull(fieldExtractor.getType(), "Extractor without type");
 		// Preconditions.checkNotNull(fieldExtractor.getValue(),
@@ -272,7 +272,7 @@ public class ExtractorService {
 		return selector;
 	}
 
-	public List<? extends Object> format(Metadata data, NamedDataExtractorFormatter dataExtractorFormatter, List<? extends Object> results) {
+	public List<? extends Object> format(FetchMetadata data, NamedDataExtractorFormatter dataExtractorFormatter, List<? extends Object> results) {
 		// ... and format it if necessary
 		Formatter formatter = dataExtractorFormatter.getFormatter();
 		if (formatter != null) {

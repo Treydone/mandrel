@@ -18,7 +18,7 @@
  */
 package io.mandrel.data.content.selector;
 
-import io.mandrel.requests.Metadata;
+import io.mandrel.metadata.FetchMetadata;
 
 import java.io.ByteArrayInputStream;
 import java.util.EnumSet;
@@ -56,7 +56,7 @@ public class JsonSelector extends BodySelector<String> {
 	}
 
 	@Override
-	public Instance<String> init(Metadata data, byte[] bytes, boolean isSegment) {
+	public Instance<String> init(FetchMetadata data, byte[] bytes, boolean isSegment) {
 
 		Configuration.setDefaults(new Configuration.Defaults() {
 

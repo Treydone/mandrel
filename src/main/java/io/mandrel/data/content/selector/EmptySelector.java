@@ -19,11 +19,11 @@
 package io.mandrel.data.content.selector;
 
 import io.mandrel.data.content.SourceType;
-import io.mandrel.requests.Metadata;
+import io.mandrel.metadata.FetchMetadata;
 
 public abstract class EmptySelector<X> implements Selector<X> {
 
-	public abstract Instance<X> init(Metadata data);
+	public abstract Instance<X> init(FetchMetadata data);
 
 	@Override
 	public final SourceType getSource() {

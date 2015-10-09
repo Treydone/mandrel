@@ -19,7 +19,7 @@
 package io.mandrel.data.export;
 
 import io.mandrel.data.content.FieldExtractor;
-import io.mandrel.gateway.Document;
+import io.mandrel.document.Document;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;

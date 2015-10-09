@@ -24,9 +24,9 @@ import io.mandrel.common.robots.RobotsTxtUtils;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.data.spider.Link;
-import io.mandrel.gateway.Document;
+import io.mandrel.document.Document;
 import io.mandrel.requests.Requester;
-import io.mandrel.requests.http.HttpMetadata;
+import io.mandrel.requests.http.HttpFetchMetadata;
 
 import java.net.URI;
 import java.net.URL;
@@ -62,12 +62,12 @@ public class AnalysisService {
 
 	private final ExtractorService extractorService;
 
-	private final Requester<HttpMetadata> requester;
+	private final Requester<HttpFetchMetadata> requester;
 
 	public Optional<Analysis> analyze(Long id, String source) {
 		return get(id).map(spider -> {
 
-			HttpMetadata webPage;
+			HttpFetchMetadata webPage;
 			try {
 				webPage = requester.getBlocking(new URI(source), spider);
 			} catch (Exception e) {
@@ -81,7 +81,7 @@ public class AnalysisService {
 		});
 	}
 
-	protected Analysis buildReport(Spider spider, HttpMetadata webPage) {
+	protected Analysis buildReport(Spider spider, HttpFetchMetadata webPage) {
 
 		injectAndInit(spider);
 
@@ -134,7 +134,7 @@ public class AnalysisService {
 
 		SiteMapParser siteMapParser = new SiteMapParser();
 		try {
-			HttpMetadata page = requester.getBlocking(new URI(sitemapUrl));
+			HttpFetchMetadata page = requester.getBlocking(new URI(sitemapUrl));
 			List<String> headers = page.getHeaders().get(HttpHeaders.CONTENT_TYPE);
 			String contentType = headers != null && headers.size() > 0 ? headers.get(0) : "text/xml";
 

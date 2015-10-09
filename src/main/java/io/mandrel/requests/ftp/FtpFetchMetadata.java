@@ -18,7 +18,7 @@
  */
 package io.mandrel.requests.ftp;
 
-import io.mandrel.requests.Metadata;
+import io.mandrel.metadata.FetchMetadata;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class FtpMetadata extends Metadata {
+public class FtpFetchMetadata extends FetchMetadata {
 
 	private static final long serialVersionUID = -137805849546404424L;
 

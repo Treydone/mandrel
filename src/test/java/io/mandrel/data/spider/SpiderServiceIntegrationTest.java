@@ -18,15 +18,15 @@
  */
 package io.mandrel.data.spider;
 
+import io.mandrel.blob.BlobStore;
 import io.mandrel.common.data.Constants;
-import io.mandrel.common.data.Politeness;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.analysis.Analysis;
 import io.mandrel.data.content.selector.SelectorService;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
-import io.mandrel.gateway.MetadataStore;
-import io.mandrel.gateway.BlobStore;
+import io.mandrel.frontier.Politeness;
+import io.mandrel.metadata.MetadataStore;
 import io.mandrel.requests.WebPage;
 import io.mandrel.requests.http.HttpRequester;
 import io.mandrel.script.ScriptingService;

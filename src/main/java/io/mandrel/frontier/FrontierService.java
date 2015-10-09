@@ -16,13 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.messaging;
+package io.mandrel.frontier;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
+import io.mandrel.document.Document;
 import io.mandrel.due.DuplicateUrlEliminator;
-import io.mandrel.gateway.Document;
+import io.mandrel.messaging.QueueService;
 import io.mandrel.metrics.GlobalMetrics;
 import io.mandrel.metrics.MetricsService;
 import io.mandrel.metrics.SpiderMetrics;
@@ -49,7 +50,7 @@ import org.springframework.util.StopWatch;
 @Component
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class UrlsQueueService {
+public class FrontierService {
 
 	private final QueueService queueService;
 

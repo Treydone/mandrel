@@ -22,7 +22,7 @@ import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.common.robots.RobotsTxtUtils;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.http.HttpRequester;
-import io.mandrel.requests.http.HttpMetadata;
+import io.mandrel.requests.http.HttpFetchMetadata;
 
 import java.net.URI;
 import java.net.URL;
@@ -61,7 +61,7 @@ public class RobotsTxtSource extends Source {
 	public void register(EntryListener listener) {
 
 		// TODO to be injected?
-		Requester<HttpMetadata> requester = new HttpRequester();
+		Requester<HttpFetchMetadata> requester = new HttpRequester();
 
 		// Robots.txt
 		ExtendedRobotRules robotRules;
@@ -81,12 +81,12 @@ public class RobotsTxtSource extends Source {
 		}
 	}
 
-	public List<AbstractSiteMap> getSitemapsForUrl(String sitemapUrl, EntryListener listener, Requester<HttpMetadata> requester, int depth) {
+	public List<AbstractSiteMap> getSitemapsForUrl(String sitemapUrl, EntryListener listener, Requester<HttpFetchMetadata> requester, int depth) {
 		List<AbstractSiteMap> sitemaps = new ArrayList<>();
 
 		SiteMapParser siteMapParser = new SiteMapParser();
 
-		HttpMetadata page;
+		HttpFetchMetadata page;
 		try {
 			page = requester.getBlocking(new URI(sitemapUrl));
 		} catch (Exception e) {

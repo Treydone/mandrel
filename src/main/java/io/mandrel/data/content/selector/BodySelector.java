@@ -19,11 +19,11 @@
 package io.mandrel.data.content.selector;
 
 import io.mandrel.data.content.SourceType;
-import io.mandrel.requests.Metadata;
+import io.mandrel.metadata.FetchMetadata;
 
 public abstract class BodySelector<X> implements Selector<X> {
 
-	public abstract Instance<X> init(Metadata data, byte[] bytes, boolean isSegment);
+	public abstract Instance<X> init(FetchMetadata data, byte[] bytes, boolean isSegment);
 
 	@Override
 	public final SourceType getSource() {

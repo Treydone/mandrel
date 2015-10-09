@@ -18,11 +18,13 @@
  */
 package io.mandrel.common.data;
 
+import io.mandrel.blob.BlobStore;
+import io.mandrel.blob.impl.BlobInternalStore;
+import io.mandrel.metadata.MetadataStore;
+import io.mandrel.metadata.impl.MetadataInternalStore;
+
 import java.io.Serializable;
 
-import io.mandrel.gateway.MetadataStore;
-import io.mandrel.gateway.BlobStore;
-import io.mandrel.gateway.impl.InternalStore;
 import lombok.Data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,8 +35,8 @@ public class Stores implements Serializable {
 	private static final long serialVersionUID = -6386148207535019331L;
 
 	@JsonProperty("metadata")
-	private MetadataStore metadataStore = new InternalStore();
+	private MetadataStore metadataStore = new MetadataInternalStore();
 
 	@JsonProperty("blob")
-	private BlobStore blobStore = new InternalStore();
+	private BlobStore blobStore = new BlobInternalStore();
 }

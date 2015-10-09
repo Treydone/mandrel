@@ -18,6 +18,7 @@
  */
 package io.mandrel.common.data;
 
+import io.mandrel.frontier.Politeness;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.ftp.FtpRequester;
 import io.mandrel.requests.http.HttpRequester;

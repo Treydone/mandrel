@@ -19,7 +19,7 @@ import com.google.common.collect.Sets;
 @Slf4j
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class FtpRequester extends Requester<FtpMetadata> {
+public class FtpRequester extends Requester<FtpFetchMetadata> {
 
 	private static final long serialVersionUID = 6496471430026028585L;
 
@@ -35,16 +35,16 @@ public class FtpRequester extends Requester<FtpMetadata> {
 	}
 
 	@Override
-	public void get(URI uri, Spider spider, SuccessCallback<FtpMetadata> successCallback, FailureCallback failureCallback) {
+	public void get(URI uri, Spider spider, SuccessCallback<FtpFetchMetadata> successCallback, FailureCallback failureCallback) {
 	}
 
 	@Override
-	public Bag<FtpMetadata> getBlocking(URI uri, Spider spider) throws Exception {
+	public Bag<FtpFetchMetadata> getBlocking(URI uri, Spider spider) throws Exception {
 		return null;
 	}
 
 	@Override
-	public Bag<FtpMetadata> getBlocking(URI uri) throws Exception {
+	public Bag<FtpFetchMetadata> getBlocking(URI uri) throws Exception {
 		return null;
 	}
 

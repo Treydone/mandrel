@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.requests;
+package io.mandrel.metadata;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -30,7 +30,7 @@ import lombok.experimental.Accessors;
 @Data
 @NoArgsConstructor
 @Accessors(chain = true)
-public class Metadata implements Serializable {
+public class FetchMetadata implements Serializable {
 
 	private static final long serialVersionUID = 4900693151305950280L;
 

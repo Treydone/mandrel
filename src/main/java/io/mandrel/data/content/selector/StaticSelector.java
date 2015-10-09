@@ -18,7 +18,7 @@
  */
 package io.mandrel.data.content.selector;
 
-import io.mandrel.requests.Metadata;
+import io.mandrel.metadata.FetchMetadata;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +30,7 @@ public class StaticSelector extends EmptySelector<String> {
 		return "static";
 	}
 
-	public Instance<String> init(Metadata data) {
+	public Instance<String> init(FetchMetadata data) {
 		return new Instance<String>() {
 			@Override
 			public <T> List<T> select(String value, DataConverter<String, T> converter) {

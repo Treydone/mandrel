@@ -25,8 +25,8 @@ import io.mandrel.data.content.SourceType;
 import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.data.content.selector.SelectorService;
 import io.mandrel.data.spider.Link;
-import io.mandrel.gateway.Document;
-import io.mandrel.gateway.DocumentStore;
+import io.mandrel.document.Document;
+import io.mandrel.document.DocumentStore;
 import io.mandrel.requests.WebPage;
 import io.mandrel.script.ScriptingService;
 

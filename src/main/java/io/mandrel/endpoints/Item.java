@@ -1,6 +1,6 @@
 package io.mandrel.endpoints;
 
-import io.mandrel.gateway.Document;
+import io.mandrel.document.Document;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;

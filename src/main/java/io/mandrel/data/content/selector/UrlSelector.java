@@ -19,13 +19,13 @@
 package io.mandrel.data.content.selector;
 
 import io.mandrel.data.content.SourceType;
-import io.mandrel.requests.Metadata;
+import io.mandrel.metadata.FetchMetadata;
 
 import java.net.URL;
 
 public abstract class UrlSelector<X> implements Selector<X> {
 
-	public abstract Instance<X> init(Metadata data, URL url);
+	public abstract Instance<X> init(FetchMetadata data, URL url);
 
 	@Override
 	public final SourceType getSource() {

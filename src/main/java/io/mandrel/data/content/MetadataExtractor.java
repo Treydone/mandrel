@@ -19,8 +19,8 @@
 package io.mandrel.data.content;
 
 import io.mandrel.common.data.Filters;
-import io.mandrel.gateway.DocumentStore;
-import io.mandrel.gateway.impl.InternalDocumentStore;
+import io.mandrel.document.DocumentStore;
+import io.mandrel.document.impl.InternalDocumentStore;
 
 import java.io.Serializable;
 import java.util.List;

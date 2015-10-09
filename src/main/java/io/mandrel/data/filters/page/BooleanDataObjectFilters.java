@@ -18,7 +18,7 @@
  */
 package io.mandrel.data.filters.page;
 
-import io.mandrel.requests.Metadata;
+import io.mandrel.metadata.FetchMetadata;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ public interface BooleanDataObjectFilters {
 
 		private DataObjectFilter filter;
 
-		public boolean isValid(Metadata webPage) {
+		public boolean isValid(FetchMetadata webPage) {
 			return !filter.isValid(webPage);
 		}
 
@@ -53,7 +53,7 @@ public interface BooleanDataObjectFilters {
 
 		private List<DataObjectFilter> filters;
 
-		public boolean isValid(Metadata webPage) {
+		public boolean isValid(FetchMetadata webPage) {
 			return filters.stream().anyMatch(f -> f.isValid(webPage));
 		}
 
@@ -71,7 +71,7 @@ public interface BooleanDataObjectFilters {
 
 		private List<DataObjectFilter> filters;
 
-		public boolean isValid(Metadata webPage) {
+		public boolean isValid(FetchMetadata webPage) {
 			return filters.stream().allMatch(f -> f.isValid(webPage));
 		}
 

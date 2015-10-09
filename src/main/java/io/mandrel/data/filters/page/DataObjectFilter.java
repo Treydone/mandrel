@@ -18,7 +18,7 @@
  */
 package io.mandrel.data.filters.page;
 
-import io.mandrel.requests.Metadata;
+import io.mandrel.metadata.FetchMetadata;
 
 import java.io.Serializable;
 
@@ -36,7 +36,7 @@ public abstract class DataObjectFilter implements Serializable {
 
 	private static final long serialVersionUID = -2594414302045717456L;
 
-	public abstract boolean isValid(Metadata data);
+	public abstract boolean isValid(FetchMetadata data);
 
 	public abstract String getType();
 }

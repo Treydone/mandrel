@@ -18,11 +18,11 @@
  */
 package io.mandrel.gateway.impl;
 
-import io.mandrel.common.data.Politeness;
 import io.mandrel.common.serialization.CompressionType;
 import io.mandrel.common.serialization.KryoSerializer;
 import io.mandrel.data.spider.Link;
-import io.mandrel.requests.Metadata;
+import io.mandrel.frontier.Politeness;
+import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.requests.WebPage;
 
 import java.net.MalformedURLException;
@@ -133,7 +133,7 @@ public class JdbcStoreTest {
 
 	@Test
 	public void delete() throws MalformedURLException {
-		store.addMetadata(0, "http://wikipedia.org/0", new Metadata().setStatusCode(200).setStatusText("OK").setUrl(new URL("http://wikipedia.org/0")));
+		store.addMetadata(0, "http://wikipedia.org/0", new FetchMetadata().setStatusCode(200).setStatusText("OK").setUrl(new URL("http://wikipedia.org/0")));
 		store.addPage(0, "http://wikipedia.org/0", new WebPage(new URL("http://wikipedia.org/0"), 200, "OK", null, null, "<html></html>".getBytes()));
 
 		Assertions.assertThat(instance.getMap("pagemetastore-" + 0).get("http://wikipedia.org/0")).isNotNull();
@@ -148,23 +148,23 @@ public class JdbcStoreTest {
 	@Test
 	public void addMetadata() throws MalformedURLException {
 
-		store.addMetadata(0, "http://wikipedia.org", new Metadata().setStatusCode(200).setStatusText("OK").setUrl(new URL("http://wikipedia.org")));
+		store.addMetadata(0, "http://wikipedia.org", new FetchMetadata().setStatusCode(200).setStatusText("OK").setUrl(new URL("http://wikipedia.org")));
 	}
 
 	@Test
 	public void getMetadata() throws MalformedURLException {
 
-		Metadata metdata = new Metadata().setStatusCode(200).setStatusText("OK").setUrl(new URL("http://wikipedia.org"));
+		FetchMetadata metdata = new FetchMetadata().setStatusCode(200).setStatusText("OK").setUrl(new URL("http://wikipedia.org"));
 		store.addMetadata(0, "http://wikipedia.org", metdata);
 
-		Metadata result = store.getMetadata(0, "http://wikipedia.org");
+		FetchMetadata result = store.getMetadata(0, "http://wikipedia.org");
 
 		Assertions.assertThat(result).isEqualTo(metdata);
 	}
 
 	@Test
 	public void filter_simple() throws MalformedURLException {
-		store.addMetadata(0, "http://toto", new Metadata().setStatusCode(200).setStatusText("OK").setUrl(new URL("http://toto")));
+		store.addMetadata(0, "http://toto", new FetchMetadata().setStatusCode(200).setStatusText("OK").setUrl(new URL("http://toto")));
 
 		Set<String> filtered = store.filter(0, Sets.newHashSet(new Link().setUri("http://toto"), new Link().setUri("http://toto/2")), new Politeness());
 

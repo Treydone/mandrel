@@ -18,18 +18,18 @@
  */
 package io.mandrel.config;
 
+import io.mandrel.blob.BlobStore;
+import io.mandrel.blob.impl.BlobInternalStore;
 import io.mandrel.data.spider.Link;
-import io.mandrel.gateway.BlobStore;
-import io.mandrel.gateway.Document;
-import io.mandrel.gateway.DocumentStore;
-import io.mandrel.gateway.MetadataStore;
-import io.mandrel.gateway.impl.InternalDocumentStore;
-import io.mandrel.gateway.impl.InternalStore;
-import io.mandrel.gateway.impl.JdbcDocumentStore;
-import io.mandrel.gateway.impl.JdbcStore;
-import io.mandrel.requests.Metadata;
-import io.mandrel.requests.ftp.FtpMetadata;
-import io.mandrel.requests.http.HttpMetadata;
+import io.mandrel.document.Document;
+import io.mandrel.document.DocumentStore;
+import io.mandrel.document.impl.InternalDocumentStore;
+import io.mandrel.document.impl.JdbcDocumentStore;
+import io.mandrel.document.impl.JdbcStore;
+import io.mandrel.metadata.FetchMetadata;
+import io.mandrel.metadata.MetadataStore;
+import io.mandrel.requests.ftp.FtpFetchMetadata;
+import io.mandrel.requests.http.HttpFetchMetadata;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,9 +42,9 @@ import com.esotericsoftware.kryo.pool.KryoPool;
 public class SerializationConfiguration {
 
 	// TODO Find another way...
-	private final static Class<?>[] clazzes = { Metadata.class, HttpMetadata.class, FtpMetadata.class, Link.class,
+	private final static Class<?>[] clazzes = { FetchMetadata.class, HttpFetchMetadata.class, FtpFetchMetadata.class, Link.class,
 			//
-			Document.class, DocumentStore.class, BlobStore.class, MetadataStore.class, InternalDocumentStore.class, InternalStore.class,
+			Document.class, DocumentStore.class, BlobStore.class, MetadataStore.class, InternalDocumentStore.class, BlobInternalStore.class,
 			JdbcDocumentStore.class, JdbcStore.class,
 	//
 

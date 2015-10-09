@@ -18,14 +18,14 @@
  */
 package io.mandrel.data.content.selector;
 
-import io.mandrel.requests.Metadata;
+import io.mandrel.metadata.FetchMetadata;
 
 import java.net.URL;
 import java.util.List;
 
 public class SimpleUrlSelector extends UrlSelector<String> {
 
-	public Instance<String> init(Metadata data, URL url) {
+	public Instance<String> init(FetchMetadata data, URL url) {
 		return new Instance<String>() {
 			@Override
 			public <T> List<T> select(String value, DataConverter<String, T> converter) {

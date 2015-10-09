@@ -18,7 +18,7 @@
  */
 package io.mandrel.script;
 
-import io.mandrel.requests.Metadata;
+import io.mandrel.metadata.FetchMetadata;
 
 import java.util.concurrent.Callable;
 
@@ -59,7 +59,7 @@ public class ScriptingService {
 						});
 	}
 
-	public Object execScript(String engineName, final String script, Metadata data, Object input) throws Exception {
+	public Object execScript(String engineName, final String script, FetchMetadata data, Object input) throws Exception {
 
 		final ScriptEngine engine = getEngineByName(engineName);
 
@@ -85,7 +85,7 @@ public class ScriptingService {
 		}
 	}
 
-	public ScriptContext getBindings(Metadata data, Object input) {
+	public ScriptContext getBindings(FetchMetadata data, Object input) {
 		ScriptContext bindings = new SimpleScriptContext();
 		bindings.setAttribute("input", input, ScriptContext.ENGINE_SCOPE);
 		bindings.setAttribute("uri", data.getUri(), ScriptContext.ENGINE_SCOPE);

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.gateway;
+package io.mandrel.document;
 
 import java.util.HashMap;
 import java.util.List;

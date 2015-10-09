@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.gateway.impl;
+package io.mandrel.document.impl;
 
 import io.mandrel.data.content.MetadataExtractor;
-import io.mandrel.gateway.Document;
-import io.mandrel.gateway.DocumentStore;
+import io.mandrel.document.Document;
+import io.mandrel.document.DocumentStore;
 
 import java.util.Collection;
 import java.util.List;

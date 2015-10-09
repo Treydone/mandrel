@@ -18,8 +18,8 @@
  */
 package io.mandrel.data.export;
 
+import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.requests.Bag;
-import io.mandrel.requests.Metadata;
 
 import java.util.Collection;
 
@@ -31,5 +31,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({ @Type(value = DelimiterSeparatedValuesExporter.class, name = "csv"), @Type(value = JsonExporter.class, name = "json") })
 public interface RawExporter extends AbstractExporter {
 
-	void export(Collection<Bag<? extends Metadata>> documents) throws Exception;
+	void export(Collection<Bag<? extends FetchMetadata>> documents) throws Exception;
 }

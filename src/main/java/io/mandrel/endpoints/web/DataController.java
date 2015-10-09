@@ -22,9 +22,9 @@ import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.data.spider.SpiderService;
+import io.mandrel.document.Document;
 import io.mandrel.endpoints.PageRequest;
 import io.mandrel.endpoints.PageResponse;
-import io.mandrel.gateway.Document;
 
 import java.util.Collection;
 import java.util.Collections;

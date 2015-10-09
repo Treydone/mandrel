@@ -16,18 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.gateway;
+package io.mandrel.document;
 
-import io.mandrel.common.data.Politeness;
-import io.mandrel.data.spider.Link;
-import io.mandrel.gateway.impl.InternalStore;
-import io.mandrel.gateway.impl.JdbcStore;
+import io.mandrel.data.content.MetadataExtractor;
+import io.mandrel.document.impl.InternalDocumentStore;
 import io.mandrel.monitor.health.Checkable;
-import io.mandrel.requests.Metadata;
 
 import java.io.Serializable;
-import java.util.Map;
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
@@ -35,16 +32,29 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.hazelcast.core.HazelcastInstanceAware;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
-@JsonSubTypes({ @Type(value = InternalStore.class, name = "internal"), @Type(value = JdbcStore.class, name = "jdbc") })
-public interface MetadataStore extends Checkable, Serializable, HazelcastInstanceAware {
+@JsonSubTypes({ @Type(value = InternalDocumentStore.class, name = "internal") })
+public interface DocumentStore extends Checkable, Serializable, HazelcastInstanceAware {
 
 	String getType();
 
-	void addMetadata(long spiderId, String url, Metadata metadata);
+	void init(MetadataExtractor webPageExtractor);
 
-	Metadata getMetadata(long spiderId, String url);
+	void save(long spiderId, Document document);
 
-	void init(Map<String, Object> properties);
+	void save(long spiderId, List<Document> documents);
 
-	Set<String> filter(long spiderId, Set<Link> outlinks, Politeness politeness);
+	void deleteAllFor(long spiderId);
+
+	// Stream<Document> all(long spiderId);
+
+	@FunctionalInterface
+	public static interface Callback {
+		boolean on(Collection<Document> elements);
+	}
+
+	void byPages(long spiderId, int pageSize, Callback callback);
+
+	Collection<Document> byPages(long spiderId, int pageSize, int pageNumber);
+
+	long total(long spiderId);
 }
