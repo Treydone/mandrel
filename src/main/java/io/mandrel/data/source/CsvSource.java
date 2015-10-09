@@ -59,7 +59,7 @@ public class CsvSource extends Source {
 		});
 	}
 
-	public String getType() {
+	public String name() {
 		return "csv";
 	}
 }

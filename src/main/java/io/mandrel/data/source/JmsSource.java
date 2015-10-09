@@ -44,7 +44,7 @@ public class JmsSource extends Source {
 		return true;
 	}
 
-	public String getType() {
+	public String name() {
 		return "jms";
 	}
 }

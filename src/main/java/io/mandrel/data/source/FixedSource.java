@@ -47,7 +47,7 @@ public class FixedSource extends Source {
 		super();
 	}
 
-	public String getType() {
+	public String name() {
 		return "fixed";
 	}
 }

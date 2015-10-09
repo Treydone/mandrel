@@ -40,7 +40,7 @@ public class JdbcSource extends Source {
 		return true;
 	}
 
-	public String getType() {
+	public String name() {
 		return "jdbc";
 	}
 }

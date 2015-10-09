@@ -120,7 +120,7 @@ public class RobotsTxtSource extends Source {
 		return true;
 	}
 
-	public String getType() {
+	public String name() {
 		return "robots.txt";
 	}
 }
