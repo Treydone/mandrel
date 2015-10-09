@@ -24,8 +24,6 @@ import io.mandrel.data.spider.Link;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.document.impl.InternalDocumentStore;
-import io.mandrel.document.impl.JdbcDocumentStore;
-import io.mandrel.document.impl.JdbcStore;
 import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.metadata.MetadataStore;
 import io.mandrel.requests.ftp.FtpFetchMetadata;
@@ -44,8 +42,7 @@ public class SerializationConfiguration {
 	// TODO Find another way...
 	private final static Class<?>[] clazzes = { FetchMetadata.class, HttpFetchMetadata.class, FtpFetchMetadata.class, Link.class,
 			//
-			Document.class, DocumentStore.class, BlobStore.class, MetadataStore.class, InternalDocumentStore.class, BlobInternalStore.class,
-			JdbcDocumentStore.class, JdbcStore.class,
+			Document.class, DocumentStore.class, BlobStore.class, MetadataStore.class, InternalDocumentStore.class, BlobInternalStore.class
 	//
 
 	};

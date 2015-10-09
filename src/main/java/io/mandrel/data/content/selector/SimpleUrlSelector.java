@@ -35,7 +35,7 @@ public class SimpleUrlSelector extends UrlSelector<String> {
 	}
 
 	@Override
-	public String getName() {
+	public String name() {
 		return "url";
 	}
 }

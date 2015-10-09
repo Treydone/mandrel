@@ -54,8 +54,8 @@ public class NamedProviderLoader<T extends NamedComponent> {
 			while (itr.hasNext()) {
 				try {
 					T fact = itr.next();
-					providersByName.put(fact.getName(), fact);
-					log.warn("Provider for {} {} ({}) added", clazz.getName(), fact.getName(), fact.getClass());
+					providersByName.put(fact.name(), fact);
+					log.warn("Provider for {} {} ({}) added", clazz.getName(), fact.name(), fact.getClass());
 				} catch (ServiceConfigurationError err) {
 					log.warn("Provider for {} providers.next(): ", clazz.getName(), err);
 					// one factory failed, but check other factories...

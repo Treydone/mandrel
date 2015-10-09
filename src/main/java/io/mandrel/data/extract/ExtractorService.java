@@ -19,13 +19,14 @@
 package io.mandrel.data.extract;
 
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.loader.NamedProviders;
 import io.mandrel.data.content.Extractor;
 import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.data.content.Formatter;
+import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.data.content.NamedDataExtractorFormatter;
 import io.mandrel.data.content.OutlinkExtractor;
 import io.mandrel.data.content.SourceType;
-import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.data.content.selector.BodySelector;
 import io.mandrel.data.content.selector.CookieSelector;
 import io.mandrel.data.content.selector.DataConverter;
@@ -33,7 +34,6 @@ import io.mandrel.data.content.selector.EmptySelector;
 import io.mandrel.data.content.selector.HeaderSelector;
 import io.mandrel.data.content.selector.Selector;
 import io.mandrel.data.content.selector.Selector.Instance;
-import io.mandrel.data.content.selector.SelectorService;
 import io.mandrel.data.content.selector.UrlSelector;
 import io.mandrel.data.spider.Link;
 import io.mandrel.document.Document;
@@ -73,13 +73,10 @@ public class ExtractorService {
 
 	private final ScriptingService scriptingService;
 
-	private final SelectorService selectorService;
-
 	@Inject
-	public ExtractorService(ScriptingService scriptingService, SelectorService selectorService) {
+	public ExtractorService(ScriptingService scriptingService) {
 		super();
 		this.scriptingService = scriptingService;
-		this.selectorService = selectorService;
 	}
 
 	public Pair<Set<Link>, Set<String>> extractAndFilterOutlinks(Spider spider, String url, Map<String, Instance<?>> cachedSelectors, FetchMetadata data,
@@ -221,7 +218,8 @@ public class ExtractorService {
 		}
 	}
 
-	public <T, U> List<U> extract(Map<String, Instance<?>> selectors, FetchMetadata data, byte[] segment, Extractor fieldExtractor, DataConverter<T, U> converter) {
+	public <T, U> List<U> extract(Map<String, Instance<?>> selectors, FetchMetadata data, byte[] segment, Extractor fieldExtractor,
+			DataConverter<T, U> converter) {
 		Preconditions.checkNotNull(fieldExtractor, "There is no field extractor...");
 		Preconditions.checkNotNull(fieldExtractor.getType(), "Extractor without type");
 		// Preconditions.checkNotNull(fieldExtractor.getValue(),
@@ -265,7 +263,7 @@ public class ExtractorService {
 	}
 
 	private <T> Selector<T> getSelector(Extractor fieldExtractor) {
-		Selector selector = selectorService.getSelectorByName(fieldExtractor.getType());
+		Selector selector = NamedProviders.get(Selector.class, fieldExtractor.getType());
 		if (selector == null) {
 			throw new IllegalArgumentException("Unknown extractor '" + fieldExtractor.getType() + "'");
 		}

@@ -35,7 +35,7 @@ import com.google.common.base.Throwables;
 public class TikaSelector extends BodySelector<String> {
 
 	@Override
-	public String getName() {
+	public String name() {
 		return "tika";
 	}
 

@@ -51,7 +51,7 @@ public class JsonSelector extends BodySelector<String> {
 	});
 
 	@Override
-	public String getName() {
+	public String name() {
 		return "jsonpath";
 	}
 

@@ -36,7 +36,7 @@ public class FullUrlSelector extends UrlSelector<String> {
 	}
 
 	@Override
-	public String getName() {
+	public String name() {
 		return "full_url";
 	}
 }

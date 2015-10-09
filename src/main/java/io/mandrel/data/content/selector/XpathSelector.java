@@ -51,7 +51,7 @@ public class XpathSelector extends BodySelector<XElement> {
 			});
 
 	@Override
-	public String getName() {
+	public String name() {
 		return "xpath";
 	}
 

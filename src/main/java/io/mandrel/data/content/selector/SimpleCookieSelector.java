@@ -30,14 +30,14 @@ public class SimpleCookieSelector extends CookieSelector<String> {
 		return new Instance<String>() {
 			@Override
 			public <T> List<T> select(String value, DataConverter<String, T> converter) {
-				return cookies.stream().filter(cookie -> cookie.getName().equals(value)).map(cookie -> converter.convert(cookie.getValue()))
+				return cookies.stream().filter(cookie -> cookie.name().equals(value)).map(cookie -> converter.convert(cookie.value()))
 						.collect(Collectors.toList());
 			}
 		};
 	}
 
 	@Override
-	public String getName() {
+	public String name() {
 		return "cookie";
 	}
 }

@@ -26,7 +26,7 @@ import java.util.List;
 public class StaticSelector extends EmptySelector<String> {
 
 	@Override
-	public String getName() {
+	public String name() {
 		return "static";
 	}
 

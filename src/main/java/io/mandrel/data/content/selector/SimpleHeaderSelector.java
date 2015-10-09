@@ -36,7 +36,7 @@ public class SimpleHeaderSelector extends HeaderSelector<String> {
 	}
 
 	@Override
-	public String getName() {
+	public String name() {
 		return "header";
 	}
 }

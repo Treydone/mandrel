@@ -18,6 +18,8 @@
  */
 package io.mandrel.metadata;
 
+import io.mandrel.data.spider.Link;
+
 import java.io.Serializable;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -40,7 +42,7 @@ public class FetchMetadata implements Serializable {
 	private String statusText;
 	private LocalDateTime lastCrawlDate;
 	private long timeToFetch;
-	private Set<String> outlinks;
+	private Set<Link> outlinks;
 	private int iteration;
 
 	private URI blob;
