@@ -18,13 +18,14 @@
  */
 package io.mandrel.data.content.selector;
 
+import io.mandrel.common.loader.NamedComponent;
 import io.mandrel.data.content.SourceType;
 
 import java.util.List;
 
-public interface Selector<X> {
+public interface Selector<X> extends NamedComponent {
 
-	String getName();
+//	String getName();
 
 	SourceType getSource();
 

@@ -18,9 +18,9 @@
  */
 package io.mandrel.data.content.selector;
 
-import static org.junit.Assert.*;
-import io.mandrel.data.content.selector.Selector;
-import io.mandrel.data.content.selector.SelectorService;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import io.mandrel.common.loader.NamedProviders;
 
 import java.util.Map;
 
@@ -31,11 +31,11 @@ public class SelectorServiceTest {
 	@Test
 	public void test() {
 
-		SelectorService selectorService = new SelectorService();
-		Map<String, Selector<?>> selectorsByName = selectorService.getSelectorsByName();
+		Map<String, Selector> selectorsByName = NamedProviders.get(Selector.class);
+
 		System.err.println(selectorsByName);
 
-		assertEquals(5, selectorsByName.size());
+		assertEquals(8, selectorsByName.size());
 		assertNotNull(selectorsByName.get("xpath"));
 		assertNotNull(selectorsByName.get("static"));
 		assertNotNull(selectorsByName.get("url"));
