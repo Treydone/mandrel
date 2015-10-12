@@ -107,7 +107,7 @@ public class JdbcStoreTest {
 		WebPage webPage = new WebPage(new URL("http://wikipedia.org/0"), 200, "OK", null, null, "<html></html>".getBytes());
 		store.addPage(0, "http://wikipedia.org/0", webPage);
 
-		WebPage result = store.getBag(0, "http://wikipedia.org/0");
+		WebPage result = store.getBlob(0, "http://wikipedia.org/0");
 
 		Assertions.assertThat(result).isEqualTo(webPage);
 	}

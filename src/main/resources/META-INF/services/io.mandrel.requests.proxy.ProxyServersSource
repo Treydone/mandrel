@@ -1,0 +1,2 @@
+io.mandrel.requests.proxy.NoProxyProxyServersSource
+io.mandrel.requests.proxy.StaticProxyServersSource

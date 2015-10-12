@@ -1,8 +1,8 @@
 package io.mandrel.requests.ftp;
 
+import io.mandrel.blob.Blob;
 import io.mandrel.common.data.FtpStrategy;
 import io.mandrel.common.data.Spider;
-import io.mandrel.requests.Bag;
 import io.mandrel.requests.Requester;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ import com.google.common.collect.Sets;
 @Slf4j
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class FtpRequester extends Requester<FtpFetchMetadata> {
+public class FtpRequester extends Requester {
 
 	private static final long serialVersionUID = 6496471430026028585L;
 
@@ -35,22 +35,22 @@ public class FtpRequester extends Requester<FtpFetchMetadata> {
 	}
 
 	@Override
-	public void get(URI uri, Spider spider, SuccessCallback<FtpFetchMetadata> successCallback, FailureCallback failureCallback) {
+	public void get(URI uri, Spider spider, SuccessCallback successCallback, FailureCallback failureCallback) {
 	}
 
 	@Override
-	public Bag<FtpFetchMetadata> getBlocking(URI uri, Spider spider) throws Exception {
+	public Blob getBlocking(URI uri, Spider spider) throws Exception {
 		return null;
 	}
 
 	@Override
-	public Bag<FtpFetchMetadata> getBlocking(URI uri) throws Exception {
+	public Blob getBlocking(URI uri) throws Exception {
 		return null;
 	}
 
 	@Override
-	public String getType() {
-		return null;
+	public String name() {
+		return "ftp";
 	}
 
 	@Override

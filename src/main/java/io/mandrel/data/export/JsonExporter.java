@@ -18,10 +18,9 @@
  */
 package io.mandrel.data.export;
 
+import io.mandrel.blob.Blob;
 import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.document.Document;
-import io.mandrel.metadata.FetchMetadata;
-import io.mandrel.requests.Bag;
 
 import java.io.Writer;
 import java.util.Collection;
@@ -89,12 +88,12 @@ public class JsonExporter implements DocumentExporter, RawExporter {
 	}
 
 	@Override
-	public void export(Collection<Bag<? extends FetchMetadata>> documents) {
+	public void export(Collection<Blob> blobs) {
 
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "json";
 	}
 }

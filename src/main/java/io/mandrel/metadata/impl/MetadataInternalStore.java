@@ -23,6 +23,7 @@ import io.mandrel.frontier.Politeness;
 import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.metadata.MetadataStore;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
@@ -31,8 +32,6 @@ import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hazelcast.core.HazelcastInstance;
@@ -61,40 +60,40 @@ public class MetadataInternalStore implements MetadataStore {
 	}
 
 	@Override
-	public void addMetadata(long spiderId, String url, FetchMetadata webPage) {
-		getMetadata(spiderId).put(url, webPage);
+	public void addMetadata(long spiderId, URI uri, FetchMetadata webPage) {
+		getMetadata(spiderId).put(uri, webPage);
 	}
 
 	@Override
-	public Set<String> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
+	public Set<URI> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
 
 		if (outlinks == null) {
 			return null;
 		}
 
-		Set<String> uris = outlinks.stream().filter(ol -> ol != null && StringUtils.isNotBlank(ol.getUri())).map(ol -> ol.getUri()).collect(Collectors.toSet());
-		Map<String, FetchMetadata> all = getMetadata(spiderId).getAll(uris);
+		Set<URI> uris = outlinks.stream().filter(ol -> ol != null).map(ol -> ol.uri()).collect(Collectors.toSet());
+		Map<URI, FetchMetadata> all = getMetadata(spiderId).getAll(uris);
 
 		int recrawlAfterSeconds = politeness.getRecrawlAfterSeconds();
 		LocalDateTime now = LocalDateTime.now();
 		return outlinks.stream().filter(outlink -> {
-			FetchMetadata entry = all.get(outlink.getUri());
+			FetchMetadata entry = all.get(outlink.uri());
 
 			if (entry == null) {
 				return true;
 			}
 
-			if (recrawlAfterSeconds > 0 && now.minusSeconds(recrawlAfterSeconds).isAfter(entry.getLastCrawlDate())) {
+			if (recrawlAfterSeconds > 0 && now.minusSeconds(recrawlAfterSeconds).isAfter(entry.lastCrawlDate())) {
 				return true;
 			}
 
 			return false;
-		}).map(l -> l.getUri()).collect(Collectors.toSet());
+		}).map(l -> l.uri()).collect(Collectors.toSet());
 	}
 
 	@Override
-	public FetchMetadata getMetadata(long spiderId, String url) {
-		return getMetadata(spiderId).get(url);
+	public FetchMetadata getMetadata(long spiderId, URI uri) {
+		return getMetadata(spiderId).get(uri);
 	}
 
 	@Override
@@ -102,12 +101,12 @@ public class MetadataInternalStore implements MetadataStore {
 		getMetadata(spiderId).destroy();
 	}
 
-	public IMap<String, FetchMetadata> getMetadata(long spiderId) {
-		return hazelcastInstance.<String, FetchMetadata> getMap("metadata-" + spiderId);
+	public IMap<URI, FetchMetadata> getMetadata(long spiderId) {
+		return hazelcastInstance.<URI, FetchMetadata> getMap("metadata-" + spiderId);
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "internal";
 	}
 }

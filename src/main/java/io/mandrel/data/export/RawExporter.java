@@ -18,18 +18,11 @@
  */
 package io.mandrel.data.export;
 
-import io.mandrel.metadata.FetchMetadata;
-import io.mandrel.requests.Bag;
+import io.mandrel.blob.Blob;
 
 import java.util.Collection;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
-@JsonSubTypes({ @Type(value = DelimiterSeparatedValuesExporter.class, name = "csv"), @Type(value = JsonExporter.class, name = "json") })
 public interface RawExporter extends AbstractExporter {
 
-	void export(Collection<Bag<? extends FetchMetadata>> documents) throws Exception;
+	void export(Collection<Blob> blobs) throws Exception;
 }

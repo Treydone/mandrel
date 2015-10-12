@@ -18,46 +18,38 @@
  */
 package io.mandrel.requests;
 
+import io.mandrel.blob.Blob;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Strategy;
 import io.mandrel.common.lifecycle.Initializable;
-import io.mandrel.metadata.FetchMetadata;
-import io.mandrel.requests.http.HttpRequester;
+import io.mandrel.common.loader.NamedComponent;
 
 import java.io.Closeable;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
-@JsonSubTypes({ @Type(value = HttpRequester.class, name = "hc") })
-public abstract class Requester<T extends FetchMetadata> implements Closeable, Initializable, Serializable {
+public abstract class Requester implements Closeable, NamedComponent, Initializable, Serializable {
 
 	private static final long serialVersionUID = 5555714976936124127L;
 
-	public abstract void get(URI uri, Spider spider, SuccessCallback<T> successCallback, FailureCallback failureCallback);
+	public abstract void get(URI uri, Spider spider, SuccessCallback successCallback, FailureCallback failureCallback);
 
 	@Deprecated
-	public abstract Bag<T> getBlocking(URI uri, Spider spider) throws Exception;
+	public abstract Blob getBlocking(URI uri, Spider spider) throws Exception;
 
 	@Deprecated
-	public abstract Bag<T> getBlocking(URI uri) throws Exception;
+	public abstract Blob getBlocking(URI uri) throws Exception;
 
 	@FunctionalInterface
-	public static interface SuccessCallback<T extends FetchMetadata> {
-		void on(Bag<T> data);
+	public static interface SuccessCallback {
+		void on(Blob data);
 	}
 
 	@FunctionalInterface
 	public static interface FailureCallback {
 		void on(Throwable t);
 	}
-
-	public abstract String getType();
 
 	public abstract Strategy getStrategy();
 

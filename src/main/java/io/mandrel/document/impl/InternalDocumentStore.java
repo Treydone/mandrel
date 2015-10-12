@@ -133,7 +133,7 @@ public class InternalDocumentStore implements DocumentStore {
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "internal";
 	}
 }

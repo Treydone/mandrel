@@ -22,12 +22,11 @@ import io.mandrel.data.spider.Link;
 
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+
+import org.apache.commons.collections.CollectionUtils;
 
 @Data
 @Accessors(chain = true)
@@ -39,14 +38,14 @@ public class AllowedForDomainsFilter extends LinkFilter {
 	private List<String> domains;
 
 	public boolean isValid(Link link) {
-		if (CollectionUtils.isNotEmpty(domains) && link != null && StringUtils.isNotBlank(link.getUri())) {
-			return domains.stream().anyMatch(d -> link.getUri().contains(d));
+		if (CollectionUtils.isNotEmpty(domains) && link != null && link.uri() != null) {
+			return domains.stream().anyMatch(d -> link.uri().getHost().contains(d));
 		}
 		return false;
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "allowed_for_domains";
 	}
 }

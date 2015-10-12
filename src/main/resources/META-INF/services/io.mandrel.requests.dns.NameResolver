@@ -1,0 +1,3 @@
+io.mandrel.requests.dns.DNSNameResolver
+io.mandrel.requests.dns.InternalNameResolver
+io.mandrel.requests.dns.CachedNameResolver

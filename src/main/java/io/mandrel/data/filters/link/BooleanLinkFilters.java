@@ -42,7 +42,7 @@ public interface BooleanLinkFilters {
 		}
 
 		@Override
-		public String getType() {
+		public String name() {
 			return "not";
 		}
 	}
@@ -61,7 +61,7 @@ public interface BooleanLinkFilters {
 		}
 
 		@Override
-		public String getType() {
+		public String name() {
 			return "or";
 		}
 	}
@@ -80,7 +80,7 @@ public interface BooleanLinkFilters {
 		}
 
 		@Override
-		public String getType() {
+		public String name() {
 			return "and";
 		}
 	}

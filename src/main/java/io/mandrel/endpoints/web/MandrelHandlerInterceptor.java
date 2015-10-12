@@ -25,7 +25,7 @@ import freemarker.template.Configuration;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class MandrelHandlerInterceptor implements HandlerInterceptor {
 
-	private final static BeansWrapper BEANSWRAPPER = new BeansWrapperBuilder(Configuration.VERSION_2_3_23).build();
+	private final static BeansWrapper BEANSWRAPPER = new BeansWrapperBuilder(Configuration.VERSION_2_3_22).build();
 
 	private final StateService stateService;
 

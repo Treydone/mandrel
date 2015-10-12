@@ -19,17 +19,18 @@
 package io.mandrel.data.spider;
 
 import java.io.Serializable;
+import java.net.URI;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 @Data
-@Accessors(chain = true)
+@Accessors(chain = true, fluent = true)
 public class Link implements Serializable {
 
 	private static final long serialVersionUID = -7302907794790398632L;
 
-	private String uri;
+	private URI uri;
 	private String text;
 	private String title;
 	private String rel;

@@ -55,12 +55,12 @@ public class SpiderValidator implements Validator {
 		if (spider.getSources() != null) {
 			int i = 0;
 			for (Source source : spider.getSources()) {
-				if (source.getName() == null) {
+				if (source.name() == null) {
 					errors.rejectValue("sources[" + i + "].name", "sources.name.not.null", null, "Can not be null.");
 				}
 
 				if (!source.check()) {
-					errors.rejectValue("sources[" + i + "]", "sources.failed", null, "Check " + source.getName() + " failed.");
+					errors.rejectValue("sources[" + i + "]", "sources.failed", null, "Check " + source.name() + " failed.");
 				}
 				i++;
 			}

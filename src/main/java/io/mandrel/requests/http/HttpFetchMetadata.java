@@ -31,7 +31,7 @@ import lombok.experimental.Accessors;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-@Accessors(chain = true)
+@Accessors(chain = true, fluent = true)
 public class HttpFetchMetadata extends FetchMetadata {
 
 	private static final long serialVersionUID = 5135889383837728071L;

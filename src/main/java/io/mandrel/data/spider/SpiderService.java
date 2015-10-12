@@ -144,7 +144,8 @@ public class SpiderService {
 		spider.setName(generator.next());
 
 		// Add source
-		spider.setSources(Arrays.asList(new FixedSource().setUrls(urls).setName("fixed_source")));
+		FixedSource source = new FixedSource().setUrls(urls);
+		spider.setSources(Arrays.asList(source));
 
 		// Add filters
 		spider.getFilters().getForLinks().add(new AllowedForDomainsFilter().setDomains(urls.stream().map(url -> {
@@ -220,7 +221,7 @@ public class SpiderService {
 
 	private Consumer<? super Source> prepareSource(long spiderId, Spider spider) {
 		return source -> {
-			String sourceExecServiceName = spiderId + "-source-" + source.getName();
+			String sourceExecServiceName = spiderId + "-source-" + source.name();
 
 			taskService.prepareSimpleExecutor(String.valueOf(sourceExecServiceName));
 

@@ -36,7 +36,7 @@ public class InternalNameResolver implements NameResolver {
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "simple";
 	}
 }

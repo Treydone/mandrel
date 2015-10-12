@@ -51,7 +51,7 @@ public class CachedNameResolver implements NameResolver {
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "cached";
 	}
 }

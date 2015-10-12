@@ -23,8 +23,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
-import org.apache.commons.lang3.StringUtils;
-
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
@@ -35,11 +33,11 @@ public class StartWithFilter extends LinkFilter {
 	private String value;
 
 	public boolean isValid(Link link) {
-		return link != null && StringUtils.isNotBlank(link.getUri()) && link.getUri().startsWith(getValue());
+		return link != null && link.uri() != null && link.uri().toString().startsWith(getValue());
 	}
-	
+
 	@Override
-	public String getType() {
+	public String name() {
 		return "start_with";
 	}
 }

@@ -31,7 +31,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @NoArgsConstructor
-@Accessors(chain = true)
+@Accessors(chain = true, fluent = true)
 public class FetchMetadata implements Serializable {
 
 	private static final long serialVersionUID = 4900693151305950280L;

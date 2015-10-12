@@ -78,7 +78,7 @@ public class DNSNameResolver implements NameResolver {
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "default";
 	}
 }

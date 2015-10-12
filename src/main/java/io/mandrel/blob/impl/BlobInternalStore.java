@@ -18,10 +18,10 @@
  */
 package io.mandrel.blob.impl;
 
+import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobStore;
-import io.mandrel.metadata.FetchMetadata;
-import io.mandrel.requests.Bag;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 
@@ -58,13 +58,13 @@ public class BlobInternalStore implements BlobStore {
 	}
 
 	@Override
-	public void addBag(long spiderId, String url, Bag<? extends FetchMetadata> bag) {
-		getBlob(spiderId).set(url, bag);
+	public void putBlob(long spiderId, URI uri, Blob blob) {
+		getBlob(spiderId).set(uri, blob);
 	}
 
 	@Override
-	public Bag<? extends FetchMetadata> getBag(long spiderId, String url) {
-		return getBlob(spiderId).get(url);
+	public Blob getBlob(long spiderId, URI uri) {
+		return getBlob(spiderId).get(uri);
 	}
 
 	@Override
@@ -79,18 +79,18 @@ public class BlobInternalStore implements BlobStore {
 
 		boolean loop = true;
 		while (loop) {
-			Collection<Bag<? extends FetchMetadata>> values = getBlob(spiderId).values(predicate);
+			Collection<Blob> values = getBlob(spiderId).values(predicate);
 			loop = callback.on(values);
 			predicate.nextPage();
 		}
 	}
 
-	public IMap<String, Bag<? extends FetchMetadata>> getBlob(long spiderId) {
-		return hazelcastInstance.<String, Bag<? extends FetchMetadata>> getMap("blob-" + spiderId);
+	public IMap<URI, Blob> getBlob(long spiderId) {
+		return hazelcastInstance.<URI, Blob> getMap("blob-" + spiderId);
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "internal";
 	}
 }

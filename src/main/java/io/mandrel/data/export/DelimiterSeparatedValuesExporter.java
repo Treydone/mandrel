@@ -18,10 +18,9 @@
  */
 package io.mandrel.data.export;
 
+import io.mandrel.blob.Blob;
 import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.document.Document;
-import io.mandrel.metadata.FetchMetadata;
-import io.mandrel.requests.Bag;
 
 import java.io.Writer;
 import java.util.ArrayList;
@@ -123,7 +122,7 @@ public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawEx
 	}
 
 	@Override
-	public void export(Collection<Bag<? extends FetchMetadata>> documents) {
+	public void export(Collection<Blob> blobs) {
 		if (addHeader && !headerAdded) {
 			try {
 				csvWriter.writeHeader("url", "statusCode", "statusText", "lastCrawlDate", "outlinks", "headers");
@@ -135,12 +134,12 @@ public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawEx
 
 		List<Object> buffer = new ArrayList<>(6);
 
-		documents.forEach(page -> {
-			buffer.add(page.getMetadata().getUri());
-			buffer.add(page.getMetadata().getStatusCode());
-			buffer.add(page.getMetadata().getStatusText());
-			buffer.add(page.getMetadata().getLastCrawlDate());
-			buffer.add(page.getMetadata().getOutlinks());
+		blobs.forEach(page -> {
+			buffer.add(page.metadata().uri());
+			buffer.add(page.metadata().fetchMetadata().statusCode());
+			buffer.add(page.metadata().fetchMetadata().statusText());
+			buffer.add(page.metadata().fetchMetadata().lastCrawlDate());
+			buffer.add(page.metadata().fetchMetadata().outlinks());
 
 			try {
 				csvWriter.write(buffer);
@@ -153,7 +152,7 @@ public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawEx
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "csv";
 	}
 }

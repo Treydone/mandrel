@@ -22,8 +22,6 @@ import io.mandrel.data.spider.Link;
 
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -46,10 +44,10 @@ public class UrlPatternFilter extends LinkFilter {
 	private boolean invert = false;
 
 	public boolean isValid(Link link) {
-		if (link == null || StringUtils.isBlank(link.getUri())) {
+		if (link == null || link.uri() != null) {
 			return false;
 		}
-		boolean match = compiledPattern.matcher(link.getUri()).matches();
+		boolean match = compiledPattern.matcher(link.uri().toString()).matches();
 		return invert ? !match : match;
 	}
 
@@ -60,7 +58,7 @@ public class UrlPatternFilter extends LinkFilter {
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "pattern";
 	}
 }

@@ -18,6 +18,7 @@
  */
 package io.mandrel.frontier;
 
+import io.mandrel.blob.Blob;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
@@ -100,32 +101,32 @@ public class FrontierService {
 					.getRequester(uri.getScheme())
 					.get(uri,
 							spider,
-							dataObject -> {
+							blob -> {
 
 								watch.stop();
 
 								log.trace("> Start parsing data for {}", uri);
 
-								dataObject.setTimeToFetch(watch.getTotalTimeMillis());
+								blob.metadata().fetchMetadata().timeToFetch(watch.getTotalTimeMillis());
 
 								spiderMetrics.incNbPages();
 								globalMetrics.incNbPages();
 
-								spiderMetrics.incPageForStatus(dataObject.getStatusCode());
-								globalMetrics.incPageForStatus(dataObject.getStatusCode());
+								spiderMetrics.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
+								globalMetrics.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
 
-								spiderMetrics.incPageForHost(dataObject.getUri().getHost());
-								globalMetrics.incPageForHost(dataObject.getUri().getHost());
+								spiderMetrics.incPageForHost(blob.metadata().uri().getHost());
+								globalMetrics.incPageForHost(blob.metadata().uri().getHost());
 
 								spiderMetrics.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
-								spiderMetrics.incTotalSize(dataObject.getBody().length);
-								globalMetrics.incTotalSize(dataObject.getBody().length);
+								spiderMetrics.incTotalSize(blob.metadata().size());
+								globalMetrics.incTotalSize(blob.metadata().size());
 
 								Map<String, Instance<?>> cachedSelectors = new HashMap<>();
 								if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
 									log.trace(">  - Extracting documents for {}...", uri);
 									spider.getExtractors().getPages().forEach(ex -> {
-										List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, dataObject, ex);
+										List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, blob, ex);
 
 										if (documents != null) {
 											spiderMetrics.incDocumentForExtractor(ex.getName(), documents.size());
@@ -141,9 +142,9 @@ public class FrontierService {
 											.forEach(
 													ol -> {
 														Set<String> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, uri.toString(),
-																cachedSelectors, dataObject, ol).getRight();
+																cachedSelectors, blob, ol).getRight();
 
-														dataObject.setOutlinks(allFilteredOutlinks);
+														blob.metadata().outlinks(allFilteredOutlinks);
 
 														// Respect politeness
 														// for this
@@ -159,12 +160,12 @@ public class FrontierService {
 
 								if (spider.getStores().getBlobStore() != null) {
 									log.trace(">  - Storing page {}...", uri);
-									spider.getStores().getBlobStore().addBag(spider.getId(), dataObject.getUri().toString(), dataObject);
+									spider.getStores().getBlobStore().putBlob(spider.getId(), blob.metadata().uri(), blob);
 									log.trace(">  - Storing page {} done!", uri);
 								}
 
 								log.trace(">  - Storing metadata for {}...", uri);
-								spider.getStores().getMetadataStore().addMetadata(spider.getId(), dataObject.getUri().toString(), dataObject);
+								spider.getStores().getMetadataStore().addMetadata(spider.getId(), blob.metadata().uri(), blob.metadata().fetchMetadata());
 								log.trace(">  - Storing metadata for {} done!", uri);
 
 								duplicateUrlEliminator.removePending("pendings-" + spider.getId(), uri.toString());

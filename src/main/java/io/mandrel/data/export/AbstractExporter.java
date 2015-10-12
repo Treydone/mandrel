@@ -18,13 +18,13 @@
  */
 package io.mandrel.data.export;
 
+import io.mandrel.common.loader.NamedComponent;
+
 import java.io.Serializable;
 import java.io.Writer;
 
-public interface AbstractExporter extends Serializable {
+public interface AbstractExporter extends NamedComponent, Serializable {
 
-	String getType();
-	
 	String contentType();
 
 	void init(Writer writer) throws Exception;

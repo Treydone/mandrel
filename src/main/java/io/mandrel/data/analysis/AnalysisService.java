@@ -18,6 +18,7 @@
  */
 package io.mandrel.data.analysis;
 
+import io.mandrel.blob.Blob;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.common.robots.RobotsTxtUtils;
@@ -43,6 +44,7 @@ import javax.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -62,26 +64,26 @@ public class AnalysisService {
 
 	private final ExtractorService extractorService;
 
-	private final Requester<HttpFetchMetadata> requester;
+	private final Requester requester;
 
 	public Optional<Analysis> analyze(Long id, String source) {
 		return get(id).map(spider -> {
 
-			HttpFetchMetadata webPage;
+			Blob blob;
 			try {
-				webPage = requester.getBlocking(new URI(source), spider);
+				blob = requester.getBlocking(new URI(source), spider);
 			} catch (Exception e) {
 				throw Throwables.propagate(e);
 			}
 			log.trace("Getting response for {}", source);
 
-			Analysis report = buildReport(spider, webPage);
+			Analysis report = buildReport(spider, blob);
 
 			return report;
 		});
 	}
 
-	protected Analysis buildReport(Spider spider, HttpFetchMetadata webPage) {
+	protected Analysis buildReport(Spider spider, Blob blob) {
 
 		injectAndInit(spider);
 
@@ -92,7 +94,7 @@ public class AnalysisService {
 			// Page extraction
 			if (spider.getExtractors().getPages() != null) {
 				Map<String, List<Document>> documentsByExtractor = spider.getExtractors().getPages().stream()
-						.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(cachedSelectors, webPage, ex)))
+						.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(cachedSelectors, blob.metadata().fetchMetadata(), ex)))
 						.filter(pair -> pair != null && pair.getKey() != null && pair.getValue() != null)
 						.collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
 				report.setDocuments(documentsByExtractor);
@@ -100,8 +102,8 @@ public class AnalysisService {
 
 			// Link extraction
 			if (spider.getExtractors().getOutlinks() != null) {
-				Map<String, Pair<Set<Link>, Set<String>>> outlinksByExtractor = spider.getExtractors().getOutlinks().stream().map(ol -> {
-					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(spider, webPage.getUrl().toString(), cachedSelectors, webPage, ol));
+				Map<URI, Pair<Set<Link>, Set<String>>> outlinksByExtractor = spider.getExtractors().getOutlinks().stream().map(ol -> {
+					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(spider, blob.uri().toString(), cachedSelectors, blob, ol));
 				}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
 
 				report.setOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getLeft()));
@@ -109,7 +111,7 @@ public class AnalysisService {
 			}
 
 			// Robots.txt
-			URI pageURL = webPage.getUri();
+			URI pageURL = blob.metadata().uri();
 			String robotsTxtUrl = pageURL.getScheme() + "://" + pageURL.getHost() + ":" + pageURL.getPort() + "/robots.txt";
 			ExtendedRobotRules robotRules = RobotsTxtUtils.getRobotRules(robotsTxtUrl);
 			report.setRobotRules(robotRules);
@@ -125,7 +127,7 @@ public class AnalysisService {
 			}
 		}
 
-		report.setMetadata(webPage.getMetadata());
+		report.setMetadata(blob.metadata().fetchMetadata());
 		return report;
 	}
 
@@ -134,11 +136,10 @@ public class AnalysisService {
 
 		SiteMapParser siteMapParser = new SiteMapParser();
 		try {
-			HttpFetchMetadata page = requester.getBlocking(new URI(sitemapUrl));
-			List<String> headers = page.getHeaders().get(HttpHeaders.CONTENT_TYPE);
-			String contentType = headers != null && headers.size() > 0 ? headers.get(0) : "text/xml";
+			Blob blob = requester.getBlocking(new URI(sitemapUrl));
+			String contentType = blob.metadata().contentMetadata().contentType() != null ? blob.metadata().contentMetadata().contentType() : "text/xml";
 
-			AbstractSiteMap sitemap = siteMapParser.parseSiteMap(contentType, page.getBody(), new URL(sitemapUrl));
+			AbstractSiteMap sitemap = siteMapParser.parseSiteMap(contentType, IOUtils.toByteArray(blob.payload().openStream()), new URL(sitemapUrl));
 
 			if (sitemap.isIndex()) {
 				sitemaps.addAll(((SiteMapIndex) sitemap).getSitemaps());

@@ -88,7 +88,7 @@ public class ScriptingService {
 	public ScriptContext getBindings(FetchMetadata data, Object input) {
 		ScriptContext bindings = new SimpleScriptContext();
 		bindings.setAttribute("input", input, ScriptContext.ENGINE_SCOPE);
-		bindings.setAttribute("uri", data.getUri(), ScriptContext.ENGINE_SCOPE);
+		bindings.setAttribute("uri", data.uri(), ScriptContext.ENGINE_SCOPE);
 		return bindings;
 	}
 

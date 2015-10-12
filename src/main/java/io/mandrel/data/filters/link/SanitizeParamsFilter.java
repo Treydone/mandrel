@@ -47,13 +47,13 @@ public class SanitizeParamsFilter extends LinkFilter {
 	private final static Pattern PARAMS = Pattern.compile("=");
 
 	public boolean isValid(Link link) {
-		if (link != null && StringUtils.isNotBlank(link.getUri())) {
-			int pos = link.getUri().indexOf('?');
+		if (link != null && StringUtils.isNotBlank(link.uri())) {
+			int pos = link.uri().indexOf('?');
 			if (pos > -1) {
-				String uriWithoutParams = link.getUri().substring(0, pos);
+				String uriWithoutParams = link.uri().substring(0, pos);
 
 				if (CollectionUtils.isNotEmpty(exclusions)) {
-					String query = link.getUri().substring(pos + 1, link.getUri().length());
+					String query = link.uri().substring(pos + 1, link.uri().length());
 
 					if (StringUtils.isNotBlank(query)) {
 						String[] paramPairs = QUERY.split(query);
@@ -82,15 +82,15 @@ public class SanitizeParamsFilter extends LinkFilter {
 							builder.deleteCharAt(builder.length() - 1);
 						}
 						if (builder.length() > 0) {
-							link.setUri(uriWithoutParams + "?" + builder.toString());
+							link.uri(uriWithoutParams + "?" + builder.toString());
 						} else {
-							link.setUri(uriWithoutParams);
+							link.uri(uriWithoutParams);
 						}
 					} else {
-						link.setUri(uriWithoutParams);
+						link.uri(uriWithoutParams);
 					}
 				} else {
-					link.setUri(uriWithoutParams);
+					link.uri(uriWithoutParams);
 				}
 			}
 		}
@@ -98,7 +98,7 @@ public class SanitizeParamsFilter extends LinkFilter {
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "sanitize_params";
 	}
 }

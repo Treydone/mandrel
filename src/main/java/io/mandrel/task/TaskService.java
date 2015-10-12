@@ -96,7 +96,7 @@ public class TaskService {
 	public void shutdownAllExecutorService(Spider spider) {
 		if (spider.getSources() != null) {
 			spider.getSources().stream().forEach(source -> {
-				String sourceExecServiceName = "executor-" + spider.getId() + "-source-" + source.getName();
+				String sourceExecServiceName = "executor-" + spider.getId() + "-source-" + source.name();
 				shutdownDistributedExecutorService(sourceExecServiceName);
 			});
 		}

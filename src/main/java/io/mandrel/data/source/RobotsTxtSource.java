@@ -18,11 +18,11 @@
  */
 package io.mandrel.data.source;
 
+import io.mandrel.blob.Blob;
 import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.common.robots.RobotsTxtUtils;
 import io.mandrel.requests.Requester;
-import io.mandrel.requests.http.HttpRequester;
-import io.mandrel.requests.http.HttpFetchMetadata;
+import io.mandrel.requests.http.ApacheHttpRequester;
 
 import java.net.URI;
 import java.net.URL;
@@ -34,7 +34,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.http.HttpHeaders;
+import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.netflix.servo.util.Throwables;
@@ -61,7 +61,7 @@ public class RobotsTxtSource extends Source {
 	public void register(EntryListener listener) {
 
 		// TODO to be injected?
-		Requester<HttpFetchMetadata> requester = new HttpRequester();
+		Requester requester = new ApacheHttpRequester();
 
 		// Robots.txt
 		ExtendedRobotRules robotRules;
@@ -81,24 +81,23 @@ public class RobotsTxtSource extends Source {
 		}
 	}
 
-	public List<AbstractSiteMap> getSitemapsForUrl(String sitemapUrl, EntryListener listener, Requester<HttpFetchMetadata> requester, int depth) {
+	public List<AbstractSiteMap> getSitemapsForUrl(String sitemapUrl, EntryListener listener, Requester requester, int depth) {
 		List<AbstractSiteMap> sitemaps = new ArrayList<>();
 
 		SiteMapParser siteMapParser = new SiteMapParser();
 
-		HttpFetchMetadata page;
+		Blob blob;
 		try {
-			page = requester.getBlocking(new URI(sitemapUrl));
+			blob = requester.getBlocking(new URI(sitemapUrl));
 		} catch (Exception e) {
 			log.warn("Can not get the sitemap {}", new Object[] { sitemapUrl }, e);
 			throw Throwables.propagate(e);
 		}
 
 		try {
-			List<String> headers = page.getHeaders().get(HttpHeaders.CONTENT_TYPE);
-			String contentType = headers != null && headers.size() > 0 ? headers.get(0) : "text/xml";
+			String contentType = blob.metadata().contentMetadata().contentType() != null ? blob.metadata().contentMetadata().contentType() : "text/xml";
 
-			AbstractSiteMap sitemap = siteMapParser.parseSiteMap(contentType, page.getBody(), new URL(sitemapUrl));
+			AbstractSiteMap sitemap = siteMapParser.parseSiteMap(contentType, IOUtils.toByteArray(blob.payload().openStream()), new URL(sitemapUrl));
 
 			if (sitemap.isIndex()) {
 				SiteMapIndex index = (SiteMapIndex) sitemap;

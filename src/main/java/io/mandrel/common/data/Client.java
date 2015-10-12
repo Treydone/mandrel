@@ -21,7 +21,7 @@ package io.mandrel.common.data;
 import io.mandrel.frontier.Politeness;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.ftp.FtpRequester;
-import io.mandrel.requests.http.HttpRequester;
+import io.mandrel.requests.http.ApacheHttpRequester;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -40,9 +40,9 @@ public class Client implements Serializable {
 	private Politeness politeness = new Politeness();
 
 	@JsonProperty("requesters")
-	private List<Requester<?>> requesters = Arrays.asList(new HttpRequester(), new FtpRequester());
+	private List<Requester> requesters = Arrays.asList(new ApacheHttpRequester(), new FtpRequester());
 	
-	public Requester<?> getRequester(String protocol) {
+	public Requester getRequester(String protocol) {
 		return requesters.stream().filter(requester -> requester.getProtocols().contains(protocol)).findFirst().get();
 	}
 }

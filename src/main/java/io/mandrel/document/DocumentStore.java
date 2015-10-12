@@ -18,24 +18,17 @@
  */
 package io.mandrel.document;
 
+import io.mandrel.common.loader.NamedComponent;
 import io.mandrel.data.content.MetadataExtractor;
-import io.mandrel.document.impl.InternalDocumentStore;
 import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.hazelcast.core.HazelcastInstanceAware;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
-@JsonSubTypes({ @Type(value = InternalDocumentStore.class, name = "internal") })
-public interface DocumentStore extends Checkable, Serializable, HazelcastInstanceAware {
-
-	String getType();
+public interface DocumentStore extends NamedComponent, Checkable, Serializable, HazelcastInstanceAware {
 
 	void init(MetadataExtractor webPageExtractor);
 

@@ -28,7 +28,7 @@ import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.frontier.Politeness;
 import io.mandrel.metadata.MetadataStore;
 import io.mandrel.requests.WebPage;
-import io.mandrel.requests.http.HttpRequester;
+import io.mandrel.requests.http.ApacheHttpRequester;
 import io.mandrel.script.ScriptingService;
 import io.mandrel.timeline.TimelineService;
 
@@ -73,7 +73,7 @@ public class SpiderServiceIntegrationTest {
 	public void no_filtering() throws IOException {
 
 		SpiderService spiderService = new SpiderService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
-				new HttpRequester(), null, timelineService);
+				new ApacheHttpRequester(), null, timelineService);
 
 		Spider spider = new Spider();
 		spider.setName("wikipedia");
@@ -104,7 +104,7 @@ public class SpiderServiceIntegrationTest {
 	public void same_domain() throws IOException {
 
 		SpiderService spiderService = new SpiderService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
-				new HttpRequester(), null, timelineService);
+				new ApacheHttpRequester(), null, timelineService);
 
 		Spider spider = new Spider();
 		spider.setName("wikipedia");

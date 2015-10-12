@@ -1,5 +1,6 @@
 package io.mandrel.io;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.annotation.Nullable;
@@ -11,7 +12,9 @@ import com.google.common.hash.HashCode;
 
 @Data
 @Accessors(fluent = true, chain = true)
-public class ContentMetadata {
+public class ContentMetadata implements Serializable {
+
+	private static final long serialVersionUID = -1102826235679727650L;
 
 	/**
 	 * 

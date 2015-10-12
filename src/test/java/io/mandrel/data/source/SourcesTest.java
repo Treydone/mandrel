@@ -85,4 +85,16 @@ public class SourcesTest {
 		Source read = objectMapper.readValue(json, Source.class);
 		assertEquals(source, read);
 	}
+	
+	@Test
+	public void csv() throws IOException {
+
+		CsvSource source = new CsvSource();
+		source.setFiles(Arrays.asList("url"));
+
+		String json = objectMapper.writeValueAsString(source);
+		System.err.println(json);
+		Source read = objectMapper.readValue(json, Source.class);
+		assertEquals(source, read);
+	}
 }

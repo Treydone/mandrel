@@ -40,7 +40,7 @@ public class FixedUserAgentProvisionner implements UserAgentProvisionner {
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "fixed";
 	}
 }

@@ -3,6 +3,7 @@ package io.mandrel.blob;
 import io.mandrel.io.ContentMetadata;
 import io.mandrel.metadata.FetchMetadata;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Date;
 
@@ -13,7 +14,9 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(fluent = true, chain = true)
-public class BlobMetadata {
+public class BlobMetadata implements Serializable {
+
+	private static final long serialVersionUID = -4923932605977633603L;
 
 	/**
 	 * URI used to access this resource

@@ -18,9 +18,11 @@
  */
 package io.mandrel.requests.http;
 
+import io.mandrel.blob.Blob;
+import io.mandrel.blob.BlobMetadata;
 import io.mandrel.common.MandrelException;
-import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.HttpStrategy;
+import io.mandrel.common.data.Spider;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.proxy.ProxyServer;
 
@@ -112,7 +114,7 @@ import com.google.common.collect.Sets;
 @Slf4j
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class HttpRequester extends Requester<HttpFetchMetadata> {
+public class ApacheHttpRequester extends Requester {
 
 	private static final long serialVersionUID = 2246117088546279535L;
 
@@ -235,7 +237,7 @@ public class HttpRequester extends Requester<HttpFetchMetadata> {
 		client.start();
 	}
 
-	public void get(URI uri, Spider spider, SuccessCallback<HttpFetchMetadata> successCallback, FailureCallback failureCallback) {
+	public void get(URI uri, Spider spider, SuccessCallback successCallback, FailureCallback failureCallback) {
 		if (uri != null) {
 			log.debug("Requesting {}...", uri);
 
@@ -259,7 +261,7 @@ public class HttpRequester extends Requester<HttpFetchMetadata> {
 						public void completed(HttpResponse result) {
 							try {
 								log.debug("Getting response for {}", uri);
-								HttpFetchMetadata webPage = extractWebPage(uri, result, localContext);
+								Blob webPage = extractWebPage(uri, result, localContext);
 								successCallback.on(webPage);
 							} catch (Exception e) {
 								log.debug("Can not construct web page", e);
@@ -292,11 +294,11 @@ public class HttpRequester extends Requester<HttpFetchMetadata> {
 		CookieStore store = new BasicCookieStore();
 		if (strategy.getCookies() != null)
 			strategy.getCookies().forEach(cookie -> {
-				BasicClientCookie theCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
-				theCookie.setDomain(cookie.getDomain());
-				theCookie.setPath(cookie.getPath());
-				theCookie.setExpiryDate(new Date(cookie.getExpires()));
-				theCookie.setSecure(cookie.isSecure());
+				BasicClientCookie theCookie = new BasicClientCookie(cookie.name(), cookie.value());
+				theCookie.setDomain(cookie.domain());
+				theCookie.setPath(cookie.path());
+				theCookie.setExpiryDate(new Date(cookie.expires()));
+				theCookie.setSecure(cookie.secure());
 				store.addCookie(theCookie);
 			});
 
@@ -307,14 +309,14 @@ public class HttpRequester extends Requester<HttpFetchMetadata> {
 
 	// TODO use RxNetty with CompletableFuture
 	@Deprecated
-	public HttpFetchMetadata getBlocking(URI uri, Spider spider) throws Exception {
+	public Blob getBlocking(URI uri, Spider spider) throws Exception {
 		HttpUriRequest request = prepareRequest(uri, spider);
 		HttpResponse response = client.execute(request, null).get(5000, TimeUnit.MILLISECONDS);
 		return extractWebPage(uri, response, null);
 	}
 
 	@Deprecated
-	public HttpFetchMetadata getBlocking(URI uri) throws Exception {
+	public Blob getBlocking(URI uri) throws Exception {
 		HttpResponse response = client.execute(new HttpGet(uri), null).get(5000, TimeUnit.MILLISECONDS);
 		return extractWebPage(uri, response, null);
 	}
@@ -361,7 +363,7 @@ public class HttpRequester extends Requester<HttpFetchMetadata> {
 		return request;
 	}
 
-	public HttpFetchMetadata extractWebPage(URI uri, HttpResponse result, HttpContext localContext) throws MalformedURLException, IOException {
+	public Blob extractWebPage(URI uri, HttpResponse result, HttpContext localContext) throws MalformedURLException, IOException {
 		Map<String, List<String>> headers = new HashMap<String, List<String>>();
 		if (result.getAllHeaders() != null) {
 			for (Header header : result.getAllHeaders()) {
@@ -381,17 +383,16 @@ public class HttpRequester extends Requester<HttpFetchMetadata> {
 							.getTime() : 0, cookie.isSecure(), false)).collect(Collectors.toList());
 		}
 
-		HttpFetchMetadata webPage = new HttpFetchMetadata().setHeaders(headers).setCookies(cookies);
-		webPage.setUri(uri).setStatusCode(result.getStatusLine() != null ? result.getStatusLine().getStatusCode() : 0)
-				.setStatusText(result.getStatusLine() != null ? result.getStatusLine().getReasonPhrase() : null);
+		HttpFetchMetadata metadata = new HttpFetchMetadata().headers(headers).cookies(cookies);
+		metadata.uri(uri).statusCode(result.getStatusLine() != null ? result.getStatusLine().getStatusCode() : 0)
+				.statusText(result.getStatusLine() != null ? result.getStatusLine().getReasonPhrase() : null);
 
-		// result.getEntity() != null ?
-		// IOUtils.toByteArray(result.getEntity().getContent()) : null);
-		return webPage;
+		Blob blob = new Blob(new BlobMetadata().uri(uri).fetchMetadata(metadata)).payload(result.getEntity().getContent());
+		return blob;
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "hc";
 	}
 

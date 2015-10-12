@@ -60,9 +60,9 @@ public class XpathSelector extends BodySelector<XElement> {
 		Element element;
 		try {
 			if (!isSegment) {
-				element = Jsoup.parse(new ByteArrayInputStream(bytes), Charsets.UTF_8.name(), data.getUri().toString());
+				element = Jsoup.parse(new ByteArrayInputStream(bytes), Charsets.UTF_8.name(), data.uri().toString());
 			} else {
-				element = Jsoup.parseBodyFragment(new String(bytes, Charsets.UTF_8), data.getUri().toString()).body();
+				element = Jsoup.parseBodyFragment(new String(bytes, Charsets.UTF_8), data.uri().toString()).body();
 			}
 		} catch (IOException e) {
 			throw Throwables.propagate(e);

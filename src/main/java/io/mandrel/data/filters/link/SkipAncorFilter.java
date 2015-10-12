@@ -33,11 +33,11 @@ public class SkipAncorFilter extends LinkFilter {
 	private static final long serialVersionUID = -5195589618123470396L;
 
 	public boolean isValid(Link link) {
-		return link != null && StringUtils.isNotBlank(link.getUri()) && (!link.getUri().contains("#") || link.getUri().contains("#/"));
+		return link != null && StringUtils.isNotBlank(link.uri()) && (!link.uri().contains("#") || link.uri().contains("#/"));
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "skip_ancor";
 	}
 }

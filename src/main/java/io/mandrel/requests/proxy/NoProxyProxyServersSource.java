@@ -34,7 +34,7 @@ public class NoProxyProxyServersSource implements ProxyServersSource {
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "no";
 	}
 }

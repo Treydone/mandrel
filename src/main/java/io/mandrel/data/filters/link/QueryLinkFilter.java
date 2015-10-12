@@ -38,7 +38,7 @@ public class QueryLinkFilter extends LinkFilter {
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "query";
 	}
 }

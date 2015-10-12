@@ -41,6 +41,8 @@ import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.requests.http.Cookie;
 import io.mandrel.script.ScriptingService;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -66,6 +68,7 @@ import us.codecraft.xsoup.xevaluator.XElement;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.netflix.servo.util.Throwables;
 
 @Component
 @Slf4j
@@ -79,7 +82,7 @@ public class ExtractorService {
 		this.scriptingService = scriptingService;
 	}
 
-	public Pair<Set<Link>, Set<String>> extractAndFilterOutlinks(Spider spider, String url, Map<String, Instance<?>> cachedSelectors, FetchMetadata data,
+	public Pair<Set<Link>, Set<URI>> extractAndFilterOutlinks(Spider spider, String url, Map<String, Instance<?>> cachedSelectors, FetchMetadata data,
 			OutlinkExtractor ol) {
 		// Find outlinks in page
 		Set<Link> outlinks = extractOutlinks(cachedSelectors, data, ol);
@@ -88,14 +91,14 @@ public class ExtractorService {
 		// Filter outlinks
 		Set<Link> filteredOutlinks = null;
 		if (outlinks != null) {
-			Stream<Link> stream = outlinks.stream().filter(l -> l != null && StringUtils.isNotBlank(l.getUri()));
+			Stream<Link> stream = outlinks.stream().filter(l -> l != null && l.uri() != null);
 			if (spider.getFilters() != null && CollectionUtils.isNotEmpty(spider.getFilters().getForLinks())) {
 				stream = stream.filter(link -> spider.getFilters().getForLinks().stream().allMatch(f -> f.isValid(link)));
 			}
 			filteredOutlinks = stream.collect(Collectors.toSet());
 		}
 
-		Set<String> allFilteredOutlinks = null;
+		Set<URI> allFilteredOutlinks = null;
 		if (filteredOutlinks != null) {
 			allFilteredOutlinks = spider.getStores().getMetadataStore().filter(spider.getId(), filteredOutlinks, spider.getClient().getPoliteness());
 		}
@@ -110,16 +113,20 @@ public class ExtractorService {
 				Link link = new Link();
 
 				String uri = element.getElement().absUrl("href");
-				link.setUri(StringUtils.isNotBlank(uri) ? uri : null);
+				try {
+					link.uri(StringUtils.isNotBlank(uri) ? new URI(uri) : null);
+				} catch (URISyntaxException e) {
+					throw Throwables.propagate(e);
+				}
 
 				String rel = element.getElement().attr("rel");
-				link.setRel(StringUtils.isNotBlank(rel) ? rel : null);
+				link.rel(StringUtils.isNotBlank(rel) ? rel : null);
 
 				String title = element.getElement().attr("title");
-				link.setTitle(StringUtils.isNotBlank(title) ? title : null);
+				link.title(StringUtils.isNotBlank(title) ? title : null);
 
 				String text = element.getElement().ownText();
-				link.setText(StringUtils.isNotBlank(text) ? text : null);
+				link.text(StringUtils.isNotBlank(text) ? text : null);
 				return link;
 			}
 		});
@@ -151,7 +158,7 @@ public class ExtractorService {
 		List<Document> documents = null;
 
 		if (extractor.getFilters() == null && extractor.getFilters().getForLinks() == null || extractor.getFilters().getForLinks() != null
-				&& extractor.getFilters().getForLinks().stream().allMatch(f -> f.isValid(new Link().setUri(data.getUri())))) {
+				&& extractor.getFilters().getForLinks().stream().allMatch(f -> f.isValid(new Link().uri(data.uri())))) {
 
 			if (extractor.getMultiple() != null) {
 
@@ -242,11 +249,11 @@ public class ExtractorService {
 				} else if (SourceType.HEADERS.equals(fieldExtractor.getSource())) {
 					instance = ((HeaderSelector<T>) selector).init(data, data.getMetadata().getHeaders());
 				} else if (SourceType.URL.equals(fieldExtractor.getSource())) {
-					instance = ((UrlSelector<T>) selector).init(data, data.getUri());
+					instance = ((UrlSelector<T>) selector).init(data, data.uri());
 				} else if (SourceType.COOKIE.equals(fieldExtractor.getSource())) {
 					instance = ((CookieSelector<T>) selector).init(
 							data,
-							data.getMetadata()
+							data.metadata()
 									.getCookies()
 									.stream()
 									.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie.getExpires(),
