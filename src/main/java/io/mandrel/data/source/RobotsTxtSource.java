@@ -21,6 +21,7 @@ package io.mandrel.data.source;
 import io.mandrel.blob.Blob;
 import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.common.robots.RobotsTxtUtils;
+import io.mandrel.data.spider.Link;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.http.ApacheHttpRequester;
 
@@ -106,7 +107,7 @@ public class RobotsTxtSource extends Source {
 					index.getSitemaps().forEach(s -> getSitemapsForUrl(s.getUrl().toString(), listener, requester, newDepth));
 				}
 			} else {
-				listener.onItem(sitemap.getUrl().toString());
+				listener.onItem(new Link().uri(sitemap.getUrl().toURI()));
 			}
 		} catch (Exception e) {
 			log.debug("Dude?", e);

@@ -18,12 +18,12 @@
  */
 package io.mandrel.data.content.selector;
 
+import io.mandrel.blob.Blob;
 import io.mandrel.data.content.SourceType;
-import io.mandrel.metadata.FetchMetadata;
 
 public abstract class EmptySelector<X> implements Selector<X> {
 
-	public abstract Instance<X> init(FetchMetadata data);
+	public abstract Instance<X> init(Blob blob);
 
 	@Override
 	public final SourceType getSource() {

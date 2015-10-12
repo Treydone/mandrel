@@ -29,7 +29,7 @@ import lombok.experimental.Accessors;
 import org.apache.commons.collections.CollectionUtils;
 
 @Data
-@Accessors(chain = true)
+@Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
 public class AllowedForDomainsFilter extends LinkFilter {
 

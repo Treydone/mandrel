@@ -148,7 +148,7 @@ public class SpiderService {
 		spider.setSources(Arrays.asList(source));
 
 		// Add filters
-		spider.getFilters().getForLinks().add(new AllowedForDomainsFilter().setDomains(urls.stream().map(url -> {
+		spider.getFilters().getForLinks().add(new AllowedForDomainsFilter().domains(urls.stream().map(url -> {
 			try {
 				return new URL(url).getHost();
 			} catch (Exception e) {

@@ -47,7 +47,7 @@ public class SourceTask implements Runnable, HazelcastInstanceAware, Serializabl
 	private Source source;
 
 	@Autowired
-	private transient FrontierService urlsQueueService;
+	private transient FrontierService frontierService;
 
 	@Autowired
 	@Getter(value = AccessLevel.NONE)
@@ -69,7 +69,7 @@ public class SourceTask implements Runnable, HazelcastInstanceAware, Serializabl
 			source.init(properties);
 
 			source.register(lst -> {
-				urlsQueueService.add(spiderId, Sets.newHashSet(lst));
+				frontierService.add(spiderId, Sets.newHashSet(lst));
 			});
 		} catch (Exception e) {
 			log.warn("Can not start source", e);

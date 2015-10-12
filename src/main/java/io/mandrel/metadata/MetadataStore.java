@@ -38,7 +38,7 @@ public interface MetadataStore extends NamedComponent, Checkable, Serializable, 
 
 	FetchMetadata getMetadata(long spiderId, URI uri);
 
-	Set<URI> filter(long spiderId, Set<Link> outlinks, Politeness politeness);
+	Set<Link> filter(long spiderId, Set<Link> outlinks, Politeness politeness);
 
 	void deleteAllFor(long spiderId);
 }

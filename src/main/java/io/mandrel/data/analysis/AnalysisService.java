@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -94,27 +95,27 @@ public class AnalysisService {
 			// Page extraction
 			if (spider.getExtractors().getPages() != null) {
 				Map<String, List<Document>> documentsByExtractor = spider.getExtractors().getPages().stream()
-						.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(cachedSelectors, blob.metadata().fetchMetadata(), ex)))
+						.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(cachedSelectors, blob, ex)))
 						.filter(pair -> pair != null && pair.getKey() != null && pair.getValue() != null)
 						.collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
-				report.setDocuments(documentsByExtractor);
+				report.documents(documentsByExtractor);
 			}
 
 			// Link extraction
 			if (spider.getExtractors().getOutlinks() != null) {
-				Map<URI, Pair<Set<Link>, Set<String>>> outlinksByExtractor = spider.getExtractors().getOutlinks().stream().map(ol -> {
-					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(spider, blob.uri().toString(), cachedSelectors, blob, ol));
+				Map<String, Pair<Set<Link>, Set<Link>>> outlinksByExtractor = spider.getExtractors().getOutlinks().stream().map(ol -> {
+					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(spider, blob.metadata().uri(), cachedSelectors, blob, ol));
 				}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
 
-				report.setOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getLeft()));
-				report.setFilteredOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getRight()));
+				report.outlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getLeft()));
+				report.filteredOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getRight()));
 			}
 
 			// Robots.txt
 			URI pageURL = blob.metadata().uri();
 			String robotsTxtUrl = pageURL.getScheme() + "://" + pageURL.getHost() + ":" + pageURL.getPort() + "/robots.txt";
 			ExtendedRobotRules robotRules = RobotsTxtUtils.getRobotRules(robotsTxtUrl);
-			report.setRobotRules(robotRules);
+			report.robotRules(robotRules);
 
 			// Sitemaps
 			if (robotRules != null && robotRules.getSitemaps() != null) {
@@ -123,11 +124,11 @@ public class AnalysisService {
 					List<AbstractSiteMap> results = getSitemapsForUrl(url);
 					sitemaps.put(url, results);
 				});
-				report.setSitemaps(sitemaps);
+				report.sitemaps(sitemaps);
 			}
 		}
 
-		report.setMetadata(blob.metadata().fetchMetadata());
+		report.metadata(blob.metadata());
 		return report;
 	}
 

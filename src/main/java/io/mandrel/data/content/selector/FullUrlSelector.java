@@ -18,19 +18,19 @@
  */
 package io.mandrel.data.content.selector;
 
-import io.mandrel.metadata.FetchMetadata;
+import io.mandrel.blob.BlobMetadata;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
 public class FullUrlSelector extends UrlSelector<String> {
 
-	public Instance<String> init(FetchMetadata data, URL url) {
+	public Instance<String> init(BlobMetadata data, URI uri) {
 		return new Instance<String>() {
 			@Override
 			public <T> List<T> select(String value, DataConverter<String, T> converter) {
-				return Arrays.asList(converter.convert(url.toString()));
+				return Arrays.asList(converter.convert(uri.toString()));
 			}
 		};
 	}

@@ -1,4 +1,4 @@
-package io.mandrel.messaging;
+package io.mandrel.frontier.queue;
 
 public abstract class Queues {
 

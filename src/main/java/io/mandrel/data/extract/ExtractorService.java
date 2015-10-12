@@ -18,6 +18,8 @@
  */
 package io.mandrel.data.extract;
 
+import io.mandrel.blob.Blob;
+import io.mandrel.blob.BlobMetadata;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.loader.NamedProviders;
 import io.mandrel.data.content.Extractor;
@@ -37,7 +39,6 @@ import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.content.selector.UrlSelector;
 import io.mandrel.data.spider.Link;
 import io.mandrel.document.Document;
-import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.requests.http.Cookie;
 import io.mandrel.script.ScriptingService;
 
@@ -82,11 +83,10 @@ public class ExtractorService {
 		this.scriptingService = scriptingService;
 	}
 
-	public Pair<Set<Link>, Set<URI>> extractAndFilterOutlinks(Spider spider, String url, Map<String, Instance<?>> cachedSelectors, FetchMetadata data,
-			OutlinkExtractor ol) {
+	public Pair<Set<Link>, Set<Link>> extractAndFilterOutlinks(Spider spider, URI uri, Map<String, Instance<?>> cachedSelectors, Blob blob, OutlinkExtractor ol) {
 		// Find outlinks in page
-		Set<Link> outlinks = extractOutlinks(cachedSelectors, data, ol);
-		log.trace("Finding outlinks for url {}: {}", url, outlinks);
+		Set<Link> outlinks = extractOutlinks(cachedSelectors, blob, ol);
+		log.trace("Finding outlinks for url {}: {}", uri, outlinks);
 
 		// Filter outlinks
 		Set<Link> filteredOutlinks = null;
@@ -98,7 +98,7 @@ public class ExtractorService {
 			filteredOutlinks = stream.collect(Collectors.toSet());
 		}
 
-		Set<URI> allFilteredOutlinks = null;
+		Set<Link> allFilteredOutlinks = null;
 		if (filteredOutlinks != null) {
 			allFilteredOutlinks = spider.getStores().getMetadataStore().filter(spider.getId(), filteredOutlinks, spider.getClient().getPoliteness());
 		}
@@ -106,9 +106,9 @@ public class ExtractorService {
 		return Pair.of(outlinks, allFilteredOutlinks);
 	}
 
-	public Set<Link> extractOutlinks(Map<String, Instance<?>> cachedSelectors, FetchMetadata data, OutlinkExtractor extractor) {
+	public Set<Link> extractOutlinks(Map<String, Instance<?>> cachedSelectors, Blob blob, OutlinkExtractor extractor) {
 
-		List<Link> outlinks = extract(cachedSelectors, data, null, extractor.getExtractor(), new DataConverter<XElement, Link>() {
+		List<Link> outlinks = extract(cachedSelectors, blob, null, extractor.getExtractor(), new DataConverter<XElement, Link>() {
 			public Link convert(XElement element) {
 				Link link = new Link();
 
@@ -132,15 +132,15 @@ public class ExtractorService {
 		});
 
 		if (outlinks != null && !outlinks.isEmpty()) {
-			outlinks = (List<Link>) format(data, extractor, outlinks);
+			outlinks = (List<Link>) format(blob.metadata(), extractor, outlinks);
 		}
 
 		return new HashSet<>(outlinks);
 	}
 
-	public List<Document> extractThenFormatThenStore(long spiderId, Map<String, Instance<?>> cachedSelectors, FetchMetadata data, MetadataExtractor extractor) {
+	public List<Document> extractThenFormatThenStore(long spiderId, Map<String, Instance<?>> cachedSelectors, Blob blob, MetadataExtractor extractor) {
 
-		List<Document> documents = extractThenFormat(cachedSelectors, data, extractor);
+		List<Document> documents = extractThenFormat(cachedSelectors, blob, extractor);
 
 		// Store the result
 		if (documents != null) {
@@ -150,7 +150,7 @@ public class ExtractorService {
 		return documents;
 	}
 
-	public List<Document> extractThenFormat(Map<String, Instance<?>> cachedSelectors, FetchMetadata data, MetadataExtractor extractor) {
+	public List<Document> extractThenFormat(Map<String, Instance<?>> cachedSelectors, Blob blob, MetadataExtractor extractor) {
 		Preconditions.checkNotNull(extractor.getFields(), "No field for this extractor...");
 		Preconditions.checkNotNull(extractor.getDocumentStore(), "No datastore for this extractor...");
 		Preconditions.checkNotNull(cachedSelectors, "Cached selectors can not be null...");
@@ -158,14 +158,14 @@ public class ExtractorService {
 		List<Document> documents = null;
 
 		if (extractor.getFilters() == null && extractor.getFilters().getForLinks() == null || extractor.getFilters().getForLinks() != null
-				&& extractor.getFilters().getForLinks().stream().allMatch(f -> f.isValid(new Link().uri(data.uri())))) {
+				&& extractor.getFilters().getForLinks().stream().allMatch(f -> f.isValid(new Link().uri(blob.metadata().uri())))) {
 
 			if (extractor.getMultiple() != null) {
 
 				documents = new ArrayList<>();
 
 				// Extract the multiple
-				List<String> segments = extract(cachedSelectors, data, null, extractor.getMultiple(), DataConverter.BODY);
+				List<String> segments = extract(cachedSelectors, blob, null, extractor.getMultiple(), DataConverter.BODY);
 
 				documents = segments.stream().map(segment -> {
 
@@ -178,13 +178,13 @@ public class ExtractorService {
 
 						boolean isBody = SourceType.BODY.equals(field.getExtractor().getSource());
 						if (field.isUseMultiple() && isBody) {
-							results = extract(cachedSelectors, data, segment.getBytes(Charsets.UTF_8), field.getExtractor(), DataConverter.BODY);
+							results = extract(cachedSelectors, blob, segment.getBytes(Charsets.UTF_8), field.getExtractor(), DataConverter.BODY);
 						} else {
 							DataConverter<?, String> converter = isBody ? DataConverter.BODY : DataConverter.DEFAULT;
-							results = extract(cachedSelectors, data, null, field.getExtractor(), converter);
+							results = extract(cachedSelectors, blob, null, field.getExtractor(), converter);
 						}
 
-						fillDocument(data, document, field, results);
+						fillDocument(blob.metadata(), document, field, results);
 					}
 
 					return document;
@@ -199,9 +199,9 @@ public class ExtractorService {
 					// Extract the value
 					boolean isBody = SourceType.BODY.equals(field.getExtractor().getSource());
 					DataConverter<?, String> converter = isBody ? DataConverter.BODY : DataConverter.DEFAULT;
-					List<? extends Object> results = extract(cachedSelectors, data, null, field.getExtractor(), converter);
+					List<? extends Object> results = extract(cachedSelectors, blob, null, field.getExtractor(), converter);
 
-					fillDocument(data, document, field, results);
+					fillDocument(blob.metadata(), document, field, results);
 				}
 
 				documents = Arrays.asList(document);
@@ -211,7 +211,7 @@ public class ExtractorService {
 		return documents;
 	}
 
-	public void fillDocument(FetchMetadata data, Document document, FieldExtractor field, List<? extends Object> results) {
+	public void fillDocument(BlobMetadata data, Document document, FieldExtractor field, List<? extends Object> results) {
 		if (results != null && !results.isEmpty()) {
 
 			if (field.isFirstOnly()) {
@@ -225,8 +225,7 @@ public class ExtractorService {
 		}
 	}
 
-	public <T, U> List<U> extract(Map<String, Instance<?>> selectors, FetchMetadata data, byte[] segment, Extractor fieldExtractor,
-			DataConverter<T, U> converter) {
+	public <T, U> List<U> extract(Map<String, Instance<?>> selectors, Blob blob, byte[] segment, Extractor fieldExtractor, DataConverter<T, U> converter) {
 		Preconditions.checkNotNull(fieldExtractor, "There is no field extractor...");
 		Preconditions.checkNotNull(fieldExtractor.getType(), "Extractor without type");
 		// Preconditions.checkNotNull(fieldExtractor.getValue(),
@@ -235,7 +234,7 @@ public class ExtractorService {
 		Instance<T> instance;
 		if (segment != null) {
 			Selector<T> selector = getSelector(fieldExtractor);
-			instance = ((BodySelector<T>) selector).init(data, segment, true);
+			instance = ((BodySelector<T>) selector).init(blob.metadata(), segment, true);
 		} else {
 			// Reuse the previous instance selector for this web page
 			String cacheKey = fieldExtractor.getType() + "-" + fieldExtractor.getSource().toString().toLowerCase(Locale.ROOT);
@@ -245,21 +244,21 @@ public class ExtractorService {
 				Selector<T> selector = getSelector(fieldExtractor);
 
 				if (SourceType.BODY.equals(fieldExtractor.getSource())) {
-					instance = ((BodySelector<T>) selector).init(data, data.getBody(), false);
+					instance = ((BodySelector<T>) selector).init(blob.metadata(), blob.payload(), false);
 				} else if (SourceType.HEADERS.equals(fieldExtractor.getSource())) {
-					instance = ((HeaderSelector<T>) selector).init(data, data.getMetadata().getHeaders());
+					instance = ((HeaderSelector<T>) selector).init(blob, blob.metadata().getHeaders());
 				} else if (SourceType.URL.equals(fieldExtractor.getSource())) {
-					instance = ((UrlSelector<T>) selector).init(data, data.uri());
+					instance = ((UrlSelector<T>) selector).init(blob.metadata(), blob.metadata().uri());
 				} else if (SourceType.COOKIE.equals(fieldExtractor.getSource())) {
 					instance = ((CookieSelector<T>) selector).init(
-							data,
-							data.metadata()
+							blob,
+							blob.metadata()
 									.getCookies()
 									.stream()
 									.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie.getExpires(),
 											cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList()));
 				} else if (SourceType.EMPTY.equals(fieldExtractor.getSource())) {
-					instance = ((EmptySelector<T>) selector).init(data);
+					instance = ((EmptySelector<T>) selector).init(blob);
 				}
 
 				selectors.put(cacheKey, instance);
@@ -277,7 +276,7 @@ public class ExtractorService {
 		return selector;
 	}
 
-	public List<? extends Object> format(FetchMetadata data, NamedDataExtractorFormatter dataExtractorFormatter, List<? extends Object> results) {
+	public List<? extends Object> format(BlobMetadata data, NamedDataExtractorFormatter dataExtractorFormatter, List<? extends Object> results) {
 		// ... and format it if necessary
 		Formatter formatter = dataExtractorFormatter.getFormatter();
 		if (formatter != null) {

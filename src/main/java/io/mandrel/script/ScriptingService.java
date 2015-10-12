@@ -18,7 +18,7 @@
  */
 package io.mandrel.script;
 
-import io.mandrel.metadata.FetchMetadata;
+import io.mandrel.blob.BlobMetadata;
 
 import java.util.concurrent.Callable;
 
@@ -50,16 +50,12 @@ public class ScriptingService {
 		sem = new ScriptEngineManager(classLoader);
 		scripts = CacheBuilder.newBuilder().build();
 
-		sem.getEngineFactories()
-				.stream()
-				.forEach(
-						factory -> {
-							log.debug("Engine : {}, version: {}, threading: {}", factory.getEngineName(), factory.getEngineVersion(),
-									factory.getParameter("THREADING"));
-						});
+		sem.getEngineFactories().stream().forEach(factory -> {
+			log.debug("Engine : {}, version: {}, threading: {}", factory.getEngineName(), factory.getEngineVersion(), factory.getParameter("THREADING"));
+		});
 	}
 
-	public Object execScript(String engineName, final String script, FetchMetadata data, Object input) throws Exception {
+	public Object execScript(String engineName, final String script, BlobMetadata data, Object input) throws Exception {
 
 		final ScriptEngine engine = getEngineByName(engineName);
 
@@ -85,7 +81,7 @@ public class ScriptingService {
 		}
 	}
 
-	public ScriptContext getBindings(FetchMetadata data, Object input) {
+	public ScriptContext getBindings(BlobMetadata data, Object input) {
 		ScriptContext bindings = new SimpleScriptContext();
 		bindings.setAttribute("input", input, ScriptContext.ENGINE_SCOPE);
 		bindings.setAttribute("uri", data.uri(), ScriptContext.ENGINE_SCOPE);

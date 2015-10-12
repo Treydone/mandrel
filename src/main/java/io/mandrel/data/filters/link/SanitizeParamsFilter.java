@@ -20,6 +20,7 @@ package io.mandrel.data.filters.link;
 
 import io.mandrel.data.spider.Link;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -47,13 +48,15 @@ public class SanitizeParamsFilter extends LinkFilter {
 	private final static Pattern PARAMS = Pattern.compile("=");
 
 	public boolean isValid(Link link) {
-		if (link != null && StringUtils.isNotBlank(link.uri())) {
-			int pos = link.uri().indexOf('?');
+		URI linkUri = link.uri();
+		String uri = linkUri.toString();
+		if (link != null && StringUtils.isNotBlank(uri)) {
+			int pos = uri.indexOf('?');
 			if (pos > -1) {
-				String uriWithoutParams = link.uri().substring(0, pos);
+				String uriWithoutParams = uri.substring(0, pos);
 
 				if (CollectionUtils.isNotEmpty(exclusions)) {
-					String query = link.uri().substring(pos + 1, link.uri().length());
+					String query = uri.substring(pos + 1, uri.length());
 
 					if (StringUtils.isNotBlank(query)) {
 						String[] paramPairs = QUERY.split(query);
@@ -82,15 +85,15 @@ public class SanitizeParamsFilter extends LinkFilter {
 							builder.deleteCharAt(builder.length() - 1);
 						}
 						if (builder.length() > 0) {
-							link.uri(uriWithoutParams + "?" + builder.toString());
+							link.uri(URI.create(uriWithoutParams + "?" + builder.toString()));
 						} else {
-							link.uri(uriWithoutParams);
+							link.uri(URI.create(uriWithoutParams));
 						}
 					} else {
-						link.uri(uriWithoutParams);
+						link.uri(URI.create(uriWithoutParams));
 					}
 				} else {
-					link.uri(uriWithoutParams);
+					link.uri(URI.create(uriWithoutParams));
 				}
 			}
 		}

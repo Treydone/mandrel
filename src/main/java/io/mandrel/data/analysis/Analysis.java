@@ -18,25 +18,27 @@
  */
 package io.mandrel.data.analysis;
 
+import io.mandrel.blob.BlobMetadata;
 import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.data.spider.Link;
 import io.mandrel.document.Document;
-import io.mandrel.metadata.FetchMetadata;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 import crawlercommons.sitemaps.AbstractSiteMap;
 
 @Data
+@Accessors(chain = true, fluent = true)
 public class Analysis {
 
 	private Map<String, List<Document>> documents;
 	private Map<String, Set<Link>> outlinks;
-	private Map<String, Set<String>> filteredOutlinks;
-	private FetchMetadata metadata;
+	private Map<String, Set<Link>> filteredOutlinks;
+	private BlobMetadata metadata;
 	private Map<String, List<AbstractSiteMap>> sitemaps;
 	private ExtendedRobotRules robotRules;
 }

@@ -18,13 +18,13 @@
  */
 package io.mandrel.frontier;
 
-import io.mandrel.blob.Blob;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
+import io.mandrel.data.spider.Link;
 import io.mandrel.document.Document;
 import io.mandrel.due.DuplicateUrlEliminator;
-import io.mandrel.messaging.QueueService;
+import io.mandrel.frontier.queue.QueueService;
 import io.mandrel.metrics.GlobalMetrics;
 import io.mandrel.metrics.MetricsService;
 import io.mandrel.metrics.SpiderMetrics;
@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -61,11 +62,11 @@ public class FrontierService {
 
 	private final DuplicateUrlEliminator duplicateUrlEliminator;
 
-	public void add(long spiderId, Set<String> uris) {
-		queueService.add("uris-" + spiderId, uris);
+	public void add(long spiderId, Set<Link> uris) {
+		queueService.add("uris-" + spiderId, uris.stream().map(l -> l.uri()).collect(Collectors.toSet()));
 	}
 
-	public void add(long spiderId, String uri) {
+	public void add(long spiderId, Link uri) {
 		queueService.add("uris-" + spiderId, uri);
 	}
 
@@ -141,10 +142,10 @@ public class FrontierService {
 											.getOutlinks()
 											.forEach(
 													ol -> {
-														Set<String> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, uri.toString(),
-																cachedSelectors, blob, ol).getRight();
+														Set<Link> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, uri, cachedSelectors,
+																blob, ol).getRight();
 
-														blob.metadata().outlinks(allFilteredOutlinks);
+														blob.metadata().fetchMetadata().outlinks(allFilteredOutlinks);
 
 														// Respect politeness
 														// for this
@@ -171,26 +172,27 @@ public class FrontierService {
 								duplicateUrlEliminator.removePending("pendings-" + spider.getId(), uri.toString());
 
 								log.trace("> End parsing data for {}", uri);
-							}, t -> {
+							},
+							t -> {
 								// Well...
-							if (t != null) {
-								if (t instanceof ConnectTimeoutException) {
-									spiderMetrics.incConnectTimeout();
-									add(spider.getId(), uri.toString());
-								} else if (t instanceof ReadTimeoutException) {
-									spiderMetrics.incReadTimeout();
-									add(spider.getId(), uri.toString());
-								} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException
-										|| t instanceof java.util.concurrent.TimeoutException) {
-									spiderMetrics.incConnectException();
-									add(spider.getId(), uri.toString());
+								if (t != null) {
+									if (t instanceof ConnectTimeoutException) {
+										spiderMetrics.incConnectTimeout();
+										add(spider.getId(), new Link().uri(uri));
+									} else if (t instanceof ReadTimeoutException) {
+										spiderMetrics.incReadTimeout();
+										add(spider.getId(), new Link().uri(uri));
+									} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException
+											|| t instanceof java.util.concurrent.TimeoutException) {
+										spiderMetrics.incConnectException();
+										add(spider.getId(), new Link().uri(uri));
+									}
+								} else {
+									add(spider.getId(), new Link().uri(uri));
 								}
-							} else {
-								add(spider.getId(), uri.toString());
-							}
 
-							duplicateUrlEliminator.removePending("pendings-" + spider.getId(), uri.toString());
-						});
+								duplicateUrlEliminator.removePending("pendings-" + spider.getId(), uri.toString());
+							});
 		} catch (Exception e) {
 			duplicateUrlEliminator.removePending("pendings-" + spider.getId(), uri.toString());
 			log.debug("Can not fetch uri {} due to {}", new Object[] { uri, e.toString() }, e);

@@ -18,7 +18,7 @@
  */
 package io.mandrel.data.content.selector;
 
-import io.mandrel.metadata.FetchMetadata;
+import io.mandrel.blob.BlobMetadata;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +40,7 @@ public class TikaSelector extends BodySelector<String> {
 	}
 
 	@Override
-	public Instance<String> init(FetchMetadata data, byte[] bytes, boolean isSegment) {
+	public Instance<String> init(BlobMetadata data, byte[] bytes, boolean isSegment) {
 		return new Instance<String>() {
 			@Override
 			public <T> List<T> select(String value, DataConverter<String, T> converter) {

@@ -65,7 +65,7 @@ public class MetadataInternalStore implements MetadataStore {
 	}
 
 	@Override
-	public Set<URI> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
+	public Set<Link> filter(long spiderId, Set<Link> outlinks, Politeness politeness) {
 
 		if (outlinks == null) {
 			return null;
@@ -88,7 +88,7 @@ public class MetadataInternalStore implements MetadataStore {
 			}
 
 			return false;
-		}).map(l -> l.uri()).collect(Collectors.toSet());
+		}).collect(Collectors.toSet());
 	}
 
 	@Override

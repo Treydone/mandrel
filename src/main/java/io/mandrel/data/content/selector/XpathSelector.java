@@ -18,7 +18,7 @@
  */
 package io.mandrel.data.content.selector;
 
-import io.mandrel.metadata.FetchMetadata;
+import io.mandrel.blob.BlobMetadata;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -56,7 +56,7 @@ public class XpathSelector extends BodySelector<XElement> {
 	}
 
 	@Override
-	public Instance<XElement> init(FetchMetadata data, byte[] bytes, boolean isSegment) {
+	public Instance<XElement> init(BlobMetadata data, byte[] bytes, boolean isSegment) {
 		Element element;
 		try {
 			if (!isSegment) {
