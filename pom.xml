@@ -47,7 +47,12 @@
 	</properties>
 
 	<dependencies>
-
+	
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<version>2.0.0-beta2</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.jclouds</groupId>
 			<artifactId>jclouds-all</artifactId>
@@ -733,43 +738,39 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<groupId>de.thetaphi</groupId>
-				<artifactId>forbiddenapis</artifactId>
-				<version>1.8</version>
-				<executions>
-					<execution>
-						<id>check-forbidden-apis</id>
-						<configuration>
-							<targetVersion>${java.version}</targetVersion>
-							<!-- disallow undocumented classes like sun.misc.Unsafe: -->
-							<internalRuntimeForbidden>true</internalRuntimeForbidden>
-							<!-- if the used Java version is too new, don't fail, just do nothing: -->
-							<failOnUnsupportedJava>false</failOnUnsupportedJava>
-							<bundledSignatures>
-								<!-- This will automatically choose the right signatures based on 
-									'targetVersion': -->
-								<bundledSignature>jdk-unsafe</bundledSignature>
-								<bundledSignature>jdk-deprecated</bundledSignature>
-								<bundledSignature>jdk-system-out</bundledSignature>
-							</bundledSignatures>
-							<signaturesFiles>
-								<signaturesFile>${mandrel.tools.directory}/forbidden/core-signatures.txt</signaturesFile>
-								<signaturesFile>${mandrel.tools.directory}/forbidden/all-signatures.txt</signaturesFile>
-								<signaturesFile>${mandrel.tools.directory}/forbidden/third-party-${mandrel.thirdparty.config}-signatures.txt</signaturesFile>
-							</signaturesFiles>
-							<signatures>${forbidden.signatures}</signatures>
-							<suppressAnnotations>
-								<annotation>**.SuppressForbidden</annotation>
-							</suppressAnnotations>
-						</configuration>
-						<phase>compile</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+			<!-- <plugin> -->
+			<!-- <groupId>de.thetaphi</groupId> -->
+			<!-- <artifactId>forbiddenapis</artifactId> -->
+			<!-- <version>1.8</version> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <id>check-forbidden-apis</id> -->
+			<!-- <configuration> -->
+			<!-- <targetVersion>${java.version}</targetVersion> -->
+			<!-- <internalRuntimeForbidden>true</internalRuntimeForbidden> -->
+			<!-- <failOnUnsupportedJava>false</failOnUnsupportedJava> -->
+			<!-- <bundledSignatures> -->
+			<!-- <bundledSignature>jdk-unsafe</bundledSignature> -->
+			<!-- <bundledSignature>jdk-deprecated</bundledSignature> -->
+			<!-- <bundledSignature>jdk-system-out</bundledSignature> -->
+			<!-- </bundledSignatures> -->
+			<!-- <signaturesFiles> -->
+			<!-- <signaturesFile>${mandrel.tools.directory}/forbidden/core-signatures.txt</signaturesFile> -->
+			<!-- <signaturesFile>${mandrel.tools.directory}/forbidden/all-signatures.txt</signaturesFile> -->
+			<!-- <signaturesFile>${mandrel.tools.directory}/forbidden/third-party-${mandrel.thirdparty.config}-signatures.txt</signaturesFile> -->
+			<!-- </signaturesFiles> -->
+			<!-- <signatures>${forbidden.signatures}</signatures> -->
+			<!-- <suppressAnnotations> -->
+			<!-- <annotation>**.SuppressForbidden</annotation> -->
+			<!-- </suppressAnnotations> -->
+			<!-- </configuration> -->
+			<!-- <phase>compile</phase> -->
+			<!-- <goals> -->
+			<!-- <goal>check</goal> -->
+			<!-- </goals> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- </plugin> -->
 
 			<plugin>
 				<groupId>org.jasig.maven</groupId>

@@ -16,16 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.common.data;
+package io.mandrel.frontier.revisit;
+
+import io.mandrel.blob.BlobMetadata;
+import io.mandrel.common.unit.TimeValue;
 
 import java.io.Serializable;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-public class Header implements Serializable {
-	private static final long serialVersionUID = -600885429254608967L;
+@EqualsAndHashCode(callSuper = false)
+public class NoRevisitStrategy extends RevisitStrategy implements Serializable {
 
-	private String name;
-	private String value;
+	private static final long serialVersionUID = -6064010303003504348L;
+
+	@JsonProperty("rescheduled_after")
+	private TimeValue rescheduledAfter = TimeValue.parseTimeValue("1d");
+
+	@Override
+	public boolean isScheduledForRevisit(BlobMetadata metadata) {
+		return false;
+	}
 }

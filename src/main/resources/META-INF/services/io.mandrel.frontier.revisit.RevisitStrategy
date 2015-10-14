@@ -1,0 +1,2 @@
+io.mandrel.frontier.revisit.NoRevisitStrategy
+io.mandrel.frontier.revisit.SimpleRevisitStrategy

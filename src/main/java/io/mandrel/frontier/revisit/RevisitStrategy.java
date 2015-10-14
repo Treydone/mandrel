@@ -16,16 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.common.data;
+package io.mandrel.frontier.revisit;
+
+import io.mandrel.blob.BlobMetadata;
 
 import java.io.Serializable;
 
 import lombok.Data;
 
 @Data
-public class Header implements Serializable {
-	private static final long serialVersionUID = -600885429254608967L;
+public abstract class RevisitStrategy implements Serializable {
 
-	private String name;
-	private String value;
+	private static final long serialVersionUID = -6064010303003504348L;
+
+	public abstract boolean isScheduledForRevisit(BlobMetadata metadata);
 }

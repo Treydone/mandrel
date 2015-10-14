@@ -18,6 +18,8 @@
  */
 package io.mandrel.common;
 
+import io.mandrel.common.logging.LoggerMessageFormat;
+
 public class MandrelException extends RuntimeException {
 
 	private static final long serialVersionUID = -4167895335374331706L;
@@ -36,6 +38,40 @@ public class MandrelException extends RuntimeException {
 
 	public MandrelException(Throwable cause) {
 		super(cause);
+	}
+
+/**
+	 * Construct a <code>MandrelException</code> with the specified detail
+	 * message.
+	 *
+	 * The message can be parameterized using {@code as placeholders for the
+	 * given arguments
+	 *
+	 * @param msg
+	 *            the detail message
+	 * @param args
+	 *            the arguments for the message
+	 */
+	public MandrelException(String msg, Object... args) {
+		super(LoggerMessageFormat.format(msg, args));
+	}
+
+/**
+	 * Construct a <code>MandrelException</code> with the specified detail
+	 * message and nested exception.
+	 *
+	 * The message can be parameterized using {@code as placeholders for the
+	 * given arguments
+	 *
+	 * @param msg
+	 *            the detail message
+	 * @param cause
+	 *            the nested exception
+	 * @param args
+	 *            the arguments for the message
+	 */
+	public MandrelException(String msg, Throwable cause, Object... args) {
+		super(LoggerMessageFormat.format(msg, args), cause);
 	}
 
 }
