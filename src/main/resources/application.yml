@@ -2,13 +2,13 @@
 node:
     data: true
     worker: true
-
+    
 # Network configuration
 cluster:
     group:
         name: Mandrel
-	    password: M@ndR3L
-	reuseAddress: true
+        password: M@ndR3L
+    reuseAddress: true
     tcp:
         noDelay: true
         keepAlive: true
@@ -28,26 +28,26 @@ cluster:
 client: 
     strategies:
         default: &default_strategy
-		    request_time_out: 10000
-		    socket_timeout: 10000
-	    	connect_timeout: 10000
-		    reuse_address: true
-		    tcp_no_delay: true
-		    keep_alive: true
-		    max_parallel: 100
-		    max_persistent_connections: 100
-		    name_resolver:
-		        type: default
-		    proxy:
-		        type: no
-		    
+            request_time_out: 10000
+            socket_timeout: 10000
+            connect_timeout: 10000
+            reuse_address: true
+            tcp_no_delay: true
+            keep_alive: true
+            max_parallel: 100
+            max_persistent_connections: 100
+            name_resolver:
+                type: default
+            proxy:
+                type: no
+            
         http: &http_default_strategy
-             <<: *default_strategy
+            <<: *default_strategy
             max_redirects: 3
             follow_redirects: true
             use_head: false
             headers:
-    	        'Accept-Language': 'en-us,en-gb,en;q=0.7,*;q=0.3'
+                'Accept-Language': 'en-us,en-gb,en;q=0.7,*;q=0.3'
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
                 'Accept-Encoding': 'gzip, deflate, sdch'
             user_agent_provisionner:
@@ -94,10 +94,10 @@ chain:
         # - creation of indefinitely deep directory structures like
         # - huge params value
         # - too many params
-    - link_depth_limitation
+    - link_depth_limitation:
         value: 5
     #- sanitize_params # Remove all params except some exclusions
-    - canonizer
+    - canonizer:
         rules:
             - path_clean # Removal of "." and ".." segments
             - lowercase # Lowercases the URI
@@ -112,36 +112,36 @@ chain:
     - skip_extensions # .css, .js...
     
 frontier:
-	revisit:
+    revisit:
 #        type: no
-#            max_retry: 3
+#        max_retry: 3
         type: fixed
-            default: 1d
-            fetch_error:
-                max_retry: 3
-                next_attempt: 2h
-            parsing_error:
-                max_retry: 3
-                next_attempt: 7d
-            on_global_error:
-                max_retry: 3
-                next_attempt: 7d
-            send_last_seen_info: true (Last-Modified-Since/ETag header for HttpRequester...)
-    type: simple
+        default: 1d
+        fetch_error:
+            max_retry: 3
+            next_attempt: 2h
+        parsing_error:
+            max_retry: 3
+            next_attempt: 7d
+        on_global_error:
+            max_retry: 3
+            next_attempt: 7d
+        send_last_seen_info: true (Last-Modified-Since/ETag header for HttpRequester...)
+#    type: simple
     type: priority
-        levels:
-            - level: 0
-              filter: match('/item')
-            - level: 1
-              filter: match('/user')
-            - level: 2
-              default: true
-            - level: 3
-              filter: match('/search')
-        politeness:
-            max_pages: 100
-            wait: 100
-            ignore_robots_txt: false
+    levels:
+        - level: 0
+          filter: match('/item')
+        - level: 1
+          filter: match('/user')
+        - level: 2
+          default: true
+        - level: 3
+          filter: match('/search')
+    politeness:
+        max_pages: 100
+        wait: 100
+        ignore_robots_txt: false
                     
 server:
     port: 8080

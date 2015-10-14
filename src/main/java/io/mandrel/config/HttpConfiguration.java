@@ -18,6 +18,7 @@
  */
 package io.mandrel.config;
 
+import io.mandrel.common.data.HttpStrategy;
 import io.mandrel.requests.http.ApacheHttpRequester;
 
 import org.springframework.context.annotation.Bean;
@@ -29,6 +30,7 @@ public class HttpConfiguration {
 	@Bean
 	public ApacheHttpRequester defaultRequester() {
 		ApacheHttpRequester hcRequester = new ApacheHttpRequester();
+		hcRequester.setStrategy(new HttpStrategy());
 		hcRequester.init();
 		return hcRequester;
 	}
