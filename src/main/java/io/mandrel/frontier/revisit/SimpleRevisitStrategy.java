@@ -40,13 +40,13 @@ public class SimpleRevisitStrategy extends RevisitStrategy implements Serializab
 	private TimeValue rescheduledAfter = TimeValue.parseTimeValue("1d");
 
 	@JsonProperty("on_fetch_error")
-	private OnError onFetchError = OnError.of(3, "2h");
+	private Interval onFetchError = Interval.of(3, "2h");
 
 	@JsonProperty("on_parsing_error")
-	private OnError onParsingError = OnError.of(3, "7d");
+	private Interval onParsingError = Interval.of(3, "7d");
 
 	@JsonProperty("on_global_error")
-	private OnError onGlobalError = OnError.of(3, "7d");
+	private Interval onGlobalError = Interval.of(3, "7d");
 
 	/**
 	 * Has to send last seen info ? (Last-Modified-Since/ETag header for

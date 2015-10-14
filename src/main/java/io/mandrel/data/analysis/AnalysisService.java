@@ -24,10 +24,10 @@ import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.common.robots.RobotsTxtUtils;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
+import io.mandrel.data.spider.InitService;
 import io.mandrel.data.spider.Link;
 import io.mandrel.document.Document;
 import io.mandrel.requests.Requester;
-import io.mandrel.requests.http.HttpFetchMetadata;
 
 import java.net.URI;
 import java.net.URL;
@@ -35,10 +35,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -47,12 +45,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
-import com.hazelcast.core.HazelcastInstance;
 
 import crawlercommons.sitemaps.AbstractSiteMap;
 import crawlercommons.sitemaps.SiteMapIndex;
@@ -64,29 +60,25 @@ import crawlercommons.sitemaps.SiteMapParser;
 public class AnalysisService {
 
 	private final ExtractorService extractorService;
-
 	private final Requester requester;
+	private final InitService initService;
 
-	public Optional<Analysis> analyze(Long id, String source) {
-		return get(id).map(spider -> {
+	public Analysis analyze(Spider spider, String source) {
+		Blob blob;
+		try {
+			blob = requester.getBlocking(new URI(source), spider);
+		} catch (Exception e) {
+			throw Throwables.propagate(e);
+		}
+		log.trace("Getting response for {}", source);
 
-			Blob blob;
-			try {
-				blob = requester.getBlocking(new URI(source), spider);
-			} catch (Exception e) {
-				throw Throwables.propagate(e);
-			}
-			log.trace("Getting response for {}", source);
-
-			Analysis report = buildReport(spider, blob);
-
-			return report;
-		});
+		Analysis report = buildReport(spider, blob);
+		return report;
 	}
 
 	protected Analysis buildReport(Spider spider, Blob blob) {
 
-		injectAndInit(spider);
+		initService.injectAndInit(spider);
 
 		Analysis report = new Analysis();
 		if (spider.getExtractors() != null) {

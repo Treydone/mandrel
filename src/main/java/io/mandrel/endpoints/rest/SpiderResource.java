@@ -52,7 +52,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 public class SpiderResource {
 
 	private final AnalysisService analysisService;
-	
+
 	private final SpiderService spiderService;
 
 	private final MetricsService statsService;
@@ -83,8 +83,8 @@ public class SpiderResource {
 
 	@ApiOperation(value = "Find a spider by its id", response = Spider.class)
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	public Spider id(@PathVariable Long id) {
-		return spiderService.get(id).map(opt -> opt).orElse(null);
+	public Optional<Spider> id(@PathVariable Long id) {
+		return spiderService.get(id).map(opt -> opt);
 	}
 
 	@ApiOperation(value = "Start a spider")
@@ -96,7 +96,7 @@ public class SpiderResource {
 	@ApiOperation(value = "Analyze a source against a spider")
 	@RequestMapping(value = "/{id}/analyze", method = RequestMethod.GET)
 	public Optional<Analysis> analyze(@PathVariable Long id, @RequestParam String source) {
-		return analysisService.analyze(id, source);
+		return spiderService.get(id).map(spider -> analysisService.analyze(spider, source));
 	}
 
 	@ApiOperation(value = "Pause a spider")

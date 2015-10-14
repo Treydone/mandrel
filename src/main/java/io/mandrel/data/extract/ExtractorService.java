@@ -39,7 +39,7 @@ import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.content.selector.UrlSelector;
 import io.mandrel.data.spider.Link;
 import io.mandrel.document.Document;
-import io.mandrel.requests.http.Cookie;
+import io.mandrel.io.Payloads;
 import io.mandrel.script.ScriptingService;
 
 import java.net.URI;
@@ -234,7 +234,7 @@ public class ExtractorService {
 		Instance<T> instance;
 		if (segment != null) {
 			Selector<T> selector = getSelector(fieldExtractor);
-			instance = ((BodySelector<T>) selector).init(blob.metadata(), segment, true);
+			instance = ((BodySelector<T>) selector).init(blob.metadata(), Payloads.newByteArrayPayload(segment), true);
 		} else {
 			// Reuse the previous instance selector for this web page
 			String cacheKey = fieldExtractor.getType() + "-" + fieldExtractor.getSource().toString().toLowerCase(Locale.ROOT);
@@ -246,17 +246,11 @@ public class ExtractorService {
 				if (SourceType.BODY.equals(fieldExtractor.getSource())) {
 					instance = ((BodySelector<T>) selector).init(blob.metadata(), blob.payload(), false);
 				} else if (SourceType.HEADERS.equals(fieldExtractor.getSource())) {
-					instance = ((HeaderSelector<T>) selector).init(blob, blob.metadata().getHeaders());
+					instance = ((HeaderSelector<T>) selector).init(blob.metadata().fetchMetadata());
 				} else if (SourceType.URL.equals(fieldExtractor.getSource())) {
 					instance = ((UrlSelector<T>) selector).init(blob.metadata(), blob.metadata().uri());
 				} else if (SourceType.COOKIE.equals(fieldExtractor.getSource())) {
-					instance = ((CookieSelector<T>) selector).init(
-							blob,
-							blob.metadata()
-									.getCookies()
-									.stream()
-									.map(cookie -> new Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie.getExpires(),
-											cookie.getMaxAge(), cookie.isSecure(), cookie.isHttpOnly())).collect(Collectors.toList()));
+					instance = ((CookieSelector<T>) selector).init(blob.metadata().fetchMetadata());
 				} else if (SourceType.EMPTY.equals(fieldExtractor.getSource())) {
 					instance = ((EmptySelector<T>) selector).init(blob);
 				}

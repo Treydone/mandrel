@@ -21,36 +21,35 @@ package io.mandrel.data.export;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.content.MetadataExtractor;
+import io.mandrel.data.spider.InitService;
 import io.mandrel.data.spider.SpiderService;
 
 import java.io.BufferedWriter;
 import java.io.Writer;
 import java.util.Optional;
 
+import javax.inject.Inject;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ExporterService {
 
 	private final SpiderService spiderService;
-
-	@Autowired
-	public ExporterService(SpiderService spiderService) {
-		super();
-		this.spiderService = spiderService;
-	}
+	private final InitService initService;
 
 	public void export(Long id, String extractorName, DocumentExporter exporter, Writer writer) {
 		Optional<Spider> oSpider = spiderService.get(id);
 
 		if (oSpider.isPresent()) {
 			Spider spider = oSpider.get();
-			spiderService.injectAndInit(spider);
+			initService.injectAndInit(spider);
 			Optional<MetadataExtractor> oExtractor = spider.getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
 			if (oExtractor.isPresent()) {
 				try {
@@ -90,7 +89,7 @@ public class ExporterService {
 
 		if (optional.isPresent()) {
 			Spider spider = optional.get();
-			spiderService.injectAndInit(spider);
+			initService.injectAndInit(spider);
 
 			try {
 				exporter.init(new BufferedWriter(writer));

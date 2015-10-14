@@ -19,8 +19,9 @@
 package io.mandrel.data.content.selector;
 
 import io.mandrel.blob.BlobMetadata;
+import io.mandrel.io.Payload;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -56,7 +57,7 @@ public class JsonSelector extends BodySelector<String> {
 	}
 
 	@Override
-	public Instance<String> init(BlobMetadata data, byte[] bytes, boolean isSegment) {
+	public Instance<String> init(BlobMetadata data, Payload payload, boolean isSegment) {
 
 		Configuration.setDefaults(new Configuration.Defaults() {
 
@@ -79,7 +80,13 @@ public class JsonSelector extends BodySelector<String> {
 			}
 		});
 
-		DocumentContext context = JsonPath.parse(new ByteArrayInputStream(bytes));
+		DocumentContext context;
+		try {
+			context = JsonPath.parse(payload.openStream());
+		} catch (IOException e) {
+			payload.release();
+			throw Throwables.propagate(e);
+		}
 		return new JsonSelectorInstance(context);
 	}
 

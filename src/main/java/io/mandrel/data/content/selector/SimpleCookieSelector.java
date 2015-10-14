@@ -20,18 +20,24 @@ package io.mandrel.data.content.selector;
 
 import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.requests.http.Cookie;
+import io.mandrel.requests.http.HttpFetchMetadata;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class SimpleCookieSelector extends CookieSelector<String> {
 
-	public Instance<String> init(FetchMetadata data, List<Cookie> cookies) {
+	public Instance<String> init(FetchMetadata data) {
 		return new Instance<String>() {
 			@Override
 			public <T> List<T> select(String value, DataConverter<String, T> converter) {
-				return cookies.stream().filter(cookie -> cookie.name().equals(value)).map(cookie -> converter.convert(cookie.value()))
-						.collect(Collectors.toList());
+
+				if (data instanceof HttpFetchMetadata) {
+					List<Cookie> cookies = ((HttpFetchMetadata) data).cookies();
+					return cookies.stream().filter(cookie -> cookie.name().equals(value)).map(cookie -> converter.convert(cookie.value()))
+							.collect(Collectors.toList());
+				}
+				return null;
 			}
 		};
 	}

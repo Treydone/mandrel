@@ -33,9 +33,7 @@ import io.mandrel.timeline.TimelineService;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -55,7 +53,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.base.Throwables;
-import com.hazelcast.core.HazelcastInstance;
 
 @Component
 @Slf4j
@@ -65,8 +62,6 @@ public class SpiderService {
 	private final SpiderRepository spiderRepository;
 
 	private final TaskService taskService;
-
-	private final HazelcastInstance instance;
 
 	private final TimelineService timelineService;
 
@@ -93,24 +88,6 @@ public class SpiderService {
 			// spider.getSources().stream().forEach(prepareSource(spider.getId(),
 			// spider));
 			});
-	}
-
-	public void injectAndInit(Spider spider) {
-		spider.getStores().getMetadataStore().setHazelcastInstance(instance);
-		if (spider.getStores().getBlobStore() != null) {
-			spider.getStores().getBlobStore().setHazelcastInstance(instance);
-		}
-		if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
-			spider.getExtractors().getPages().forEach(ex -> ex.getDocumentStore().setHazelcastInstance(instance));
-		}
-
-		// TODO
-		Map<String, Object> properties = new HashMap<>();
-
-		spider.getStores().getMetadataStore().init(properties);
-		if (spider.getStores().getBlobStore() != null) {
-			spider.getStores().getBlobStore().init(properties);
-		}
 	}
 
 	public BindingResult validate(Spider spider) {

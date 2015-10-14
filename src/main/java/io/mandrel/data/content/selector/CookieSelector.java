@@ -20,13 +20,10 @@ package io.mandrel.data.content.selector;
 
 import io.mandrel.data.content.SourceType;
 import io.mandrel.metadata.FetchMetadata;
-import io.mandrel.requests.http.Cookie;
-
-import java.util.List;
 
 public abstract class CookieSelector<X> implements Selector<X> {
 
-	public abstract Instance<X> init(FetchMetadata data, List<Cookie> cookies);
+	public abstract Instance<X> init(FetchMetadata data);
 
 	@Override
 	public final SourceType getSource() {

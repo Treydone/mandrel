@@ -20,10 +20,11 @@ package io.mandrel.data.content.selector;
 
 import io.mandrel.blob.BlobMetadata;
 import io.mandrel.data.content.SourceType;
+import io.mandrel.io.Payload;
 
 public abstract class BodySelector<X> implements Selector<X> {
 
-	public abstract Instance<X> init(BlobMetadata data, byte[] bytes, boolean isSegment);
+	public abstract Instance<X> init(BlobMetadata data, Payload payload, boolean isSegment);
 
 	@Override
 	public final SourceType getSource() {

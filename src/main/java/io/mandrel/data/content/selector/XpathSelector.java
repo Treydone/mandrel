@@ -19,13 +19,14 @@
 package io.mandrel.data.content.selector;
 
 import io.mandrel.blob.BlobMetadata;
+import io.mandrel.io.Payload;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 
@@ -56,15 +57,16 @@ public class XpathSelector extends BodySelector<XElement> {
 	}
 
 	@Override
-	public Instance<XElement> init(BlobMetadata data, byte[] bytes, boolean isSegment) {
+	public Instance<XElement> init(BlobMetadata data, Payload payload, boolean isSegment) {
 		Element element;
 		try {
 			if (!isSegment) {
-				element = Jsoup.parse(new ByteArrayInputStream(bytes), Charsets.UTF_8.name(), data.uri().toString());
+				element = Jsoup.parse(payload.openStream(), Charsets.UTF_8.name(), data.uri().toString());
 			} else {
-				element = Jsoup.parseBodyFragment(new String(bytes, Charsets.UTF_8), data.uri().toString()).body();
+				element = Jsoup.parseBodyFragment(IOUtils.toString(payload.openStream()), data.uri().toString()).body();
 			}
 		} catch (IOException e) {
+			payload.release();
 			throw Throwables.propagate(e);
 		}
 		return new XpathSelectorInstance(element);

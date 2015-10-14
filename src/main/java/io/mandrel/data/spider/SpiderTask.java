@@ -51,6 +51,9 @@ public class SpiderTask implements Runnable, HazelcastInstanceAware, Serializabl
 	private transient SpiderService spiderService;
 
 	@Autowired
+	private transient InitService initService;
+
+	@Autowired
 	@Getter(value = AccessLevel.NONE)
 	private transient HazelcastInstance hazelcastInstance;
 
@@ -62,7 +65,7 @@ public class SpiderTask implements Runnable, HazelcastInstanceAware, Serializabl
 	public void run() {
 
 		try {
-			spiderService.injectAndInit(spider);
+			initService.injectAndInit(spider);
 
 			for (Requester requester : spider.getClient().getRequesters()) {
 				// Prepare client

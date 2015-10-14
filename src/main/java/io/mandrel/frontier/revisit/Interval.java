@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-public class OnError implements Serializable {
+public class Interval implements Serializable {
 	private static final long serialVersionUID = -4428784588678656049L;
 
 	@JsonProperty("max_retry")
@@ -20,7 +20,7 @@ public class OnError implements Serializable {
 	private final TimeValue nextAttempt;
 
 	@JsonCreator
-	public static OnError of(@JsonProperty("max_retry") int maxRetry, @JsonProperty("next_attempt") String nextAttempt) {
-		return new OnError(maxRetry, TimeValue.parseTimeValue(nextAttempt));
+	public static Interval of(@JsonProperty("max_retry") int maxRetry, @JsonProperty("next_attempt") String nextAttempt) {
+		return new Interval(maxRetry, TimeValue.parseTimeValue(nextAttempt));
 	}
 }

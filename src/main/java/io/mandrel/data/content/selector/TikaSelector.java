@@ -19,6 +19,7 @@
 package io.mandrel.data.content.selector;
 
 import io.mandrel.blob.BlobMetadata;
+import io.mandrel.io.Payload;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +41,7 @@ public class TikaSelector extends BodySelector<String> {
 	}
 
 	@Override
-	public Instance<String> init(BlobMetadata data, byte[] bytes, boolean isSegment) {
+	public Instance<String> init(BlobMetadata data, Payload payload, boolean isSegment) {
 		return new Instance<String>() {
 			@Override
 			public <T> List<T> select(String value, DataConverter<String, T> converter) {
@@ -49,10 +50,11 @@ public class TikaSelector extends BodySelector<String> {
 				org.apache.tika.metadata.Metadata metadata = new org.apache.tika.metadata.Metadata();
 				AutoDetectParser parser = new AutoDetectParser(tikaConfig);
 				ContentHandler handler = new BodyContentHandler();
-				TikaInputStream stream = TikaInputStream.get(bytes, metadata);
 				try {
+					TikaInputStream stream = TikaInputStream.get(payload.openStream());
 					parser.parse(stream, handler, metadata, new ParseContext());
 				} catch (Exception e) {
+					payload.release();
 					throw Throwables.propagate(e);
 				}
 				return Arrays.asList(converter.convert(handler.toString()));

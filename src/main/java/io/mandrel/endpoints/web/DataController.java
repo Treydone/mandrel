@@ -21,6 +21,7 @@ package io.mandrel.endpoints.web;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.content.MetadataExtractor;
+import io.mandrel.data.spider.InitService;
 import io.mandrel.data.spider.SpiderService;
 import io.mandrel.document.Document;
 import io.mandrel.endpoints.PageRequest;
@@ -46,6 +47,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class DataController {
 
 	private final SpiderService spiderService;
+	private final InitService initService;
 
 	@RequestMapping("/data")
 	public String data(Model model) {
@@ -68,7 +70,7 @@ public class DataController {
 	public PageResponse data(@PathVariable Long id, @PathVariable String extractor, PageRequest request, Model model) {
 		Spider spider = spiderService.get(id).get();
 
-		spiderService.injectAndInit(spider);
+		initService.injectAndInit(spider);
 
 		MetadataExtractor theExtractor = spider.getExtractors().getPages().stream().filter(ex -> extractor.equals(ex.getName())).findFirst()
 				.orElseThrow(() -> new NotFoundException(""));
