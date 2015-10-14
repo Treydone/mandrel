@@ -1,7 +1,10 @@
 package io.mandrel.common.unit;
 
 import io.mandrel.common.MandrelParseException;
+import io.mandrel.common.unit.TimeValue.TimeValueDeserializer;
+import io.mandrel.common.unit.TimeValue.TimeValueSerializer;
 
+import java.io.IOException;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -10,6 +13,18 @@ import org.joda.time.PeriodType;
 import org.joda.time.format.PeriodFormat;
 import org.joda.time.format.PeriodFormatter;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonDeserialize(using = TimeValueDeserializer.class)
+@JsonSerialize(using = TimeValueSerializer.class)
 public class TimeValue {
 
 	/** How many nano-seconds in one milli-second */
@@ -38,10 +53,6 @@ public class TimeValue {
 	private long duration;
 
 	private TimeUnit timeUnit;
-
-	private TimeValue() {
-
-	}
 
 	public TimeValue(long millis) {
 		this(millis, TimeUnit.MILLISECONDS);
@@ -283,5 +294,20 @@ public class TimeValue {
 
 	public static long nsecToMSec(long ns) {
 		return ns / NSEC_PER_MSEC;
+	}
+
+	public static class TimeValueDeserializer extends JsonDeserializer<TimeValue> {
+		@Override
+		public TimeValue deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+			String value = jp.getCodec().readValue(jp, String.class);
+			return TimeValue.parseTimeValue(value);
+		}
+	}
+
+	public static class TimeValueSerializer extends JsonSerializer<TimeValue> {
+		@Override
+		public void serialize(TimeValue value, JsonGenerator jgen, SerializerProvider serializers) throws IOException, JsonProcessingException {
+			 jgen.writeString(value.toString());
+		}
 	}
 }

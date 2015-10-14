@@ -19,9 +19,26 @@
 package io.mandrel.common.unit;
 
 import io.mandrel.common.MandrelIllegalArgumentException;
+import io.mandrel.common.MandrelParseException;
+import io.mandrel.common.unit.ByteSizeValue.ByteSizeValueDeserializer;
+import io.mandrel.common.unit.ByteSizeValue.ByteSizeValueSerializer;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.Locale;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonDeserialize(using = ByteSizeValueDeserializer.class)
+@JsonSerialize(using = ByteSizeValueSerializer.class)
 public class ByteSizeValue implements Serializable {
 
 	private static final long serialVersionUID = 2684458824218492593L;
@@ -213,5 +230,62 @@ public class ByteSizeValue implements Serializable {
 		int result = (int) (size ^ (size >>> 32));
 		result = 31 * result + (sizeUnit != null ? sizeUnit.hashCode() : 0);
 		return result;
+	}
+
+	public static ByteSizeValue parseBytesSizeValue(String sValue) throws MandrelParseException {
+		long bytes;
+		try {
+			String lowerSValue = sValue.toLowerCase(Locale.ROOT).trim();
+			if (lowerSValue.endsWith("k")) {
+				bytes = (long) (Double.parseDouble(lowerSValue.substring(0, lowerSValue.length() - 1)) * ByteSizeUnit.C1);
+			} else if (lowerSValue.endsWith("kb")) {
+				bytes = (long) (Double.parseDouble(lowerSValue.substring(0, lowerSValue.length() - 2)) * ByteSizeUnit.C1);
+			} else if (lowerSValue.endsWith("m")) {
+				bytes = (long) (Double.parseDouble(lowerSValue.substring(0, lowerSValue.length() - 1)) * ByteSizeUnit.C2);
+			} else if (lowerSValue.endsWith("mb")) {
+				bytes = (long) (Double.parseDouble(lowerSValue.substring(0, lowerSValue.length() - 2)) * ByteSizeUnit.C2);
+			} else if (lowerSValue.endsWith("g")) {
+				bytes = (long) (Double.parseDouble(lowerSValue.substring(0, lowerSValue.length() - 1)) * ByteSizeUnit.C3);
+			} else if (lowerSValue.endsWith("gb")) {
+				bytes = (long) (Double.parseDouble(lowerSValue.substring(0, lowerSValue.length() - 2)) * ByteSizeUnit.C3);
+			} else if (lowerSValue.endsWith("t")) {
+				bytes = (long) (Double.parseDouble(lowerSValue.substring(0, lowerSValue.length() - 1)) * ByteSizeUnit.C4);
+			} else if (lowerSValue.endsWith("tb")) {
+				bytes = (long) (Double.parseDouble(lowerSValue.substring(0, lowerSValue.length() - 2)) * ByteSizeUnit.C4);
+			} else if (lowerSValue.endsWith("p")) {
+				bytes = (long) (Double.parseDouble(lowerSValue.substring(0, lowerSValue.length() - 1)) * ByteSizeUnit.C5);
+			} else if (lowerSValue.endsWith("pb")) {
+				bytes = (long) (Double.parseDouble(lowerSValue.substring(0, lowerSValue.length() - 2)) * ByteSizeUnit.C5);
+			} else if (lowerSValue.endsWith("b")) {
+				bytes = Long.parseLong(lowerSValue.substring(0, lowerSValue.length() - 1).trim());
+			} else if (lowerSValue.equals("-1")) {
+				// Allow this special value to be unit-less:
+				bytes = -1;
+			} else if (lowerSValue.equals("0")) {
+				// Allow this special value to be unit-less:
+				bytes = 0;
+			} else {
+				// Missing units:
+				throw new MandrelParseException("failed to parse value [{}] as a size in bytes: unit is missing or unrecognized", sValue);
+			}
+		} catch (NumberFormatException e) {
+			throw new MandrelParseException("failed to parse [{}]", e, sValue);
+		}
+		return new ByteSizeValue(bytes, ByteSizeUnit.BYTES);
+	}
+
+	public static class ByteSizeValueDeserializer extends JsonDeserializer<ByteSizeValue> {
+		@Override
+		public ByteSizeValue deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+			String value = jp.getCodec().readValue(jp, String.class);
+			return ByteSizeValue.parseBytesSizeValue(value);
+		}
+	}
+
+	public static class ByteSizeValueSerializer extends JsonSerializer<ByteSizeValue> {
+		@Override
+		public void serialize(ByteSizeValue value, JsonGenerator jgen, SerializerProvider serializers) throws IOException, JsonProcessingException {
+			jgen.writeString(value.toString());
+		}
 	}
 }
