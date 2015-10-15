@@ -18,11 +18,46 @@
  */
 package io.mandrel.frontier;
 
+import java.net.URI;
+
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class SimpleFrontier extends Frontier {
 
 	private static final long serialVersionUID = -4055424223863734294L;
 
+	private static final String DEFAULT_QUEUE = "default";
+
+	@Override
+	public void create() {
+		getStore().create(DEFAULT_QUEUE);
+	}
+
+	@Override
+	public URI pool() {
+		return getStore().queue(DEFAULT_QUEUE).pool();
+	}
+
+	@Override
+	public void schedule(URI uri) {
+		getStore().queue(DEFAULT_QUEUE).schedule(uri);
+	}
+
+	@Override
+	public void finished(URI uri) {
+		getStore().finish(uri);
+	}
+
+	@Override
+	public void delete(URI uri) {
+		getStore().delete(uri);
+	}
+
+	@Override
+	public String name() {
+		return "simple";
+	}
 }

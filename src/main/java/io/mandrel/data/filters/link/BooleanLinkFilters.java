@@ -31,6 +31,25 @@ public interface BooleanLinkFilters {
 	@Data
 	@Accessors(chain = true)
 	@EqualsAndHashCode(callSuper = false)
+	public class TrueFilter extends LinkFilter {
+
+		private static final long serialVersionUID = -2429186996142024643L;
+
+		private LinkFilter filter;
+
+		public boolean isValid(Link link) {
+			return true;
+		}
+
+		@Override
+		public String name() {
+			return "true";
+		}
+	}
+
+	@Data
+	@Accessors(chain = true)
+	@EqualsAndHashCode(callSuper = false)
 	public class NotFilter extends LinkFilter {
 
 		private static final long serialVersionUID = -2429186996142024643L;

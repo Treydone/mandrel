@@ -18,23 +18,40 @@
  */
 package io.mandrel.frontier;
 
+import io.mandrel.common.loader.NamedComponent;
 import io.mandrel.frontier.revisit.RevisitStrategy;
 import io.mandrel.frontier.revisit.SimpleRevisitStrategy;
+import io.mandrel.frontier.store.FrontierStore;
 
 import java.io.Serializable;
+import java.net.URI;
 
 import lombok.Data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-public abstract class Frontier implements Serializable {
+public abstract class Frontier implements NamedComponent, Serializable {
 
 	private static final long serialVersionUID = -7584623252876875042L;
 
 	@JsonProperty("politeness")
 	private Politeness politeness = new Politeness();
-	
+
 	@JsonProperty("revist")
 	private RevisitStrategy revisit = new SimpleRevisitStrategy();
+
+	@JsonProperty("store")
+	private FrontierStore store;
+
+	public abstract void create();
+
+	public abstract URI pool();
+
+	public abstract void schedule(URI uri);
+
+	public abstract void finished(URI uri);
+
+	public abstract void delete(URI uri);
+
 }
