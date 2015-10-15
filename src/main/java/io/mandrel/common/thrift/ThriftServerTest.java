@@ -20,6 +20,7 @@ package io.mandrel.common.thrift;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +29,7 @@ import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
+import org.apache.thrift.transport.TZlibTransport;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Meter;
@@ -50,11 +52,16 @@ public class ThriftServerTest {
 		// Create the handler
 		Scribe.Iface serviceInterface = new Scribe.Iface() {
 
+			private AtomicInteger value = new AtomicInteger();
+
 			@Override
 			public ResultCode log(List<LogEntry> messages) throws TException {
 				requests.mark();
 				for (LogEntry message : messages) {
-					log.info("{}: {}", message.getCategory(), message.getMessage());
+//					if (value.get() % 1000 == 0) {
+//						log.info("{}: {}", message.getCategory(), message.getMessage());
+//					}
+					value.incrementAndGet();
 				}
 				return ResultCode.OK;
 			}
@@ -63,7 +70,9 @@ public class ThriftServerTest {
 		TServerSocket serverTransport = new TServerSocket(7911);
 		Scribe.Processor<Scribe.Iface> processor = new Scribe.Processor<Scribe.Iface>(serviceInterface);
 
-		final TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
+		TZlibTransport.Factory factory = new TZlibTransport.Factory();
+		final TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor).outputTransportFactory(factory)
+				.inputTransportFactory(factory));
 
 		server.serve();
 
