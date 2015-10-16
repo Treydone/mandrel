@@ -19,6 +19,7 @@
 package io.mandrel.frontier;
 
 import io.mandrel.common.loader.NamedComponent;
+import io.mandrel.due.DuplicateUrlEliminator;
 import io.mandrel.frontier.revisit.RevisitStrategy;
 import io.mandrel.frontier.revisit.SimpleRevisitStrategy;
 import io.mandrel.frontier.store.FrontierStore;
@@ -43,6 +44,9 @@ public abstract class Frontier implements NamedComponent, Serializable {
 
 	@JsonProperty("store")
 	private FrontierStore store;
+
+	@JsonProperty("due")
+	private DuplicateUrlEliminator duplicateUrlEliminator;
 
 	public abstract void create();
 

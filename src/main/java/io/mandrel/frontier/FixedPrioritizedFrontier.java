@@ -40,7 +40,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class PrioritizedFrontier extends Frontier {
+public class FixedPrioritizedFrontier extends Frontier {
 
 	private static final long serialVersionUID = -4055424223863734294L;
 
@@ -63,9 +63,10 @@ public class PrioritizedFrontier extends Frontier {
 	@Override
 	public URI pool() {
 		for (Priority p : priorities) {
-			URI item = queue(p).pool();
-			if (item != null) {
-				return item;
+			URI uri = queue(p).pool();
+			if (uri != null) {
+				getDuplicateUrlEliminator().markAsPending("pendings", uri);
+				return uri;
 			}
 		}
 		return null;
@@ -82,11 +83,13 @@ public class PrioritizedFrontier extends Frontier {
 
 	@Override
 	public void finished(URI uri) {
+		getDuplicateUrlEliminator().removePending("pendings", uri);
 		getStore().finish(uri);
 	}
 
 	@Override
 	public void delete(URI uri) {
+		getDuplicateUrlEliminator().removePending("pendings", uri);
 		getStore().delete(uri);
 	}
 

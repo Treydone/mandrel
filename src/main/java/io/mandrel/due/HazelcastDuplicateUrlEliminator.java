@@ -18,6 +18,7 @@
  */
 package io.mandrel.due;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,30 +40,30 @@ public class HazelcastDuplicateUrlEliminator implements DuplicateUrlEliminator {
 
 	private final HazelcastInstance instance;
 
-	public <T> void markAsPending(String queueName, String identifier, T data) {
-		if (identifier != null) {
+	public void markAsPending(String queueName, URI uri) {
+		if (uri != null) {
 			prepareIfNotDefined(queueName);
 
-			IMap<String, T> pendings = instance.getMap(queueName);
-			pendings.put(identifier, data);
+			IMap<URI, Boolean> pendings = instance.getMap(queueName);
+			pendings.put(uri, Boolean.TRUE);
 		}
 	}
 
-	public <T> void removePending(String queueName, String identifier) {
-		if (identifier != null) {
+	public void removePending(String queueName, URI uri) {
+		if (uri != null) {
 			prepareIfNotDefined(queueName);
 
-			IMap<String, T> pendings = instance.getMap(queueName);
-			pendings.remove(identifier);
+			IMap<String, URI> pendings = instance.getMap(queueName);
+			pendings.remove(uri);
 		}
 	}
 
-	public <T> Set<T> filterPendings(String queueName, Collection<T> identifiers) {
-		if (identifiers != null) {
+	public Set<URI> filterPendings(String queueName, Collection<URI> uris) {
+		if (uris != null) {
 			prepareIfNotDefined(queueName);
 
-			IMap<String, T> pendings = instance.getMap(queueName);
-			return identifiers.stream().filter(el -> !pendings.containsKey(el)).collect(Collectors.toSet());
+			IMap<String, URI> pendings = instance.getMap(queueName);
+			return uris.stream().filter(el -> !pendings.containsKey(el)).collect(Collectors.toSet());
 		}
 		return null;
 	}
@@ -76,10 +77,10 @@ public class HazelcastDuplicateUrlEliminator implements DuplicateUrlEliminator {
 		}
 	}
 
-	public <T> Set<T> deduplicate(String queueName, Collection<T> data) {
-		if (data != null) {
-			IQueue<T> queue = instance.getQueue(queueName);
-			return data.stream().filter(el -> !queue.contains(el)).collect(Collectors.toSet());
+	public Set<URI> deduplicate(String queueName, Collection<URI> uris) {
+		if (uris != null) {
+			IQueue<URI> queue = instance.getQueue(queueName);
+			return uris.stream().filter(el -> !queue.contains(el)).collect(Collectors.toSet());
 		}
 		return null;
 	}

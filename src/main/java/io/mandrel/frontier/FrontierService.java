@@ -62,11 +62,11 @@ public class FrontierService {
 
 	private final DuplicateUrlEliminator duplicateUrlEliminator;
 
-	public void add(long spiderId, Set<Link> uris) {
-		queueService.add("uris-" + spiderId, uris.stream().map(l -> l.uri()).collect(Collectors.toSet()));
+	public void add(long spiderId, Set<URI> uris) {
+		queueService.add("uris-" + spiderId, uris);
 	}
 
-	public void add(long spiderId, Link uri) {
+	public void add(long spiderId, URI uri) {
 		queueService.add("uris-" + spiderId, uri);
 	}
 
@@ -96,7 +96,7 @@ public class FrontierService {
 			watch.start();
 
 			// Mark as pending
-			duplicateUrlEliminator.markAsPending("pendings-" + spider.getId(), uri.toString(), Boolean.TRUE);
+			duplicateUrlEliminator.markAsPending("pendings-" + spider.getId(), uri);
 
 			spider.getClient()
 					.getRequester(uri.getScheme())
@@ -152,9 +152,8 @@ public class FrontierService {
 														// spider
 														// TODO
 
-														allFilteredOutlinks = duplicateUrlEliminator.filterPendings("pendings-" + spider.getId(),
-																allFilteredOutlinks);
-														add(spider.getId(), allFilteredOutlinks);
+														add(spider.getId(), duplicateUrlEliminator.filterPendings("pendings-" + spider.getId(),
+																allFilteredOutlinks.stream().map(l -> l.uri()).collect(Collectors.toSet())));
 													});
 									log.trace(">  - Extracting outlinks done for {}!", uri);
 								}
@@ -169,7 +168,7 @@ public class FrontierService {
 								spider.getStores().getMetadataStore().addMetadata(spider.getId(), blob.metadata().uri(), blob.metadata().fetchMetadata());
 								log.trace(">  - Storing metadata for {} done!", uri);
 
-								duplicateUrlEliminator.removePending("pendings-" + spider.getId(), uri.toString());
+								duplicateUrlEliminator.removePending("pendings-" + spider.getId(), uri);
 
 								log.trace("> End parsing data for {}", uri);
 							},
@@ -178,23 +177,23 @@ public class FrontierService {
 								if (t != null) {
 									if (t instanceof ConnectTimeoutException) {
 										spiderMetrics.incConnectTimeout();
-										add(spider.getId(), new Link().uri(uri));
+										add(spider.getId(), uri);
 									} else if (t instanceof ReadTimeoutException) {
 										spiderMetrics.incReadTimeout();
-										add(spider.getId(), new Link().uri(uri));
+										add(spider.getId(), uri);
 									} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException
 											|| t instanceof java.util.concurrent.TimeoutException) {
 										spiderMetrics.incConnectException();
-										add(spider.getId(), new Link().uri(uri));
+										add(spider.getId(), uri);
 									}
 								} else {
-									add(spider.getId(), new Link().uri(uri));
+									add(spider.getId(), uri);
 								}
 
-								duplicateUrlEliminator.removePending("pendings-" + spider.getId(), uri.toString());
+								duplicateUrlEliminator.removePending("pendings-" + spider.getId(), uri);
 							});
 		} catch (Exception e) {
-			duplicateUrlEliminator.removePending("pendings-" + spider.getId(), uri.toString());
+			duplicateUrlEliminator.removePending("pendings-" + spider.getId(), uri);
 			log.debug("Can not fetch uri {} due to {}", new Object[] { uri, e.toString() }, e);
 		}
 	}

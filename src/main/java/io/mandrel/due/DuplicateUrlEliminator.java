@@ -18,16 +18,17 @@
  */
 package io.mandrel.due;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
 
 public interface DuplicateUrlEliminator {
 
-	<T> void markAsPending(String queueName, String identifier, T data);
+	void markAsPending(String queueName, URI uri);
 
-	<T> void removePending(String queueName, String identifier);
+	void removePending(String queueName, URI uri);
 
-	<T> Set<T> filterPendings(String queueName, Collection<T> identifiers);
+	Set<URI> filterPendings(String queueName, Collection<URI> uris);
 
-	<T> Set<T> deduplicate(String queueName, Collection<T> data);
+	Set<URI> deduplicate(String queueName, Collection<URI> uris);
 }

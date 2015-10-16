@@ -18,10 +18,7 @@
  */
 package io.mandrel.data.source;
 
-import io.mandrel.data.spider.Link;
-
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import lombok.Data;
@@ -39,11 +36,7 @@ public class FixedSource extends Source {
 
 	public void register(EntryListener listener) {
 		for (String seed : urls) {
-			try {
-				listener.onItem(new Link().uri(new URI(seed)));
-			} catch (URISyntaxException e) {
-				e.printStackTrace();
-			}
+			listener.onItem(URI.create(seed));
 		}
 	}
 
