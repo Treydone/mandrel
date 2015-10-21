@@ -19,7 +19,7 @@
 package io.mandrel.metadata.impl;
 
 import io.mandrel.common.service.TaskContext;
-import io.mandrel.data.spider.Link;
+import io.mandrel.data.Link;
 import io.mandrel.frontier.Politeness;
 import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.metadata.MetadataStore;
@@ -103,7 +103,7 @@ public class InternalMetadataStore extends MetadataStore {
 	}
 
 	@Override
-	public void deleteAllFor() {
+	public void deleteAll() {
 		getMetadata().destroy();
 	}
 

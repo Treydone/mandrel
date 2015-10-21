@@ -20,7 +20,7 @@ package io.mandrel.gateway.impl;
 
 import io.mandrel.common.serialization.CompressionType;
 import io.mandrel.common.serialization.KryoSerializer;
-import io.mandrel.data.spider.Link;
+import io.mandrel.data.Link;
 import io.mandrel.frontier.Politeness;
 import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.requests.WebPage;

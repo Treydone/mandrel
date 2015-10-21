@@ -18,7 +18,7 @@
  */
 package io.mandrel.data.filters.link;
 
-import io.mandrel.data.spider.Link;
+import io.mandrel.data.Link;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;

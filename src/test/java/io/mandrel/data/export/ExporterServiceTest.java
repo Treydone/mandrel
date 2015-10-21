@@ -21,7 +21,7 @@ package io.mandrel.data.export;
 import io.mandrel.blob.BlobStore;
 import io.mandrel.blob.BlobStore.Callback;
 import io.mandrel.common.data.Spider;
-import io.mandrel.data.spider.SpiderService;
+import io.mandrel.controller.ControllerService;
 import io.mandrel.requests.WebPage;
 
 import java.io.Writer;
@@ -44,7 +44,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ExporterServiceTest {
 
 	@Mock
-	private SpiderService spiderService;
+	private ControllerService spiderService;
 
 	@Mock
 	private Writer writer;

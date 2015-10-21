@@ -19,7 +19,7 @@
 package io.mandrel.data.filters.link;
 
 import io.mandrel.common.loader.NamedDefinition;
-import io.mandrel.data.spider.Link;
+import io.mandrel.data.Link;
 
 import java.io.Serializable;
 

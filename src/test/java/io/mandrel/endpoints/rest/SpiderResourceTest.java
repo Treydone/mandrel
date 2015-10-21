@@ -19,7 +19,7 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.data.spider.SpiderService;
+import io.mandrel.controller.ControllerService;
 
 import java.util.Arrays;
 import java.util.List;
@@ -42,7 +42,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 public class SpiderResourceTest {
 
 	@Mock
-	private SpiderService spiderService;
+	private ControllerService spiderService;
 
 	private MockMvc mockMvc;
 

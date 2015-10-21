@@ -19,7 +19,7 @@
 package io.mandrel.endpoints.web;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.data.spider.SpiderService;
+import io.mandrel.controller.ControllerService;
 import io.mandrel.metrics.MetricsService;
 
 import java.util.stream.Collectors;
@@ -44,7 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class SpiderController {
 
-	private final SpiderService spiderService;
+	private final ControllerService spiderService;
 
 	private final MetricsService metricsService;
 
@@ -79,7 +79,7 @@ public class SpiderController {
 
 	@RequestMapping(value = "/{id}/cancel")
 	public String cancel(@PathVariable Long id) {
-		spiderService.cancel(id);
+		spiderService.kill(id);
 		return "redirect:/spiders/{id}";
 	}
 

@@ -18,7 +18,7 @@
  */
 package io.mandrel.metadata;
 
-import io.mandrel.data.spider.Link;
+import io.mandrel.data.Link;
 
 import java.io.Serializable;
 import java.net.URI;

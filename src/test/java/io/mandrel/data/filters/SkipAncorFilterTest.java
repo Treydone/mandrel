@@ -18,8 +18,8 @@
  */
 package io.mandrel.data.filters;
 
+import io.mandrel.data.Link;
 import io.mandrel.data.filters.link.SkipAncorFilter;
-import io.mandrel.data.spider.Link;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;

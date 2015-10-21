@@ -24,6 +24,7 @@ import io.mandrel.common.data.Filters;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.StoresDefinition;
 import io.mandrel.config.BindConfiguration;
+import io.mandrel.controller.ControllerService;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.LinkFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
@@ -148,7 +149,7 @@ public class SpiderServiceTest {
 
 		Spider spider = new Spider();
 
-		SpiderService spiderService = new SpiderService(null, null, null, null, null, null);
+		ControllerService spiderService = new ControllerService(null, null, null, null, null, null);
 		Errors errors = spiderService.validate(spider);
 
 		System.err.println(errors);

@@ -20,7 +20,7 @@ package io.mandrel.config;
 
 import io.mandrel.blob.BlobStore;
 import io.mandrel.blob.impl.InternalBlobStore;
-import io.mandrel.data.spider.Link;
+import io.mandrel.data.Link;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.document.impl.InternalDocumentStore;

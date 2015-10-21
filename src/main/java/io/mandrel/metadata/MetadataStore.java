@@ -23,7 +23,7 @@ import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.service.TaskContextAware;
-import io.mandrel.data.spider.Link;
+import io.mandrel.data.Link;
 import io.mandrel.frontier.Politeness;
 import io.mandrel.monitor.health.Checkable;
 
@@ -47,5 +47,5 @@ public abstract class MetadataStore extends TaskContextAware implements Checkabl
 
 	public abstract Set<Link> filter(Set<Link> outlinks, Politeness politeness);
 
-	public abstract void deleteAllFor();
+	public abstract void deleteAll();
 }

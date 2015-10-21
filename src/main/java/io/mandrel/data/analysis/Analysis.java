@@ -20,7 +20,7 @@ package io.mandrel.data.analysis;
 
 import io.mandrel.blob.BlobMetadata;
 import io.mandrel.common.robots.ExtendedRobotRules;
-import io.mandrel.data.spider.Link;
+import io.mandrel.data.Link;
 import io.mandrel.document.Document;
 
 import java.util.List;

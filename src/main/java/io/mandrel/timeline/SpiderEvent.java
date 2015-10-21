@@ -36,6 +36,6 @@ public class SpiderEvent extends Event {
 	private String spiderName;
 
 	public enum SpiderEventType {
-		SPIDER_NEW, SPIDER_STARTED, SPIDER_UPDATED, SPIDER_ENDED, SPIDER_CANCELLED
+		SPIDER_NEW, SPIDER_STARTED, SPIDER_UPDATED, SPIDER_ENDED, SPIDER_KILLED, SPIDER_DELETED
 	}
 }

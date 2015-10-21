@@ -19,9 +19,9 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.data.Spider;
+import io.mandrel.controller.ControllerService;
 import io.mandrel.data.analysis.Analysis;
 import io.mandrel.data.analysis.AnalysisService;
-import io.mandrel.data.spider.SpiderService;
 import io.mandrel.metrics.MetricsService;
 import io.mandrel.metrics.SpiderMetrics;
 
@@ -53,7 +53,7 @@ public class SpiderResource {
 
 	private final AnalysisService analysisService;
 
-	private final SpiderService spiderService;
+	private final ControllerService spiderService;
 
 	private final MetricsService statsService;
 
@@ -108,7 +108,7 @@ public class SpiderResource {
 	@ApiOperation(value = "Cancel a spider")
 	@RequestMapping(value = "/{id}/cancel", method = RequestMethod.GET)
 	public Optional<Spider> cancel(@PathVariable Long id) {
-		return spiderService.cancel(id);
+		return spiderService.kill(id);
 	}
 
 	@ApiOperation(value = "Delete a spider")

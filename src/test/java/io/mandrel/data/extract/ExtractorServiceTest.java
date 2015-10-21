@@ -18,13 +18,13 @@
  */
 package io.mandrel.data.extract;
 
+import io.mandrel.data.Link;
 import io.mandrel.data.content.Extractor;
 import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.data.content.OutlinkExtractor;
 import io.mandrel.data.content.SourceType;
 import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.data.content.selector.SelectorService;
-import io.mandrel.data.spider.Link;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.requests.WebPage;

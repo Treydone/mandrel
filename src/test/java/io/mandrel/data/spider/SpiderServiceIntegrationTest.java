@@ -21,6 +21,9 @@ package io.mandrel.data.spider;
 import io.mandrel.blob.BlobStore;
 import io.mandrel.common.data.Constants;
 import io.mandrel.common.data.Spider;
+import io.mandrel.controller.ControllerRepository;
+import io.mandrel.controller.ControllerService;
+import io.mandrel.data.Link;
 import io.mandrel.data.analysis.Analysis;
 import io.mandrel.data.content.selector.SelectorService;
 import io.mandrel.data.extract.ExtractorService;
@@ -55,7 +58,7 @@ import org.springframework.core.io.ClassPathResource;
 public class SpiderServiceIntegrationTest {
 
 	@Mock
-	private SpiderRepository spiderRepository;
+	private ControllerRepository spiderRepository;
 
 	@Mock
 	private BlobStore pageStore;
@@ -72,7 +75,7 @@ public class SpiderServiceIntegrationTest {
 	@Test
 	public void no_filtering() throws IOException {
 
-		SpiderService spiderService = new SpiderService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
+		ControllerService spiderService = new ControllerService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
 				new ApacheHttpRequester(), null, timelineService);
 
 		Spider spider = new Spider();
@@ -103,7 +106,7 @@ public class SpiderServiceIntegrationTest {
 	@Test
 	public void same_domain() throws IOException {
 
-		SpiderService spiderService = new SpiderService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
+		ControllerService spiderService = new ControllerService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
 				new ApacheHttpRequester(), null, timelineService);
 
 		Spider spider = new Spider();

@@ -20,9 +20,9 @@ package io.mandrel.frontier;
 
 import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.service.TaskContext;
+import io.mandrel.data.Link;
 import io.mandrel.data.filters.link.BooleanLinkFilters;
 import io.mandrel.data.filters.link.LinkFilter;
-import io.mandrel.data.spider.Link;
 import io.mandrel.frontier.store.Queue;
 
 import java.io.Serializable;

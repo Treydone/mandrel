@@ -18,8 +18,8 @@
  */
 package io.mandrel.data.filters;
 
+import io.mandrel.data.Link;
 import io.mandrel.data.filters.link.SanitizeParamsFilter;
-import io.mandrel.data.spider.Link;
 
 import java.util.Arrays;
 

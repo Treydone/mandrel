@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.data.spider;
+package io.mandrel.controller;
 
 import io.mandrel.cluster.idgenerator.IdGenerator;
 import io.mandrel.common.data.Spider;
@@ -35,7 +35,7 @@ import com.hazelcast.core.HazelcastInstance;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class SpiderRepository {
+public class ControllerRepository {
 
 	private final IdGenerator idGenerator;
 

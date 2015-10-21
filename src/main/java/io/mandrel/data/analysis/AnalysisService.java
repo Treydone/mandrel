@@ -22,9 +22,9 @@ import io.mandrel.blob.Blob;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.common.robots.RobotsTxtUtils;
+import io.mandrel.data.Link;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
-import io.mandrel.data.spider.Link;
 import io.mandrel.document.Document;
 import io.mandrel.requests.Requester;
 

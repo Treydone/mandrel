@@ -20,8 +20,8 @@ package io.mandrel.endpoints.web;
 
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
+import io.mandrel.controller.ControllerService;
 import io.mandrel.data.content.MetadataExtractor;
-import io.mandrel.data.spider.SpiderService;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.document.DocumentStores;
@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class DataController {
 
-	private final SpiderService spiderService;
+	private final ControllerService spiderService;
 
 	@RequestMapping("/data")
 	public String data(Model model) {

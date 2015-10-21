@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.data.spider;
+package io.mandrel.data.validation;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.StoresDefinition;

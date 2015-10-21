@@ -34,9 +34,9 @@
 		 							<#assign title = '<a href="/spiders/${event.spiderId}">${event.spiderName}</a> just ended!'>
 									<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spiderId}">View spider</a>'>
 		 							<#break>
-		 						<#case "SPIDER_CANCELLED">
+		 						<#case "SPIDER_KILLED">
 		 							<#assign icon = "fa-tasks">
-		 							<#assign title = '<a href="/spiders/${event.spiderId}">${event.spiderName}</a> has been cancelled'>
+		 							<#assign title = '<a href="/spiders/${event.spiderId}">${event.spiderName}</a> has been killed'>
 									<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spiderId}">View spider</a>'>
 		 							<#break>
 								<#default>
