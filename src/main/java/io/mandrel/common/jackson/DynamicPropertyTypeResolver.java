@@ -18,7 +18,7 @@
  */
 package io.mandrel.common.jackson;
 
-import io.mandrel.common.loader.NamedComponent;
+import io.mandrel.common.loader.NamedDefinition;
 
 import java.util.Collection;
 
@@ -45,7 +45,7 @@ public class DynamicPropertyTypeResolver extends StdTypeResolverBuilder {
 		return new AsPropertyTypeSerializer(idRes, null, "type") {
 
 			protected String idFromValue(Object value) {
-				return ((NamedComponent) value).name();
+				return ((NamedDefinition) value).name();
 			}
 		};
 	}

@@ -21,6 +21,7 @@ package io.mandrel.data.source;
 import io.mandrel.blob.Blob;
 import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.common.robots.RobotsTxtUtils;
+import io.mandrel.common.service.TaskContext;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.http.ApacheHttpRequester;
 
@@ -45,16 +46,33 @@ import crawlercommons.sitemaps.SiteMapParser;
 
 @Slf4j
 @Data
-@Accessors(chain = true)
+@Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
 public class RobotsTxtSource extends Source {
 
-	private static final long serialVersionUID = 7030874477659153772L;
+	@Data
+	@EqualsAndHashCode(callSuper = false)
+	public static class RobotsTxtSourceDefinition extends SourceDefinition<RobotsTxtSource> {
+		private static final long serialVersionUID = -4024901085285125948L;
 
-	@JsonProperty("robots_txt")
+		@JsonProperty("robots_txt")
+		private String robotsTxt;
+
+		@JsonProperty("max_depth")
+		private int maxDepth = 2;
+
+		@Override
+		public RobotsTxtSource build(TaskContext content) {
+			return new RobotsTxtSource().robotsTxt(robotsTxt).maxDepth(maxDepth);
+		}
+
+		@Override
+		public String name() {
+			return "robots.txt";
+		}
+	}
+
 	private String robotsTxt;
-
-	@JsonProperty("max_depth")
 	private int maxDepth = 2;
 
 	@Override
@@ -117,9 +135,5 @@ public class RobotsTxtSource extends Source {
 	@Override
 	public boolean check() {
 		return true;
-	}
-
-	public String name() {
-		return "robots.txt";
 	}
 }

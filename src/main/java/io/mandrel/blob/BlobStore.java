@@ -18,25 +18,32 @@
  */
 package io.mandrel.blob;
 
-import io.mandrel.common.loader.NamedComponent;
+import io.mandrel.common.lifecycle.Initializable;
+import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
+import io.mandrel.common.service.TaskContext;
+import io.mandrel.common.service.TaskContextAware;
 import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Map;
 
-import com.hazelcast.core.HazelcastInstanceAware;
+public abstract class BlobStore extends TaskContextAware implements Checkable, Initializable {
 
-public interface BlobStore extends NamedComponent, Checkable, Serializable, HazelcastInstanceAware {
+	public BlobStore(TaskContext context) {
+		super(context);
+	}
 
-	void putBlob(long spiderId, URI uri, Blob blob);
+	public interface BlobStoreDefinition extends NamedDefinition, ObjectFactory<BlobStore>, Serializable {
 
-	Blob getBlob(long spiderId, URI uri);
+	}
 
-	void deleteAllFor(long spiderId);
+	public abstract void putBlob(URI uri, Blob blob);
 
-	void init(Map<String, Object> properties);
+	public abstract Blob getBlob(URI uri);
+
+	public abstract void deleteAll();
 
 	// Stream<WebPage> all(long spiderId);
 
@@ -45,5 +52,5 @@ public interface BlobStore extends NamedComponent, Checkable, Serializable, Haze
 		boolean on(Collection<Blob> blobs);
 	}
 
-	void byPages(long spiderId, int pageSize, Callback callback);
+	public abstract void byPages(int pageSize, Callback callback);
 }

@@ -16,16 +16,47 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.common.loader;
+package io.mandrel.controller;
 
-import io.mandrel.common.jackson.DynamicPropertyTypeResolver;
+import io.mandrel.common.container.Container;
+import io.mandrel.common.container.Containers;
+import io.mandrel.common.data.Spider;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
+// TODO Well, is this really usefull???
+@Data
+@RequiredArgsConstructor
+public class ControllerContainer implements Container {
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-@JsonTypeResolver(DynamicPropertyTypeResolver.class)
-public interface NamedComponent {
+	private final Spider spider;
 
-	String name();
+	@Override
+	public String type() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void start() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pause() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void kill() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void register() {
+		Containers.add(spider.getId(), this);
+	}
 }

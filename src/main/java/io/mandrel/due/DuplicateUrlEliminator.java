@@ -18,17 +18,32 @@
  */
 package io.mandrel.due;
 
+import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
+import io.mandrel.common.service.TaskContext;
+import io.mandrel.common.service.TaskContextAware;
+import io.mandrel.monitor.health.Checkable;
+
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
 
-public interface DuplicateUrlEliminator {
+public abstract class DuplicateUrlEliminator extends TaskContextAware implements Checkable {
 
-	void markAsPending(String queueName, URI uri);
+	public DuplicateUrlEliminator(TaskContext context) {
+		super(context);
+	}
 
-	void removePending(String queueName, URI uri);
+	public interface DuplicateUrlEliminatorDefinition extends NamedDefinition, ObjectFactory<DuplicateUrlEliminator>, Serializable {
 
-	Set<URI> filterPendings(String queueName, Collection<URI> uris);
+	}
+	
+	public abstract void markAsPending(URI uri);
 
-	Set<URI> deduplicate(String queueName, Collection<URI> uris);
+	public abstract void removePending(URI uri);
+
+	public abstract Set<URI> filterPendings(Collection<URI> uris);
+
+	public abstract Set<URI> deduplicate(Collection<URI> uris);
 }

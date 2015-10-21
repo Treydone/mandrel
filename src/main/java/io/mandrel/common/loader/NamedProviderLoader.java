@@ -29,11 +29,11 @@ import java.util.ServiceLoader;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class NamedProviderLoader<T extends NamedComponent> {
+public class NamedProviderLoader<T extends NamedDefinition> {
 
 	private Map<String, T> providersByName;
 
-	public static <U extends NamedComponent> NamedProviderLoader<U> create(Class<U> clazz) {
+	public static <U extends NamedDefinition> NamedProviderLoader<U> create(Class<U> clazz) {
 		NamedProviderLoader<U> dynamicLoader = new NamedProviderLoader<U>();
 		ClassLoader ctxtLoader = Thread.currentThread().getContextClassLoader();
 		dynamicLoader.init(ctxtLoader, clazz);

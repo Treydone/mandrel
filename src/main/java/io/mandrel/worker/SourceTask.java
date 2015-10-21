@@ -16,13 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.data.spider;
+package io.mandrel.worker;
 
 import io.mandrel.data.source.Source;
-import io.mandrel.frontier.FrontierService;
+import io.mandrel.frontier.FrontierClient;
 
 import java.io.Serializable;
-import java.util.Map;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -31,7 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.collect.Sets;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.spring.context.SpringAware;
@@ -47,7 +45,7 @@ public class SourceTask implements Runnable, HazelcastInstanceAware, Serializabl
 	private Source source;
 
 	@Autowired
-	private transient FrontierService frontierService;
+	private transient FrontierClient frontierClient;
 
 	@Autowired
 	@Getter(value = AccessLevel.NONE)
@@ -63,13 +61,8 @@ public class SourceTask implements Runnable, HazelcastInstanceAware, Serializabl
 		// TODO
 
 		try {
-			Map<String, Object> properties = null;
-
-			source.setInstance(hazelcastInstance);
-			source.init(properties);
-
-			source.register(lst -> {
-				frontierService.add(spiderId, Sets.newHashSet(lst));
+			source.register(uri -> {
+				frontierClient.add(spiderId, uri);
 			});
 		} catch (Exception e) {
 			log.warn("Can not start source", e);

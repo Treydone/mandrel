@@ -18,16 +18,34 @@
  */
 package io.mandrel.data.source;
 
+import io.mandrel.common.service.TaskContext;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 @Data
-@Accessors(chain = true)
+@Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
 public class JdbcSource extends Source {
 
-	private static final long serialVersionUID = -4979543740004679462L;
+	@Data
+	@EqualsAndHashCode(callSuper = false)
+	public static class JdbcSourceDefinition extends SourceDefinition<JdbcSource> {
+		private static final long serialVersionUID = -4024901085285125948L;
+
+		private String query;
+		private String url;
+
+		@Override
+		public JdbcSource build(TaskContext content) {
+			return new JdbcSource().query(query).url(url);
+		}
+
+		@Override
+		public String name() {
+			return "jdbc";
+		}
+	}
 
 	private String query;
 	private String url;
@@ -38,9 +56,5 @@ public class JdbcSource extends Source {
 
 	public boolean check() {
 		return true;
-	}
-
-	public String name() {
-		return "jdbc";
 	}
 }

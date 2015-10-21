@@ -19,11 +19,11 @@
 package io.mandrel.requests.http.ua;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.common.loader.NamedComponent;
+import io.mandrel.common.loader.NamedDefinition;
 
 import java.io.Serializable;
 
-public interface UserAgentProvisionner extends NamedComponent, Serializable {
+public interface UserAgentProvisionner extends NamedDefinition, Serializable {
 
 	String get(String url, Spider spider);
 }

@@ -28,15 +28,15 @@ import com.google.common.cache.LoadingCache;
 
 public abstract class NamedProviders {
 
-	private final static LoadingCache<Class<? extends NamedComponent>, Map<String, ? extends NamedComponent>> cache = CacheBuilder.newBuilder().build(
-			new CacheLoader<Class<? extends NamedComponent>, Map<String, ? extends NamedComponent>>() {
+	private final static LoadingCache<Class<? extends NamedDefinition>, Map<String, ? extends NamedDefinition>> cache = CacheBuilder.newBuilder().build(
+			new CacheLoader<Class<? extends NamedDefinition>, Map<String, ? extends NamedDefinition>>() {
 				@Override
-				public Map<String, ? extends NamedComponent> load(Class<? extends NamedComponent> clazz) throws Exception {
+				public Map<String, ? extends NamedDefinition> load(Class<? extends NamedDefinition> clazz) throws Exception {
 					return NamedProviderLoader.create(clazz).getProvidersByName();
 				}
 			});
 
-	public static <T extends NamedComponent> Map<String, T> get(Class<T> clazz) {
+	public static <T extends NamedDefinition> Map<String, T> get(Class<T> clazz) {
 		try {
 			return (Map<String, T>) cache.get(clazz);
 		} catch (ExecutionException e) {
@@ -44,8 +44,8 @@ public abstract class NamedProviders {
 		}
 	}
 
-	public static <T extends NamedComponent> T get(Class<T> clazz, String name) {
-		NamedComponent namedComponent = null;
+	public static <T extends NamedDefinition> T get(Class<T> clazz, String name) {
+		NamedDefinition namedComponent = null;
 		try {
 			namedComponent = cache.get(clazz).get(name);
 		} catch (ExecutionException e) {

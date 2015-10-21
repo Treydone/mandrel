@@ -22,14 +22,14 @@ import io.mandrel.blob.Blob;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Strategy;
 import io.mandrel.common.lifecycle.Initializable;
-import io.mandrel.common.loader.NamedComponent;
+import io.mandrel.common.loader.NamedDefinition;
 
 import java.io.Closeable;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Set;
 
-public abstract class Requester implements Closeable, NamedComponent, Initializable, Serializable {
+public abstract class Requester implements Closeable, NamedDefinition, Initializable, Serializable {
 
 	private static final long serialVersionUID = 5555714976936124127L;
 

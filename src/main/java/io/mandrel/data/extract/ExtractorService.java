@@ -39,7 +39,9 @@ import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.content.selector.UrlSelector;
 import io.mandrel.data.spider.Link;
 import io.mandrel.document.Document;
+import io.mandrel.document.DocumentStores;
 import io.mandrel.io.Payloads;
+import io.mandrel.metadata.MetadataStores;
 import io.mandrel.script.ScriptingService;
 
 import java.net.URI;
@@ -100,7 +102,7 @@ public class ExtractorService {
 
 		Set<Link> allFilteredOutlinks = null;
 		if (filteredOutlinks != null) {
-			allFilteredOutlinks = spider.getStores().getMetadataStore().filter(spider.getId(), filteredOutlinks, spider.getClient().getPoliteness());
+			allFilteredOutlinks = MetadataStores.get(spider.getId()).filter(filteredOutlinks, spider.getClient().getPoliteness());
 		}
 		log.trace("And filtering {}", filteredOutlinks);
 		return Pair.of(outlinks, allFilteredOutlinks);
@@ -144,7 +146,7 @@ public class ExtractorService {
 
 		// Store the result
 		if (documents != null) {
-			extractor.getDocumentStore().save(spiderId, documents);
+			DocumentStores.get(spiderId, extractor.getName()).get().save(documents);
 		}
 
 		return documents;

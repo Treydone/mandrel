@@ -19,6 +19,10 @@
 package io.mandrel.common.data;
 
 import io.mandrel.data.source.Source;
+import io.mandrel.data.source.Source.SourceDefinition;
+import io.mandrel.frontier.Frontier;
+import io.mandrel.frontier.Frontier.FrontierDefinition;
+import io.mandrel.frontier.SimpleFrontier.SimpleFrontierDefinition;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -58,7 +62,7 @@ public class Spider implements Serializable {
 	private LocalDateTime cancelled;
 
 	@JsonProperty("sources")
-	private List<Source> sources = new ArrayList<>();
+	private List<SourceDefinition<? extends Source>> sources = new ArrayList<>();
 
 	@JsonProperty("filters")
 	private Filters filters = new Filters();
@@ -67,7 +71,10 @@ public class Spider implements Serializable {
 	private Extractors extractors = new Extractors();
 
 	@JsonProperty("stores")
-	private Stores stores = new Stores();
+	private StoresDefinition stores = new StoresDefinition();
+
+	@JsonProperty("frontier")
+	private FrontierDefinition<? extends Frontier> frontier = new SimpleFrontierDefinition();
 
 	@JsonProperty("client")
 	private Client client = new Client();

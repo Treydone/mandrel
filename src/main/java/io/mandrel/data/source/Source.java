@@ -18,26 +18,16 @@
  */
 package io.mandrel.data.source;
 
-import io.mandrel.common.loader.NamedComponent;
+import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
 
 import java.io.Serializable;
-import java.util.Map;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.experimental.Accessors;
+public abstract class Source {
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hazelcast.core.HazelcastInstance;
-
-@Data
-@Accessors(chain = true)
-public abstract class Source implements NamedComponent, Serializable {
-
-	private static final long serialVersionUID = 7468260753688101634L;
-
-	@Getter(onMethod = @__(@JsonIgnore))
-	private transient HazelcastInstance instance;
+	public static abstract class SourceDefinition<SOURCE extends Source> implements NamedDefinition, ObjectFactory<SOURCE>, Serializable {
+		private static final long serialVersionUID = -3250619754898321944L;
+	}
 
 	public abstract void register(EntryListener listener);
 
@@ -45,9 +35,5 @@ public abstract class Source implements NamedComponent, Serializable {
 
 	public boolean singleton() {
 		return true;
-	}
-
-	public void init(Map<String, Object> properties) {
-
 	}
 }

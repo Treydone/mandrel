@@ -18,35 +18,64 @@
  */
 package io.mandrel.frontier;
 
-import io.mandrel.common.loader.NamedComponent;
+import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
+import io.mandrel.common.service.TaskContext;
+import io.mandrel.common.service.TaskContextAware;
 import io.mandrel.due.DuplicateUrlEliminator;
+import io.mandrel.due.DuplicateUrlEliminator.DuplicateUrlEliminatorDefinition;
 import io.mandrel.frontier.revisit.RevisitStrategy;
 import io.mandrel.frontier.revisit.SimpleRevisitStrategy;
 import io.mandrel.frontier.store.FrontierStore;
+import io.mandrel.frontier.store.FrontierStore.FrontierStoreDefinition;
+import io.mandrel.frontier.store.InternalFrontierStore.InternalFrontierStoreDefinition;
+import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
 import java.net.URI;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-public abstract class Frontier implements NamedComponent, Serializable {
+@Accessors(chain = true, fluent = true)
+@EqualsAndHashCode(callSuper = false)
+public abstract class Frontier extends TaskContextAware implements Checkable {
 
-	private static final long serialVersionUID = -7584623252876875042L;
+	public Frontier(TaskContext context) {
+		super(context);
+	}
 
-	@JsonProperty("politeness")
-	private Politeness politeness = new Politeness();
+	@Data
+	public static abstract class FrontierDefinition<FRONTIER extends Frontier> implements NamedDefinition, ObjectFactory<FRONTIER>, Serializable {
 
-	@JsonProperty("revist")
-	private RevisitStrategy revisit = new SimpleRevisitStrategy();
+		private static final long serialVersionUID = 7103095906121624004L;
 
-	@JsonProperty("store")
-	private FrontierStore store;
+		@JsonProperty("politeness")
+		protected Politeness politeness = new Politeness();
 
-	@JsonProperty("due")
-	private DuplicateUrlEliminator duplicateUrlEliminator;
+		@JsonProperty("revist")
+		protected RevisitStrategy revisit = new SimpleRevisitStrategy();
+
+		@JsonProperty("store")
+		protected FrontierStoreDefinition<? extends FrontierStore> store = new InternalFrontierStoreDefinition();
+
+		@JsonProperty("due")
+		protected DuplicateUrlEliminatorDefinition duplicateUrlEliminator;
+
+		public <T extends Frontier> T build(T frontier, TaskContext context) {
+			frontier.duplicateUrlEliminator(duplicateUrlEliminator.build(context)).store(store.build(context)).politeness(politeness).revisit(revisit);
+			return frontier;
+		}
+	}
+
+	protected Politeness politeness;
+	protected RevisitStrategy revisit;
+	protected FrontierStore store;
+	protected DuplicateUrlEliminator duplicateUrlEliminator;
 
 	public abstract void create();
 

@@ -18,16 +18,33 @@
  */
 package io.mandrel.data.source;
 
+import io.mandrel.common.service.TaskContext;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 @Data
-@Accessors(chain = true)
+@Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
 public class JmsSource extends Source {
 
-	private static final long serialVersionUID = -1343900230187746468L;
+	@Data
+	@EqualsAndHashCode(callSuper = false)
+	public static class JmsSourceDefinition extends SourceDefinition<JmsSource> {
+		private static final long serialVersionUID = -4024901085285125948L;
+
+		private String url;
+
+		@Override
+		public JmsSource build(TaskContext content) {
+			return new JmsSource().url(url);
+		}
+
+		@Override
+		public String name() {
+			return "jms";
+		}
+	}
 
 	private String url;
 
@@ -44,7 +61,4 @@ public class JmsSource extends Source {
 		return true;
 	}
 
-	public String name() {
-		return "jms";
-	}
 }

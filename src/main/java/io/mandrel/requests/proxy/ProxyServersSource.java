@@ -20,11 +20,11 @@ package io.mandrel.requests.proxy;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.lifecycle.Initializable;
-import io.mandrel.common.loader.NamedComponent;
+import io.mandrel.common.loader.NamedDefinition;
 
 import java.io.Serializable;
 
-public interface ProxyServersSource extends NamedComponent, Serializable, Initializable {
+public interface ProxyServersSource extends NamedDefinition, Serializable, Initializable {
 
 	ProxyServer findProxy(Spider spider);
 }

@@ -19,9 +19,10 @@
 package io.mandrel.data.spider;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.Stores;
+import io.mandrel.common.data.StoresDefinition;
 import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.data.source.Source;
+import io.mandrel.data.source.Source.SourceDefinition;
 
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -37,31 +38,20 @@ public class SpiderValidator implements Validator {
 		Spider spider = (Spider) target;
 
 		// Stores
-		Stores stores = spider.getStores();
+		StoresDefinition stores = spider.getStores();
 
 		if (stores.getMetadataStore() == null) {
 			errors.rejectValue("stores.pageMetadataStore", "stores.pageMetadataStore.not.null", null, "Can not be null.");
-		} else {
-			if (!stores.getMetadataStore().check()) {
-				errors.rejectValue("stores.pageMetadataStore", "stores.pageMetadataStore.failed", null, "MetadataStore failed check.");
-			}
-		}
-
-		if (!stores.getMetadataStore().check()) {
-			errors.rejectValue("stores.pageStore", "stores.pageStore.failed", null, "PageStore failed check.");
 		}
 
 		// Sources
 		if (spider.getSources() != null) {
 			int i = 0;
-			for (Source source : spider.getSources()) {
+			for (SourceDefinition<? extends Source> source : spider.getSources()) {
 				if (source.name() == null) {
 					errors.rejectValue("sources[" + i + "].name", "sources.name.not.null", null, "Can not be null.");
 				}
 
-				if (!source.check()) {
-					errors.rejectValue("sources[" + i + "]", "sources.failed", null, "Check " + source.name() + " failed.");
-				}
 				i++;
 			}
 		}

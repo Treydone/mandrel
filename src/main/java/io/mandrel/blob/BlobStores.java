@@ -18,8 +18,7 @@
  */
 package io.mandrel.blob;
 
-import io.mandrel.common.data.Spider;
-
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BlobStores {
@@ -30,14 +29,14 @@ public class BlobStores {
 		return stores.values();
 	}
 
-	public static BlobStore create(Spider spider) {
-		return stores.put(spider.getId(), spider.getStores().getBlobStore());
+	public static void add(long spiderId, BlobStore blobStore) {
+		stores.put(spiderId, blobStore);
 	}
-	
-	public static BlobStore get(Long spiderId) {
-		return stores.get(spiderId);
+
+	public static Optional<BlobStore> get(Long spiderId) {
+		return stores.get(spiderId) != null ? Optional.of(stores.get(spiderId)) : Optional.empty();
 	}
-	
+
 	public static void remove(Long spiderId) {
 		stores.remove(spiderId);
 	}

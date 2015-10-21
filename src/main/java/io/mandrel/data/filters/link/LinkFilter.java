@@ -18,7 +18,7 @@
  */
 package io.mandrel.data.filters.link;
 
-import io.mandrel.common.loader.NamedComponent;
+import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.data.spider.Link;
 
 import java.io.Serializable;
@@ -26,7 +26,7 @@ import java.io.Serializable;
 import lombok.Data;
 
 @Data
-public abstract class LinkFilter implements NamedComponent, Serializable {
+public abstract class LinkFilter implements NamedDefinition, Serializable {
 
 	private static final long serialVersionUID = 4415317526564869848L;
 

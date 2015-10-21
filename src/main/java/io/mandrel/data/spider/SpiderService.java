@@ -18,14 +18,14 @@
  */
 package io.mandrel.data.spider;
 
+import io.mandrel.blob.BlobStores;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.State;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.SkipAncorFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
-import io.mandrel.data.source.FixedSource;
-import io.mandrel.data.source.Source;
-import io.mandrel.task.TaskService;
+import io.mandrel.data.source.FixedSource.FixedSourceDefinition;
+import io.mandrel.document.DocumentStores;
 import io.mandrel.timeline.SpiderEvent;
 import io.mandrel.timeline.SpiderEvent.SpiderEventType;
 import io.mandrel.timeline.TimelineService;
@@ -35,7 +35,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,8 +60,6 @@ public class SpiderService {
 
 	private final SpiderRepository spiderRepository;
 
-	private final TaskService taskService;
-
 	private final TimelineService timelineService;
 
 	private Validator spiderValidator = new SpiderValidator();
@@ -80,14 +77,16 @@ public class SpiderService {
 	@PostConstruct
 	public void init() {
 
-		// Start the available spiders on this node
-		spiderRepository.list().filter(spider -> State.STARTED.equals(spider.getState())).forEach(spider -> {
-			taskService.executeOnLocalMember(String.valueOf(spider.getId()), new SpiderTask(spider));
+		// TODO Start the available spiders on this node
+		// spiderRepository.list().filter(spider ->
+		// State.STARTED.equals(spider.getState())).forEach(spider -> {
+		// taskService.executeOnLocalMember(String.valueOf(spider.getId()), new
+		// SpiderTask(spider));
 
-			// TODO manage sources!
-			// spider.getSources().stream().forEach(prepareSource(spider.getId(),
-			// spider));
-			});
+		// TODO manage sources!œ
+		// spider.getSources().stream().forEach(prepareSource(spider.getId(),
+		// spider));
+		// });
 	}
 
 	public BindingResult validate(Spider spider) {
@@ -121,7 +120,7 @@ public class SpiderService {
 		spider.setName(generator.next());
 
 		// Add source
-		FixedSource source = new FixedSource().setUrls(urls);
+		FixedSourceDefinition source = new FixedSourceDefinition().urls(urls);
 		spider.setSources(Arrays.asList(source));
 
 		// Add filters
@@ -179,10 +178,14 @@ public class SpiderService {
 			// spider.getSources().add(new SitemapsSource(url));
 			// }
 
-				spider.getSources().stream().filter(s -> s.check()).forEach(prepareSource(spiderId, spider));
+				// spider.getSources().stream().filter(s ->
+				// s.check()).forEach(prepareSource(spiderId, spider));
 
-				taskService.prepareSimpleExecutor(String.valueOf(spiderId));
-				taskService.executeOnAllMembers(String.valueOf(spiderId), new SpiderTask(spider));
+				// taskService.prepareSimpleExecutor(String.valueOf(spiderId));
+
+				// Call workers
+				// taskService.executeOnAllMembers(String.valueOf(spiderId), new
+				// SpiderTask(spider));
 
 				spider.setState(State.STARTED);
 				spider.setStarted(LocalDateTime.now());
@@ -196,28 +199,12 @@ public class SpiderService {
 			});
 	}
 
-	private Consumer<? super Source> prepareSource(long spiderId, Spider spider) {
-		return source -> {
-			String sourceExecServiceName = spiderId + "-source-" + source.name();
-
-			taskService.prepareSimpleExecutor(String.valueOf(sourceExecServiceName));
-
-			if (source.singleton()) {
-				log.debug("Sourcing from a random member");
-				taskService.executeOnRandomMember(sourceExecServiceName, new SourceTask(spider.getId(), source));
-			} else {
-				log.debug("Sourcing from all members");
-				taskService.executeOnAllMembers(sourceExecServiceName, new SourceTask(spider.getId(), source));
-			}
-		};
-	}
-
 	public Optional<Spider> cancel(long spiderId) {
 		return get(spiderId).map(spider -> {
 
-			taskService.shutdownAllExecutorService(spider);
+			// TODO taskService.shutdownAllExecutorService(spider);
 
-			// Update status
+				// Update status
 				spider.setCancelled(LocalDateTime.now());
 				spider.setState(State.CANCELLED);
 
@@ -231,9 +218,9 @@ public class SpiderService {
 	public Optional<Spider> end(long spiderId) {
 		return get(spiderId).map(spider -> {
 
-			taskService.shutdownAllExecutorService(spider);
+			// TODO taskService.shutdownAllExecutorService(spider);
 
-			// Update status
+				// Update status
 				spider.setEnded(LocalDateTime.now());
 				spider.setState(State.ENDED);
 				return spiderRepository.update(spider);
@@ -242,13 +229,13 @@ public class SpiderService {
 
 	public Optional<Spider> delete(long spiderId) {
 		return get(spiderId).map(spider -> {
-			taskService.shutdownAllExecutorService(spider);
+			// TODO taskService.shutdownAllExecutorService(spider);
 
-			// Delete data
-				if (spider.getStores().getBlobStore() != null) {
-					spider.getStores().getBlobStore().deleteAllFor(spiderId);
-				}
-				spider.getExtractors().getPages().stream().forEach(ex -> ex.getDocumentStore().deleteAllFor(spiderId));
+				// Delete data
+				BlobStores.get(spiderId).ifPresent(b -> b.deleteAll());
+				DocumentStores.get(spiderId).ifPresent(d -> d.entrySet().forEach(e -> {
+					e.getValue().deleteAll();
+				}));
 
 				// Remove spider
 				spiderRepository.delete(spiderId);

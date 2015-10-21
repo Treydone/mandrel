@@ -16,27 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.common.data;
+package io.mandrel.common.service;
 
-import io.mandrel.blob.BlobStore;
-import io.mandrel.blob.impl.BlobInternalStore;
-import io.mandrel.metadata.MetadataStore;
-import io.mandrel.metadata.impl.MetadataInternalStore;
-
-import java.io.Serializable;
-
+import io.mandrel.common.data.Spider;
 import lombok.Data;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hazelcast.core.HazelcastInstance;
 
 @Data
-public class Stores implements Serializable {
+public class TaskContext {
 
-	private static final long serialVersionUID = -6386148207535019331L;
+	private HazelcastInstance instance;
 
-	@JsonProperty("metadata")
-	private MetadataStore metadataStore = new MetadataInternalStore();
+	private Spider definition;
 
-	@JsonProperty("blob")
-	private BlobStore blobStore = new BlobInternalStore();
+	public long getSpiderId() {
+		return definition.getId();
+	}
 }

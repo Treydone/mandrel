@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 import io.mandrel.common.data.Client;
 import io.mandrel.common.data.Filters;
 import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.Stores;
+import io.mandrel.common.data.StoresDefinition;
 import io.mandrel.config.BindConfiguration;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.LinkFilter;
@@ -75,11 +75,11 @@ public class SpiderServiceTest {
 	@Test
 	public void stores() throws IOException {
 
-		Stores stores = new Stores();
+		StoresDefinition stores = new StoresDefinition();
 
 		String json = objectMapper.writeValueAsString(stores);
 		System.err.println(json);
-		Stores read = objectMapper.readValue(json, Stores.class);
+		StoresDefinition read = objectMapper.readValue(json, StoresDefinition.class);
 		assertEquals(stores, read);
 	}
 

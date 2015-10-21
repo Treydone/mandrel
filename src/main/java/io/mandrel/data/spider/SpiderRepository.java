@@ -67,9 +67,7 @@ public class SpiderRepository {
 	}
 
 	// ------------------------------ TOOLS
-
 	static Map<Long, Spider> spiders(HazelcastInstance instance) {
 		return instance.getReplicatedMap("spiders");
 	}
-
 }

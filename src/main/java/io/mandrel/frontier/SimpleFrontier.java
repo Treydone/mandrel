@@ -18,6 +18,11 @@
  */
 package io.mandrel.frontier;
 
+import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
+import io.mandrel.common.service.TaskContext;
+
+import java.io.Serializable;
 import java.net.URI;
 
 import lombok.Data;
@@ -27,37 +32,55 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class SimpleFrontier extends Frontier {
 
-	private static final long serialVersionUID = -4055424223863734294L;
-
 	private static final String DEFAULT_QUEUE = "default";
+
+	@Data
+	@EqualsAndHashCode(callSuper = false)
+	public static class SimpleFrontierDefinition extends FrontierDefinition<SimpleFrontier> implements NamedDefinition, ObjectFactory<SimpleFrontier>, Serializable {
+		private static final long serialVersionUID = -4024901085285125948L;
+
+		@Override
+		public SimpleFrontier build(TaskContext context) {
+			return build(new SimpleFrontier(context), context);
+		}
+
+		@Override
+		public String name() {
+			return "simple";
+		}
+	}
+
+	public SimpleFrontier(TaskContext context) {
+		super(context);
+	}
 
 	@Override
 	public void create() {
-		getStore().create(DEFAULT_QUEUE);
+		store().create(DEFAULT_QUEUE);
 	}
 
 	@Override
 	public URI pool() {
-		return getStore().queue(DEFAULT_QUEUE).pool();
+		return store().queue(DEFAULT_QUEUE).pool();
 	}
 
 	@Override
 	public void schedule(URI uri) {
-		getStore().queue(DEFAULT_QUEUE).schedule(uri);
+		store().queue(DEFAULT_QUEUE).schedule(uri);
 	}
 
 	@Override
 	public void finished(URI uri) {
-		getStore().finish(uri);
+		store().finish(uri);
 	}
 
 	@Override
 	public void delete(URI uri) {
-		getStore().delete(uri);
+		store().delete(uri);
 	}
 
 	@Override
-	public String name() {
-		return "simple";
+	public boolean check() {
+		return true;
 	}
 }

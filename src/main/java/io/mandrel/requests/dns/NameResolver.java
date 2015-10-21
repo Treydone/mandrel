@@ -19,13 +19,13 @@
 package io.mandrel.requests.dns;
 
 import io.mandrel.common.lifecycle.Initializable;
-import io.mandrel.common.loader.NamedComponent;
+import io.mandrel.common.loader.NamedDefinition;
 
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public interface NameResolver extends NamedComponent, Serializable, Initializable {
+public interface NameResolver extends NamedDefinition, Serializable, Initializable {
 
 	InetAddress resolve(String host) throws UnknownHostException;
 }

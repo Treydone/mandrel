@@ -18,6 +18,8 @@
  */
 package io.mandrel.frontier;
 
+import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.filters.link.BooleanLinkFilters;
 import io.mandrel.data.filters.link.LinkFilter;
 import io.mandrel.data.spider.Link;
@@ -39,12 +41,33 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
+@Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
 public class FixedPrioritizedFrontier extends Frontier {
 
-	private static final long serialVersionUID = -4055424223863734294L;
+	@Data
+	@EqualsAndHashCode(callSuper = false)
+	public static class FixedPrioritizedFrontierDefinition extends FrontierDefinition<FixedPrioritizedFrontier> implements NamedDefinition, Serializable {
+		private static final long serialVersionUID = -4024901085285125948L;
 
-	@JsonProperty("priorities")
+		@JsonProperty("priorities")
+		private List<Priority> priorities = new ArrayList<Priority>();
+
+		@Override
+		public FixedPrioritizedFrontier build(TaskContext context) {
+			return build(new FixedPrioritizedFrontier(context).priorities(priorities), context);
+		}
+
+		@Override
+		public String name() {
+			return "priority";
+		}
+	}
+
+	public FixedPrioritizedFrontier(TaskContext context) {
+		super(context);
+	}
+
 	private List<Priority> priorities = new ArrayList<Priority>();
 
 	@Override
@@ -65,7 +88,7 @@ public class FixedPrioritizedFrontier extends Frontier {
 		for (Priority p : priorities) {
 			URI uri = queue(p).pool();
 			if (uri != null) {
-				getDuplicateUrlEliminator().markAsPending("pendings", uri);
+				duplicateUrlEliminator().markAsPending(uri);
 				return uri;
 			}
 		}
@@ -78,24 +101,19 @@ public class FixedPrioritizedFrontier extends Frontier {
 	}
 
 	private Queue<URI> queue(Priority p) {
-		return getStore().queue("queue-" + p.level());
+		return store().queue("queue-" + p.level());
 	}
 
 	@Override
 	public void finished(URI uri) {
-		getDuplicateUrlEliminator().removePending("pendings", uri);
-		getStore().finish(uri);
+		duplicateUrlEliminator().removePending(uri);
+		store().finish(uri);
 	}
 
 	@Override
 	public void delete(URI uri) {
-		getDuplicateUrlEliminator().removePending("pendings", uri);
-		getStore().delete(uri);
-	}
-
-	@Override
-	public String name() {
-		return "priority";
+		duplicateUrlEliminator().removePending(uri);
+		store().delete(uri);
 	}
 
 	@Data
@@ -118,5 +136,10 @@ public class FixedPrioritizedFrontier extends Frontier {
 		public static Priority of(@JsonProperty("filter") LinkFilter filter, @JsonProperty("default") boolean defaultPriority) {
 			return new Priority().filter(!defaultPriority ? filter : new BooleanLinkFilters.TrueFilter()).defaultPriority(defaultPriority);
 		}
+	}
+
+	@Override
+	public boolean check() {
+		return true;
 	}
 }

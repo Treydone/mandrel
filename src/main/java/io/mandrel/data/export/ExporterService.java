@@ -18,11 +18,12 @@
  */
 package io.mandrel.data.export;
 
+import io.mandrel.blob.BlobStores;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.content.MetadataExtractor;
-import io.mandrel.data.spider.InitService;
 import io.mandrel.data.spider.SpiderService;
+import io.mandrel.document.DocumentStores;
 
 import java.io.BufferedWriter;
 import java.io.Writer;
@@ -42,21 +43,18 @@ import org.springframework.stereotype.Component;
 public class ExporterService {
 
 	private final SpiderService spiderService;
-	private final InitService initService;
 
 	public void export(Long id, String extractorName, DocumentExporter exporter, Writer writer) {
 		Optional<Spider> oSpider = spiderService.get(id);
 
 		if (oSpider.isPresent()) {
 			Spider spider = oSpider.get();
-			initService.injectAndInit(spider);
 			Optional<MetadataExtractor> oExtractor = spider.getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
 			if (oExtractor.isPresent()) {
 				try {
 					exporter.init(writer);
 					MetadataExtractor extractor = oExtractor.get();
-					extractor.getDocumentStore().init(extractor);
-					extractor.getDocumentStore().byPages(id, 1000, data -> {
+					DocumentStores.get(id, extractorName).get().byPages(1000, data -> {
 						try {
 							exporter.export(data, extractor.getFields());
 						} catch (Exception e) {
@@ -88,12 +86,9 @@ public class ExporterService {
 		Optional<Spider> optional = spiderService.get(id);
 
 		if (optional.isPresent()) {
-			Spider spider = optional.get();
-			initService.injectAndInit(spider);
-
 			try {
 				exporter.init(new BufferedWriter(writer));
-				spider.getStores().getBlobStore().byPages(id, 1000, data -> {
+				BlobStores.get(id).ifPresent(b -> b.byPages(1000, data -> {
 					try {
 						exporter.export(data);
 					} catch (Exception e) {
@@ -101,7 +96,7 @@ public class ExporterService {
 						return false;
 					}
 					return CollectionUtils.isNotEmpty(data);
-				});
+				}));
 			} catch (Exception e) {
 				log.debug("Uhhh...", e);
 			} finally {

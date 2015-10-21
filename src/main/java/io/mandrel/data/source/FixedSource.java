@@ -18,6 +18,8 @@
  */
 package io.mandrel.data.source;
 
+import io.mandrel.common.service.TaskContext;
+
 import java.net.URI;
 import java.util.List;
 
@@ -26,11 +28,27 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 @Data
-@Accessors(chain = true)
+@Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
 public class FixedSource extends Source {
 
-	private static final long serialVersionUID = -3095179267476304019L;
+	@Data
+	@EqualsAndHashCode(callSuper = false)
+	public static class FixedSourceDefinition extends SourceDefinition<FixedSource> {
+		private static final long serialVersionUID = -4024901085285125948L;
+
+		private List<String> urls;
+
+		@Override
+		public FixedSource build(TaskContext content) {
+			return new FixedSource().urls(urls);
+		}
+
+		@Override
+		public String name() {
+			return "fixed";
+		}
+	}
 
 	private List<String> urls;
 
@@ -42,13 +60,5 @@ public class FixedSource extends Source {
 
 	public boolean check() {
 		return true;
-	}
-
-	public FixedSource() {
-		super();
-	}
-
-	public String name() {
-		return "fixed";
 	}
 }

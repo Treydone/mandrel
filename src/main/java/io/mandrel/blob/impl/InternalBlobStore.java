@@ -20,31 +20,41 @@ package io.mandrel.blob.impl;
 
 import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobStore;
+import io.mandrel.common.service.TaskContext;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Map;
 
-import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Getter;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.PagingPredicate;
 import com.hazelcast.util.IterationType;
 
-@Data
-public class BlobInternalStore implements BlobStore {
+public class InternalBlobStore extends BlobStore {
 
-	private static final long serialVersionUID = -775049235484042261L;
+	@Data
+	public static class InternalBlobStoreDefinition implements BlobStoreDefinition {
 
-	@JsonIgnore
-	@Getter(value = AccessLevel.NONE)
-	protected transient HazelcastInstance hazelcastInstance;
+		private static final long serialVersionUID = -9205125497698919267L;
 
-	public BlobInternalStore() {
+		@Override
+		public String name() {
+			return "internal";
+		}
+
+		@Override
+		public BlobStore build(TaskContext context) {
+			return new InternalBlobStore(context);
+		}
+	}
+
+	private final HazelcastInstance hazelcastInstance;
+
+	public InternalBlobStore(TaskContext context) {
+		super(context);
+		hazelcastInstance = context.getInstance();
 	}
 
 	@Override
@@ -53,44 +63,39 @@ public class BlobInternalStore implements BlobStore {
 	}
 
 	@Override
-	public void init(Map<String, Object> properties) {
+	public void init() {
 
 	}
 
 	@Override
-	public void putBlob(long spiderId, URI uri, Blob blob) {
-		getBlob(spiderId).set(uri, blob);
+	public void putBlob(URI uri, Blob blob) {
+		getBlob().set(uri, blob);
 	}
 
 	@Override
-	public Blob getBlob(long spiderId, URI uri) {
-		return getBlob(spiderId).get(uri);
+	public Blob getBlob(URI uri) {
+		return getBlob().get(uri);
 	}
 
 	@Override
-	public void deleteAllFor(long spiderId) {
-		getBlob(spiderId).destroy();
+	public void deleteAll() {
+		getBlob().destroy();
 	}
 
 	@Override
-	public void byPages(long spiderId, int pageSize, Callback callback) {
+	public void byPages(int pageSize, Callback callback) {
 		PagingPredicate predicate = new PagingPredicate(pageSize);
 		predicate.setIterationType(IterationType.VALUE);
 
 		boolean loop = true;
 		while (loop) {
-			Collection<Blob> values = getBlob(spiderId).values(predicate);
+			Collection<Blob> values = getBlob().values(predicate);
 			loop = callback.on(values);
 			predicate.nextPage();
 		}
 	}
 
-	public IMap<URI, Blob> getBlob(long spiderId) {
-		return hazelcastInstance.<URI, Blob> getMap("blob-" + spiderId);
-	}
-
-	@Override
-	public String name() {
-		return "internal";
+	public IMap<URI, Blob> getBlob() {
+		return hazelcastInstance.<URI, Blob> getMap("blob-" + context.getSpiderId());
 	}
 }

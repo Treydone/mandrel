@@ -24,7 +24,6 @@ import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.common.robots.RobotsTxtUtils;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
-import io.mandrel.data.spider.InitService;
 import io.mandrel.data.spider.Link;
 import io.mandrel.document.Document;
 import io.mandrel.requests.Requester;
@@ -61,12 +60,11 @@ public class AnalysisService {
 
 	private final ExtractorService extractorService;
 	private final Requester requester;
-	private final InitService initService;
 
 	public Analysis analyze(Spider spider, String source) {
 		Blob blob;
 		try {
-			blob = requester.getBlocking(new URI(source), spider);
+			blob = requester.getBlocking(URI.create(source), spider);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
@@ -77,9 +75,6 @@ public class AnalysisService {
 	}
 
 	protected Analysis buildReport(Spider spider, Blob blob) {
-
-		initService.injectAndInit(spider);
-
 		Analysis report = new Analysis();
 		if (spider.getExtractors() != null) {
 			Map<String, Instance<?>> cachedSelectors = new HashMap<>();

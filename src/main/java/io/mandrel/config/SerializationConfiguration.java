@@ -19,7 +19,7 @@
 package io.mandrel.config;
 
 import io.mandrel.blob.BlobStore;
-import io.mandrel.blob.impl.BlobInternalStore;
+import io.mandrel.blob.impl.InternalBlobStore;
 import io.mandrel.data.spider.Link;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
@@ -42,7 +42,7 @@ public class SerializationConfiguration {
 	// TODO Find another way...
 	private final static Class<?>[] clazzes = { FetchMetadata.class, HttpFetchMetadata.class, FtpFetchMetadata.class, Link.class,
 			//
-			Document.class, DocumentStore.class, BlobStore.class, MetadataStore.class, InternalDocumentStore.class, BlobInternalStore.class
+			Document.class, DocumentStore.class, BlobStore.class, MetadataStore.class, InternalDocumentStore.class, InternalBlobStore.class
 	//
 
 	};

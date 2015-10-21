@@ -18,25 +18,32 @@
  */
 package io.mandrel.document;
 
-import io.mandrel.common.loader.NamedComponent;
-import io.mandrel.data.content.MetadataExtractor;
+import io.mandrel.common.lifecycle.Initializable;
+import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
+import io.mandrel.common.service.TaskContext;
+import io.mandrel.common.service.TaskContextAware;
 import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-import com.hazelcast.core.HazelcastInstanceAware;
+public abstract class DocumentStore extends TaskContextAware implements Checkable, Initializable {
 
-public interface DocumentStore extends NamedComponent, Checkable, Serializable, HazelcastInstanceAware {
+	public DocumentStore(TaskContext context) {
+		super(context);
+	}
 
-	void init(MetadataExtractor webPageExtractor);
+	public interface DocumentStoreDefinition extends NamedDefinition, ObjectFactory<DocumentStore>, Serializable {
 
-	void save(long spiderId, Document document);
+	}
 
-	void save(long spiderId, List<Document> documents);
+	public abstract void save(Document document);
 
-	void deleteAllFor(long spiderId);
+	public abstract void save(List<Document> documents);
+
+	public abstract void deleteAll();
 
 	// Stream<Document> all(long spiderId);
 
@@ -45,9 +52,10 @@ public interface DocumentStore extends NamedComponent, Checkable, Serializable, 
 		boolean on(Collection<Document> elements);
 	}
 
-	void byPages(long spiderId, int pageSize, Callback callback);
+	public abstract void byPages(int pageSize, Callback callback);
 
-	Collection<Document> byPages(long spiderId, int pageSize, int pageNumber);
+	public abstract Collection<Document> byPages(int pageSize, int pageNumber);
 
-	long total(long spiderId);
+	public abstract long total();
+
 }

@@ -18,6 +18,7 @@
  */
 package io.mandrel.document.impl;
 
+import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
@@ -26,50 +27,58 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Getter;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.PagingPredicate;
 import com.hazelcast.util.IterationType;
 
-@Data
-public class InternalDocumentStore implements DocumentStore {
+public class InternalDocumentStore extends DocumentStore {
 
-	private static final long serialVersionUID = -2445958974306201476L;
+	@Data
+	public static class InternalDocumentStoreDefinition implements DocumentStoreDefinition {
 
-	@JsonIgnore
-	protected MetadataExtractor extractor;
+		private static final long serialVersionUID = -9205125497698919267L;
 
-	@JsonIgnore
-	@Getter(value = AccessLevel.NONE)
-	protected transient HazelcastInstance hazelcastInstance;
+		@Override
+		public String name() {
+			return "internal";
+		}
+
+		@Override
+		public InternalDocumentStore build(TaskContext context) {
+			return new InternalDocumentStore(context);
+		}
+	}
+
+	protected final MetadataExtractor extractor;
+
+	private final HazelcastInstance hazelcastInstance;
+
+	public InternalDocumentStore(TaskContext context) {
+		super(context);
+		hazelcastInstance = context.getInstance();
+		extractor = null;// TODO ???
+	}
 
 	@Override
-	public void save(long spiderId, Document data) {
+	public void save(Document data) {
 		if (data != null) {
-			getDataMap(spiderId).put(getKey(spiderId, data), data);
+			getDataMap().put(getKey(data), data);
 		}
 	}
 
 	@Override
-	public void save(long spiderId, List<Document> data) {
+	public void save(List<Document> data) {
 		if (data != null) {
 			data.forEach(el -> {
-				getDataMap(spiderId).put(getKey(spiderId, el), el);
+				getDataMap().put(getKey(el), el);
 			});
 		}
-	}
-
-	@Override
-	public void init(MetadataExtractor webPageExtractor) {
-		this.extractor = webPageExtractor;
 	}
 
 	@Override
@@ -83,18 +92,18 @@ public class InternalDocumentStore implements DocumentStore {
 	}
 
 	@Override
-	public void deleteAllFor(long spiderId) {
-		getDataMap(spiderId).clear();
+	public void deleteAll() {
+		getDataMap().clear();
 	}
 
 	@Override
-	public void byPages(long spiderId, int pageSize, Callback callback) {
+	public void byPages(int pageSize, Callback callback) {
 		PagingPredicate predicate = new PagingPredicate(pageSize);
 		predicate.setIterationType(IterationType.VALUE);
 
 		boolean loop = true;
 		while (loop) {
-			Collection<Document> values = hazelcastInstance.<String, Document> getMap("documentstore-" + spiderId + "-" + extractor.getName())
+			Collection<Document> values = hazelcastInstance.<String, Document> getMap("documentstore-" + context.getSpiderId() + "-" + extractor.getName())
 					.values(predicate);
 			loop = callback.on(values);
 			predicate.nextPage();
@@ -102,19 +111,19 @@ public class InternalDocumentStore implements DocumentStore {
 	}
 
 	@Override
-	public long total(long spiderId) {
-		return hazelcastInstance.<String, Document> getMap("documentstore-" + spiderId + "-" + extractor.getName()).size();
+	public long total() {
+		return hazelcastInstance.<String, Document> getMap("documentstore-" + context.getSpiderId() + "-" + extractor.getName()).size();
 	}
 
 	@Override
-	public Collection<Document> byPages(long spiderId, int pageSize, int pageNumber) {
+	public Collection<Document> byPages(int pageSize, int pageNumber) {
 		PagingPredicate predicate = new PagingPredicate(pageSize);
 		predicate.setIterationType(IterationType.VALUE);
 		IntStream.range(0, pageNumber).forEach(i -> predicate.nextPage());
-		return hazelcastInstance.<String, Document> getMap("documentstore-" + spiderId + "-" + extractor.getName()).values(predicate);
+		return hazelcastInstance.<String, Document> getMap("documentstore-" + context.getSpiderId() + "-" + extractor.getName()).values(predicate);
 	}
 
-	public String getKey(long spiderId, Document data) {
+	public String getKey(Document data) {
 		String key = null;
 		if (StringUtils.isNotBlank(extractor.getKeyField())) {
 			List<? extends Object> values = data.get(extractor.getKeyField());
@@ -123,17 +132,16 @@ public class InternalDocumentStore implements DocumentStore {
 			}
 		}
 		if (key == null) {
-			key = String.valueOf(hazelcastInstance.getIdGenerator("documentstore-" + spiderId + "-" + extractor.getName()).newId());
+			key = String.valueOf(hazelcastInstance.getIdGenerator("documentstore-" + context.getSpiderId() + "-" + extractor.getName()).newId());
 		}
 		return key;
 	}
 
-	public IMap<String, Document> getDataMap(long spiderId) {
-		return hazelcastInstance.getMap("documentstore-" + spiderId + "-" + extractor.getName());
+	public IMap<String, Document> getDataMap() {
+		return hazelcastInstance.getMap("documentstore-" + context.getSpiderId() + "-" + extractor.getName());
 	}
 
 	@Override
-	public String name() {
-		return "internal";
+	public void init() {
 	}
 }

@@ -18,6 +18,8 @@
  */
 package io.mandrel.data.source;
 
+import io.mandrel.common.service.TaskContext;
+
 import java.util.List;
 
 import lombok.Data;
@@ -29,12 +31,28 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.VFS;
 
 @Data
-@Accessors(chain = true)
+@Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
 @Slf4j
 public class CsvSource extends Source {
 
-	private static final long serialVersionUID = -343795756996004307L;
+	@Data
+	@EqualsAndHashCode(callSuper = false)
+	public static class CsvSourceDefinition extends SourceDefinition<CsvSource> {
+		private static final long serialVersionUID = -4024901085285125948L;
+
+		private List<String> files;
+
+		@Override
+		public CsvSource build(TaskContext content) {
+			return new CsvSource().files(files);
+		}
+
+		@Override
+		public String name() {
+			return "csv";
+		}
+	}
 
 	private List<String> files;
 
@@ -57,9 +75,5 @@ public class CsvSource extends Source {
 				return false;
 			}
 		});
-	}
-
-	public String name() {
-		return "csv";
 	}
 }

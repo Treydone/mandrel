@@ -57,7 +57,7 @@ public class SimpleRevisitStrategy extends RevisitStrategy implements Serializab
 
 	@Override
 	public boolean isScheduledForRevisit(BlobMetadata metadata) {
-
+		
 		if (onFetchError.getNextAttempt().getMillis() > Duration.between(LocalDateTime.now(), LocalDateTime.now()).toMillis()) {
 			return true;
 		}

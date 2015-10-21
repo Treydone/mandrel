@@ -18,27 +18,34 @@
  */
 package io.mandrel.metadata;
 
-import io.mandrel.common.loader.NamedComponent;
+import io.mandrel.common.lifecycle.Initializable;
+import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
+import io.mandrel.common.service.TaskContext;
+import io.mandrel.common.service.TaskContextAware;
 import io.mandrel.data.spider.Link;
 import io.mandrel.frontier.Politeness;
 import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.util.Map;
 import java.util.Set;
 
-import com.hazelcast.core.HazelcastInstanceAware;
+public abstract class MetadataStore extends TaskContextAware implements Checkable, Initializable {
 
-public interface MetadataStore extends NamedComponent, Checkable, Serializable, HazelcastInstanceAware {
+	public MetadataStore(TaskContext context) {
+		super(context);
+	}
 
-	void init(Map<String, Object> properties);
+	public interface MetadataStoreDefinition extends NamedDefinition, ObjectFactory<MetadataStore>, Serializable {
 
-	void addMetadata(long spiderId, URI uri, FetchMetadata metadata);
+	}
 
-	FetchMetadata getMetadata(long spiderId, URI uri);
+	public abstract void addMetadata(URI uri, FetchMetadata metadata);
 
-	Set<Link> filter(long spiderId, Set<Link> outlinks, Politeness politeness);
+	public abstract FetchMetadata getMetadata(URI uri);
 
-	void deleteAllFor(long spiderId);
+	public abstract Set<Link> filter(Set<Link> outlinks, Politeness politeness);
+
+	public abstract void deleteAllFor();
 }

@@ -19,8 +19,8 @@
 package io.mandrel.data.content;
 
 import io.mandrel.common.data.Filters;
-import io.mandrel.document.DocumentStore;
-import io.mandrel.document.impl.InternalDocumentStore;
+import io.mandrel.document.DocumentStore.DocumentStoreDefinition;
+import io.mandrel.document.impl.InternalDocumentStore.InternalDocumentStoreDefinition;
 
 import java.io.Serializable;
 import java.util.List;
@@ -38,7 +38,7 @@ public class MetadataExtractor implements Serializable {
 	private String name;
 
 	@JsonProperty("store")
-	private DocumentStore documentStore = new InternalDocumentStore();
+	private DocumentStoreDefinition documentStore = new InternalDocumentStoreDefinition();
 
 	@JsonProperty("filters")
 	private Filters filters = new Filters();

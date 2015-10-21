@@ -18,7 +18,7 @@
  */
 package io.mandrel.common.jackson;
 
-import io.mandrel.common.loader.NamedComponent;
+import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.loader.NamedProviders;
 
 import java.io.IOException;
@@ -57,7 +57,7 @@ public class DynamicPropertyTypeDeserializer extends AsPropertyTypeDeserializer 
 	public Object deserializeTypedFromObject(final JsonParser jp, final DeserializationContext ctxt) throws IOException {
 		JsonNode node = jp.readValueAsTree();
 
-		NamedComponent res = NamedProviders.get((Class<NamedComponent>) _baseType.getRawClass(), node.get("type").asText());
+		NamedDefinition res = NamedProviders.get((Class<NamedDefinition>) _baseType.getRawClass(), node.get("type").asText());
 		JavaType type = SimpleType.construct(res.getClass());
 
 		JsonParser jsonParser = new TreeTraversingParser(node, jp.getCodec());

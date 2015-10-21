@@ -18,7 +18,7 @@
  */
 package io.mandrel.gateway.impl;
 
-import io.mandrel.blob.impl.BlobInternalStore;
+import io.mandrel.blob.impl.InternalBlobStore;
 import io.mandrel.common.serialization.CompressionType;
 import io.mandrel.common.serialization.KryoSerializer;
 import io.mandrel.data.spider.Link;
@@ -52,7 +52,7 @@ public class InternalStoreTest {
 
 	private static HazelcastInstance instance;
 
-	private static BlobInternalStore store;
+	private static InternalBlobStore store;
 
 	@BeforeClass
 	public static void before() {
@@ -72,7 +72,7 @@ public class InternalStoreTest {
 		config.getSerializationConfig().setGlobalSerializerConfig(global);
 
 		instance = Hazelcast.newHazelcastInstance(config);
-		store = new BlobInternalStore();
+		store = new InternalBlobStore();
 		store.setHazelcastInstance(instance);
 	}
 
