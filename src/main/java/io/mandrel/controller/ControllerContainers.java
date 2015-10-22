@@ -18,44 +18,26 @@
  */
 package io.mandrel.controller;
 
-import io.mandrel.common.container.Container;
-import io.mandrel.common.data.Spider;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
-// TODO Well, is this really usefull???
-@Data
-@RequiredArgsConstructor
-public class ControllerContainer implements Container {
+public class ControllerContainers {
 
-	private final Spider spider;
+	private final static ConcurrentHashMap<Long, ControllerContainer> controllerContainers = new ConcurrentHashMap<>();
 
-	@Override
-	public String type() {
-		return "controller";
+	public static Iterable<ControllerContainer> list() {
+		return controllerContainers.values();
 	}
 
-	@Override
-	public void start() {
-
+	public static void add(long spiderId, ControllerContainer ControllerContainer) {
+		controllerContainers.put(spiderId, ControllerContainer);
 	}
 
-	@Override
-	public void pause() {
-
+	public static Optional<ControllerContainer> get(Long spiderId) {
+		return controllerContainers.get(spiderId) != null ? Optional.of(controllerContainers.get(spiderId)) : Optional.empty();
 	}
 
-	@Override
-	public void kill() {
-
-	}
-
-	@Override
-	public void register() {
-		ControllerContainers.add(spider.getId(), this);
-	}
-
-	public void unregister() {
-		ControllerContainers.remove(spider.getId());
+	public static void remove(Long spiderId) {
+		controllerContainers.remove(spiderId);
 	}
 }

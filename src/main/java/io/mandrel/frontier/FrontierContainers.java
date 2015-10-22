@@ -16,46 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.controller;
+package io.mandrel.frontier;
 
-import io.mandrel.common.container.Container;
-import io.mandrel.common.data.Spider;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
-// TODO Well, is this really usefull???
-@Data
-@RequiredArgsConstructor
-public class ControllerContainer implements Container {
+public class FrontierContainers {
 
-	private final Spider spider;
+	private final static ConcurrentHashMap<Long, FrontierContainer> frontierContainers = new ConcurrentHashMap<>();
 
-	@Override
-	public String type() {
-		return "controller";
+	public static Iterable<FrontierContainer> list() {
+		return frontierContainers.values();
 	}
 
-	@Override
-	public void start() {
-
+	public static void add(long spiderId, FrontierContainer FrontierContainer) {
+		frontierContainers.put(spiderId, FrontierContainer);
 	}
 
-	@Override
-	public void pause() {
-
+	public static Optional<FrontierContainer> get(Long spiderId) {
+		return frontierContainers.get(spiderId) != null ? Optional.of(frontierContainers.get(spiderId)) : Optional.empty();
 	}
 
-	@Override
-	public void kill() {
-
-	}
-
-	@Override
-	public void register() {
-		ControllerContainers.add(spider.getId(), this);
-	}
-
-	public void unregister() {
-		ControllerContainers.remove(spider.getId());
+	public static void remove(Long spiderId) {
+		frontierContainers.remove(spiderId);
 	}
 }

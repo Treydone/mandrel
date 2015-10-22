@@ -24,6 +24,8 @@ public interface Container {
 
 	void register();
 	
+	void unregister();
+	
 	void start();
 
 	void pause();

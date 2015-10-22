@@ -21,7 +21,6 @@ package io.mandrel.worker;
 import io.mandrel.blob.BlobStore;
 import io.mandrel.blob.BlobStores;
 import io.mandrel.common.container.Container;
-import io.mandrel.common.container.Containers;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.extract.ExtractorService;
@@ -141,11 +140,15 @@ public class WorkerContainer implements Container {
 		BlobStores.remove(spider.getId());
 
 		DocumentStores.remove(spider.getId());
-		
+
 		executor.shutdownNow();
 	}
 
 	public void register() {
-		Containers.add(spider.getId(), this);
+		WorkerContainers.add(spider.getId(), this);
+	}
+
+	public void unregister() {
+		WorkerContainers.remove(spider.getId());
 	}
 }

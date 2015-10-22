@@ -16,27 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.common.container;
+package io.mandrel.worker;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Containers {
+public class WorkerContainers {
 
-	private final static ConcurrentHashMap<Long, Container> containers = new ConcurrentHashMap<>();
+	private final static ConcurrentHashMap<Long, WorkerContainer> workerContainers = new ConcurrentHashMap<>();
 
-	public static Iterable<Container> list() {
-		return containers.values();
+	public static Iterable<WorkerContainer> list() {
+		return workerContainers.values();
 	}
 
-	public static void add(long spiderId, Container Container) {
-		containers.put(spiderId, Container);
+	public static void add(long spiderId, WorkerContainer WorkerContainer) {
+		workerContainers.put(spiderId, WorkerContainer);
 	}
 
-	public static Container get(Long spiderId) {
-		return containers.get(spiderId);
+	public static Optional<WorkerContainer> get(Long spiderId) {
+		return workerContainers.get(spiderId) != null ? Optional.of(workerContainers.get(spiderId)) : Optional.empty();
 	}
 
 	public static void remove(Long spiderId) {
-		containers.remove(spiderId);
+		workerContainers.remove(spiderId);
 	}
 }

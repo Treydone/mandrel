@@ -20,7 +20,6 @@ package io.mandrel.frontier;
 
 import io.mandrel.blob.BlobStores;
 import io.mandrel.common.container.Container;
-import io.mandrel.common.container.Containers;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.document.DocumentStores;
@@ -32,7 +31,7 @@ import com.hazelcast.core.HazelcastInstance;
 
 @Data
 @RequiredArgsConstructor
-public class FrontierInstance implements Container {
+public class FrontierContainer implements Container {
 
 	private final Spider spider;
 	private final HazelcastInstance instance;
@@ -74,6 +73,10 @@ public class FrontierInstance implements Container {
 
 	@Override
 	public void register() {
-		Containers.add(spider.getId(), this);
+		FrontierContainers.add(spider.getId(), this);
+	}
+
+	public void unregister() {
+		FrontierContainers.remove(spider.getId());
 	}
 }
