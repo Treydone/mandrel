@@ -18,19 +18,24 @@
  */
 package io.mandrel.frontier;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.ImmutableList;
 
 public class FrontierContainers {
 
-	private final static ConcurrentHashMap<Long, FrontierContainer> frontierContainers = new ConcurrentHashMap<>();
+	private final static Map<Long, FrontierContainer> frontierContainers = new HashMap<>();
 
 	public static Iterable<FrontierContainer> list() {
-		return frontierContainers.values();
+		return ImmutableList.copyOf(frontierContainers.values());
 	}
 
 	public static void add(long spiderId, FrontierContainer FrontierContainer) {
-		frontierContainers.put(spiderId, FrontierContainer);
+		synchronized (frontierContainers) {
+			frontierContainers.put(spiderId, FrontierContainer);
+		}
 	}
 
 	public static Optional<FrontierContainer> get(Long spiderId) {
@@ -38,6 +43,8 @@ public class FrontierContainers {
 	}
 
 	public static void remove(Long spiderId) {
-		frontierContainers.remove(spiderId);
+		synchronized (frontierContainers) {
+			frontierContainers.remove(spiderId);
+		}
 	}
 }

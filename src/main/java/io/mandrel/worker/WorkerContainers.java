@@ -18,19 +18,24 @@
  */
 package io.mandrel.worker;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.ImmutableList;
 
 public class WorkerContainers {
 
-	private final static ConcurrentHashMap<Long, WorkerContainer> workerContainers = new ConcurrentHashMap<>();
+	private final static Map<Long, WorkerContainer> workerContainers = new HashMap<>();
 
 	public static Iterable<WorkerContainer> list() {
-		return workerContainers.values();
+		return ImmutableList.copyOf(workerContainers.values());
 	}
 
 	public static void add(long spiderId, WorkerContainer WorkerContainer) {
-		workerContainers.put(spiderId, WorkerContainer);
+		synchronized (workerContainers) {
+			workerContainers.put(spiderId, WorkerContainer);
+		}
 	}
 
 	public static Optional<WorkerContainer> get(Long spiderId) {
@@ -38,6 +43,8 @@ public class WorkerContainers {
 	}
 
 	public static void remove(Long spiderId) {
-		workerContainers.remove(spiderId);
+		synchronized (workerContainers) {
+			workerContainers.remove(spiderId);
+		}
 	}
 }

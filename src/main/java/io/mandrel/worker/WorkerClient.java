@@ -20,7 +20,7 @@ public class WorkerClient {
 
 	public void create(Spider spider) {
 		try {
-			client.frontierClient().create(null);
+			client.workerClient().create(null);
 		} catch (TException e) {
 			throw Throwables.propagate(e);
 		}
@@ -28,7 +28,7 @@ public class WorkerClient {
 
 	public void start(Long spiderId) {
 		try {
-			client.frontierClient().start(spiderId);
+			client.workerClient().start(spiderId);
 		} catch (TException e) {
 			throw Throwables.propagate(e);
 		}
@@ -36,7 +36,7 @@ public class WorkerClient {
 
 	public void pause(Long spiderId) {
 		try {
-			client.frontierClient().pause(spiderId);
+			client.workerClient().pause(spiderId);
 		} catch (TException e) {
 			throw Throwables.propagate(e);
 		}
@@ -44,7 +44,7 @@ public class WorkerClient {
 
 	public void kill(Long spiderId) {
 		try {
-			client.frontierClient().kill(spiderId);
+			client.workerClient().kill(spiderId);
 		} catch (TException e) {
 			throw Throwables.propagate(e);
 		}

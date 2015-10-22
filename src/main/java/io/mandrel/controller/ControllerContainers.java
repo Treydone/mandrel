@@ -18,19 +18,24 @@
  */
 package io.mandrel.controller;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.ImmutableList;
 
 public class ControllerContainers {
 
-	private final static ConcurrentHashMap<Long, ControllerContainer> controllerContainers = new ConcurrentHashMap<>();
+	private final static Map<Long, ControllerContainer> controllerContainers = new HashMap<>();
 
 	public static Iterable<ControllerContainer> list() {
-		return controllerContainers.values();
+		return ImmutableList.copyOf(controllerContainers.values());
 	}
 
 	public static void add(long spiderId, ControllerContainer ControllerContainer) {
-		controllerContainers.put(spiderId, ControllerContainer);
+		synchronized (controllerContainers) {
+			controllerContainers.put(spiderId, ControllerContainer);
+		}
 	}
 
 	public static Optional<ControllerContainer> get(Long spiderId) {
@@ -38,6 +43,8 @@ public class ControllerContainers {
 	}
 
 	public static void remove(Long spiderId) {
-		controllerContainers.remove(spiderId);
+		synchronized (controllerContainers) {
+			controllerContainers.remove(spiderId);
+		}
 	}
 }

@@ -2,17 +2,26 @@ package io.mandrel.common.thrift;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.controller.ControllerContainers;
+import io.mandrel.controller.thrift.ActiveFrontier;
+import io.mandrel.controller.thrift.ActiveTask;
 import io.mandrel.controller.thrift.Controller;
 import io.mandrel.controller.thrift.Heartbeat;
 import io.mandrel.frontier.FrontierContainer;
 import io.mandrel.frontier.FrontierContainers;
+import io.mandrel.frontier.Frontiers;
 import io.mandrel.frontier.thrift.Frontier;
+import io.mandrel.frontier.thrift.Result;
+import io.mandrel.frontier.thrift.Uri;
+import io.mandrel.monitor.Infos;
+import io.mandrel.monitor.SigarService;
 import io.mandrel.worker.WorkerContainer;
 import io.mandrel.worker.WorkerContainers;
 import io.mandrel.worker.thrift.Worker;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -42,10 +51,23 @@ public class TEndpoint {
 
 	@PostConstruct
 	public void run() {
+
+		// TODO to be externalized
+		boolean worker = true;
+		boolean frontier = true;
+		boolean controller = true;
+
 		TMultiplexedProcessor processor = new TMultiplexedProcessor();
-		processor.registerProcessor("Worker", new Worker.Processor<Worker.Iface>(new WorkerHandler(mapper)));
-		processor.registerProcessor("Frontier", new Frontier.Processor<Frontier.Iface>(new FrontierHandler(mapper)));
-		processor.registerProcessor("Controller", new Controller.Processor<Controller.Iface>(new ControllerHandler(mapper)));
+		if (worker) {
+			processor.registerProcessor("Worker", new Worker.Processor<Worker.Iface>(new WorkerHandler(mapper)));
+		}
+		if (frontier) {
+			processor.registerProcessor("Frontier", new Frontier.Processor<Frontier.Iface>(new FrontierHandler(mapper)));
+		}
+		if (controller) {
+			processor.registerProcessor("Controller", new Controller.Processor<Controller.Iface>(new ControllerHandler(mapper)));
+		}
+		processor.registerProcessor("Cluster", new Cluster.Processor<Cluster.Iface>(new ClusterHandler(null)));
 
 		TNonblockingServerTransport transport;
 		try {
@@ -74,6 +96,18 @@ public class TEndpoint {
 	}
 
 	@RequiredArgsConstructor
+	public static class ClusterHandler implements Cluster.Iface {
+
+		private final SigarService sigarService;
+
+		@Override
+		public Node get() throws TException {
+			Infos infos = sigarService.infos();
+			return new Node().setId(infos.getFqdn()).setInfos(infos.getHostname());
+		}
+	}
+
+	@RequiredArgsConstructor
 	public static class ControllerHandler implements Controller.Iface {
 
 		private final ObjectMapper mapper;
@@ -96,6 +130,18 @@ public class TEndpoint {
 		@Override
 		public void kill(long id) throws TException {
 			ControllerContainers.get(id).ifPresent(c -> c.kill());
+		}
+
+		@Override
+		public Set<ActiveTask> syncTasks() throws TException {
+			// TODO
+			return null;
+		}
+
+		@Override
+		public Set<ActiveFrontier> syncFrontiers() throws TException {
+			// TODO
+			return null;
 		}
 	}
 
@@ -131,6 +177,33 @@ public class TEndpoint {
 		@Override
 		public void kill(long id) throws TException {
 			FrontierContainers.get(id).ifPresent(c -> c.kill());
+		}
+
+		@Override
+		public Uri take(long id) throws TException {
+			// TODO null???
+			URI pool = Frontiers.get(id).map(f -> f.pool()).orElse(null);
+			return new Uri().setReference(pool.toString());
+		}
+
+		@Override
+		public void schedule(long id, Uri uri) throws TException {
+			Frontiers.get(id).ifPresent(f -> f.schedule(URI.create(uri.getReference())));
+		}
+
+		@Override
+		public void scheduleM(long id, Set<Uri> uris) throws TException {
+			Frontiers.get(id).ifPresent(f -> uris.forEach(uri -> f.schedule(URI.create(uri.getReference()))));
+		}
+
+		@Override
+		public void finished(long id, Result result) throws TException {
+			// TODO
+		}
+
+		@Override
+		public void deleted(long id, Uri uri) throws TException {
+			Frontiers.get(id).ifPresent(f -> f.delete(URI.create(uri.getReference())));
 		}
 	}
 

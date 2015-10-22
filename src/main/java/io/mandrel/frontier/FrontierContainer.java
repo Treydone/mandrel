@@ -68,7 +68,7 @@ public class FrontierContainer implements Container {
 
 	@Override
 	public void kill() {
-
+		Frontiers.remove(spider.getId());
 	}
 
 	@Override
