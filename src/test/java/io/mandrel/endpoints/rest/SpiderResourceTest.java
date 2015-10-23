@@ -48,7 +48,7 @@ public class SpiderResourceTest {
 
 	@Before
 	public void setUp() throws Exception {
-		mockMvc = MockMvcBuilders.standaloneSetup(new SpiderResource(spiderService, null)).addFilter(new ApiOriginFilter(), "/*").build();
+		mockMvc = MockMvcBuilders.standaloneSetup(new SpiderResource(null, spiderService, null)).addFilter(new ApiOriginFilter(), "/*").build();
 	}
 
 	@Test

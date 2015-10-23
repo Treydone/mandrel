@@ -21,6 +21,8 @@ package io.mandrel.data.filters;
 import io.mandrel.data.Link;
 import io.mandrel.data.filters.link.SkipAncorFilter;
 
+import java.net.URI;
+
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
@@ -35,16 +37,16 @@ public class SkipAncorFilterTest {
 
 	@Test
 	public void link_without_diesis() {
-		Assertions.assertThat(filter.isValid(new Link().setUri("http://localhost/1"))).isTrue();
+		Assertions.assertThat(filter.isValid(new Link().uri(URI.create("http://localhost/1")))).isTrue();
 	}
 
 	@Test
 	public void link_with_diesis() {
-		Assertions.assertThat(filter.isValid(new Link().setUri("http://localhost/1#ancor"))).isFalse();
+		Assertions.assertThat(filter.isValid(new Link().uri(URI.create("http://localhost/1#ancor")))).isFalse();
 	}
 
 	@Test
 	public void link_for_one_page() {
-		Assertions.assertThat(filter.isValid(new Link().setUri("http://localhost/1#/page"))).isTrue();
+		Assertions.assertThat(filter.isValid(new Link().uri(URI.create("http://localhost/1#/page")))).isTrue();
 	}
 }

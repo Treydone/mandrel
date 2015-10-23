@@ -18,20 +18,22 @@
  */
 package io.mandrel.data.extract;
 
+import io.mandrel.blob.Blob;
+import io.mandrel.blob.BlobMetadata;
 import io.mandrel.data.Link;
 import io.mandrel.data.content.Extractor;
 import io.mandrel.data.content.FieldExtractor;
+import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.data.content.OutlinkExtractor;
 import io.mandrel.data.content.SourceType;
-import io.mandrel.data.content.MetadataExtractor;
-import io.mandrel.data.content.selector.SelectorService;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
-import io.mandrel.requests.WebPage;
+import io.mandrel.document.DocumentStores;
+import io.mandrel.io.Payloads;
 import io.mandrel.script.ScriptingService;
 
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
@@ -53,24 +55,22 @@ public class ExtractorServiceTest {
 	@Mock
 	private DocumentStore documentStore;
 
-	private SelectorService selectorService = new SelectorService();
-
 	private ExtractorService extractorService;
 
 	@Before
 	public void init() {
-		extractorService = new ExtractorService(scriptingService, selectorService);
+		extractorService = new ExtractorService(scriptingService);
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void no_matching_pattern() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
+		Blob blob = new Blob(new BlobMetadata().uri(URI.create("http://localhost")));
 		MetadataExtractor extractor = new MetadataExtractor();
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), blob, extractor);
 
 		// Asserts
 	}
@@ -79,11 +79,11 @@ public class ExtractorServiceTest {
 	public void no_field() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
+		Blob blob = new Blob(new BlobMetadata().uri(URI.create("http://localhost")));
 		MetadataExtractor extractor = new MetadataExtractor();
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), blob, extractor);
 
 		// Asserts
 	}
@@ -92,7 +92,7 @@ public class ExtractorServiceTest {
 	public void no_DocumentStore() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
+		Blob blob = new Blob(new BlobMetadata().uri(URI.create("http://localhost")));
 		MetadataExtractor extractor = new MetadataExtractor();
 
 		FieldExtractor field = new FieldExtractor();
@@ -100,7 +100,7 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), blob, extractor);
 
 		// Asserts
 	}
@@ -109,16 +109,16 @@ public class ExtractorServiceTest {
 	public void no_field_extractor() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
+		Blob blob = new Blob(new BlobMetadata().uri(URI.create("http://localhost")));
 		MetadataExtractor extractor = new MetadataExtractor();
 
-		extractor.setDocumentStore(documentStore);
+		DocumentStores.add(0, extractor.getName(), documentStore);
 		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), blob, extractor);
 
 		// Asserts
 	}
@@ -127,10 +127,10 @@ public class ExtractorServiceTest {
 	public void no_field_extractor_type() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
+		Blob blob = new Blob(new BlobMetadata().uri(URI.create("http://localhost")));
 		MetadataExtractor extractor = new MetadataExtractor();
 
-		extractor.setDocumentStore(documentStore);
+		DocumentStores.add(0, extractor.getName(), documentStore);
 		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
 		Extractor fieldExtractor = new Extractor();
@@ -139,7 +139,7 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), blob, extractor);
 
 		// Asserts
 	}
@@ -148,10 +148,10 @@ public class ExtractorServiceTest {
 	public void no_field_extractor_value() throws MalformedURLException {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, null);
+		Blob blob = new Blob(new BlobMetadata().uri(URI.create("http://localhost")));
 		MetadataExtractor extractor = new MetadataExtractor();
 
-		extractor.setDocumentStore(documentStore);
+		DocumentStores.add(0, extractor.getName(), documentStore);
 		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
 		Extractor fieldExtractor = new Extractor();
@@ -160,7 +160,7 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), blob, extractor);
 
 		// Asserts
 	}
@@ -171,10 +171,10 @@ public class ExtractorServiceTest {
 		// Arrange
 		byte[] stream = "<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes();
 
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
+		Blob blob = new Blob(new BlobMetadata().uri(URI.create("http://localhost"))).payload(Payloads.newByteArrayPayload(stream));
 		MetadataExtractor extractor = new MetadataExtractor();
 
-		extractor.setDocumentStore(documentStore);
+		DocumentStores.add(0, extractor.getName(), documentStore);
 		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
 		Extractor fieldExtractor = new Extractor();
@@ -185,12 +185,12 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(field));
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), blob, extractor);
 
 		// Asserts
 		Document data = new Document();
 		data.put("date", Arrays.asList("value1", "value2"));
-		Mockito.verify(documentStore).save(0, Arrays.asList(data));
+		Mockito.verify(documentStore).save(Arrays.asList(data));
 	}
 
 	@Test
@@ -199,10 +199,10 @@ public class ExtractorServiceTest {
 		// Arrange
 		byte[] stream = "<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes();
 
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
+		Blob blob = new Blob(new BlobMetadata().uri(URI.create("http://localhost"))).payload(Payloads.newByteArrayPayload(stream));
 		MetadataExtractor extractor = new MetadataExtractor();
 
-		extractor.setDocumentStore(documentStore);
+		DocumentStores.add(0, extractor.getName(), documentStore);
 
 		FieldExtractor dateField = new FieldExtractor();
 		dateField.setName("date");
@@ -223,13 +223,13 @@ public class ExtractorServiceTest {
 		extractor.setFields(Arrays.asList(dateField, keyField));
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), blob, extractor);
 
 		// Asserts
 		Document data = new Document();
 		data.put("date", Arrays.asList("value1", "value2"));
 		data.put("key", Arrays.asList("key1"));
-		Mockito.verify(documentStore).save(0, Arrays.asList(data));
+		Mockito.verify(documentStore).save(Arrays.asList(data));
 	}
 
 	@Test
@@ -239,9 +239,9 @@ public class ExtractorServiceTest {
 		byte[] stream = "<html><body><test><o>value1</o><t>key1</t></test><test><o>value2</o><t>key2</t></test><test><o>value3</o></test></body></html>"
 				.getBytes();
 
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
+		Blob blob = new Blob(new BlobMetadata().uri(URI.create("http://localhost"))).payload(Payloads.newByteArrayPayload(stream));
 		MetadataExtractor extractor = new MetadataExtractor();
-		extractor.setDocumentStore(documentStore);
+		DocumentStores.add(0, extractor.getName(), documentStore);
 
 		FieldExtractor dateField = new FieldExtractor();
 		dateField.setName("date");
@@ -269,7 +269,7 @@ public class ExtractorServiceTest {
 		extractor.setMultiple(multiple);
 
 		// Actions
-		extractorService.extractThenFormatThenStore(0, new HashMap<>(), webPage, extractor);
+		extractorService.extractThenFormatThenStore(0, new HashMap<>(), blob, extractor);
 
 		// Asserts
 		Document data1 = new Document();
@@ -283,7 +283,7 @@ public class ExtractorServiceTest {
 		Document data3 = new Document();
 		data3.put("date", Arrays.asList("value3"));
 
-		Mockito.verify(documentStore).save(0, Arrays.asList(data1, data2, data3));
+		Mockito.verify(documentStore).save(Arrays.asList(data1, data2, data3));
 	}
 
 	@Test
@@ -292,14 +292,14 @@ public class ExtractorServiceTest {
 		// Arrange
 		byte[] stream = "<html><body><a href='http://test.com/pouet'>Absolute</a><a href='/pouet'>Relative</a></body></html>".getBytes();
 
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok", null, null, stream);
+		Blob blob = new Blob(new BlobMetadata().uri(URI.create("http://localhost"))).payload(Payloads.newByteArrayPayload(stream));
 		OutlinkExtractor extractor = new OutlinkExtractor("_default");
 
 		// Actions
-		Set<Link> links = extractorService.extractOutlinks(new HashMap<>(), webPage, extractor);
+		Set<Link> links = extractorService.extractOutlinks(new HashMap<>(), blob, extractor);
 
 		// Asserts
-		Assertions.assertThat(links).containsExactly(new Link().setText("Absolute").setUri("http://test.com/pouet"),
-				new Link().setText("Relative").setUri("http://localhost/pouet"));
+		Assertions.assertThat(links).containsExactly(new Link().text("Relative").uri(URI.create("http://localhost/pouet")),
+				new Link().text("Absolute").uri(URI.create("http://test.com/pouet")));
 	}
 }

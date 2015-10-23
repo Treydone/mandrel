@@ -18,9 +18,10 @@
  */
 package io.mandrel.data.filters.link;
 
+import io.mandrel.data.Link;
+
 import java.net.URI;
 
-import io.mandrel.data.Link;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -36,8 +37,8 @@ public class SkipAncorFilter extends LinkFilter {
 
 	public boolean isValid(Link link) {
 		URI linkUri = link.uri();
-		String uri = linkUri.toString();
-		return link != null && StringUtils.isNotBlank(uri) && (!uri.contains("#") || uri.contains("#/"));
+		return link != null && linkUri != null && StringUtils.isNotBlank(linkUri.toString())
+				&& (!linkUri.toString().contains("#") || linkUri.toString().contains("#/"));
 	}
 
 	@Override

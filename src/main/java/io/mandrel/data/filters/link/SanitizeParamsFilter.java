@@ -49,8 +49,8 @@ public class SanitizeParamsFilter extends LinkFilter {
 
 	public boolean isValid(Link link) {
 		URI linkUri = link.uri();
-		String uri = linkUri.toString();
-		if (link != null && StringUtils.isNotBlank(uri)) {
+		if (linkUri != null && StringUtils.isNotBlank(linkUri.toString())) {
+			String uri = linkUri.toString();
 			int pos = uri.indexOf('?');
 			if (pos > -1) {
 				String uriWithoutParams = uri.substring(0, pos);

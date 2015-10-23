@@ -18,7 +18,9 @@
  */
 package io.mandrel.data.content.selector;
 
+import io.mandrel.blob.BlobMetadata;
 import io.mandrel.data.content.selector.Selector.Instance;
+import io.mandrel.io.Payloads;
 import io.mandrel.metadata.FetchMetadata;
 
 import java.net.MalformedURLException;
@@ -37,8 +39,8 @@ public class JsonSelectorTest {
 		JsonSelector selector = new JsonSelector();
 
 		byte[] data = "{\"category\": \"reference\"}".getBytes();
-		FetchMetadata webPage = new FetchMetadata().setUri(new URI("http://localhost"));
-		Instance<String> instance = selector.init(webPage, data, false);
+		FetchMetadata fetchMetadata = new FetchMetadata().uri(new URI("http://localhost"));
+		Instance<String> instance = selector.init(new BlobMetadata().fetchMetadata(fetchMetadata), Payloads.newByteArrayPayload(data), false);
 
 		List<String> results = instance.select("$.category", DataConverter.DEFAULT);
 		Assertions.assertThat(results).containsExactly("reference");

@@ -44,7 +44,7 @@ public class UrlPatternFilter extends LinkFilter {
 	private boolean invert = false;
 
 	public boolean isValid(Link link) {
-		if (link == null || link.uri() != null) {
+		if (link == null || link.uri() == null) {
 			return false;
 		}
 		boolean match = compiledPattern.matcher(link.uri().toString()).matches();

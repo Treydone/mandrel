@@ -20,10 +20,9 @@ package io.mandrel.script;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import io.mandrel.requests.WebPage;
-import io.mandrel.script.ScriptingService;
+import io.mandrel.blob.BlobMetadata;
 
-import java.net.URL;
+import java.net.URI;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -38,15 +37,13 @@ public class ScriptingTest {
 	public void groovy() throws Exception {
 
 		// Arrange
-		WebPage webPage = new WebPage(new URL("http://localhost"), 200, "Ok",
-				null, null, null);
+		BlobMetadata metadata = new BlobMetadata().uri(URI.create("http://localhost"));
 
 		ScriptEngine engine = scriptingService.getEngineByName("groovy");
-		ScriptContext bindings = scriptingService.getBindings(webPage, null);
+		ScriptContext bindings = scriptingService.getBindings(metadata, null);
 
 		// Actions
-		Object result = scriptingService.execScript("println 'test'; 'echo'",
-				engine, bindings);
+		Object result = scriptingService.execScript("println 'test'; 'echo'", engine, bindings);
 
 		// Asserts
 		assertNotNull(result);

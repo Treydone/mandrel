@@ -21,6 +21,8 @@ package io.mandrel.data.filters;
 import io.mandrel.data.Link;
 import io.mandrel.data.filters.link.StartWithFilter;
 
+import java.net.URI;
+
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
@@ -35,16 +37,16 @@ public class StartWithFilterTest {
 
 	@Test
 	public void link_start_with_exact() {
-		Assertions.assertThat(filter.isValid(new Link().setUri("http://localhost/1"))).isTrue();
+		Assertions.assertThat(filter.isValid(new Link().uri(URI.create("http://localhost/1")))).isTrue();
 	}
 
 	@Test
 	public void link_start_with_partially() {
-		Assertions.assertThat(filter.isValid(new Link().setUri("http://localhost/1/other"))).isTrue();
+		Assertions.assertThat(filter.isValid(new Link().uri(URI.create("http://localhost/1/other")))).isTrue();
 	}
 
 	@Test
 	public void link_not_start_with() {
-		Assertions.assertThat(filter.isValid(new Link().setUri("http://test/1"))).isFalse();
+		Assertions.assertThat(filter.isValid(new Link().uri(URI.create("http://test/1")))).isFalse();
 	}
 }

@@ -20,7 +20,10 @@ package io.mandrel.data.export;
 
 import static org.junit.Assert.assertEquals;
 import io.mandrel.config.BindConfiguration;
+import io.mandrel.data.export.DelimiterSeparatedValuesExporter.DelimiterSeparatedValuesExporterDefinition;
+import io.mandrel.data.export.Exporter.ExporterDefinition;
 import io.mandrel.data.export.ExportsTest.LocalConfiguration;
+import io.mandrel.data.export.JsonExporter.JsonExporterDefinition;
 
 import java.io.IOException;
 
@@ -51,22 +54,22 @@ public class ExportsTest {
 	@Test
 	public void delimited() throws IOException {
 
-		DelimiterSeparatedValuesExporter exporter = new DelimiterSeparatedValuesExporter();
+		DelimiterSeparatedValuesExporterDefinition exporter = new DelimiterSeparatedValuesExporterDefinition();
 
 		String json = objectMapper.writeValueAsString(exporter);
 		System.err.println(json);
-		DocumentExporter read = objectMapper.readValue(json, DocumentExporter.class);
+		ExporterDefinition<?> read = objectMapper.readValue(json, ExporterDefinition.class);
 		assertEquals(exporter, read);
 	}
 
 	@Test
 	public void json() throws IOException {
 
-		JsonExporter exporter = new JsonExporter();
+		JsonExporterDefinition exporter = new JsonExporterDefinition();
 
 		String json = objectMapper.writeValueAsString(exporter);
 		System.err.println(json);
-		DocumentExporter read = objectMapper.readValue(json, DocumentExporter.class);
+		ExporterDefinition<?> read = objectMapper.readValue(json, ExporterDefinition.class);
 		assertEquals(exporter, read);
 	}
 

@@ -19,6 +19,7 @@
 package io.mandrel.data.export;
 
 import io.mandrel.data.content.FieldExtractor;
+import io.mandrel.data.export.DelimiterSeparatedValuesExporter.DelimiterSeparatedValuesExporterDefinition;
 import io.mandrel.document.Document;
 
 import java.io.ByteArrayOutputStream;
@@ -37,7 +38,7 @@ public class DelimiterSeparatedValuesExporterTest {
 	public void export_documents_default() throws Exception {
 
 		// Arrange
-		DelimiterSeparatedValuesExporter exporter = new DelimiterSeparatedValuesExporter();
+		DelimiterSeparatedValuesExporter exporter = new DelimiterSeparatedValuesExporterDefinition().build(null);
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Writer writer = new OutputStreamWriter(out);

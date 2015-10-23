@@ -24,13 +24,13 @@ import io.mandrel.common.data.Filters;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.StoresDefinition;
 import io.mandrel.config.BindConfiguration;
-import io.mandrel.controller.ControllerService;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.LinkFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
-import io.mandrel.data.filters.page.LargeFilter;
 import io.mandrel.data.filters.page.DataObjectFilter;
+import io.mandrel.data.filters.page.LargeFilter;
 import io.mandrel.data.spider.SpiderServiceTest.LocalConfiguration;
+import io.mandrel.data.validation.Validators;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -100,7 +100,7 @@ public class SpiderServiceTest {
 
 		// URL
 		AllowedForDomainsFilter filter = new AllowedForDomainsFilter();
-		filter.setDomains(Arrays.asList("wiki.org"));
+		filter.domains(Arrays.asList("wiki.org"));
 
 		String json = objectMapper.writeValueAsString(filter);
 		System.err.println(json);
@@ -149,8 +149,7 @@ public class SpiderServiceTest {
 
 		Spider spider = new Spider();
 
-		ControllerService spiderService = new ControllerService(null, null, null, null, null, null);
-		Errors errors = spiderService.validate(spider);
+		Errors errors = Validators.validate(spider);
 
 		System.err.println(errors);
 

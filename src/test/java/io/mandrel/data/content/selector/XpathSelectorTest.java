@@ -18,12 +18,11 @@
  */
 package io.mandrel.data.content.selector;
 
+import io.mandrel.blob.BlobMetadata;
 import io.mandrel.data.content.selector.Selector.Instance;
-import io.mandrel.metadata.FetchMetadata;
+import io.mandrel.io.Payloads;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import org.assertj.core.api.Assertions;
@@ -34,13 +33,12 @@ import us.codecraft.xsoup.xevaluator.XElement;
 public class XpathSelectorTest {
 
 	@Test
-	public void test() throws MalformedURLException, URISyntaxException {
+	public void test() {
 
 		XpathSelector selector = new XpathSelector();
 
 		byte[] data = "<a href='/test'>épatant</a>".getBytes();
-		FetchMetadata webPage = new FetchMetadata().setUri(new URI("http://localhost"));
-		Instance<XElement> instance = selector.init(webPage, data, false);
+		Instance<XElement> instance = selector.init(new BlobMetadata().uri(URI.create("http://localhost")), Payloads.newByteArrayPayload(data), false);
 
 		List<String> results = instance.select("//a/@href", DataConverter.BODY);
 		Assertions.assertThat(results).containsExactly("/test");

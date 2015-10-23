@@ -18,11 +18,14 @@
  */
 package io.mandrel.data.export;
 
+import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobStore;
 import io.mandrel.blob.BlobStore.Callback;
+import io.mandrel.blob.BlobStores;
 import io.mandrel.common.data.Spider;
 import io.mandrel.controller.ControllerService;
-import io.mandrel.requests.WebPage;
+import io.mandrel.data.content.FieldExtractor;
+import io.mandrel.document.Document;
 
 import java.io.Writer;
 import java.util.ArrayList;
@@ -66,15 +69,11 @@ public class ExporterServiceTest {
 	public void raw_export() {
 
 		// Arrange
-		List<WebPage> results = new ArrayList<>();
+		List<Blob> results = new ArrayList<>();
 
-		RawExporter exporter = new RawExporter() {
+		Exporter exporter = new Exporter() {
 			public String contentType() {
 				return null;
-			}
-
-			public void export(Collection<WebPage> documents) {
-				results.addAll(documents);
 			}
 
 			public void init(Writer writer) {
@@ -84,15 +83,20 @@ public class ExporterServiceTest {
 			}
 
 			@Override
-			public String getType() {
-				return null;
+			public void export(Collection<Document> documents, List<FieldExtractor> fields) throws Exception {
+
 			}
+
+			@Override
+			public void export(Collection<Blob> blobs) throws Exception {
+
+			}
+
 		};
 
-		Spider spider = new Spider();
-		spider.getStores().setPageStore(store);
+		BlobStores.add(0, store);
 
-		Mockito.when(spiderService.get(0)).thenReturn(Optional.of(spider));
+		Mockito.when(spiderService.get(0)).thenReturn(Optional.of(new Spider()));
 		// Mockito.when(store.byPages(0L, 1000, captor.capture()));
 
 		// Actions
