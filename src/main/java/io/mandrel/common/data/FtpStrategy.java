@@ -18,6 +18,7 @@
  */
 package io.mandrel.common.data;
 
+import io.mandrel.common.service.TaskContext;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -25,6 +26,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class FtpStrategy extends Strategy {
 
-	private static final long serialVersionUID = -6095986454655865165L;
-
+	public FtpStrategy(TaskContext context) {
+		super(context);
+	}
 }

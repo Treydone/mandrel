@@ -18,25 +18,46 @@
  */
 package io.mandrel.requests.dns;
 
+import io.mandrel.common.service.TaskContext;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 @Data
-public class InternalNameResolver implements NameResolver {
+@Accessors(chain = true, fluent = true)
+@EqualsAndHashCode(callSuper = false)
+public class InternalNameResolver extends NameResolver {
 
-	private static final long serialVersionUID = -7534644889369417852L;
+	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
+	public static class InternalNameResolverDefinition extends NameResolverDefinition<InternalNameResolver> {
+		private static final long serialVersionUID = -2800579764535044200L;
+
+		@Override
+		public InternalNameResolver build(TaskContext context) {
+			return new InternalNameResolver(context);
+		}
+
+		@Override
+		public String name() {
+			return "simple";
+		}
+	}
+
+	public InternalNameResolver(TaskContext context) {
+		super(context);
+	}
 
 	public InetAddress resolve(String name) throws UnknownHostException {
 		return InetAddress.getByName(name);
 	}
 
-	public void init() {
-	}
-
 	@Override
-	public String name() {
-		return "simple";
+	public void init() {
 	}
 }

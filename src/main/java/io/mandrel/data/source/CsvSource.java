@@ -37,6 +37,7 @@ import org.apache.commons.vfs2.VFS;
 public class CsvSource extends Source {
 
 	@Data
+	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
 	public static class CsvSourceDefinition extends SourceDefinition<CsvSource> {
 		private static final long serialVersionUID = -4024901085285125948L;

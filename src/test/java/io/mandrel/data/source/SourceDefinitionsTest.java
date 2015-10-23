@@ -20,7 +20,12 @@ package io.mandrel.data.source;
 
 import static org.junit.Assert.assertEquals;
 import io.mandrel.config.BindConfiguration;
-import io.mandrel.data.source.SourcesTest.LocalConfiguration;
+import io.mandrel.data.source.CsvSource.CsvSourceDefinition;
+import io.mandrel.data.source.FixedSource.FixedSourceDefinition;
+import io.mandrel.data.source.JdbcSource.JdbcSourceDefinition;
+import io.mandrel.data.source.JmsSource.JmsSourceDefinition;
+import io.mandrel.data.source.Source.SourceDefinition;
+import io.mandrel.data.source.SourceDefinitionsTest.LocalConfiguration;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -38,7 +43,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ContextConfiguration(classes = LocalConfiguration.class)
 @RunWith(SpringJUnit4ClassRunner.class)
-public class SourcesTest {
+public class SourceDefinitionsTest {
 
 	@Configuration
 	@Import(BindConfiguration.class)
@@ -52,49 +57,49 @@ public class SourcesTest {
 	@Test
 	public void seed() throws IOException {
 
-		FixedSource source = new FixedSource();
-		source.setUrls(Arrays.asList("test"));
+		FixedSourceDefinition sourceDefinition = new FixedSourceDefinition();
+		sourceDefinition.setUrls(Arrays.asList("test"));
 
-		String json = objectMapper.writeValueAsString(source);
+		String json = objectMapper.writeValueAsString(sourceDefinition);
 		System.err.println(json);
-		Source read = objectMapper.readValue(json, Source.class);
-		assertEquals(source, read);
+		SourceDefinition read = objectMapper.readValue(json, SourceDefinition.class);
+		assertEquals(sourceDefinition, read);
 	}
 
 	@Test
 	public void jdbc() throws IOException {
 
-		JdbcSource source = new JdbcSource();
-		source.setQuery("select * from test");
-		source.setUrl("url");
+		JdbcSourceDefinition sourceDefinition = new JdbcSourceDefinition();
+		sourceDefinition.setQuery("select * from test");
+		sourceDefinition.setUrl("url");
 
-		String json = objectMapper.writeValueAsString(source);
+		String json = objectMapper.writeValueAsString(sourceDefinition);
 		System.err.println(json);
-		Source read = objectMapper.readValue(json, Source.class);
-		assertEquals(source, read);
+		SourceDefinition read = objectMapper.readValue(json, SourceDefinition.class);
+		assertEquals(sourceDefinition, read);
 	}
 
 	@Test
 	public void jms() throws IOException {
 
-		JmsSource source = new JmsSource();
-		source.setUrl("url");
+		JmsSourceDefinition sourceDefinition = new JmsSourceDefinition();
+		sourceDefinition.setUrl("url");
 
-		String json = objectMapper.writeValueAsString(source);
+		String json = objectMapper.writeValueAsString(sourceDefinition);
 		System.err.println(json);
-		Source read = objectMapper.readValue(json, Source.class);
-		assertEquals(source, read);
+		SourceDefinition read = objectMapper.readValue(json, SourceDefinition.class);
+		assertEquals(sourceDefinition, read);
 	}
-	
+
 	@Test
 	public void csv() throws IOException {
 
-		CsvSource source = new CsvSource();
-		source.setFiles(Arrays.asList("url"));
+		CsvSourceDefinition sourceDefinition = new CsvSourceDefinition();
+		sourceDefinition.setFiles(Arrays.asList("url"));
 
-		String json = objectMapper.writeValueAsString(source);
+		String json = objectMapper.writeValueAsString(sourceDefinition);
 		System.err.println(json);
-		Source read = objectMapper.readValue(json, Source.class);
-		assertEquals(source, read);
+		SourceDefinition read = objectMapper.readValue(json, SourceDefinition.class);
+		assertEquals(sourceDefinition, read);
 	}
 }

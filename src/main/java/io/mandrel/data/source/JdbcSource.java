@@ -29,6 +29,7 @@ import lombok.experimental.Accessors;
 public class JdbcSource extends Source {
 
 	@Data
+	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
 	public static class JdbcSourceDefinition extends SourceDefinition<JdbcSource> {
 		private static final long serialVersionUID = -4024901085285125948L;

@@ -18,19 +18,28 @@
  */
 package io.mandrel.metadata.impl;
 
+import io.mandrel.common.data.Header;
+import io.mandrel.common.data.HttpStrategy;
+import io.mandrel.common.data.Param;
+import io.mandrel.common.data.HttpStrategy.HttpStrategyDefinition;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.Link;
 import io.mandrel.frontier.Politeness;
 import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.metadata.MetadataStore;
+import io.mandrel.requests.http.Cookie;
+import io.mandrel.requests.http.ua.UserAgentProvisionner.UserAgentProvisionnerDefinition;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
@@ -38,6 +47,8 @@ import com.hazelcast.core.IMap;
 public class InternalMetadataStore extends MetadataStore {
 
 	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
 	public static class InternalMetadataStoreDefinition implements MetadataStoreDefinition {
 
 		private static final long serialVersionUID = -9205125497698919267L;
@@ -113,6 +124,6 @@ public class InternalMetadataStore extends MetadataStore {
 
 	@Override
 	public void init() {
-		
+
 	}
 }

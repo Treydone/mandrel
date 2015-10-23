@@ -19,15 +19,20 @@
 package io.mandrel.frontier.revisit;
 
 import io.mandrel.blob.BlobMetadata;
+import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
 
 import java.io.Serializable;
 
 import lombok.Data;
 
 @Data
-public abstract class RevisitStrategy implements Serializable {
+public abstract class RevisitStrategy {
 
-	private static final long serialVersionUID = -6064010303003504348L;
+	public static abstract class RevisitStrategyDefinition<REVISITSTRATEGY extends RevisitStrategy> implements NamedDefinition, ObjectFactory<RevisitStrategy>,
+			Serializable {
+		private static final long serialVersionUID = -3250619754898321944L;
+	}
 
 	public abstract boolean isScheduledForRevisit(BlobMetadata metadata);
 }

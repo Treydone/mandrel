@@ -18,40 +18,71 @@
  */
 package io.mandrel.common.data;
 
+import io.mandrel.common.service.TaskContext;
 import io.mandrel.requests.http.Cookie;
-import io.mandrel.requests.http.ua.FixedUserAgentProvisionner;
+import io.mandrel.requests.http.ua.FixedUserAgentProvisionner.FixedUserAgentProvisionnerDefinition;
 import io.mandrel.requests.http.ua.UserAgentProvisionner;
+import io.mandrel.requests.http.ua.UserAgentProvisionner.UserAgentProvisionnerDefinition;
 
 import java.util.List;
 import java.util.Set;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
+@Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
 public class HttpStrategy extends Strategy {
 
-	private static final long serialVersionUID = 8640333953772991190L;
+	public HttpStrategy(TaskContext context) {
+		super(context);
+	}
 
-	@JsonProperty("max_redirects")
-	private int maxRedirects = 3;
-	
-	@JsonProperty("follow_redirects")
-	private boolean followRedirects = true;
+	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
+	public static class HttpStrategyDefinition extends StrategyDefinition<HttpStrategy> {
+		private static final long serialVersionUID = -5847753994653490966L;
 
-	@JsonProperty("headers")
+		@JsonProperty("max_redirects")
+		private int maxRedirects = 3;
+
+		@JsonProperty("follow_redirects")
+		private boolean followRedirects = true;
+
+		@JsonProperty("headers")
+		private Set<Header> headers;
+
+		@JsonProperty("params")
+		private Set<Param> params;
+
+		@JsonProperty("cookies")
+		private List<Cookie> cookies;
+
+		@JsonProperty("user_agent_provisionner")
+		private UserAgentProvisionnerDefinition userAgentProvisionner = new FixedUserAgentProvisionnerDefinition("Mandrel");
+
+		@Override
+		public String name() {
+			return "http";
+		}
+
+		@Override
+		public HttpStrategy build(TaskContext context) {
+			return build(new HttpStrategy(context).cookies(cookies).followRedirects(followRedirects).headers(headers).maxRedirects(maxRedirects).params(params)
+					.userAgentProvisionner(userAgentProvisionner.build(context)), context);
+		}
+	}
+
+	private int maxRedirects;
+	private boolean followRedirects;
 	private Set<Header> headers;
-
-	@JsonProperty("params")
 	private Set<Param> params;
-
-	@JsonProperty("cookies")
 	private List<Cookie> cookies;
-
-	@JsonProperty("user_agent_provisionner")
-	private UserAgentProvisionner userAgentProvisionner = new FixedUserAgentProvisionner("Mandrel");
+	private UserAgentProvisionner userAgentProvisionner;
 
 }

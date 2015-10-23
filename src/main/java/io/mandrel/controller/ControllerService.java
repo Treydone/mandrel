@@ -111,7 +111,8 @@ public class ControllerService {
 		spider.setName(generator.next());
 
 		// Add source
-		FixedSourceDefinition source = new FixedSourceDefinition().urls(urls);
+		FixedSourceDefinition source = new FixedSourceDefinition();
+		source.setUrls(urls);
 		spider.setSources(Arrays.asList(source));
 
 		// Add filters
@@ -148,7 +149,7 @@ public class ControllerService {
 	public Stream<Spider> list() {
 		return spiderRepository.list();
 	}
-	
+
 	public Stream<Spider> listActive() {
 		return spiderRepository.listActive();
 	}

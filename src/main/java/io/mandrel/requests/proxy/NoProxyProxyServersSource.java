@@ -19,22 +19,50 @@
 package io.mandrel.requests.proxy;
 
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.service.TaskContext;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-public class NoProxyProxyServersSource implements ProxyServersSource {
+@Accessors(chain = true, fluent = true)
+@EqualsAndHashCode(callSuper = false)
+public class NoProxyProxyServersSource extends ProxyServersSource {
 
-	private static final long serialVersionUID = 3055822574410617130L;
+	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
+	public static class NoProxyProxyServersSourceDefinition extends ProxyServersSourceDefinition<NoProxyProxyServersSource> {
+		private static final long serialVersionUID = 4179034020754804054L;
+
+		@JsonProperty("addresses")
+		private Map<String, String> addresses = new HashMap<>();
+
+		@Override
+		public NoProxyProxyServersSource build(TaskContext context) {
+			return new NoProxyProxyServersSource(context);
+		}
+
+		@Override
+		public String name() {
+			return "no";
+		}
+	}
+
+	public NoProxyProxyServersSource(TaskContext context) {
+		super(context);
+	}
 
 	public ProxyServer findProxy(Spider spider) {
 		return null;
 	}
 
 	public void init() {
-	}
-
-	@Override
-	public String name() {
-		return "no";
 	}
 }

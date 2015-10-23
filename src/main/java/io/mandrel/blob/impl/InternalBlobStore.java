@@ -26,6 +26,8 @@ import java.net.URI;
 import java.util.Collection;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
@@ -35,6 +37,8 @@ import com.hazelcast.util.IterationType;
 public class InternalBlobStore extends BlobStore {
 
 	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
 	public static class InternalBlobStoreDefinition implements BlobStoreDefinition {
 
 		private static final long serialVersionUID = -9205125497698919267L;

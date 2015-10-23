@@ -21,7 +21,7 @@
 		<developerConnection>scm:git:git@github.com:Treydone/mandrel.git</developerConnection>
 		<url>http://github.com/Treydone/mandrel</url>
 	</scm>
-	
+
 	<issueManagement>
 		<system>github</system>
 		<url>http://github.com/Treydone/mandrel/issues</url>
@@ -53,11 +53,11 @@
 
 	<dependencies>
 
-<!-- 		<dependency> -->
-<!-- 			<groupId>redis.clients</groupId> -->
-<!-- 			<artifactId>jedis</artifactId> -->
-<!-- 			<version>2.5.2</version> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>redis.clients</groupId> -->
+		<!-- <artifactId>jedis</artifactId> -->
+		<!-- <version>2.5.2</version> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
@@ -588,12 +588,23 @@
 			<version>1.0.4</version>
 		</dependency>
 
-
+		<!-- <dependency> -->
+		<!-- <groupId>com.google.auto.value</groupId> -->
+		<!-- <artifactId>auto-value</artifactId> -->
+		<!-- <version>1.0</version> -->
+		<!-- <scope>provided</scope> -->
+		<!-- </dependency> -->
 		<dependency>
-			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j-cypher-compiler-2.1</artifactId>
-			<version>2.1.5</version>
+			<groupId>com.google.auto.service</groupId>
+			<artifactId>auto-service</artifactId>
+			<version>1.0-rc2</version>
+			<scope>provided</scope>
 		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>org.neo4j</groupId> -->
+		<!-- <artifactId>neo4j-cypher-compiler-2.1</artifactId> -->
+		<!-- <version>2.1.5</version> -->
+		<!-- </dependency> -->
 	</dependencies>
 
 	<dependencyManagement>

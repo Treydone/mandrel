@@ -18,29 +18,54 @@
  */
 package io.mandrel.requests.http.ua;
 
-import lombok.Data;
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.TaskContext;
+
+import java.io.Serializable;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-public class FixedUserAgentProvisionner implements UserAgentProvisionner {
+@Accessors(chain = true, fluent = true)
+@EqualsAndHashCode(callSuper = false)
+public class FixedUserAgentProvisionner extends UserAgentProvisionner {
 
-	private static final long serialVersionUID = -8868530554024953901L;
+	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
+	public static class FixedUserAgentProvisionnerDefinition implements UserAgentProvisionnerDefinition, NamedDefinition, Serializable {
+		private static final long serialVersionUID = -4024901085285125948L;
+
+		@JsonProperty("ua")
+		private String ua;
+
+		@Override
+		public FixedUserAgentProvisionner build(TaskContext context) {
+			return new FixedUserAgentProvisionner(context).ua(ua);
+		}
+
+		@Override
+		public String name() {
+			return "fixed";
+		}
+
+		public FixedUserAgentProvisionnerDefinition(String ua) {
+			this.ua = ua;
+		}
+	}
+
+	public FixedUserAgentProvisionner(TaskContext context) {
+		super(context);
+	}
 
 	private String ua;
 
-	public FixedUserAgentProvisionner() {
-	}
-
-	public FixedUserAgentProvisionner(String ua) {
-		this.ua = ua;
-	}
-
 	public String get(String url, Spider spider) {
 		return ua;
-	}
-
-	@Override
-	public String name() {
-		return "fixed";
 	}
 }

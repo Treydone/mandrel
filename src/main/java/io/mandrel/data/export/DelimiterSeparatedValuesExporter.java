@@ -19,6 +19,7 @@
 package io.mandrel.data.export;
 
 import io.mandrel.blob.Blob;
+import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.document.Document;
 
@@ -29,6 +30,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,27 +44,53 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 @Slf4j
-public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawExporter {
+@Accessors(chain = true, fluent = true)
+@EqualsAndHashCode(callSuper = false)
+public class DelimiterSeparatedValuesExporter implements Exporter {
 
-	private static final long serialVersionUID = -7085997792228493889L;
+	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
+	public static class DelimiterSeparatedValuesExporterDefinition extends ExporterDefinition<DelimiterSeparatedValuesExporter> {
 
-	@JsonProperty("quote_char")
-	private char quoteChar = '"';
+		private static final long serialVersionUID = 252972137729111484L;
 
-	@JsonProperty("delimiter_values")
-	private char delimiterValuesChar = ',';
+		@JsonProperty("quote_char")
+		private char quoteChar = '"';
 
-	@JsonProperty("delimiter_multivalues")
-	private char delimiterMultiValuesChar = '|';
+		@JsonProperty("delimiter_values")
+		private char delimiterValuesChar = ',';
 
-	@JsonProperty("keep_only_first_value")
-	private boolean keepOnlyFirstValue = false;
+		@JsonProperty("delimiter_multivalues")
+		private char delimiterMultiValuesChar = '|';
 
-	@JsonProperty("add_header")
-	private boolean addHeader = true;
+		@JsonProperty("keep_only_first_value")
+		private boolean keepOnlyFirstValue = false;
 
-	@JsonProperty("end_of_line_symbols")
-	private String endOfLineSymbols = "\r\n";
+		@JsonProperty("add_header")
+		private boolean addHeader = true;
+
+		@JsonProperty("end_of_line_symbols")
+		private String endOfLineSymbols = "\r\n";
+
+		@Override
+		public DelimiterSeparatedValuesExporter build(TaskContext context) {
+			return new DelimiterSeparatedValuesExporter().addHeader(addHeader).delimiterMultiValuesChar(delimiterMultiValuesChar)
+					.delimiterValuesChar(delimiterValuesChar).endOfLineSymbols(endOfLineSymbols).keepOnlyFirstValue(keepOnlyFirstValue).quoteChar(quoteChar);
+		}
+
+		@Override
+		public String name() {
+			return "csv";
+		}
+	}
+
+	private char quoteChar;
+	private char delimiterValuesChar;
+	private char delimiterMultiValuesChar;
+	private boolean keepOnlyFirstValue;
+	private boolean addHeader;
+	private String endOfLineSymbols;
 
 	private transient ICsvListWriter csvWriter;
 
@@ -151,8 +180,4 @@ public class DelimiterSeparatedValuesExporter implements DocumentExporter, RawEx
 		});
 	}
 
-	@Override
-	public String name() {
-		return "csv";
-	}
 }

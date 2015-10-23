@@ -1,0 +1,5 @@
+io.mandrel.data.source.FixedSource$FixedSourceDefinition
+io.mandrel.data.source.JdbcSource$JdbcSourceDefinition
+io.mandrel.data.source.JmsSource$JmsSourceDefinition
+io.mandrel.data.source.RobotsTxtSource$RobotsTxtSourceDefinition
+io.mandrel.data.source.CsvSource$CsvSourceDefinition

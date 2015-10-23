@@ -19,6 +19,7 @@
 package io.mandrel.requests.proxy;
 
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.service.TaskContext;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,27 +27,45 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Getter;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-public class StaticProxyServersSource implements ProxyServersSource {
+@Accessors(chain = true, fluent = true)
+@EqualsAndHashCode(callSuper = false)
+public class StaticProxyServersSource extends ProxyServersSource {
 
-	private static final long serialVersionUID = 3055822574410617130L;
+	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
+	public static class StaticProxyServersSourceDefinition extends ProxyServersSourceDefinition<StaticProxyServersSource> {
+		private static final long serialVersionUID = 4179034020754804054L;
 
-	@JsonProperty("servers")
+		@JsonProperty("servers")
+		private List<ProxyServer> servers = Arrays.asList((ProxyServer) null);
+
+		@Override
+		public StaticProxyServersSource build(TaskContext context) {
+			return new StaticProxyServersSource(context).servers(servers);
+		}
+
+		@Override
+		public String name() {
+			return "static";
+		}
+	}
+
+	public StaticProxyServersSource(TaskContext context) {
+		super(context);
+	}
+
 	private List<ProxyServer> servers = Arrays.asList((ProxyServer) null);
 
-	@JsonIgnore
-	@Getter(value = AccessLevel.NONE)
 	private transient AtomicInteger currentProxyServerIndex = new AtomicInteger();
 
-	@JsonIgnore
-	@Getter(value = AccessLevel.NONE)
 	private transient Iterator<ProxyServer> roundRobin;
 
 	public void init() {
@@ -105,10 +124,5 @@ public class StaticProxyServersSource implements ProxyServersSource {
 		} else {
 			return size;
 		}
-	}
-
-	@Override
-	public String name() {
-		return "static";
 	}
 }

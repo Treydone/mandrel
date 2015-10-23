@@ -19,22 +19,40 @@
 package io.mandrel.frontier.revisit;
 
 import io.mandrel.blob.BlobMetadata;
+import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.unit.TimeValue;
-
-import java.io.Serializable;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
+@Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
-public class NoRevisitStrategy extends RevisitStrategy implements Serializable {
+public class NoRevisitStrategy extends RevisitStrategy {
 
-	private static final long serialVersionUID = -6064010303003504348L;
+	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
+	public static class NoRevisitStrategyDefinition extends RevisitStrategyDefinition<NoRevisitStrategy> {
 
-	@JsonProperty("rescheduled_after")
+		private static final long serialVersionUID = 7795515719836831691L;
+
+		@JsonProperty("rescheduled_after")
+		private TimeValue rescheduledAfter = TimeValue.parseTimeValue("1d");
+
+		@Override
+		public NoRevisitStrategy build(TaskContext content) {
+			return new NoRevisitStrategy().rescheduledAfter(rescheduledAfter);
+		}
+
+		@Override
+		public String name() {
+			return "no";
+		}
+	}
+
 	private TimeValue rescheduledAfter = TimeValue.parseTimeValue("1d");
 
 	@Override

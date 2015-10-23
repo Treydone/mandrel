@@ -18,6 +18,7 @@
  */
 package io.mandrel.requests.dns;
 
+import io.mandrel.common.service.TaskContext;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
@@ -33,31 +34,62 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-public class DNSNameResolver implements NameResolver {
+@Accessors(chain = true, fluent = true)
+@EqualsAndHashCode(callSuper = false)
+public class DNSNameResolver extends NameResolver {
 
-	private static final long serialVersionUID = -623963740271067479L;
+	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
+	public static class DNSNameResolverDefinition extends NameResolverDefinition<DNSNameResolver> {
+		private static final long serialVersionUID = -2800579764535044200L;
 
-	private static final List<InetSocketAddress> DEFAULT_SERVERS = Arrays.asList(new InetSocketAddress("8.8.8.8", 53), // Google
-																														// Public
-																														// DNS
-			new InetSocketAddress("8.8.4.4", 53), new InetSocketAddress("208.67.222.222", 53), // OpenDNS
-			new InetSocketAddress("208.67.220.220", 53), new InetSocketAddress("37.235.1.174", 53), // FreeDNS
-			new InetSocketAddress("37.235.1.177", 53));
+		private static final List<InetSocketAddress> DEFAULT_SERVERS = Arrays.asList(new InetSocketAddress("37.235.1.177", 53), new InetSocketAddress(
+				"8.8.8.8", 53), // Google Public DNS
+				new InetSocketAddress("8.8.4.4", 53), new InetSocketAddress("208.67.222.222", 53), // OpenDNS
+				new InetSocketAddress("208.67.220.220", 53), new InetSocketAddress("37.235.1.174", 53) // FreeDNS
+				);
 
-	@JsonIgnore
+		@JsonProperty("servers")
+		private List<InetSocketAddress> servers = DEFAULT_SERVERS;
+
+		@JsonProperty("max_tries_per_query")
+		private int maxTriesPerQuery = DEFAULT_SERVERS.size();
+
+		@JsonProperty("min_ttl")
+		private int minTtl = Integer.MAX_VALUE;
+
+		@JsonProperty("max_ttl")
+		private int maxTtl = Integer.MAX_VALUE;
+
+		@Override
+		public DNSNameResolver build(TaskContext context) {
+			return new DNSNameResolver(context).maxTriesPerQuery(maxTriesPerQuery).maxTtl(maxTtl).minTtl(minTtl).servers(servers);
+		}
+
+		@Override
+		public String name() {
+			return "default";
+		}
+	}
+
+	public DNSNameResolver(TaskContext context) {
+		super(context);
+	}
+
+	private List<InetSocketAddress> servers;
+	private int maxTriesPerQuery;
+	private int minTtl;
+	private int maxTtl;
+
 	private EventLoopGroup group;
-
-	@JsonIgnore
 	private DnsNameResolver resolver;
-
-	private List<InetSocketAddress> servers = DEFAULT_SERVERS;
-	private int maxTriesPerQuery = DEFAULT_SERVERS.size();
-	private int minTtl = Integer.MAX_VALUE;
-	private int maxTtl = Integer.MAX_VALUE;
 
 	public void init() {
 		group = new NioEventLoopGroup(1);
@@ -75,10 +107,5 @@ public class DNSNameResolver implements NameResolver {
 			unknownHostException.setStackTrace(e.getStackTrace());
 			throw unknownHostException;
 		}
-	}
-
-	@Override
-	public String name() {
-		return "default";
 	}
 }

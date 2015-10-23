@@ -19,6 +19,7 @@
 package io.mandrel.data.export;
 
 import io.mandrel.blob.Blob;
+import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.document.Document;
 
@@ -28,6 +29,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.util.CollectionUtils;
@@ -36,14 +39,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-@Data
 @Slf4j
-public class JsonExporter implements DocumentExporter, RawExporter {
+public class JsonExporter implements Exporter {
 
-	private static final long serialVersionUID = -410119107553820985L;
+	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
+	public static class JsonExporterDefinition extends ExporterDefinition<JsonExporter> {
+
+		private static final long serialVersionUID = -2989127033806125954L;
+
+		@Override
+		public JsonExporter build(TaskContext context) {
+			return new JsonExporter();
+		}
+
+		@Override
+		public String name() {
+			return "json";
+		}
+	}
 
 	private transient ObjectMapper mapper;
-
 	private transient Writer writer;
 
 	@Override
@@ -90,10 +107,5 @@ public class JsonExporter implements DocumentExporter, RawExporter {
 	@Override
 	public void export(Collection<Blob> blobs) {
 
-	}
-
-	@Override
-	public String name() {
-		return "json";
 	}
 }

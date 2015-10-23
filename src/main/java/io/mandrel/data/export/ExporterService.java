@@ -44,7 +44,7 @@ public class ExporterService {
 
 	private final ControllerService spiderService;
 
-	public void export(Long id, String extractorName, DocumentExporter exporter, Writer writer) {
+	public void export(Long id, String extractorName, Exporter exporter, Writer writer) {
 		Optional<Spider> oSpider = spiderService.get(id);
 
 		if (oSpider.isPresent()) {
@@ -82,7 +82,7 @@ public class ExporterService {
 		}
 	}
 
-	public void export(Long id, RawExporter exporter, Writer writer) {
+	public void export(Long id, Exporter exporter, Writer writer) {
 		Optional<Spider> optional = spiderService.get(id);
 
 		if (optional.isPresent()) {

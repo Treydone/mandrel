@@ -27,6 +27,7 @@ import java.net.URI;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -35,6 +36,7 @@ public class SimpleFrontier extends Frontier {
 	private static final String DEFAULT_QUEUE = "default";
 
 	@Data
+	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
 	public static class SimpleFrontierDefinition extends FrontierDefinition<SimpleFrontier> implements NamedDefinition, ObjectFactory<SimpleFrontier>, Serializable {
 		private static final long serialVersionUID = -4024901085285125948L;

@@ -18,14 +18,23 @@
  */
 package io.mandrel.due;
 
+import io.mandrel.common.data.Header;
+import io.mandrel.common.data.HttpStrategy;
+import io.mandrel.common.data.Param;
+import io.mandrel.common.data.HttpStrategy.HttpStrategyDefinition;
 import io.mandrel.common.service.TaskContext;
+import io.mandrel.requests.http.Cookie;
+import io.mandrel.requests.http.ua.UserAgentProvisionner.UserAgentProvisionnerDefinition;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.core.HazelcastInstance;
@@ -35,6 +44,8 @@ import com.hazelcast.core.IQueue;
 public class InternalDuplicateUrlEliminator extends DuplicateUrlEliminator {
 
 	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
 	public static class HazelcastDuplicateUrlEliminatorDefinition implements DuplicateUrlEliminatorDefinition {
 
 		private static final long serialVersionUID = -9205125497698919267L;

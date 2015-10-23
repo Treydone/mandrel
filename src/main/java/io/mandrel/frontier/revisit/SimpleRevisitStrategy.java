@@ -19,45 +19,70 @@
 package io.mandrel.frontier.revisit;
 
 import io.mandrel.blob.BlobMetadata;
+import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.unit.TimeValue;
 
-import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
+@Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
-public class SimpleRevisitStrategy extends RevisitStrategy implements Serializable {
+public class SimpleRevisitStrategy extends RevisitStrategy {
 
-	private static final long serialVersionUID = -6064010303003504348L;
+	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
+	public static class SimpleRevisitStrategyDefinition extends RevisitStrategyDefinition<SimpleRevisitStrategy> {
 
-	@JsonProperty("rescheduled_after")
-	private TimeValue rescheduledAfter = TimeValue.parseTimeValue("1d");
+		private static final long serialVersionUID = 7795515719836831691L;
 
-	@JsonProperty("on_fetch_error")
-	private Interval onFetchError = Interval.of(3, "2h");
+		@JsonProperty("rescheduled_after")
+		private TimeValue rescheduledAfter = TimeValue.parseTimeValue("1d");
 
-	@JsonProperty("on_parsing_error")
-	private Interval onParsingError = Interval.of(3, "7d");
+		@JsonProperty("on_fetch_error")
+		private Interval onFetchError = Interval.of(3, "2h");
 
-	@JsonProperty("on_global_error")
-	private Interval onGlobalError = Interval.of(3, "7d");
+		@JsonProperty("on_parsing_error")
+		private Interval onParsingError = Interval.of(3, "7d");
 
-	/**
-	 * Has to send last seen info ? (Last-Modified-Since/ETag header for
-	 * HttpRequester...)
-	 */
-	@JsonProperty("send_last_seen_info")
+		@JsonProperty("on_global_error")
+		private Interval onGlobalError = Interval.of(3, "7d");
+
+		/**
+		 * Has to send last seen info ? (Last-Modified-Since/ETag header for
+		 * HttpRequester...)
+		 */
+		@JsonProperty("send_last_seen_info")
+		private boolean sendLastSeenInfo = true;
+
+		@Override
+		public SimpleRevisitStrategy build(TaskContext content) {
+			return new SimpleRevisitStrategy().onFetchError(onFetchError).onGlobalError(onGlobalError).onParsingError(onParsingError)
+					.rescheduledAfter(rescheduledAfter).sendLastSeenInfo(sendLastSeenInfo);
+		}
+
+		@Override
+		public String name() {
+			return "simple";
+		}
+	}
+
+	private TimeValue rescheduledAfter;
+	private Interval onFetchError;
+	private Interval onParsingError;
+	private Interval onGlobalError;
 	private boolean sendLastSeenInfo = true;
 
 	@Override
 	public boolean isScheduledForRevisit(BlobMetadata metadata) {
-		
+
 		if (onFetchError.getNextAttempt().getMillis() > Duration.between(LocalDateTime.now(), LocalDateTime.now()).toMillis()) {
 			return true;
 		}

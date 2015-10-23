@@ -20,10 +20,21 @@ package io.mandrel.requests.http.ua;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
+import io.mandrel.common.service.TaskContext;
+import io.mandrel.common.service.TaskContextAware;
 
 import java.io.Serializable;
 
-public interface UserAgentProvisionner extends NamedDefinition, Serializable {
+public abstract class UserAgentProvisionner extends TaskContextAware {
 
-	String get(String url, Spider spider);
+	public UserAgentProvisionner(TaskContext context) {
+		super(context);
+	}
+
+	public interface UserAgentProvisionnerDefinition extends NamedDefinition, ObjectFactory<UserAgentProvisionner>, Serializable {
+
+	}
+
+	public abstract String get(String url, Spider spider);
 }

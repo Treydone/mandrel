@@ -42,6 +42,8 @@ import com.google.common.collect.Sets;
 public class FtpRequester extends Requester {
 
 	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
 	public static class FtpRequesterDefinition implements RequesterDefinition {
 
 		private static final long serialVersionUID = -9205125497698919267L;

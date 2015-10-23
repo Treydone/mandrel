@@ -1,5 +1,0 @@
-io.mandrel.data.source.FixedSource
-io.mandrel.data.source.JdbcSource
-io.mandrel.data.source.JmsSource
-io.mandrel.data.source.RobotsTxtSource
-io.mandrel.data.source.CsvSource

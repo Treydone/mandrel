@@ -18,16 +18,25 @@
  */
 package io.mandrel.document.impl;
 
+import io.mandrel.common.data.Header;
+import io.mandrel.common.data.HttpStrategy;
+import io.mandrel.common.data.Param;
+import io.mandrel.common.data.HttpStrategy.HttpStrategyDefinition;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
+import io.mandrel.requests.http.Cookie;
+import io.mandrel.requests.http.ua.UserAgentProvisionner.UserAgentProvisionnerDefinition;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +49,8 @@ import com.hazelcast.util.IterationType;
 public class InternalDocumentStore extends DocumentStore {
 
 	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
 	public static class InternalDocumentStoreDefinition implements DocumentStoreDefinition {
 
 		private static final long serialVersionUID = -9205125497698919267L;

@@ -50,6 +50,8 @@ public abstract class Frontier extends TaskContextAware implements Checkable {
 	}
 
 	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
 	public static abstract class FrontierDefinition<FRONTIER extends Frontier> implements NamedDefinition, ObjectFactory<FRONTIER>, Serializable {
 
 		private static final long serialVersionUID = 7103095906121624004L;
@@ -66,7 +68,7 @@ public abstract class Frontier extends TaskContextAware implements Checkable {
 		@JsonProperty("due")
 		protected DuplicateUrlEliminatorDefinition duplicateUrlEliminator;
 
-		public <T extends Frontier> T build(T frontier, TaskContext context) {
+		public FRONTIER build(FRONTIER frontier, TaskContext context) {
 			frontier.duplicateUrlEliminator(duplicateUrlEliminator.build(context)).store(store.build(context)).politeness(politeness).revisit(revisit);
 			return frontier;
 		}

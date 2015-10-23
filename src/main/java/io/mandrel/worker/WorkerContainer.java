@@ -111,11 +111,11 @@ public class WorkerContainer implements Container {
 			Requester requester = r.build(context);
 
 			// Prepare client
-				if (requester.strategy().getNameResolver() != null) {
-					requester.strategy().getNameResolver().init();
+				if (requester.strategy().nameResolver() != null) {
+					requester.strategy().nameResolver().init();
 				}
-				if (requester.strategy().getProxyServersSource() != null) {
-					requester.strategy().getProxyServersSource().init();
+				if (requester.strategy().proxyServersSource() != null) {
+					requester.strategy().proxyServersSource().init();
 				}
 				requester.init();
 

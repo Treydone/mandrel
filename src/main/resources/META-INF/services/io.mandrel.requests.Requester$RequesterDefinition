@@ -1,0 +1,2 @@
+io.mandrel.requests.http.ApacheHttpRequester$ApacheHttpRequesterDefinition
+io.mandrel.requests.ftp.FtpRequester$FtpRequesterDefinition

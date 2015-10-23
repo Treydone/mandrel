@@ -21,10 +21,23 @@ package io.mandrel.requests.proxy;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.lifecycle.Initializable;
 import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
+import io.mandrel.common.service.TaskContext;
+import io.mandrel.common.service.TaskContextAware;
 
 import java.io.Serializable;
 
-public interface ProxyServersSource extends NamedDefinition, Serializable, Initializable {
+public abstract class ProxyServersSource extends TaskContextAware implements Initializable {
 
-	ProxyServer findProxy(Spider spider);
+	public ProxyServersSource(TaskContext context) {
+		super(context);
+	}
+
+	public static abstract class ProxyServersSourceDefinition<PROXYSERVERSSOURCE extends ProxyServersSource> implements NamedDefinition,
+			ObjectFactory<PROXYSERVERSSOURCE>, Serializable {
+		private static final long serialVersionUID = 4221420676233532250L;
+
+	}
+
+	public abstract ProxyServer findProxy(Spider spider);
 }

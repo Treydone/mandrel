@@ -19,12 +19,11 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.NotFoundException;
-import io.mandrel.data.export.AbstractExporter;
 import io.mandrel.data.export.DelimiterSeparatedValuesExporter;
-import io.mandrel.data.export.DocumentExporter;
+import io.mandrel.data.export.Exporter;
+import io.mandrel.data.export.Exporter.ExporterDefinition;
 import io.mandrel.data.export.ExporterService;
 import io.mandrel.data.export.JsonExporter;
-import io.mandrel.data.export.RawExporter;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -60,16 +59,16 @@ public class ExportResource {
 
 	@ApiOperation(value = "Export the data of the extractor of a spider using a custom exporter in the classpath")
 	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void export(@PathVariable Long id, @PathVariable String extractorName, @RequestBody DocumentExporter exporter,
+	public void export(@PathVariable Long id, @PathVariable String extractorName, @RequestBody ExporterDefinition<? extends Exporter> exporter,
 			@RequestParam(defaultValue = "true") boolean compress, HttpServletResponse response) throws IOException {
-		internalExport(id, extractorName, exporter, response, compress);
+		internalExport(id, extractorName, exporter.build(null), response, compress);
 	}
 
 	@ApiOperation(value = "Export the data of the extractor of a spider in a format specified in the parameter")
 	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET, params = "format")
 	public void export(@PathVariable Long id, @PathVariable String extractorName, @RequestParam(required = true) String format,
 			@RequestParam(defaultValue = "true") boolean compress, HttpServletResponse response) throws IOException {
-		DocumentExporter exporter = null;
+		Exporter exporter = null;
 		if ("csv".equals(format)) {
 			exporter = new DelimiterSeparatedValuesExporter();
 		} else if ("json".equals(format)) {
@@ -83,16 +82,16 @@ public class ExportResource {
 
 	@ApiOperation(value = "Export the raw data of a spider using a custom exporter in the classpath")
 	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void rawExport(@PathVariable Long id, @RequestBody RawExporter exporter, @RequestParam(defaultValue = "true") boolean compress,
-			HttpServletResponse response) throws IOException {
-		internalRawExport(id, exporter, response, compress);
+	public void rawExport(@PathVariable Long id, @RequestBody ExporterDefinition<? extends Exporter> exporter,
+			@RequestParam(defaultValue = "true") boolean compress, HttpServletResponse response) throws IOException {
+		internalRawExport(id, exporter.build(null), response, compress);
 	}
 
 	@ApiOperation(value = "Export the raw data of a spider in a format specified in the parameter")
 	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.GET, params = "format")
 	public void rawExport(@PathVariable Long id, @RequestParam(required = true) String format, @RequestParam(defaultValue = "true") boolean compress,
 			HttpServletResponse response) throws IOException {
-		RawExporter exporter = null;
+		Exporter exporter = null;
 		if ("csv".equals(format)) {
 			exporter = new DelimiterSeparatedValuesExporter();
 		} else if ("json".equals(format)) {
@@ -104,7 +103,7 @@ public class ExportResource {
 		internalRawExport(id, exporter, response, compress);
 	}
 
-	protected void internalRawExport(Long id, RawExporter exporter, HttpServletResponse response, boolean compress) throws IOException {
+	protected void internalRawExport(Long id, Exporter exporter, HttpServletResponse response, boolean compress) throws IOException {
 		try (OutputStreamWriter writer = prepareExport(exporter, response, compress, "export")) {
 			try {
 				exporterService.export(id, exporter, writer);
@@ -116,7 +115,7 @@ public class ExportResource {
 		}
 	}
 
-	protected void internalExport(Long id, String extractorName, DocumentExporter exporter, HttpServletResponse response, boolean compress) throws IOException {
+	protected void internalExport(Long id, String extractorName, Exporter exporter, HttpServletResponse response, boolean compress) throws IOException {
 		try (OutputStreamWriter writer = prepareExport(exporter, response, compress, extractorName)) {
 			try {
 				exporterService.export(id, extractorName, exporter, writer);
@@ -128,7 +127,7 @@ public class ExportResource {
 		}
 	}
 
-	public OutputStreamWriter prepareExport(AbstractExporter exporter, HttpServletResponse response, boolean compress, String name) throws IOException {
+	public OutputStreamWriter prepareExport(Exporter exporter, HttpServletResponse response, boolean compress, String name) throws IOException {
 		response.setContentType(exporter.contentType());
 		response.setHeader("Content-Disposition", "attachment; filename=\"" + name + "-" + DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now())
 				+ (compress ? ".gzip" : "") + "\"");

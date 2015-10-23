@@ -51,6 +51,7 @@ import crawlercommons.sitemaps.SiteMapParser;
 public class RobotsTxtSource extends Source {
 
 	@Data
+	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
 	public static class RobotsTxtSourceDefinition extends SourceDefinition<RobotsTxtSource> {
 		private static final long serialVersionUID = -4024901085285125948L;

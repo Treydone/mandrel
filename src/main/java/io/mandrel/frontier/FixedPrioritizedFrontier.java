@@ -46,6 +46,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class FixedPrioritizedFrontier extends Frontier {
 
 	@Data
+	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
 	public static class FixedPrioritizedFrontierDefinition extends FrontierDefinition<FixedPrioritizedFrontier> implements NamedDefinition, Serializable {
 		private static final long serialVersionUID = -4024901085285125948L;

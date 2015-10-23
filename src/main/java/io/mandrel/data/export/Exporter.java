@@ -18,13 +18,31 @@
  */
 package io.mandrel.data.export;
 
+import io.mandrel.blob.Blob;
+import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.document.Document;
 
+import java.io.Serializable;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
 
-public interface DocumentExporter extends AbstractExporter {
+public interface Exporter {
+
+	public static abstract class ExporterDefinition<EXPORTER extends Exporter> implements ObjectFactory<EXPORTER>, NamedDefinition, Serializable {
+		private static final long serialVersionUID = 661004430648193923L;
+
+	}
+
+	String contentType();
+
+	void init(Writer writer) throws Exception;
+
+	void close() throws Exception;
 
 	void export(Collection<Document> documents, List<FieldExtractor> fields) throws Exception;
+
+	void export(Collection<Blob> blobs) throws Exception;
 }

@@ -18,50 +18,91 @@
  */
 package io.mandrel.common.data;
 
-import io.mandrel.requests.dns.DNSNameResolver;
+import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
+import io.mandrel.common.service.TaskContext;
+import io.mandrel.common.service.TaskContextAware;
+import io.mandrel.requests.dns.CachedNameResolver.CachedNameResolverDefinition;
+import io.mandrel.requests.dns.DNSNameResolver.DNSNameResolverDefinition;
+import io.mandrel.requests.dns.CachedNameResolver;
 import io.mandrel.requests.dns.NameResolver;
-import io.mandrel.requests.proxy.NoProxyProxyServersSource;
+import io.mandrel.requests.dns.NameResolver.NameResolverDefinition;
+import io.mandrel.requests.proxy.NoProxyProxyServersSource.NoProxyProxyServersSourceDefinition;
 import io.mandrel.requests.proxy.ProxyServersSource;
+import io.mandrel.requests.proxy.ProxyServersSource.ProxyServersSourceDefinition;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-public class Strategy implements Serializable {
+@Accessors(chain = true, fluent = true)
+@EqualsAndHashCode(callSuper = false)
+public class Strategy extends TaskContextAware {
 
-	private static final long serialVersionUID = 8944125504287219738L;
+	public Strategy(TaskContext context) {
+		super(context);
+	}
 
-	@JsonProperty("request_time_out")
-	private int requestTimeOut = 10000;
+	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
+	public static abstract class StrategyDefinition<STRATEGY extends Strategy> implements NamedDefinition, ObjectFactory<STRATEGY>, Serializable {
 
-	@JsonProperty("socket_timeout")
-	private int socketTimeout = 10000;
+		private static final long serialVersionUID = -5847753994653490966L;
 
-	@JsonProperty("connect_timeout")
-	private int connectTimeout = 10000;
+		@JsonProperty("request_time_out")
+		private int requestTimeOut = 10000;
 
-	@JsonProperty("reuse_address")
-	private boolean reuseAddress = true;
+		@JsonProperty("socket_timeout")
+		private int socketTimeout = 10000;
 
-	@JsonProperty("tcp_no_delay")
-	private boolean tcpNoDelay = true;
+		@JsonProperty("connect_timeout")
+		private int connectTimeout = 10000;
 
-	@JsonProperty("keep_alive")
-	private boolean keepAlive = true;
+		@JsonProperty("reuse_address")
+		private boolean reuseAddress = true;
 
-	@JsonProperty("max_parallel")
-	private int maxParallel = 100;
+		@JsonProperty("tcp_no_delay")
+		private boolean tcpNoDelay = true;
 
-	@JsonProperty("max_persistent_connections")
-	private int maxPersistentConnections = 100;
+		@JsonProperty("keep_alive")
+		private boolean keepAlive = true;
 
-	@JsonProperty("name_resolver")
-	private NameResolver nameResolver = new DNSNameResolver();
+		@JsonProperty("max_parallel")
+		private int maxParallel = 100;
 
-	@JsonProperty("proxy")
-	private ProxyServersSource proxyServersSource = new NoProxyProxyServersSource();
+		@JsonProperty("max_persistent_connections")
+		private int maxPersistentConnections = 100;
+
+		@JsonProperty("name_resolver")
+		private NameResolverDefinition<? extends NameResolver> nameResolver = new DNSNameResolverDefinition();
+
+		@JsonProperty("proxy")
+		private ProxyServersSourceDefinition<? extends ProxyServersSource> proxyServersSource = new NoProxyProxyServersSourceDefinition();
+
+		public STRATEGY build(STRATEGY strategy, TaskContext context) {
+			strategy.connectTimeout(connectTimeout).requestTimeOut(requestTimeOut).socketTimeout(socketTimeout).reuseAddress(reuseAddress).keepAlive(keepAlive)
+					.maxParallel(maxParallel).maxPersistentConnections(maxPersistentConnections).nameResolver(nameResolver.build(context))
+					.proxyServersSource(proxyServersSource.build(context));
+			return strategy;
+		}
+	}
+
+	private int requestTimeOut;
+	private int socketTimeout;
+	private int connectTimeout;
+	private boolean reuseAddress;
+	private boolean tcpNoDelay;
+	private boolean keepAlive;
+	private int maxParallel;
+	private int maxPersistentConnections;
+	private NameResolver nameResolver;
+	private ProxyServersSource proxyServersSource;
 
 }

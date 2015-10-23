@@ -20,12 +20,25 @@ package io.mandrel.requests.dns;
 
 import io.mandrel.common.lifecycle.Initializable;
 import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
+import io.mandrel.common.service.TaskContext;
+import io.mandrel.common.service.TaskContextAware;
 
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public interface NameResolver extends NamedDefinition, Serializable, Initializable {
+public abstract class NameResolver extends TaskContextAware implements Initializable {
 
-	InetAddress resolve(String host) throws UnknownHostException;
+	public NameResolver(TaskContext context) {
+		super(context);
+	}
+
+	public static abstract class NameResolverDefinition<NAMERESOLVER extends NameResolver> implements NamedDefinition, ObjectFactory<NAMERESOLVER>,
+			Serializable {
+		private static final long serialVersionUID = 2497291758200886534L;
+
+	}
+
+	public abstract InetAddress resolve(String host) throws UnknownHostException;
 }

@@ -18,8 +18,10 @@
  */
 package io.mandrel.common.service;
 
+import javax.annotation.Nullable;
+
 public interface ObjectFactory<T> {
 
-	T build(TaskContext context);
+	T build(@Nullable TaskContext context);
 
 }

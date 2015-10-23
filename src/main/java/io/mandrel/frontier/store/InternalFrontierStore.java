@@ -23,12 +23,17 @@ import io.mandrel.common.service.TaskContext;
 import java.net.URI;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 
 public class InternalFrontierStore extends FrontierStore {
 
+	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
 	public static class InternalFrontierStoreDefinition extends FrontierStoreDefinition<InternalFrontierStore> {
 		private static final long serialVersionUID = -5715057009212205361L;
 
