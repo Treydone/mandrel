@@ -21,11 +21,10 @@ package io.mandrel.document;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DocumentStores {
 
-	private final static ConcurrentHashMap<Long, Map<String, DocumentStore>> stores = new ConcurrentHashMap<>();
+	private final static Map<Long, Map<String, DocumentStore>> stores = new HashMap<>();
 
 	public static void add(long spiderId, String name, DocumentStore documentStore) {
 		synchronized (stores) {
@@ -48,6 +47,8 @@ public class DocumentStores {
 	}
 
 	public static void remove(Long spiderId) {
-		stores.remove(spiderId);
+		synchronized (stores) {
+			stores.remove(spiderId);
+		}
 	}
 }

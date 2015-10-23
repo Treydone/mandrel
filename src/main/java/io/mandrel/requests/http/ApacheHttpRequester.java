@@ -20,9 +20,9 @@ package io.mandrel.requests.http;
 
 import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobMetadata;
-import io.mandrel.common.MandrelException;
 import io.mandrel.common.data.HttpStrategy;
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.service.TaskContext;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.proxy.ProxyServer;
 
@@ -47,6 +47,7 @@ import javax.net.ssl.SSLContext;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.http.Consts;
@@ -63,7 +64,6 @@ import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.MessageConstraints;
 import org.apache.http.config.Registry;
@@ -105,7 +105,6 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.CharArrayBuffer;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -113,31 +112,60 @@ import com.google.common.collect.Sets;
 
 @Slf4j
 @Data
+@Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
 public class ApacheHttpRequester extends Requester {
 
-	private static final long serialVersionUID = 2246117088546279535L;
+	@Data
+	public static class ApacheHttpRequesterDefinition implements RequesterDefinition {
 
-	@JsonProperty("strategy")
+		private static final long serialVersionUID = -9205125497698919267L;
+
+		@JsonProperty("max_line_length")
+		private int maxLineLength = -1;
+
+		@JsonProperty("max_header_count")
+		private int maxHeaderCount = -1;
+
+		@JsonProperty("io_thread_count")
+		private int ioThreadCount = Runtime.getRuntime().availableProcessors();
+
+		@JsonProperty("strategy")
+		private HttpStrategy strategy;
+
+		@Override
+		public String name() {
+			return "hc";
+		}
+
+		@Override
+		public Requester build(TaskContext context) {
+			return new ApacheHttpRequester(context).maxLineLength(maxLineLength).maxHeaderCount(maxHeaderCount).ioThreadCount(ioThreadCount).strategy(strategy);
+		}
+	}
+
+	public ApacheHttpRequester() {
+		super(null);
+	}
+
+	public ApacheHttpRequester(TaskContext context) {
+		super(context);
+	}
+
 	private HttpStrategy strategy;
 
-	@JsonIgnore
-	private transient CloseableHttpAsyncClient client;
-
-	@JsonIgnore
-	private transient RequestConfig defaultRequestConfig;
-
-	@JsonIgnore
-	private transient Semaphore available;
-
-	@JsonProperty("max_line_length")
 	private int maxLineLength = -1;
 
-	@JsonProperty("max_header_count")
 	private int maxHeaderCount = -1;
 
-	@JsonProperty("io_thread_count")
 	private int ioThreadCount = Runtime.getRuntime().availableProcessors();
+
+	// //////////////////////////////////////
+	private CloseableHttpAsyncClient client;
+
+	private RequestConfig defaultRequestConfig;
+
+	private Semaphore available;
 
 	public void close() throws IOException {
 		client.close();
@@ -237,58 +265,60 @@ public class ApacheHttpRequester extends Requester {
 		client.start();
 	}
 
-	public void get(URI uri, Spider spider, SuccessCallback successCallback, FailureCallback failureCallback) {
-		if (uri != null) {
-			log.debug("Requesting {}...", uri);
-
-			try {
-				if (available.tryAcquire(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)) {
-					HttpUriRequest request = prepareRequest(uri, spider);
-					HttpContext localContext = prepareContext(spider);
-
-					client.execute(request, localContext, new FutureCallback<HttpResponse>() {
-						@Override
-						public void failed(Exception ex) {
-							try {
-								log.trace(ex.getMessage(), ex);
-								failureCallback.on(ex);
-							} finally {
-								available.release();
-							}
-						}
-
-						@Override
-						public void completed(HttpResponse result) {
-							try {
-								log.debug("Getting response for {}", uri);
-								Blob webPage = extractWebPage(uri, result, localContext);
-								successCallback.on(webPage);
-							} catch (Exception e) {
-								log.debug("Can not construct web page", e);
-								throw Throwables.propagate(e);
-							} finally {
-								available.release();
-							}
-						}
-
-						@Override
-						public void cancelled() {
-							try {
-								log.warn("Cancelled");
-								failureCallback.on(null);
-							} finally {
-								available.release();
-							}
-						}
-					});
-				} else {
-					throw new MandrelException("Can not acquire lock, too many connection!");
-				}
-			} catch (InterruptedException e) {
-				throw Throwables.propagate(e);
-			}
-		}
-	}
+	// public void get(URI uri, Spider spider, SuccessCallback successCallback,
+	// FailureCallback failureCallback) {
+	// if (uri != null) {
+	// log.debug("Requesting {}...", uri);
+	//
+	// try {
+	// if (available.tryAcquire(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)) {
+	// HttpUriRequest request = prepareRequest(uri, spider);
+	// HttpContext localContext = prepareContext(spider);
+	//
+	// client.execute(request, localContext, new FutureCallback<HttpResponse>()
+	// {
+	// @Override
+	// public void failed(Exception ex) {
+	// try {
+	// log.trace(ex.getMessage(), ex);
+	// failureCallback.on(ex);
+	// } finally {
+	// available.release();
+	// }
+	// }
+	//
+	// @Override
+	// public void completed(HttpResponse result) {
+	// try {
+	// log.debug("Getting response for {}", uri);
+	// Blob webPage = extractWebPage(uri, result, localContext);
+	// successCallback.on(webPage);
+	// } catch (Exception e) {
+	// log.debug("Can not construct web page", e);
+	// throw Throwables.propagate(e);
+	// } finally {
+	// available.release();
+	// }
+	// }
+	//
+	// @Override
+	// public void cancelled() {
+	// try {
+	// log.warn("Cancelled");
+	// failureCallback.on(null);
+	// } finally {
+	// available.release();
+	// }
+	// }
+	// });
+	// } else {
+	// throw new MandrelException("Can not acquire lock, too many connection!");
+	// }
+	// } catch (InterruptedException e) {
+	// throw Throwables.propagate(e);
+	// }
+	// }
+	// }
 
 	public HttpContext prepareContext(Spider spider) {
 		CookieStore store = new BasicCookieStore();
@@ -392,12 +422,13 @@ public class ApacheHttpRequester extends Requester {
 	}
 
 	@Override
-	public String name() {
-		return "hc";
+	public Set<String> getProtocols() {
+		return Sets.newHashSet("http", "https");
 	}
 
 	@Override
-	public Set<String> getProtocols() {
-		return Sets.newHashSet("http", "https");
+	public boolean check() {
+		// TODO
+		return true;
 	}
 }

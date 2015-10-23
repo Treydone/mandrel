@@ -20,8 +20,8 @@ package io.mandrel.controller;
 
 import io.mandrel.cluster.idgenerator.IdGenerator;
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.State;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -32,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.ReplicatedMap;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
@@ -66,8 +67,12 @@ public class ControllerRepository {
 		return spiders(instance).values().stream().map(el -> el);
 	}
 
+	public Stream<Spider> listActive() {
+		return list().filter(s -> s.getState().equals(State.STARTED));
+	}
+
 	// ------------------------------ TOOLS
-	static Map<Long, Spider> spiders(HazelcastInstance instance) {
+	static ReplicatedMap<Long, Spider> spiders(HazelcastInstance instance) {
 		return instance.getReplicatedMap("spiders");
 	}
 }

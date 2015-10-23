@@ -2,10 +2,12 @@ package io.mandrel.common.thrift;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.controller.ControllerContainers;
+import io.mandrel.controller.ControllerService;
 import io.mandrel.controller.thrift.ActiveFrontier;
 import io.mandrel.controller.thrift.ActiveTask;
 import io.mandrel.controller.thrift.Controller;
 import io.mandrel.controller.thrift.Heartbeat;
+import io.mandrel.frontier.Frontier.FrontierDefinition;
 import io.mandrel.frontier.FrontierContainer;
 import io.mandrel.frontier.FrontierContainers;
 import io.mandrel.frontier.Frontiers;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -38,7 +41,7 @@ import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
 import com.google.inject.Inject;
 import com.netflix.servo.util.Throwables;
@@ -47,7 +50,7 @@ import com.netflix.servo.util.Throwables;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class TEndpoint {
 
-	private final ObjectMapper mapper;
+	private final JsonFactory factory;
 
 	@PostConstruct
 	public void run() {
@@ -59,15 +62,15 @@ public class TEndpoint {
 
 		TMultiplexedProcessor processor = new TMultiplexedProcessor();
 		if (worker) {
-			processor.registerProcessor("Worker", new Worker.Processor<Worker.Iface>(new WorkerHandler(mapper)));
+			processor.registerProcessor("Worker", new Worker.Processor<Worker.Iface>(new WorkerHandler(factory)));
 		}
 		if (frontier) {
-			processor.registerProcessor("Frontier", new Frontier.Processor<Frontier.Iface>(new FrontierHandler(mapper)));
+			processor.registerProcessor("Frontier", new Frontier.Processor<Frontier.Iface>(new FrontierHandler(factory)));
 		}
 		if (controller) {
-			processor.registerProcessor("Controller", new Controller.Processor<Controller.Iface>(new ControllerHandler(mapper)));
+			processor.registerProcessor("Controller", new Controller.Processor<Controller.Iface>(new ControllerHandler(factory, null)));
 		}
-		processor.registerProcessor("Cluster", new Cluster.Processor<Cluster.Iface>(new ClusterHandler(null)));
+		processor.registerProcessor("Cluster", new Cluster.Processor<Cluster.Iface>(new ClusterHandler(factory, null)));
 
 		TNonblockingServerTransport transport;
 		try {
@@ -98,6 +101,8 @@ public class TEndpoint {
 	@RequiredArgsConstructor
 	public static class ClusterHandler implements Cluster.Iface {
 
+		private final JsonFactory factory;
+
 		private final SigarService sigarService;
 
 		@Override
@@ -110,7 +115,9 @@ public class TEndpoint {
 	@RequiredArgsConstructor
 	public static class ControllerHandler implements Controller.Iface {
 
-		private final ObjectMapper mapper;
+		private final JsonFactory factory;
+
+		private final ControllerService controllerService;
 
 		@Override
 		public void pulse(Heartbeat beat) throws TException {
@@ -134,12 +141,17 @@ public class TEndpoint {
 
 		@Override
 		public Set<ActiveTask> syncTasks() throws TException {
+			controllerService.listActive();
 			// TODO
 			return null;
 		}
 
 		@Override
 		public Set<ActiveFrontier> syncFrontiers() throws TException {
+			Set<FrontierDefinition<?>> frontiers = controllerService.listActive().map(s -> s.getFrontier()).collect(Collectors.toSet());
+			frontiers.forEach(f -> {
+				f.politeness();
+			});
 			// TODO
 			return null;
 		}
@@ -148,13 +160,13 @@ public class TEndpoint {
 	@RequiredArgsConstructor
 	public static class FrontierHandler implements Frontier.Iface {
 
-		private final ObjectMapper mapper;
+		private final JsonFactory factory;
 
 		@Override
 		public void create(ByteBuffer definition) throws TException {
 			Spider spider = null;
 			try {
-				spider = mapper.readValue(new ByteBufferBackedInputStream(definition), Spider.class);
+				spider = factory.createParser(new ByteBufferBackedInputStream(definition)).readValueAs(Spider.class);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -210,13 +222,13 @@ public class TEndpoint {
 	@RequiredArgsConstructor
 	public static class WorkerHandler implements Worker.Iface {
 
-		private final ObjectMapper mapper;
+		private final JsonFactory factory;
 
 		@Override
 		public void create(ByteBuffer definition) throws TException {
 			Spider spider = null;
 			try {
-				spider = mapper.readValue(new ByteBufferBackedInputStream(definition), Spider.class);
+				spider = factory.createParser(new ByteBufferBackedInputStream(definition)).readValueAs(Spider.class);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

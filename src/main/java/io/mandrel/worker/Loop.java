@@ -30,12 +30,14 @@ import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.GlobalMetrics;
 import io.mandrel.metrics.SpiderMetrics;
 import io.mandrel.requests.Requester;
+import io.mandrel.requests.Requesters;
 
 import java.net.ConnectException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -70,20 +72,19 @@ public class Loop implements Runnable {
 		while (true) {
 
 			URI uri = null;
-			try {
-				// Take on elements
-				// uri = ...
+			// Take on elements
+			// uri = ...
 
-				//
-				StopWatch watch = new StopWatch();
-				watch.start();
+			//
+			StopWatch watch = new StopWatch();
+			watch.start();
 
-				//
-				Requester requester = spider.getClient().getRequester(uri.getScheme());
-
-				Blob blob = requester.getBlocking(uri);
-
+			//
+			Optional<Requester> requester = Requesters.of(spider.getId(), uri.getScheme());
+			if (requester.isPresent()) {
+				Requester r = requester.get();
 				try {
+					Blob blob = r.getBlocking(uri);
 
 					watch.stop();
 
@@ -149,12 +150,10 @@ public class Loop implements Runnable {
 					}
 
 				}
-			} catch (Exception e) {
-				if (uri != null) {
-					log.debug("Can not fetch uri {} due to {}", new Object[] { uri, e.toString() }, e);
-				} else {
-					log.warn(e.getMessage(), e);
-				}
+			} else {
+
+				// TODO Unknown protocol
+
 			}
 		}
 	}

@@ -21,14 +21,15 @@ package io.mandrel.requests.ftp;
 import io.mandrel.blob.Blob;
 import io.mandrel.common.data.FtpStrategy;
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.service.TaskContext;
 import io.mandrel.requests.Requester;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Set;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -36,24 +37,37 @@ import com.google.common.collect.Sets;
 
 @Slf4j
 @Data
+@Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
 public class FtpRequester extends Requester {
 
-	private static final long serialVersionUID = 6496471430026028585L;
+	@Data
+	public static class FtpRequesterDefinition implements RequesterDefinition {
 
-	@JsonProperty("strategy")
+		private static final long serialVersionUID = -9205125497698919267L;
+
+		@JsonProperty("strategy")
+		private FtpStrategy strategy;
+
+		@Override
+		public String name() {
+			return "ftp";
+		}
+
+		@Override
+		public Requester build(TaskContext context) {
+			return new FtpRequester(context).strategy(strategy);
+		}
+	}
+
+	public FtpRequester(TaskContext context) {
+		super(context);
+	}
+
 	private FtpStrategy strategy;
 
 	@Override
-	public void close() throws IOException {
-	}
-
-	@Override
 	public void init() {
-	}
-
-	@Override
-	public void get(URI uri, Spider spider, SuccessCallback successCallback, FailureCallback failureCallback) {
 	}
 
 	@Override
@@ -67,12 +81,13 @@ public class FtpRequester extends Requester {
 	}
 
 	@Override
-	public String name() {
-		return "ftp";
+	public Set<String> getProtocols() {
+		return Sets.newHashSet("ftp", "ftps");
 	}
 
 	@Override
-	public Set<String> getProtocols() {
-		return Sets.newHashSet("ftp", "ftps");
+	public boolean check() {
+		// TODO
+		return true;
 	}
 }

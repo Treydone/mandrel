@@ -23,35 +23,30 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Strategy;
 import io.mandrel.common.lifecycle.Initializable;
 import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.service.ObjectFactory;
+import io.mandrel.common.service.TaskContext;
+import io.mandrel.common.service.TaskContextAware;
+import io.mandrel.monitor.health.Checkable;
 
-import java.io.Closeable;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Set;
 
-public abstract class Requester implements Closeable, NamedDefinition, Initializable, Serializable {
+public abstract class Requester extends TaskContextAware implements Checkable, Initializable {
 
-	private static final long serialVersionUID = 5555714976936124127L;
+	public Requester(TaskContext context) {
+		super(context);
+	}
 
-	public abstract void get(URI uri, Spider spider, SuccessCallback successCallback, FailureCallback failureCallback);
+	public interface RequesterDefinition extends NamedDefinition, ObjectFactory<Requester>, Serializable {
 
-	@Deprecated
+	}
+	
+	public abstract Strategy strategy();
+
 	public abstract Blob getBlocking(URI uri, Spider spider) throws Exception;
 
-	@Deprecated
 	public abstract Blob getBlocking(URI uri) throws Exception;
-
-	@FunctionalInterface
-	public static interface SuccessCallback {
-		void on(Blob data);
-	}
-
-	@FunctionalInterface
-	public static interface FailureCallback {
-		void on(Throwable t);
-	}
-
-	public abstract Strategy getStrategy();
 
 	public abstract Set<String> getProtocols();
 }

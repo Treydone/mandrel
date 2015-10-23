@@ -148,6 +148,10 @@ public class ControllerService {
 	public Stream<Spider> list() {
 		return spiderRepository.list();
 	}
+	
+	public Stream<Spider> listActive() {
+		return spiderRepository.listActive();
+	}
 
 	public Optional<Spider> start(long spiderId) {
 		return get(spiderId).map(

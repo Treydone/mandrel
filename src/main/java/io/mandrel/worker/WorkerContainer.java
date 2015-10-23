@@ -32,6 +32,7 @@ import io.mandrel.metadata.MetadataStore;
 import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.MetricsService;
 import io.mandrel.requests.Requester;
+import io.mandrel.requests.Requesters;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -106,16 +107,20 @@ public class WorkerContainer implements Container {
 			});
 
 		// Init requesters
-		for (Requester requester : spider.getClient().getRequesters()) {
+		spider.getClient().getRequesters().forEach(r -> {
+			Requester requester = r.build(context);
+
 			// Prepare client
-			if (requester.getStrategy().getNameResolver() != null) {
-				requester.getStrategy().getNameResolver().init();
-			}
-			if (requester.getStrategy().getProxyServersSource() != null) {
-				requester.getStrategy().getProxyServersSource().init();
-			}
-			requester.init();
-		}
+				if (requester.strategy().getNameResolver() != null) {
+					requester.strategy().getNameResolver().init();
+				}
+				if (requester.strategy().getProxyServersSource() != null) {
+					requester.strategy().getProxyServersSource().init();
+				}
+				requester.init();
+
+				Requesters.add(spider.getId(), requester);
+			});
 	}
 
 	@Override
@@ -137,11 +142,29 @@ public class WorkerContainer implements Container {
 			log.debug(e.getMessage(), e);
 		}
 
-		BlobStores.remove(spider.getId());
+		try {
+			BlobStores.remove(spider.getId());
+		} catch (Exception e) {
+			log.debug(e.getMessage(), e);
+		}
 
-		DocumentStores.remove(spider.getId());
+		try {
+			DocumentStores.remove(spider.getId());
+		} catch (Exception e) {
+			log.debug(e.getMessage(), e);
+		}
 
-		executor.shutdownNow();
+		try {
+			Requesters.remove(spider.getId());
+		} catch (Exception e) {
+			log.debug(e.getMessage(), e);
+		}
+
+		try {
+			executor.shutdownNow();
+		} catch (Exception e) {
+			log.debug(e.getMessage(), e);
+		}
 	}
 
 	public void register() {

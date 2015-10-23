@@ -18,19 +18,24 @@
  */
 package io.mandrel.blob;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.ImmutableList;
 
 public class BlobStores {
 
-	private final static ConcurrentHashMap<Long, BlobStore> stores = new ConcurrentHashMap<>();
+	private final static Map<Long, BlobStore> stores = new HashMap<>();
 
 	public static Iterable<BlobStore> list() {
-		return stores.values();
+		return ImmutableList.copyOf(stores.values());
 	}
 
-	public static void add(long spiderId, BlobStore blobStore) {
-		stores.put(spiderId, blobStore);
+	public static void add(long spiderId, BlobStore BlobStore) {
+		synchronized (stores) {
+			stores.put(spiderId, BlobStore);
+		}
 	}
 
 	public static Optional<BlobStore> get(Long spiderId) {
@@ -38,6 +43,9 @@ public class BlobStores {
 	}
 
 	public static void remove(Long spiderId) {
-		stores.remove(spiderId);
+		synchronized (stores) {
+			stores.remove(spiderId);
+		}
 	}
+
 }
