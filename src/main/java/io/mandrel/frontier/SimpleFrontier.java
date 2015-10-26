@@ -24,6 +24,7 @@ import io.mandrel.common.service.TaskContext;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Set;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -38,7 +39,8 @@ public class SimpleFrontier extends Frontier {
 	@Data
 	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
-	public static class SimpleFrontierDefinition extends FrontierDefinition<SimpleFrontier> implements NamedDefinition, ObjectFactory<SimpleFrontier>, Serializable {
+	public static class SimpleFrontierDefinition extends FrontierDefinition<SimpleFrontier> implements NamedDefinition, ObjectFactory<SimpleFrontier>,
+			Serializable {
 		private static final long serialVersionUID = -4024901085285125948L;
 
 		@Override
@@ -69,6 +71,11 @@ public class SimpleFrontier extends Frontier {
 	@Override
 	public void schedule(URI uri) {
 		store().queue(DEFAULT_QUEUE).schedule(uri);
+	}
+
+	@Override
+	public void schedule(Set<URI> uris) {
+		uris.forEach(uri -> schedule(uri));
 	}
 
 	@Override

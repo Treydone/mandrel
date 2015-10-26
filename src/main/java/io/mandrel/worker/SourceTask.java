@@ -62,7 +62,7 @@ public class SourceTask implements Runnable, HazelcastInstanceAware, Serializabl
 
 		try {
 			source.register(uri -> {
-				frontierClient.add(spiderId, uri);
+//				frontierClient.add(spiderId, uri);
 			});
 		} catch (Exception e) {
 			log.warn("Can not start source", e);

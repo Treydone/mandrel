@@ -16,32 +16,38 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.cluster.discovery.hazelcast;
+package io.mandrel.endpoints.rest;
 
-import io.mandrel.cluster.discovery.DiscoveryService;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import io.mandrel.controller.ControllerContainers;
+import io.mandrel.endpoints.contracts.ControllerContract;
 
 import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.hazelcast.core.HazelcastInstance;
-
-@Service
+@RestController
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class HazelcastDiscoveryService implements DiscoveryService {
+public class ControllerResource implements ControllerContract {
 
-	private final HazelcastInstance hazelcastInstance;
-
-	public List<String> all() {
-		return hazelcastInstance.getCluster().getMembers().stream().map(member -> member.getUuid()).collect(Collectors.toList());
+	@Override
+	public Long create(Long id) {
+		return null;
 	}
 
-	public String dhis() {
-		return hazelcastInstance.getCluster().getLocalMember().getUuid();
+	@Override
+	public void start(Long id) {
+		ControllerContainers.get(id).ifPresent(c -> c.start());
+	}
+
+	@Override
+	public void pause(Long id) {
+		ControllerContainers.get(id).ifPresent(c -> c.pause());
+	}
+
+	@Override
+	public void kill(Long id) {
+		ControllerContainers.get(id).ifPresent(c -> c.kill());
 	}
 }

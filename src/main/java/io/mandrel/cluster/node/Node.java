@@ -26,10 +26,9 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 @Data
-@Accessors(chain = true)
+@Accessors(chain = true, fluent = true)
 public class Node implements Serializable {
 	private static final long serialVersionUID = 9044434196832084086L;
 
-	private String uuid;
 	private Infos infos;
 }

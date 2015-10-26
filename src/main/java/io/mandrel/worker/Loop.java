@@ -20,6 +20,7 @@ package io.mandrel.worker;
 
 import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobStores;
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.Link;
 import io.mandrel.data.content.selector.Selector.Instance;
@@ -49,6 +50,7 @@ import org.jboss.netty.channel.ConnectTimeoutException;
 import org.jboss.netty.handler.timeout.ReadTimeoutException;
 import org.jboss.netty.handler.timeout.TimeoutException;
 import org.jboss.netty.handler.timeout.WriteTimeoutException;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.util.StopWatch;
 
 /**
@@ -62,6 +64,7 @@ public class Loop implements Runnable {
 	private final ExtractorService extractorService;
 	private final Spider spider;
 	private final FrontierClient frontierClient;
+	private final DiscoveryClient discoveryClient;
 
 	private final SpiderMetrics spiderMetrics;
 	private final GlobalMetrics globalMetrics;
@@ -159,10 +162,10 @@ public class Loop implements Runnable {
 	}
 
 	public void add(long spiderId, Set<URI> uris) {
-		frontierClient.add(spiderId, uris);
+		frontierClient.schedule(spiderId, uris, discoveryClient.getInstances(ServiceIds.FRONTIER).get(0).getUri());
 	}
 
 	public void add(long spiderId, URI uri) {
-		frontierClient.add(spiderId, uri);
+		frontierClient.schedule(spiderId, uri, discoveryClient.getInstances(ServiceIds.FRONTIER).get(0).getUri());
 	}
 }

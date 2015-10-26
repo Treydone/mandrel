@@ -48,6 +48,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.kohsuke.randname.RandomNameGenerator;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
@@ -64,6 +65,8 @@ public class ControllerService {
 	private final FrontierClient frontierClient;
 
 	private final WorkerClient workerClient;
+
+	private final DiscoveryClient discoveryClient;
 
 	private RandomNameGenerator generator = new RandomNameGenerator();
 
@@ -168,13 +171,13 @@ public class ControllerService {
 
 					CommandGroup startCommand = Commands.groupOf(
 					// Create the dedicated frontier
-							Commands.prepareFrontier(frontierClient, spider),
+							Commands.prepareFrontier(discoveryClient, frontierClient, spider),
 							// Deploy the spider on the workers
-							Commands.prepareWorker(workerClient, spider),
+							Commands.prepareWorker(discoveryClient, workerClient, spider),
 							// Start the frontier
-							Commands.startFrontier(frontierClient, spider),
+							Commands.startFrontier(discoveryClient, frontierClient, spider),
 							// Start the workers
-							Commands.startWorker(workerClient, spider));
+							Commands.startWorker(discoveryClient, workerClient, spider));
 
 					startCommand.apply();
 
@@ -195,9 +198,9 @@ public class ControllerService {
 
 			CommandGroup killCommand = Commands.groupOf(
 			// Kill the workers
-					Commands.killWorker(workerClient, spider),
+					Commands.killWorker(discoveryClient, workerClient, spider),
 					// Kill the frontier
-					Commands.killFrontier(frontierClient, spider));
+					Commands.killFrontier(discoveryClient, frontierClient, spider));
 
 			killCommand.apply();
 
@@ -217,9 +220,9 @@ public class ControllerService {
 
 			CommandGroup killCommand = Commands.groupOf(
 			// Kill the workers
-					Commands.killWorker(workerClient, spider),
+					Commands.killWorker(discoveryClient, workerClient, spider),
 					// Kill the frontier
-					Commands.killFrontier(frontierClient, spider));
+					Commands.killFrontier(discoveryClient, frontierClient, spider));
 
 			killCommand.apply();
 

@@ -33,6 +33,7 @@ import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Set;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -84,6 +85,8 @@ public abstract class Frontier extends TaskContextAware implements Checkable {
 	public abstract URI pool();
 
 	public abstract void schedule(URI uri);
+	
+	public abstract void schedule(Set<URI> uris);
 
 	public abstract void finished(URI uri);
 

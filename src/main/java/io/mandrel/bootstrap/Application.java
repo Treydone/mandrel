@@ -18,9 +18,6 @@
  */
 package io.mandrel.bootstrap;
 
-import io.mandrel.cluster.yarn.AppmasterApplication;
-import io.mandrel.cluster.yarn.ClientApplication;
-import io.mandrel.cluster.yarn.ContainerApplication;
 import io.mandrel.common.settings.InfoSettings;
 import io.mandrel.endpoints.rest.ApiOriginFilter;
 import io.mandrel.monitor.SigarService;
@@ -45,14 +42,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
-import org.springframework.yarn.boot.YarnAppmasterAutoConfiguration;
-import org.springframework.yarn.boot.YarnClientAutoConfiguration;
-import org.springframework.yarn.boot.YarnContainerAutoConfiguration;
 
-@SpringBootApplication(exclude = { ErrorMvcAutoConfiguration.class, YarnAppmasterAutoConfiguration.class, YarnContainerAutoConfiguration.class,
-		YarnClientAutoConfiguration.class })
-@ComponentScan(basePackages = "io.mandrel", excludeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = { AppmasterApplication.class,
-		ContainerApplication.class, ClientApplication.class }) })
+@SpringBootApplication(exclude = { ErrorMvcAutoConfiguration.class
+// , YarnAppmasterAutoConfiguration.class, YarnContainerAutoConfiguration.class,
+// YarnClientAutoConfiguration.class
+})
+@ComponentScan(basePackages = "io.mandrel", excludeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
+// AppmasterApplication.class,
+// ContainerApplication.class, ClientApplication.class
+}) })
 @Slf4j
 public class Application extends SpringBootServletInitializer {
 

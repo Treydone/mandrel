@@ -19,46 +19,33 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.cluster.node.Node;
-import io.mandrel.cluster.node.NodeService;
-
-import java.util.Map;
+import io.mandrel.endpoints.contracts.NodeContract;
+import io.mandrel.monitor.Infos;
+import io.mandrel.monitor.SigarService;
 
 import javax.inject.Inject;
 
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-@Api("/nodes")
-@RequestMapping(value = Apis.PREFIX + "/nodes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+import com.netflix.servo.util.Throwables;
+
+@Slf4j
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class NodeResource {
+public class NodeResource implements NodeContract {
 
-	private final NodeService nodeService;
+	private final SigarService sigarService;
 
-	@ApiOperation(value = "List all the nodes", response = Node.class, responseContainer = "Map")
-	@RequestMapping
-	public Map<String, Node> all() {
-		return nodeService.nodes();
-	}
-
-	@ApiOperation(value = "Find a node by its id", response = Node.class)
-	@RequestMapping(value = "/{id}")
-	public Node id(@PathVariable String id) {
-		return nodeService.node(id);
-	}
-
-	@ApiOperation(value = "Return the current node", response = Node.class)
-	@RequestMapping(value = "/this")
 	public Node dhis() {
-		return nodeService.dhis();
+		try {
+			Infos infos = sigarService.infos();
+			return new Node().infos(infos);
+		} catch (Exception e) {
+			log.warn("Can not set the infos for the endpoint", e);
+			throw Throwables.propagate(e);
+		}
 	}
 }

@@ -1,0 +1,31 @@
+info:
+  component: Config Server
+
+spring:
+  pidfile: configsrv.pid
+  application:
+    name: configsrv
+  cloud:
+    config:
+      server:
+        native:
+          searchLocations: classpath:/repo
+
+security:
+  user:
+    name: mandrel
+    password: M@ndR3L
+
+server:
+  port: 8900
+
+management:
+  context_path: /admin
+
+endpoints:
+  restart:
+    enabled: true
+logging:
+  levels:
+    org.springframework.boot.env.PropertySourcesLoader: TRACE
+    org.springframework.web: DEBUG

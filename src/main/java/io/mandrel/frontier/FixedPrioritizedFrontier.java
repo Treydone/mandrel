@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import lombok.Data;
@@ -101,6 +102,11 @@ public class FixedPrioritizedFrontier extends Frontier {
 		priorities.stream().filter(p -> p.filter().isValid(new Link().uri(uri))).findFirst().ifPresent(p -> queue(p));
 	}
 
+	@Override
+	public void schedule(Set<URI> uris) {
+		uris.forEach(uri -> schedule(uri));
+	}
+
 	private Queue<URI> queue(Priority p) {
 		return store().queue("queue-" + p.level());
 	}
@@ -143,4 +149,5 @@ public class FixedPrioritizedFrontier extends Frontier {
 	public boolean check() {
 		return true;
 	}
+
 }

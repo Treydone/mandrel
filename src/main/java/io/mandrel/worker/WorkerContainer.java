@@ -43,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 
 import com.hazelcast.core.HazelcastInstance;
 
@@ -55,6 +56,7 @@ public class WorkerContainer implements Container {
 	private final MetricsService metricsService;
 	private final Spider spider;
 	private final FrontierClient frontierClient;
+	private final DiscoveryClient discoveryClient;
 	private final HazelcastInstance instance;
 
 	private ExecutorService executor;
@@ -72,7 +74,7 @@ public class WorkerContainer implements Container {
 
 		// Create loop
 		IntStream.range(0, parallel).forEach(idx -> {
-			executor.submit(new Loop(extractorService, spider, null, metricsService.spider(spider.getId()), metricsService.global()));
+			executor.submit(new Loop(extractorService, spider, null, discoveryClient, metricsService.spider(spider.getId()), metricsService.global()));
 		});
 
 		// Create context

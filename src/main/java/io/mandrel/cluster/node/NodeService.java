@@ -18,13 +18,9 @@
  */
 package io.mandrel.cluster.node;
 
-import io.mandrel.cluster.discovery.DiscoveryService;
 import io.mandrel.monitor.Infos;
-import io.mandrel.timeline.NodeEvent;
-import io.mandrel.timeline.NodeEvent.NodeEventType;
 import io.mandrel.timeline.TimelineService;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +32,7 @@ import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 
 import com.hazelcast.core.HazelcastInstance;
@@ -49,26 +46,32 @@ public class NodeService {
 
 	private final HazelcastInstance instance;
 
-	private final DiscoveryService discoveryService;
+	private final DiscoveryClient discoveryClient;
 
 	private final TimelineService timelineService;
 
 	@PostConstruct
 	public void init() {
-		String uuid = discoveryService.dhis();
-		instance.<String, Node> getMap(NODES).put(uuid, new Node().setUuid(uuid));
-		timelineService.add(new NodeEvent().setNodeId(uuid).setType(NodeEventType.NODE_STARTED).setTime(LocalDateTime.now()));
+		// String uuid = discoveryClient.dhis();
+		// instance.<String, Node> getMap(NODES).put(uuid, new
+		// Node().setUuid(uuid));
+		// timelineService.add(new
+		// NodeEvent().setNodeId(uuid).setType(NodeEventType.NODE_STARTED).setTime(LocalDateTime.now()));
 	}
 
 	@PreDestroy
 	public void destroy() {
-		timelineService.add(new NodeEvent().setNodeId(discoveryService.dhis()).setType(NodeEventType.NODE_STOPPED).setTime(LocalDateTime.now()));
+		// timelineService.add(new
+		// NodeEvent().setNodeId(discoveryClient.dhis()).setType(NodeEventType.NODE_STOPPED).setTime(LocalDateTime.now()));
 	}
 
 	public Map<String, Node> nodes() {
-		List<String> uuids = discoveryService.all();
-		return _nodes().entrySet().stream().filter(idNode -> uuids.contains(idNode.getKey()))
-				.collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+		// List<String> uuids = discoveryClient.all();
+		// return _nodes().entrySet().stream().filter(idNode ->
+		// uuids.contains(idNode.getKey()))
+		// .collect(Collectors.toMap(entry -> entry.getKey(), entry ->
+		// entry.getValue()));
+		return null;
 	}
 
 	public Node node(String id) {
@@ -76,16 +79,17 @@ public class NodeService {
 	}
 
 	public void updateLocalNodeInfos(Infos infos) {
-		String uuid = discoveryService.dhis();
-		Node node = instance.<String, Node> getMap(NODES).get(uuid);
-		if (node != null) {
-			node.setInfos(infos);
-			instance.<String, Node> getMap(NODES).put(uuid, node);
-		}
+		// String uuid = discoveryClient.dhis();
+		// Node node = instance.<String, Node> getMap(NODES).get(uuid);
+		// if (node != null) {
+		// node.setInfos(infos);
+		// instance.<String, Node> getMap(NODES).put(uuid, node);
+		// }
 	}
 
 	public Node dhis() {
-		return node(discoveryService.dhis());
+		// return node(discoveryClient.dhis());
+		return null;
 	}
 
 	public Map<String, Node> nodes(Collection<String> uuids) {

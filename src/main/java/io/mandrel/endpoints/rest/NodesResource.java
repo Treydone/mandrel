@@ -16,15 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.common.thrift;
+package io.mandrel.endpoints.rest;
 
-public class TClientException extends RuntimeException {
+import io.mandrel.cluster.node.Node;
+import io.mandrel.cluster.node.NodeService;
+import io.mandrel.endpoints.contracts.NodesContract;
 
-	// Fucking Eclipse
-	private static final long serialVersionUID = -2275296727467192665L;
+import java.util.Map;
 
-	public TClientException(String message, Exception e) {
-		super(message, e);
+import javax.inject.Inject;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+public class NodesResource implements NodesContract {
+
+	private final NodeService nodeService;
+
+	public Map<String, Node> all() {
+		return nodeService.nodes();
+	}
+
+	public Node id(@PathVariable String id) {
+		return nodeService.node(id);
 	}
 
 }

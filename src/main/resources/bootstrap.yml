@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: mandrel
+  cloud:
+    config:
+      failFast: true
+      uri: http://localhost:${config.port:8900}
+      username: mandrel
+      password: M@ndR3L

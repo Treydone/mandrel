@@ -19,6 +19,7 @@
 package io.mandrel.command;
 
 import io.mandrel.blob.BlobStores;
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.common.data.Spider;
 import io.mandrel.document.DocumentStores;
 import io.mandrel.frontier.FrontierClient;
@@ -33,7 +34,22 @@ import java.util.List;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+
 public class Commands {
+
+	@FunctionalInterface
+	public static interface Action {
+		public void on(ServiceInstance i);
+	}
+
+	public static void runOnAllInstaces(DiscoveryClient discoveryClient, String serviceId, Action action) {
+		List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.FRONTIER);
+		instances.forEach(i -> {
+			action.on(i);
+		});
+	}
 
 	@FunctionalInterface
 	public interface Command {
@@ -101,17 +117,18 @@ public class Commands {
 	@Accessors(chain = true, fluent = true)
 	public static class CreateFrontier implements Command, Rollbackable {
 
+		private final DiscoveryClient discoveryClient;
 		private final FrontierClient frontierClient;
 		private final Spider spider;
 
 		@Override
 		public void apply() {
-			frontierClient.create(spider);
+			runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.create(spider, i.getUri()));
 		}
 
 		@Override
 		public void undo() {
-			frontierClient.kill(spider.getId());
+			runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.kill(spider.getId(), i.getUri()));
 		}
 	}
 
@@ -119,17 +136,18 @@ public class Commands {
 	@Accessors(chain = true, fluent = true)
 	public static class StartFrontier implements Command, Rollbackable {
 
+		private final DiscoveryClient discoveryClient;
 		private final FrontierClient frontierClient;
 		private final Spider spider;
 
 		@Override
 		public void apply() {
-			frontierClient.start(spider.getId());
+			runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.start(spider.getId(), i.getUri()));
 		}
 
 		@Override
 		public void undo() {
-			frontierClient.kill(spider.getId());
+			runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.kill(spider.getId(), i.getUri()));
 		}
 	}
 
@@ -137,12 +155,13 @@ public class Commands {
 	@Accessors(chain = true, fluent = true)
 	public static class KillFrontier implements Command {
 
+		private final DiscoveryClient discoveryClient;
 		private final FrontierClient frontierClient;
 		private final Spider spider;
 
 		@Override
 		public void apply() {
-			frontierClient.kill(spider.getId());
+			runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.kill(spider.getId(), i.getUri()));
 		}
 	}
 
@@ -150,17 +169,18 @@ public class Commands {
 	@Accessors(chain = true, fluent = true)
 	public static class PrepareWorker implements Command, Rollbackable {
 
+		private final DiscoveryClient discoveryClient;
 		private final WorkerClient workerClient;
 		private final Spider spider;
 
 		@Override
 		public void apply() {
-			workerClient.create(spider);
+			runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.create(spider, i.getUri()));
 		}
 
 		@Override
 		public void undo() {
-			workerClient.kill(spider.getId());
+			runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.kill(spider.getId(), i.getUri()));
 		}
 	}
 
@@ -168,17 +188,18 @@ public class Commands {
 	@Accessors(chain = true, fluent = true)
 	public static class StartWorker implements Command, Rollbackable {
 
+		private final DiscoveryClient discoveryClient;
 		private final WorkerClient workerClient;
 		private final Spider spider;
 
 		@Override
 		public void apply() {
-			workerClient.start(spider.getId());
+			runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.start(spider.getId(), i.getUri()));
 		}
 
 		@Override
 		public void undo() {
-			workerClient.kill(spider.getId());
+			runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.kill(spider.getId(), i.getUri()));
 		}
 	}
 
@@ -186,43 +207,44 @@ public class Commands {
 	@Accessors(chain = true, fluent = true)
 	public static class KillWorker implements Command {
 
+		private final DiscoveryClient discoveryClient;
 		private final WorkerClient workerClient;
 		private final Spider spider;
 
 		@Override
 		public void apply() {
-			workerClient.kill(spider.getId());
+			runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.kill(spider.getId(), i.getUri()));
 		}
 	}
 
 	//
 	// FRONTIER
 	//
-	public static CreateFrontier prepareFrontier(FrontierClient frontierClient, Spider spider) {
-		return new CreateFrontier(frontierClient, spider);
+	public static CreateFrontier prepareFrontier(DiscoveryClient discoveryClient, FrontierClient frontierClient, Spider spider) {
+		return new CreateFrontier(discoveryClient, frontierClient, spider);
 	}
 
-	public static StartFrontier startFrontier(FrontierClient frontierClient, Spider spider) {
-		return new StartFrontier(frontierClient, spider);
+	public static StartFrontier startFrontier(DiscoveryClient discoveryClient, FrontierClient frontierClient, Spider spider) {
+		return new StartFrontier(discoveryClient, frontierClient, spider);
 	}
 
-	public static KillFrontier killFrontier(FrontierClient frontierClient, Spider spider) {
-		return new KillFrontier(frontierClient, spider);
+	public static KillFrontier killFrontier(DiscoveryClient discoveryClient, FrontierClient frontierClient, Spider spider) {
+		return new KillFrontier(discoveryClient, frontierClient, spider);
 	}
 
 	//
 	// WORKER
 	//
-	public static PrepareWorker prepareWorker(WorkerClient workerClient, Spider spider) {
-		return new PrepareWorker(workerClient, spider);
+	public static PrepareWorker prepareWorker(DiscoveryClient discoveryClient, WorkerClient workerClient, Spider spider) {
+		return new PrepareWorker(discoveryClient, workerClient, spider);
 	}
 
-	public static StartWorker startWorker(WorkerClient workerClient, Spider spider) {
-		return new StartWorker(workerClient, spider);
+	public static StartWorker startWorker(DiscoveryClient discoveryClient, WorkerClient workerClient, Spider spider) {
+		return new StartWorker(discoveryClient, workerClient, spider);
 	}
 
-	public static KillWorker killWorker(WorkerClient workerClient, Spider spider) {
-		return new KillWorker(workerClient, spider);
+	public static KillWorker killWorker(DiscoveryClient discoveryClient, WorkerClient workerClient, Spider spider) {
+		return new KillWorker(discoveryClient, workerClient, spider);
 	}
 
 	//
