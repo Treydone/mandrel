@@ -18,23 +18,26 @@
  */
 package io.mandrel.frontier;
 
-import io.mandrel.blob.BlobStores;
 import io.mandrel.common.container.Container;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
-import io.mandrel.document.DocumentStores;
+import io.mandrel.data.source.Source;
 import io.mandrel.metadata.MetadataStores;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 
 import com.hazelcast.core.HazelcastInstance;
 
 @Data
+@Accessors(chain = true, fluent = true)
 @RequiredArgsConstructor
 public class FrontierContainer implements Container {
 
 	private final Spider spider;
 	private final HazelcastInstance instance;
+
+	private Frontier frontier;
 
 	@Override
 	public String type() {
@@ -51,14 +54,21 @@ public class FrontierContainer implements Container {
 
 		// Init stores
 		MetadataStores.add(spider.getId(), spider.getStores().getMetadataStore().build(context));
-		BlobStores.add(spider.getId(), spider.getStores().getBlobStore().build(context));
-
-		spider.getExtractors().getPages().forEach(ex -> {
-			DocumentStores.add(spider.getId(), ex.getName(), ex.getDocumentStore().build(context));
-		});
 
 		// Init frontier
-		Frontiers.add(spider.getId(), spider.getFrontier().build(context));
+		frontier = spider.getFrontier().build(context);
+
+		// Init sources
+		spider.getSources().forEach(s -> {
+			Source source = s.build(context);
+			// TODO
+				if (!source.singleton() && source.check()) {
+					source.register(uri -> {
+						frontier.schedule(uri);
+					});
+				}
+			});
+
 	}
 
 	@Override
@@ -68,7 +78,7 @@ public class FrontierContainer implements Container {
 
 	@Override
 	public void kill() {
-		Frontiers.remove(spider.getId());
+
 	}
 
 	@Override

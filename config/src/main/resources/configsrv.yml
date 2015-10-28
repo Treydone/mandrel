@@ -11,10 +11,27 @@ spring:
         native:
           searchLocations: classpath:/repo
 
-security:
-  user:
-    name: mandrel
-    password: M@ndR3L
+eureka:
+  instance:
+    hostname: localhost
+    statusPageUrlPath: ${management.context-path}/info
+    healthCheckUrlPath: ${management.context-path}/health
+  client:
+    registerWithEureka: true
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+#      defaultZone: http://mandrel:MAndR3L@${eureka.instance.hostname}:${server.port}/eureka/
+    server:
+      waitTimeInMsWhenSyncEmpty: 0
+  dashboard:
+    enabled: true
+    path: /eureka
+
+#security:
+#  user:
+#    name: mandrel
+#    password: MAndR3L
 
 server:
   port: 8900
@@ -25,6 +42,7 @@ management:
 endpoints:
   restart:
     enabled: true
+
 logging:
   levels:
     org.springframework.boot.env.PropertySourcesLoader: TRACE

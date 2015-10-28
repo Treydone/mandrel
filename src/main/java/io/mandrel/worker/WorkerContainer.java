@@ -24,7 +24,6 @@ import io.mandrel.common.container.Container;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.extract.ExtractorService;
-import io.mandrel.data.source.Source;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.document.DocumentStores;
 import io.mandrel.frontier.FrontierClient;
@@ -40,6 +39,7 @@ import java.util.stream.IntStream;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -48,6 +48,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import com.hazelcast.core.HazelcastInstance;
 
 @Data
+@Accessors(chain = true, fluent = true)
 @Slf4j
 @RequiredArgsConstructor
 public class WorkerContainer implements Container {
@@ -96,17 +97,6 @@ public class WorkerContainer implements Container {
 			documentStore.init();
 			DocumentStores.add(spider.getId(), ex.getName(), documentStore);
 		});
-
-		// Init sources
-		spider.getSources().forEach(s -> {
-			Source source = s.build(context);
-			// TODO
-				if (source.check()) {
-					if (source.singleton()) {
-
-					}
-				}
-			});
 
 		// Init requesters
 		spider.getClient().getRequesters().forEach(r -> {

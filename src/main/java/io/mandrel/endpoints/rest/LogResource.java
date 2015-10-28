@@ -18,7 +18,7 @@
  */
 package io.mandrel.endpoints.rest;
 
-import io.mandrel.task.TaskService;
+import io.mandrel.endpoints.contracts.LogContract;
 
 import java.util.Locale;
 import java.util.Map;
@@ -29,9 +29,6 @@ import javax.inject.Inject;
 import lombok.RequiredArgsConstructor;
 
 import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,15 +39,11 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
 @Api("/logs")
-@RequestMapping(value = Apis.PREFIX + "/logs", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class LogResource {
-
-	private final TaskService taskService;
+public class LogResource implements LogContract {
 
 	@ApiOperation(value = "List the loggers with their level")
-	@RequestMapping
 	public Map<String, String> all() {
 		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 		return loggerContext.getLoggerList() != null ? loggerContext.getLoggerList().stream()
@@ -58,11 +51,8 @@ public class LogResource {
 	}
 
 	@ApiOperation(value = "Change the log level")
-	@RequestMapping(method = RequestMethod.POST)
 	public void set(@RequestParam String logger, @RequestParam String level) {
-		taskService.executeOnAllMembers(() -> {
-			LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-			loggerContext.getLogger(logger).setLevel(Level.toLevel(level.toUpperCase(Locale.ROOT)));
-		});
+		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+		loggerContext.getLogger(logger).setLevel(Level.toLevel(level.toUpperCase(Locale.ROOT)));
 	}
 }

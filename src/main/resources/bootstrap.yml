@@ -3,7 +3,22 @@ spring:
     name: mandrel
   cloud:
     config:
+      discovery:
+        enabled: true
+        serviceId: CONFIGSRV
       failFast: true
-      uri: http://localhost:${config.port:8900}
       username: mandrel
       password: M@ndR3L
+
+eureka:
+  client:
+    healthcheck:
+      enabled: true
+    serviceUrl:
+#      defaultZone: http://mandrel:MAndR3L@localhost:8900/eureka/
+      defaultZone: http://localhost:8900/eureka/
+  instance:
+    hostname: localhost
+    instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    statusPageUrlPath: ${management.context-path}/info
+    healthCheckUrlPath: ${management.context-path}/health

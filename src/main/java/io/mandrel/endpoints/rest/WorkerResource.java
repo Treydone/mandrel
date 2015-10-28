@@ -27,6 +27,10 @@ import io.mandrel.worker.WorkerContainer;
 import io.mandrel.worker.WorkerContainers;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -66,5 +70,34 @@ public class WorkerResource implements WorkerContract {
 	@Override
 	public void kill(Long id, URI target) {
 		WorkerContainers.get(id).ifPresent(c -> c.kill());
+	}
+
+	@Override
+	public Map<Long, Long> listActive(URI target) {
+		return WorkerContainers.list().stream().map(w -> w.spider().getId()).collect(Collectors.toMap(i -> i, i -> i));
+	}
+
+	@Override
+	public void sync(List<Spider> spiders, URI target) {
+		Map<Long, Spider> ids = spiders.stream().collect(Collectors.toMap(spider -> spider.getId(), spider -> spider));
+
+		List<Long> existingSpiders = new ArrayList<>();
+		WorkerContainers.list().forEach(c -> {
+			existingSpiders.add(c.spider().getId());
+			if (!ids.containsKey(c.spider().getId())) {
+				kill(c.spider().getId(), null);
+			} else {
+				if (ids.get(c.spider().getId()).getVersion() != c.spider().getVersion()) {
+					kill(c.spider().getId(), null);
+					create(ids.get(c.spider().getId()), null);
+				}
+			}
+		});
+
+		ids.forEach((id, spider) -> {
+			if (!existingSpiders.contains(id)) {
+				create(spider, null);
+			}
+		});
 	}
 }

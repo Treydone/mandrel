@@ -23,10 +23,14 @@ import io.mandrel.endpoints.contracts.FrontierContract;
 import io.mandrel.frontier.Frontier;
 import io.mandrel.frontier.FrontierContainer;
 import io.mandrel.frontier.FrontierContainers;
-import io.mandrel.frontier.Frontiers;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -60,28 +64,57 @@ public class FrontierResource implements FrontierContract {
 	}
 
 	@Override
-	public Frontier id(Long id, URI target) {
-		return null;
+	public Optional<Frontier> id(Long id, URI target) {
+		return FrontierContainers.get(id).map(c -> c.frontier());
 	}
 
 	@Override
 	public URI next(Long id, URI target) {
-		URI pool = Frontiers.get(id).map(f -> f.pool()).orElse(null);
+		URI pool = FrontierContainers.get(id).map(f -> f.frontier().pool()).orElse(null);
 		return pool;
 	}
 
 	@Override
 	public void schedule(Long id, URI uri, URI target) {
-		Frontiers.get(id).ifPresent(f -> f.schedule(uri));
+		FrontierContainers.get(id).ifPresent(f -> f.frontier().schedule(uri));
 	}
 
 	@Override
 	public void schedule(Long id, Set<URI> uris, URI target) {
-		Frontiers.get(id).ifPresent(f -> f.schedule(uris));
+		FrontierContainers.get(id).ifPresent(f -> f.frontier().schedule(uris));
 	}
 
 	@Override
 	public void delete(Long id, URI uri, URI target) {
-		Frontiers.get(id).ifPresent(f -> f.schedule(uri));
+		FrontierContainers.get(id).ifPresent(f -> f.frontier().schedule(uri));
+	}
+
+	@Override
+	public Map<Long, Long> listActive(URI target) {
+		return FrontierContainers.list().stream().map(f -> f.spider().getId()).collect(Collectors.toMap(i -> i, i -> i));
+	}
+
+	@Override
+	public void sync(List<Spider> spiders, URI target) {
+		Map<Long, Spider> ids = spiders.stream().collect(Collectors.toMap(spider -> spider.getId(), spider -> spider));
+
+		List<Long> existingSpiders = new ArrayList<>();
+		FrontierContainers.list().forEach(c -> {
+			existingSpiders.add(c.spider().getId());
+			if (!ids.containsKey(c.spider().getId())) {
+				kill(c.spider().getId(), null);
+			} else {
+				if (ids.get(c.spider().getId()).getVersion() != c.spider().getVersion()) {
+					kill(c.spider().getId(), null);
+					create(ids.get(c.spider().getId()), null);
+				}
+			}
+		});
+
+		ids.forEach((id, spider) -> {
+			if (!existingSpiders.contains(id)) {
+				create(spider, null);
+			}
+		});
 	}
 }

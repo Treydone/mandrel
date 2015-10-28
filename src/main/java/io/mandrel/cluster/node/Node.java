@@ -21,6 +21,7 @@ package io.mandrel.cluster.node;
 import io.mandrel.monitor.Infos;
 
 import java.io.Serializable;
+import java.net.URI;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -30,5 +31,6 @@ import lombok.experimental.Accessors;
 public class Node implements Serializable {
 	private static final long serialVersionUID = 9044434196832084086L;
 
+	private URI uri;
 	private Infos infos;
 }

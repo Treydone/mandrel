@@ -18,6 +18,8 @@
  */
 package io.mandrel.timeline;
 
+import java.net.URI;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -31,7 +33,7 @@ public class NodeEvent extends Event {
 
 	private NodeEventType type;
 
-	private String nodeId;
+	private URI uri;
 
 	public enum NodeEventType {
 		NODE_STARTED, NODE_STOPPED

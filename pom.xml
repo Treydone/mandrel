@@ -471,6 +471,10 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-mongodb</artifactId>
+		</dependency>
 		<!-- <dependency> -->
 		<!-- <groupId>org.springframework.data</groupId> -->
 		<!-- <artifactId>spring-yarn-boot</artifactId> -->
@@ -593,6 +597,16 @@
 			<groupId>org.jhades</groupId>
 			<artifactId>jhades</artifactId>
 			<version>1.0.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>2.10.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.neo4j</groupId>
+			<artifactId>neo4j-cypher-compiler-2.1</artifactId>
+			<version>2.1.5</version>
 		</dependency>
 	</dependencies>
 

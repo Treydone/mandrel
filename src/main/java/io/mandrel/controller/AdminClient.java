@@ -16,35 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.frontier;
+package io.mandrel.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import io.mandrel.endpoints.contracts.AdminContract;
 
-import com.google.common.collect.ImmutableList;
-
-public class Frontiers {
-
-	private final static Map<Long, Frontier> frontiers = new HashMap<>();
-
-	public static Iterable<Frontier> list() {
-		return ImmutableList.copyOf(frontiers.values());
-	}
-
-	public static void add(long spiderId, Frontier frontier) {
-		synchronized (frontiers) {
-			frontiers.put(spiderId, frontier);
-		}
-	}
-
-	public static Optional<Frontier> get(Long spiderId) {
-		return frontiers.get(spiderId) != null ? Optional.of(frontiers.get(spiderId)) : Optional.empty();
-	}
-
-	public static void remove(Long spiderId) {
-		synchronized (frontiers) {
-			frontiers.remove(spiderId);
-		}
-	}
+//@FeignClient("controller")
+public interface AdminClient extends AdminContract {
 }

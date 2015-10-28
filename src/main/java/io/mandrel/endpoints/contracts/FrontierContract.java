@@ -5,6 +5,9 @@ import io.mandrel.endpoints.rest.Apis;
 import io.mandrel.frontier.Frontier;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.http.MediaType;
@@ -17,8 +20,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RequestMapping(value = Apis.PREFIX + "/frontiers", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 public interface FrontierContract {
 
+	@RequestMapping("/sync")
+	public void sync(@RequestBody List<Spider> spiders, @RequestHeader URI target);
+
+	@RequestMapping("/active")
+	public Map<Long, Long> listActive(@RequestHeader URI target);
+
 	@RequestMapping(value = "/{id}")
-	public Frontier id(@PathVariable Long id, @RequestHeader URI target);
+	public Optional<Frontier> id(@PathVariable Long id, @RequestHeader URI target);
 
 	@RequestMapping(value = "/{id}/next")
 	public URI next(@PathVariable Long id, @RequestHeader URI target);

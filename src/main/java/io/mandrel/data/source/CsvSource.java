@@ -68,13 +68,6 @@ public class CsvSource extends Source {
 	}
 
 	public boolean check() {
-		return files.stream().allMatch(file -> {
-			try {
-				return VFS.getManager().resolveFile(file).exists();
-			} catch (FileSystemException e) {
-				log.debug("Can not resolve file {}", file, e);
-				return false;
-			}
-		});
+		return true;
 	}
 }

@@ -18,6 +18,7 @@
  */
 package io.mandrel.controller;
 
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.command.Commands;
 import io.mandrel.command.Commands.CommandGroup;
 import io.mandrel.common.data.Spider;
@@ -38,6 +39,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,14 +62,11 @@ import org.springframework.validation.BindingResult;
 public class ControllerService {
 
 	private final ControllerRepository spiderRepository;
-
 	private final TimelineService timelineService;
-
 	private final FrontierClient frontierClient;
-
 	private final WorkerClient workerClient;
-
 	private final DiscoveryClient discoveryClient;
+	private final ScheduledExecutorService scheduledExecutorService;
 
 	private RandomNameGenerator generator = new RandomNameGenerator();
 
@@ -87,6 +87,17 @@ public class ControllerService {
 
 		// TODO Load the journal of commands
 
+		scheduledExecutorService.scheduleAtFixedRate(() -> sync(), 0, 10000, TimeUnit.MILLISECONDS);
+	}
+
+	public void sync() {
+		List<Spider> spiders = spiderRepository.listActive().collect(Collectors.toList());
+		discoveryClient.getInstances(ServiceIds.WORKER).forEach(worker -> {
+			workerClient.sync(spiders, worker.getUri());
+		});
+		discoveryClient.getInstances(ServiceIds.FRONTIER).forEach(worker -> {
+			frontierClient.sync(spiders, worker.getUri());
+		});
 	}
 
 	public Spider update(Spider spider) throws BindException {

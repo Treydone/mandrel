@@ -16,10 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.controller;
+package io.mandrel.endpoints.contracts;
 
-import io.mandrel.endpoints.contracts.ControllerContract;
+import io.mandrel.endpoints.rest.Apis;
 
-//@FeignClient("controller")
-public interface ControllerClient extends ControllerContract {
+import java.util.Map;
+
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@RequestMapping(value = Apis.PREFIX + "/logs", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+public interface LogContract {
+
+	@RequestMapping
+	Map<String, String> all();
+
+	@RequestMapping(method = RequestMethod.POST)
+	void set(@RequestParam String logger, @RequestParam String level);
 }

@@ -16,47 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.frontier.queue;
+package io.mandrel.command;
 
-import java.util.Collection;
+import java.util.List;
 
-public interface QueueService {
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 
-	/**
-	 * Add an item if they are not already present in the queue.
-	 * 
-	 * @param queueName
-	 * @param data
-	 */
-	<T> void add(String queueName, T data);
-
-	/**
-	 * Add items if they are not already present in the queue.
-	 * 
-	 * @param queueName
-	 * @param data
-	 */
-	<T> void add(String queueName, Collection<T> data);
-
-	<T> void remove(String queueName, Collection<T> data);
-
-	/**
-	 * Blocking call (while true) on a queue.
-	 * 
-	 * @param queueName
-	 * @param callback
-	 */
-	public <T> void registrer(String queueName, Callback<T> callback);
+public class Runner {
 
 	@FunctionalInterface
-	public static interface Callback<T> {
-
-		/**
-		 * Return true if this has to stop
-		 * 
-		 * @param message
-		 * @return
-		 */
-		boolean onMessage(T message);
+	public static interface Action {
+		public void on(ServiceInstance i);
 	}
+
+	public static void runOnAllInstaces(DiscoveryClient discoveryClient, String serviceId, Action action) {
+		List<ServiceInstance> instances = discoveryClient.getInstances(serviceId);
+		instances.forEach(i -> {
+			action.on(i);
+		});
+	}
+
 }

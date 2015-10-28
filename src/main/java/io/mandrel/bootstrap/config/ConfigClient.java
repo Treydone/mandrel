@@ -5,6 +5,7 @@ import java.util.stream.IntStream;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.EnumerablePropertySource;
@@ -14,13 +15,14 @@ import com.google.common.collect.Maps;
 
 @Configuration
 @EnableAutoConfiguration
+@EnableEurekaClient
 public class ConfigClient {
 
 	public static void main(String[] args) {
 		Map<String, Object> properties = Maps.newHashMap();
 		properties.put("spring.config.location", "classpath:/version.yml");
 
-		ConfigurableApplicationContext context = new SpringApplicationBuilder(ConfigClient.class).properties(properties).run(args);
+		ConfigurableApplicationContext context = new SpringApplicationBuilder(ConfigClient.class).web(false).properties(properties).run(args);
 
 		MutablePropertySources propertySources = context.getEnvironment().getPropertySources();
 		propertySources.forEach(ps -> {

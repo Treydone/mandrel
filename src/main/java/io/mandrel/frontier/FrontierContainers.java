@@ -19,6 +19,7 @@
 package io.mandrel.frontier;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ public class FrontierContainers {
 
 	private final static Map<Long, FrontierContainer> frontierContainers = new HashMap<>();
 
-	public static Iterable<FrontierContainer> list() {
+	public static List<FrontierContainer> list() {
 		return ImmutableList.copyOf(frontierContainers.values());
 	}
 

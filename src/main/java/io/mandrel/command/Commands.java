@@ -34,22 +34,9 @@ import java.util.List;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 
 public class Commands {
-
-	@FunctionalInterface
-	public static interface Action {
-		public void on(ServiceInstance i);
-	}
-
-	public static void runOnAllInstaces(DiscoveryClient discoveryClient, String serviceId, Action action) {
-		List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.FRONTIER);
-		instances.forEach(i -> {
-			action.on(i);
-		});
-	}
 
 	@FunctionalInterface
 	public interface Command {
@@ -123,12 +110,12 @@ public class Commands {
 
 		@Override
 		public void apply() {
-			runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.create(spider, i.getUri()));
+			Runner.runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.create(spider, i.getUri()));
 		}
 
 		@Override
 		public void undo() {
-			runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.kill(spider.getId(), i.getUri()));
+			Runner.runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.kill(spider.getId(), i.getUri()));
 		}
 	}
 
@@ -142,12 +129,12 @@ public class Commands {
 
 		@Override
 		public void apply() {
-			runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.start(spider.getId(), i.getUri()));
+			Runner.runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.start(spider.getId(), i.getUri()));
 		}
 
 		@Override
 		public void undo() {
-			runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.kill(spider.getId(), i.getUri()));
+			Runner.runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.kill(spider.getId(), i.getUri()));
 		}
 	}
 
@@ -161,7 +148,7 @@ public class Commands {
 
 		@Override
 		public void apply() {
-			runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.kill(spider.getId(), i.getUri()));
+			Runner.runOnAllInstaces(discoveryClient, ServiceIds.FRONTIER, (i) -> frontierClient.kill(spider.getId(), i.getUri()));
 		}
 	}
 
@@ -175,12 +162,12 @@ public class Commands {
 
 		@Override
 		public void apply() {
-			runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.create(spider, i.getUri()));
+			Runner.runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.create(spider, i.getUri()));
 		}
 
 		@Override
 		public void undo() {
-			runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.kill(spider.getId(), i.getUri()));
+			Runner.runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.kill(spider.getId(), i.getUri()));
 		}
 	}
 
@@ -194,12 +181,12 @@ public class Commands {
 
 		@Override
 		public void apply() {
-			runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.start(spider.getId(), i.getUri()));
+			Runner.runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.start(spider.getId(), i.getUri()));
 		}
 
 		@Override
 		public void undo() {
-			runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.kill(spider.getId(), i.getUri()));
+			Runner.runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.kill(spider.getId(), i.getUri()));
 		}
 	}
 
@@ -213,7 +200,7 @@ public class Commands {
 
 		@Override
 		public void apply() {
-			runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.kill(spider.getId(), i.getUri()));
+			Runner.runOnAllInstaces(discoveryClient, ServiceIds.WORKER, (i) -> workerClient.kill(spider.getId(), i.getUri()));
 		}
 	}
 

@@ -25,24 +25,30 @@ import io.mandrel.monitor.SigarService;
 
 import javax.inject.Inject;
 
-import org.springframework.web.bind.annotation.RestController;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.netflix.servo.util.Throwables;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 
 @Slf4j
 @RestController
+@Api("/node")
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class NodeResource implements NodeContract {
 
 	private final SigarService sigarService;
+	private final DiscoveryClient discoveryClient;
 
+	@ApiOperation(value = "Return the current node", response = Node.class)
 	public Node dhis() {
 		try {
 			Infos infos = sigarService.infos();
-			return new Node().infos(infos);
+			return new Node().infos(infos).uri(discoveryClient.getLocalServiceInstance().getUri());
 		} catch (Exception e) {
 			log.warn("Can not set the infos for the endpoint", e);
 			throw Throwables.propagate(e);

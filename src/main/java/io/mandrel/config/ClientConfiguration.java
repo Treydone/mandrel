@@ -18,7 +18,7 @@
  */
 package io.mandrel.config;
 
-import io.mandrel.controller.ControllerClient;
+import io.mandrel.controller.AdminClient;
 import io.mandrel.frontier.FrontierClient;
 import io.mandrel.worker.WorkerClient;
 
@@ -109,7 +109,7 @@ public class ClientConfiguration {
 	}
 
 	@Bean
-	public ControllerClient controllerClient() {
-		return feign(ControllerClient.class);
+	public AdminClient controllerClient() {
+		return feign(AdminClient.class);
 	}
 }

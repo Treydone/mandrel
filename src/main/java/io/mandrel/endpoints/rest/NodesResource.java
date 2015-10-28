@@ -22,27 +22,32 @@ import io.mandrel.cluster.node.Node;
 import io.mandrel.cluster.node.NodeService;
 import io.mandrel.endpoints.contracts.NodesContract;
 
+import java.net.URI;
 import java.util.Map;
 
 import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+
+@Api("/nodes")
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class NodesResource implements NodesContract {
 
 	private final NodeService nodeService;
 
-	public Map<String, Node> all() {
+	@ApiOperation(value = "List all the nodes", response = Node.class, responseContainer = "Map")
+	public Map<URI, Node> all() {
 		return nodeService.nodes();
 	}
 
-	public Node id(@PathVariable String id) {
-		return nodeService.node(id);
+	@ApiOperation(value = "Find a node by its id", response = Node.class)
+	public Node id(URI uri) {
+		return nodeService.node(uri);
 	}
-
 }

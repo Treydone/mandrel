@@ -19,6 +19,7 @@
 package io.mandrel.worker;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ public class WorkerContainers {
 
 	private final static Map<Long, WorkerContainer> workerContainers = new HashMap<>();
 
-	public static Iterable<WorkerContainer> list() {
+	public static List<WorkerContainer> list() {
 		return ImmutableList.copyOf(workerContainers.values());
 	}
 

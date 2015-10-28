@@ -42,6 +42,9 @@ public class Spider implements Serializable {
 
 	@JsonProperty("id")
 	private long id;
+	
+	@JsonProperty("version")
+	private long version;
 
 	@JsonProperty("name")
 	private String name;

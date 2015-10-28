@@ -18,8 +18,11 @@
  */
 package io.mandrel.endpoints.rest;
 
-import io.mandrel.controller.ControllerContainers;
-import io.mandrel.endpoints.contracts.ControllerContract;
+import io.mandrel.endpoints.contracts.AdminContract;
+import io.mandrel.timeline.Event;
+import io.mandrel.timeline.TimelineService;
+
+import java.net.URI;
 
 import javax.inject.Inject;
 
@@ -29,25 +32,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class ControllerResource implements ControllerContract {
+public class ControllerResource implements AdminContract {
+
+	private final TimelineService timelineService;
 
 	@Override
-	public Long create(Long id) {
-		return null;
-	}
-
-	@Override
-	public void start(Long id) {
-		ControllerContainers.get(id).ifPresent(c -> c.start());
-	}
-
-	@Override
-	public void pause(Long id) {
-		ControllerContainers.get(id).ifPresent(c -> c.pause());
-	}
-
-	@Override
-	public void kill(Long id) {
-		ControllerContainers.get(id).ifPresent(c -> c.kill());
+	public void add(Event event, URI target) {
+		timelineService.add(event);
 	}
 }
