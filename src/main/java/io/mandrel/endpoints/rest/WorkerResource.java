@@ -39,8 +39,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hazelcast.core.HazelcastInstance;
-
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class WorkerResource implements WorkerContract {
@@ -49,11 +47,10 @@ public class WorkerResource implements WorkerContract {
 	private final MetricsService metricsService;
 	private final FrontierClient frontierClient;
 	private final DiscoveryClient discoveryClient;
-	private final HazelcastInstance instance;
 
 	@Override
 	public void create(Spider spider, URI target) {
-		WorkerContainer container = new WorkerContainer(extractorService, metricsService, spider, frontierClient, discoveryClient, instance);
+		WorkerContainer container = new WorkerContainer(extractorService, metricsService, spider, frontierClient, discoveryClient);
 		container.register();
 	}
 

@@ -21,12 +21,8 @@ package io.mandrel.common.service;
 import io.mandrel.common.data.Spider;
 import lombok.Data;
 
-import com.hazelcast.core.HazelcastInstance;
-
 @Data
 public class TaskContext {
-
-	private HazelcastInstance instance;
 
 	private Spider definition;
 

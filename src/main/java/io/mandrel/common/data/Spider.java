@@ -40,7 +40,7 @@ public class Spider implements Serializable {
 
 	private static final long serialVersionUID = 7577967853566572778L;
 
-	@JsonProperty("id")
+	@JsonProperty("_id")
 	private long id;
 	
 	@JsonProperty("version")

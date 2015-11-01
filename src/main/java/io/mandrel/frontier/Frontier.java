@@ -28,7 +28,7 @@ import io.mandrel.frontier.revisit.RevisitStrategy;
 import io.mandrel.frontier.revisit.SimpleRevisitStrategy;
 import io.mandrel.frontier.store.FrontierStore;
 import io.mandrel.frontier.store.FrontierStore.FrontierStoreDefinition;
-import io.mandrel.frontier.store.InternalFrontierStore.InternalFrontierStoreDefinition;
+import io.mandrel.frontier.store.MongoFrontierStore.MongoFrontierStoreDefinition;
 import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
@@ -64,7 +64,7 @@ public abstract class Frontier extends TaskContextAware implements Checkable {
 		protected RevisitStrategy revisit = new SimpleRevisitStrategy();
 
 		@JsonProperty("store")
-		protected FrontierStoreDefinition<? extends FrontierStore> store = new InternalFrontierStoreDefinition();
+		protected FrontierStoreDefinition<? extends FrontierStore> store = new MongoFrontierStoreDefinition();
 
 		@JsonProperty("due")
 		protected DuplicateUrlEliminatorDefinition duplicateUrlEliminator;

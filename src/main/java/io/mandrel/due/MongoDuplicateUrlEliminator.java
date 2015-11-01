@@ -41,31 +41,28 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 
-public class InternalDuplicateUrlEliminator extends DuplicateUrlEliminator {
+public class MongoDuplicateUrlEliminator extends DuplicateUrlEliminator {
 
 	@Data
 	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
-	public static class HazelcastDuplicateUrlEliminatorDefinition implements DuplicateUrlEliminatorDefinition {
+	public static class MongoDuplicateUrlEliminatorDefinition implements DuplicateUrlEliminatorDefinition {
 
 		private static final long serialVersionUID = -9205125497698919267L;
 
 		@Override
 		public String name() {
-			return "internal";
+			return "mongo";
 		}
 
 		@Override
-		public InternalDuplicateUrlEliminator build(TaskContext context) {
-			return new InternalDuplicateUrlEliminator(context);
+		public MongoDuplicateUrlEliminator build(TaskContext context) {
+			return new MongoDuplicateUrlEliminator(context);
 		}
 	}
 
-	private final HazelcastInstance hazelcastInstance;
-
-	public InternalDuplicateUrlEliminator(TaskContext context) {
+	public MongoDuplicateUrlEliminator(TaskContext context) {
 		super(context);
-		hazelcastInstance = context.getInstance();
 	}
 
 	public void markAsPending(URI uri) {

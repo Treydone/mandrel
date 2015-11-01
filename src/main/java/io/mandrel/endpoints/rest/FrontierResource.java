@@ -44,7 +44,7 @@ public class FrontierResource implements FrontierContract {
 
 	@Override
 	public void create(Spider spider, URI target) {
-		FrontierContainer container = new FrontierContainer(spider, null);
+		FrontierContainer container = new FrontierContainer(spider);
 		container.register();
 	}
 

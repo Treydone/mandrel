@@ -19,9 +19,9 @@
 package io.mandrel.common.data;
 
 import io.mandrel.blob.BlobStore.BlobStoreDefinition;
-import io.mandrel.blob.impl.InternalBlobStore.InternalBlobStoreDefinition;
+import io.mandrel.blob.impl.MongoBlobStore.MongoBlobStoreDefinition;
 import io.mandrel.metadata.MetadataStore.MetadataStoreDefinition;
-import io.mandrel.metadata.impl.InternalMetadataStore.InternalMetadataStoreDefinition;
+import io.mandrel.metadata.impl.MongoMetadataStore.MongoMetadataStoreDefinition;
 
 import java.io.Serializable;
 
@@ -35,8 +35,8 @@ public class StoresDefinition implements Serializable {
 	private static final long serialVersionUID = -6386148207535019331L;
 
 	@JsonProperty("metadata")
-	private MetadataStoreDefinition metadataStore = new InternalMetadataStoreDefinition();
+	private MetadataStoreDefinition metadataStore = new MongoMetadataStoreDefinition();
 
 	@JsonProperty("blob")
-	private BlobStoreDefinition blobStore = new InternalBlobStoreDefinition();
+	private BlobStoreDefinition blobStore = new MongoBlobStoreDefinition();
 }

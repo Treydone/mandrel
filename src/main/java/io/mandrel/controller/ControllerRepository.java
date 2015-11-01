@@ -18,61 +18,23 @@
  */
 package io.mandrel.controller;
 
-import io.mandrel.cluster.idgenerator.IdGenerator;
 import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.State;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
+public interface ControllerRepository {
 
-import lombok.RequiredArgsConstructor;
+	Spider add(Spider spider);
 
-import org.springframework.stereotype.Component;
+	Spider update(Spider spider);
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.ReplicatedMap;
+	void delete(long id);
 
-@Component
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class ControllerRepository {
+	Optional<Spider> get(long id);
 
-	private final IdGenerator idGenerator;
+	Stream<Spider> list();
 
-	private final HazelcastInstance instance;
+	Stream<Spider> listActive();
 
-	public Spider add(Spider spider) {
-		long id = idGenerator.generateId("spiders");
-		spider.setId(id);
-		spiders(instance).put(id, spider);
-		return spider;
-	}
-
-	public Spider update(Spider spider) {
-		spiders(instance).put(spider.getId(), spider);
-		return spider;
-	}
-
-	public void delete(long id) {
-		spiders(instance).remove(id);
-	}
-
-	public Optional<Spider> get(long id) {
-		Spider value = spiders(instance).get(id);
-		return value == null ? Optional.empty() : Optional.of(value);
-	}
-
-	public Stream<Spider> list() {
-		return spiders(instance).values().stream().map(el -> el);
-	}
-
-	public Stream<Spider> listActive() {
-		return list().filter(s -> s.getState().equals(State.STARTED));
-	}
-
-	// ------------------------------ TOOLS
-	static ReplicatedMap<Long, Spider> spiders(HazelcastInstance instance) {
-		return instance.getReplicatedMap("spiders");
-	}
 }

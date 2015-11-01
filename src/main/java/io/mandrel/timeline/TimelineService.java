@@ -18,11 +18,30 @@
  */
 package io.mandrel.timeline;
 
+import io.mandrel.messaging.StompService;
+
 import java.util.List;
 
-public interface TimelineService {
+import javax.inject.Inject;
 
-	void add(Event event);
+import lombok.RequiredArgsConstructor;
 
-	List<Event> page(int from, int size);
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+public class TimelineService {
+
+	private final TimelineRepository timelineRepository;
+
+	private final StompService stompService;
+
+	public void add(Event event) {
+		timelineRepository.add(event);
+		stompService.publish(event);
+	}
+
+	public List<Event> page(int from, int size) {
+		return timelineRepository.page(from, size);
+	}
 }

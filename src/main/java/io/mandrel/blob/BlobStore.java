@@ -25,11 +25,12 @@ import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.service.TaskContextAware;
 import io.mandrel.monitor.health.Checkable;
 
+import java.io.Closeable;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Collection;
 
-public abstract class BlobStore extends TaskContextAware implements Checkable, Initializable {
+public abstract class BlobStore extends TaskContextAware implements Checkable, Initializable, Closeable {
 
 	public BlobStore(TaskContext context) {
 		super(context);
@@ -39,13 +40,11 @@ public abstract class BlobStore extends TaskContextAware implements Checkable, I
 
 	}
 
-	public abstract void putBlob(URI uri, Blob blob);
+	public abstract URI putBlob(URI uri, Blob blob);
 
 	public abstract Blob getBlob(URI uri);
 
 	public abstract void deleteAll();
-
-	// Stream<WebPage> all(long spiderId);
 
 	@FunctionalInterface
 	public static interface Callback {

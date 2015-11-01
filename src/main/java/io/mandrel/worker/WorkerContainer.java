@@ -45,8 +45,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 
-import com.hazelcast.core.HazelcastInstance;
-
 @Data
 @Accessors(chain = true, fluent = true)
 @Slf4j
@@ -58,7 +56,6 @@ public class WorkerContainer implements Container {
 	private final Spider spider;
 	private final FrontierClient frontierClient;
 	private final DiscoveryClient discoveryClient;
-	private final HazelcastInstance instance;
 
 	private ExecutorService executor;
 
@@ -81,7 +78,6 @@ public class WorkerContainer implements Container {
 		// Create context
 		TaskContext context = new TaskContext();
 		context.setDefinition(spider);
-		context.setInstance(instance);
 
 		// Init stores
 		MetadataStore metadatastore = spider.getStores().getMetadataStore().build(context);
@@ -93,7 +89,7 @@ public class WorkerContainer implements Container {
 		BlobStores.add(spider.getId(), blobStore);
 
 		spider.getExtractors().getPages().forEach(ex -> {
-			DocumentStore documentStore = ex.getDocumentStore().build(context);
+			DocumentStore documentStore = ex.getDocumentStore().metadataExtractor(ex).build(context);
 			documentStore.init();
 			DocumentStores.add(spider.getId(), ex.getName(), documentStore);
 		});

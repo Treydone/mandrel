@@ -27,7 +27,6 @@ import io.mandrel.monitor.health.Checkable;
 import java.io.Serializable;
 import java.net.URI;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = false)
@@ -37,7 +36,6 @@ public abstract class FrontierStore extends TaskContextAware implements Checkabl
 		super(context);
 	}
 
-	@Data
 	public static abstract class FrontierStoreDefinition<FRONTIERSTORE extends FrontierStore> implements NamedDefinition, ObjectFactory<FRONTIERSTORE>,
 			Serializable {
 		private static final long serialVersionUID = -8064877296016844646L;

@@ -23,20 +23,36 @@ import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.service.TaskContextAware;
+import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.monitor.health.Checkable;
 
+import java.io.Closeable;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class DocumentStore extends TaskContextAware implements Checkable, Initializable {
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-	public DocumentStore(TaskContext context) {
+public abstract class DocumentStore extends TaskContextAware implements Checkable, Initializable, Closeable {
+
+	protected final MetadataExtractor metadataExtractor;
+
+	public DocumentStore(TaskContext context, MetadataExtractor metadataExtractor) {
 		super(context);
+		this.metadataExtractor = metadataExtractor;
 	}
 
-	public interface DocumentStoreDefinition extends NamedDefinition, ObjectFactory<DocumentStore>, Serializable {
+	public static abstract class DocumentStoreDefinition<DOCUMENTSTORE extends DocumentStore> implements NamedDefinition, ObjectFactory<DOCUMENTSTORE>,
+			Serializable {
+		private static final long serialVersionUID = -9187921401073694191L;
 
+		@JsonIgnore
+		protected MetadataExtractor metadataExtractor;
+
+		public DocumentStoreDefinition<DOCUMENTSTORE> metadataExtractor(MetadataExtractor metadataExtractor) {
+			this.metadataExtractor = metadataExtractor;
+			return this;
+		}
 	}
 
 	public abstract void save(Document document);

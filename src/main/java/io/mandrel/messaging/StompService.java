@@ -44,8 +44,6 @@ import freemarker.template.Template;
 @Slf4j
 public class StompService implements MessageListener<Object> {
 
-	private final HazelcastInstance instance;
-
 	private final SimpMessageSendingOperations messagingTemplate;
 
 	private final freemarker.template.Configuration freeMarkerConfiguration;

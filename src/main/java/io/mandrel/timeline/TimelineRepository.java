@@ -16,33 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.monitor.health;
+package io.mandrel.timeline;
 
-import javax.inject.Inject;
+import java.util.List;
 
-import org.springframework.boot.actuate.health.AbstractHealthIndicator;
-import org.springframework.boot.actuate.health.Health.Builder;
-import org.springframework.stereotype.Component;
+public interface TimelineRepository {
 
-import com.hazelcast.core.HazelcastInstance;
+	void add(Event event);
 
-@Component
-public class HazelcastHealthIndicator extends AbstractHealthIndicator {
-
-	private final HazelcastInstance hazelcastInstance;
-
-	@Inject
-	public HazelcastHealthIndicator(HazelcastInstance hazelcastInstance) {
-		this.hazelcastInstance = hazelcastInstance;
-	}
-
-	@Override
-	protected void doHealthCheck(Builder builder) throws Exception {
-		try {
-			hazelcastInstance.getCluster();
-			builder.up();
-		} catch (Exception e) {
-			builder.down(e);
-		}
-	}
+	List<Event> page(int from, int size);
 }

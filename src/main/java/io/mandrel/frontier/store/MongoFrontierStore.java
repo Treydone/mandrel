@@ -26,38 +26,32 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
-
-public class InternalFrontierStore extends FrontierStore {
+public class MongoFrontierStore extends FrontierStore {
 
 	@Data
 	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
-	public static class InternalFrontierStoreDefinition extends FrontierStoreDefinition<InternalFrontierStore> {
+	public static class MongoFrontierStoreDefinition extends FrontierStoreDefinition<MongoFrontierStore> {
 		private static final long serialVersionUID = -5715057009212205361L;
 
 		@Override
 		public String name() {
-			return "internal";
+			return "mongo";
 		}
 
 		@Override
-		public InternalFrontierStore build(TaskContext context) {
-			return new InternalFrontierStore(context);
+		public MongoFrontierStore build(TaskContext context) {
+			return new MongoFrontierStore(context);
 		}
 	}
 
-	private final HazelcastInstance instance;
-
-	public InternalFrontierStore(TaskContext context) {
+	public MongoFrontierStore(TaskContext context) {
 		super(context);
-		instance = context.getInstance();
 	}
 
 	@Override
 	public Queue<URI> queue(String name) {
-		return new HazelcastQueue<>(instance.getQueue(name));
+		return new MongoQueue<>(instance.getQueue(name));
 	}
 
 	@Override
@@ -76,7 +70,7 @@ public class InternalFrontierStore extends FrontierStore {
 	}
 
 	@Data
-	public static class HazelcastQueue<T> implements Queue<T> {
+	public static class MongoQueue<T> implements Queue<T> {
 
 		private final IQueue<T> raw;
 

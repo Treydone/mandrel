@@ -18,44 +18,34 @@
  */
 package io.mandrel.timeline;
 
-import io.mandrel.messaging.StompService;
-
 import java.util.List;
-
-import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.stereotype.Component;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Repository;
 
-import com.google.common.collect.Lists;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IList;
+import com.google.inject.Inject;
 
-@Component
+@Repository
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class HazelcastTimelineService implements TimelineService {
+public class MongoTimelineRepository implements TimelineRepository {
 
-	private final HazelcastInstance instance;
-
-	private final StompService stompService;
+	private final MongoTemplate mongoTemplate;
 
 	@Override
 	public void add(Event event) {
-		instance.getList("timeline").add(event);
-		stompService.publish(event);
+		mongoTemplate.insert(event, "timeline");
 	}
 
 	@Override
 	public List<Event> page(int from, int size) {
-		IList<Event> timeline = instance.getList("timeline");
-		int total = timeline.size();
-
-		if (from > total) {
-			return null;
-		}
-
-		List<Event> subList = timeline.subList(Math.max(0, total - from - size), total - from);
-		return Lists.reverse(subList);
+		return mongoTemplate.find(new Query().with(new PageRequest(from / size, size)).with(new Sort(new Order(Direction.DESC, "time"))), Event.class,
+				"timeline");
 	}
 }

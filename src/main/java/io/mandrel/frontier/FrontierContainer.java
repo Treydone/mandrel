@@ -27,15 +27,12 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 
-import com.hazelcast.core.HazelcastInstance;
-
 @Data
 @Accessors(chain = true, fluent = true)
 @RequiredArgsConstructor
 public class FrontierContainer implements Container {
 
 	private final Spider spider;
-	private final HazelcastInstance instance;
 
 	private Frontier frontier;
 
@@ -50,7 +47,6 @@ public class FrontierContainer implements Container {
 		// Create context
 		TaskContext context = new TaskContext();
 		context.setDefinition(spider);
-		context.setInstance(instance);
 
 		// Init stores
 		MetadataStores.add(spider.getId(), spider.getStores().getMetadataStore().build(context));
