@@ -97,15 +97,6 @@ public class MongoDuplicateUrlEliminator extends DuplicateUrlEliminator {
 		return null;
 	}
 
-	protected void prepareIfNotDefined(String queue) {
-		if (hazelcastInstance.getConfig().getQueueConfigs().containsKey("pendings-" + context.getSpiderId())) {
-			// Create map of pendings with TTL of 10 secs
-			MapConfig mapConfig = new MapConfig();
-			mapConfig.setName("pendings-" + context.getSpiderId()).setBackupCount(1).setTimeToLiveSeconds(10).setStatisticsEnabled(true);
-			hazelcastInstance.getConfig().addMapConfig(mapConfig);
-		}
-	}
-
 	public Set<URI> deduplicate(Collection<URI> uris) {
 		if (uris != null) {
 			IQueue<URI> queue = hazelcastInstance.getQueue("pendings-" + context.getSpiderId());

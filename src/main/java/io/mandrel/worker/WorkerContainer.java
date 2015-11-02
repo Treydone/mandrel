@@ -71,9 +71,11 @@ public class WorkerContainer implements Container {
 		// spider.getClient().
 
 		// Create loop
-		IntStream.range(0, parallel).forEach(idx -> {
-			executor.submit(new Loop(extractorService, spider, null, discoveryClient, metricsService.spider(spider.getId()), metricsService.global()));
-		});
+		IntStream.range(0, parallel).forEach(
+				idx -> {
+					executor.submit(new Loop(extractorService, spider, null, discoveryClient, metricsService.spiderAccumulator(spider.getId()), metricsService
+							.globalAccumulator()));
+				});
 
 		// Create context
 		TaskContext context = new TaskContext();

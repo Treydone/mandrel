@@ -28,8 +28,8 @@ import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.document.Document;
 import io.mandrel.frontier.FrontierClient;
 import io.mandrel.metadata.MetadataStores;
-import io.mandrel.metrics.GlobalMetrics;
-import io.mandrel.metrics.SpiderMetrics;
+import io.mandrel.metrics.GlobalAccumulator;
+import io.mandrel.metrics.SpiderAccumulator;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.Requesters;
 
@@ -66,8 +66,8 @@ public class Loop implements Runnable {
 	private final FrontierClient frontierClient;
 	private final DiscoveryClient discoveryClient;
 
-	private final SpiderMetrics spiderMetrics;
-	private final GlobalMetrics globalMetrics;
+	private final SpiderAccumulator spiderAccumulator;
+	private final GlobalAccumulator globalAccumulator;
 
 	@Override
 	public void run() {
@@ -95,18 +95,18 @@ public class Loop implements Runnable {
 
 					blob.metadata().fetchMetadata().timeToFetch(watch.getTotalTimeMillis());
 
-					spiderMetrics.incNbPages();
-					globalMetrics.incNbPages();
+					spiderAccumulator.incNbPages();
+					globalAccumulator.incNbPages();
 
-					spiderMetrics.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
-					globalMetrics.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
+					spiderAccumulator.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
+					globalAccumulator.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
 
-					spiderMetrics.incPageForHost(blob.metadata().uri().getHost());
-					globalMetrics.incPageForHost(blob.metadata().uri().getHost());
+					spiderAccumulator.incPageForHost(blob.metadata().uri().getHost());
+					globalAccumulator.incPageForHost(blob.metadata().uri().getHost());
 
-					spiderMetrics.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
-					spiderMetrics.incTotalSize(blob.metadata().size());
-					globalMetrics.incTotalSize(blob.metadata().size());
+					spiderAccumulator.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
+					spiderAccumulator.incTotalSize(blob.metadata().size());
+					globalAccumulator.incTotalSize(blob.metadata().size());
 
 					Map<String, Instance<?>> cachedSelectors = new HashMap<>();
 					if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
@@ -115,7 +115,7 @@ public class Loop implements Runnable {
 							List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, blob, ex);
 
 							if (documents != null) {
-								spiderMetrics.incDocumentForExtractor(ex.getName(), documents.size());
+								spiderAccumulator.incDocumentForExtractor(ex.getName(), documents.size());
 							}
 						});
 						log.trace(">  - Extracting documents for {} done!", uri);
@@ -141,14 +141,14 @@ public class Loop implements Runnable {
 				} catch (Exception t) {
 					// Well...
 					if (t instanceof ConnectTimeoutException) {
-						spiderMetrics.incConnectTimeout();
+						spiderAccumulator.incConnectTimeout();
 						add(spider.getId(), uri);
 					} else if (t instanceof ReadTimeoutException) {
-						spiderMetrics.incReadTimeout();
+						spiderAccumulator.incReadTimeout();
 						add(spider.getId(), uri);
 					} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException
 							|| t instanceof java.util.concurrent.TimeoutException) {
-						spiderMetrics.incConnectException();
+						spiderAccumulator.incConnectException();
 						add(spider.getId(), uri);
 					}
 
