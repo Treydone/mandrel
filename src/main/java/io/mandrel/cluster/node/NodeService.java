@@ -27,6 +27,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -44,38 +45,38 @@ import com.google.common.collect.Lists;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class NodeService {
 
-	private final DiscoveryClient discoveryClient;
-	private final AdminClient adminClient;
+//	private final DiscoveryClient discoveryClient;
+//	private final AdminClient adminClient;
 	private final NodeRepository nodeRepository;
 
 	@PostConstruct
 	public void init() {
-		discoveryClient
-				.getInstances(ServiceIds.CONTROLLER)
-				.stream()
-				.findFirst()
-				.ifPresent(
-						si -> adminClient.add(new NodeEvent().setUri(discoveryClient.getLocalServiceInstance().getUri()).setType(NodeEventType.NODE_STARTED)
-								.setTime(LocalDateTime.now()), si.getUri()));
+//		discoveryClient
+//				.getInstances(ServiceIds.CONTROLLER)
+//				.stream()
+//				.findFirst()
+//				.ifPresent(
+//						si -> adminClient.add(new NodeEvent().setUri(discoveryClient.getLocalServiceInstance().getUri()).setType(NodeEventType.NODE_STARTED)
+//								.setTime(LocalDateTime.now()), si.getUri()));
 	}
 
 	@PreDestroy
 	public void destroy() {
-		discoveryClient
-				.getInstances(ServiceIds.CONTROLLER)
-				.stream()
-				.findFirst()
-				.ifPresent(
-						si -> adminClient.add(new NodeEvent().setUri(discoveryClient.getLocalServiceInstance().getUri()).setType(NodeEventType.NODE_STOPPED)
-								.setTime(LocalDateTime.now()), si.getUri()));
+//		discoveryClient
+//				.getInstances(ServiceIds.CONTROLLER)
+//				.stream()
+//				.findFirst()
+//				.ifPresent(
+//						si -> adminClient.add(new NodeEvent().setUri(discoveryClient.getLocalServiceInstance().getUri()).setType(NodeEventType.NODE_STOPPED)
+//								.setTime(LocalDateTime.now()), si.getUri()));
 	}
 
 	public Map<URI, Node> nodes() {
 		return nodeRepository.findAll().stream().collect(Collectors.toMap(node -> node.uri(), node -> node));
 	}
 
-	public Node node(URI uri) {
-		return nodeRepository.findOne(uri);
+	public Optional<Node> node(URI uri) {
+		return nodeRepository.get(uri);
 	}
 
 	public Map<URI, Node> nodes(Collection<URI> uris) {

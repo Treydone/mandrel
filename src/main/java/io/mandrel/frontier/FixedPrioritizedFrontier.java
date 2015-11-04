@@ -65,15 +65,10 @@ public class FixedPrioritizedFrontier extends Frontier {
 		}
 	}
 
-	public FixedPrioritizedFrontier(TaskContext context) {
-		super(context);
-	}
-
 	private List<Priority> priorities = new ArrayList<Priority>();
 
-	@Override
-	public void create() {
-
+	public FixedPrioritizedFrontier(TaskContext context) {
+		super(context);
 		// Add default if not present
 		if (priorities.stream().noneMatch(p -> p.defaultPriority())) {
 			priorities.add(Priority.of(new BooleanLinkFilters.TrueFilter(), true));
@@ -81,15 +76,18 @@ public class FixedPrioritizedFrontier extends Frontier {
 
 		IntStream.range(0, priorities.size()).forEach(idx -> {
 			priorities.get(idx).level(idx);
-		});
+
+			// Create queue in store
+				store().create("queue-" + idx);
+			});
 	}
 
 	@Override
 	public URI pool() {
 		for (Priority p : priorities) {
-			URI uri = queue(p).pool();
+			URI uri = create(p).pool();
 			if (uri != null) {
-				duplicateUrlEliminator().markAsPending(uri);
+				// duplicateUrlEliminator().markAsPending(uri);
 				return uri;
 			}
 		}
@@ -98,7 +96,7 @@ public class FixedPrioritizedFrontier extends Frontier {
 
 	@Override
 	public void schedule(URI uri) {
-		priorities.stream().filter(p -> p.filter().isValid(new Link().uri(uri))).findFirst().ifPresent(p -> queue(p));
+		priorities.stream().filter(p -> p.filter().isValid(new Link().uri(uri))).findFirst().ifPresent(p -> create(p));
 	}
 
 	@Override
@@ -106,19 +104,19 @@ public class FixedPrioritizedFrontier extends Frontier {
 		uris.forEach(uri -> schedule(uri));
 	}
 
-	private Queue<URI> queue(Priority p) {
-		return store().queue("queue-" + p.level());
+	private Queue<URI> create(Priority p) {
+		return store().create("queue-" + p.level());
 	}
 
 	@Override
 	public void finished(URI uri) {
-		duplicateUrlEliminator().removePending(uri);
+		// duplicateUrlEliminator().removePending(uri);
 		store().finish(uri);
 	}
 
 	@Override
 	public void delete(URI uri) {
-		duplicateUrlEliminator().removePending(uri);
+		// duplicateUrlEliminator().removePending(uri);
 		store().delete(uri);
 	}
 

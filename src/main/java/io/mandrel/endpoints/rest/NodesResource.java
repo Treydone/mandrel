@@ -24,6 +24,7 @@ import io.mandrel.endpoints.contracts.NodesContract;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -42,12 +43,12 @@ public class NodesResource implements NodesContract {
 	private final NodeService nodeService;
 
 	@ApiOperation(value = "List all the nodes", response = Node.class, responseContainer = "Map")
-	public Map<URI, Node> all() {
+	public Map<URI, Node> all(URI target) {
 		return nodeService.nodes();
 	}
 
 	@ApiOperation(value = "Find a node by its id", response = Node.class)
-	public Node id(URI uri) {
+	public Optional<Node> id(URI uri, URI target) {
 		return nodeService.node(uri);
 	}
 }

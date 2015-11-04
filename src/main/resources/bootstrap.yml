@@ -9,16 +9,20 @@ spring:
       failFast: true
       username: mandrel
       password: M@ndR3L
-
-eureka:
-  client:
-    healthcheck:
+    zookeeper:
       enabled: true
-    serviceUrl:
+      connectString: localhost:2181
+      discovery:
+        enabled: true
+#eureka:
+#  client:
+#    healthcheck:
+#      enabled: true
+#    serviceUrl:
 #      defaultZone: http://mandrel:MAndR3L@localhost:8900/eureka/
-      defaultZone: http://localhost:8900/eureka/
-  instance:
-    hostname: localhost
-    instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
-    statusPageUrlPath: ${management.context-path}/info
-    healthCheckUrlPath: ${management.context-path}/health
+#      defaultZone: http://localhost:8900/eureka/
+#  instance:
+#    hostname: localhost
+#    instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+#    statusPageUrlPath: ${management.context-path}/info
+#    healthCheckUrlPath: ${management.context-path}/health

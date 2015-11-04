@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.config;
+package io.mandrel.common.client;
 
 import io.mandrel.controller.AdminClient;
 import io.mandrel.frontier.FrontierClient;
@@ -24,9 +24,16 @@ import io.mandrel.worker.WorkerClient;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
+import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
+import org.springframework.cloud.netflix.feign.support.SpringDecoder;
+import org.springframework.cloud.netflix.feign.support.SpringEncoder;
+import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
+import org.springframework.stereotype.Component;
 
 import feign.Client;
 import feign.Client.Default;
@@ -40,21 +47,29 @@ import feign.Target.EmptyTarget;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
+import feign.slf4j.Slf4jLogger;
 
-@Configuration
-public class ClientConfiguration {
-
-	@Autowired
-	private Decoder decoder;
+@Component
+public class Clients {
 
 	@Autowired
-	private Encoder encoder;
+	private ObjectFactory<HttpMessageConverters> messageConverters;
 
-	@Autowired
-	private Logger logger;
+	public Decoder feignDecoder() {
+		return new ResponseEntityDecoder(new SpringDecoder(messageConverters));
+	}
 
-	@Autowired
-	private Contract contract;
+	public Encoder feignEncoder() {
+		return new SpringEncoder(messageConverters);
+	}
+
+	public Logger feignLogger() {
+		return new Slf4jLogger();
+	}
+
+	public Contract feignContract() {
+		return new SpringMvcContract();
+	}
 
 	@Autowired(required = false)
 	private Logger.Level logLevel;
@@ -76,7 +91,7 @@ public class ClientConfiguration {
 	protected <T> T feign(Class<T> clazz) {
 		Feign.Builder builder = Feign.builder()
 		// required values
-				.logger(this.logger).encoder(this.encoder).decoder(this.decoder).contract(this.contract).client(this.client);
+				.logger(this.feignLogger()).encoder(this.feignEncoder()).decoder(this.feignDecoder()).contract(this.feignContract()).client(this.client);
 
 		// optional values
 		if (this.logLevel != null) {
@@ -98,18 +113,26 @@ public class ClientConfiguration {
 		return builder.target(EmptyTarget.create(clazz));
 	}
 
-	@Bean
+	private WorkerClient worker;
+	private FrontierClient frontier;
+	private AdminClient admin;
+
+	@PostConstruct
+	public void init() {
+		worker = feign(WorkerClient.class);
+		frontier = feign(FrontierClient.class);
+		admin = feign(AdminClient.class);
+	}
+
 	public WorkerClient workerClient() {
-		return feign(WorkerClient.class);
+		return worker;
 	}
 
-	@Bean
 	public FrontierClient frontierClient() {
-		return feign(FrontierClient.class);
+		return frontier;
 	}
 
-	@Bean
 	public AdminClient controllerClient() {
-		return feign(AdminClient.class);
+		return admin;
 	}
 }

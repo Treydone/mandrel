@@ -20,19 +20,21 @@ package io.mandrel.endpoints.contracts;
 
 import io.mandrel.endpoints.rest.Apis;
 
+import java.net.URI;
 import java.util.Map;
 
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@RequestMapping(value = Apis.PREFIX + "/logs", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = Apis.PREFIX + "/logs", produces = MediaType.APPLICATION_JSON_VALUE)
 public interface LogContract {
 
-	@RequestMapping
-	Map<String, String> all();
+	@RequestMapping(method = RequestMethod.GET)
+	Map<String, String> all(@RequestHeader("target") URI target);
 
 	@RequestMapping(method = RequestMethod.POST)
-	void set(@RequestParam String logger, @RequestParam String level);
+	void set(@RequestParam String logger, @RequestParam String level, @RequestHeader("target") URI target);
 }

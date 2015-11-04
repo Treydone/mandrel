@@ -25,4 +25,11 @@ public interface TimelineRepository {
 	void add(Event event);
 
 	List<Event> page(int from, int size);
+
+	void pool(Listener listener);
+
+	interface Listener {
+
+		void on(Event event);
+	}
 }

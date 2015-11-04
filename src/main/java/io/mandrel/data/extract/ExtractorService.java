@@ -41,6 +41,7 @@ import io.mandrel.data.content.selector.UrlSelector;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStores;
 import io.mandrel.io.Payloads;
+import io.mandrel.metadata.MetadataStores;
 import io.mandrel.script.ScriptingService;
 
 import java.net.URI;
@@ -99,8 +100,14 @@ public class ExtractorService {
 			filteredOutlinks = stream.collect(Collectors.toSet());
 		}
 
-		log.trace("And filtering {}", filteredOutlinks);
-		return Pair.of(outlinks, filteredOutlinks);
+		Set<Link> allFilteredOutlinks = null;
+		if (filteredOutlinks != null) {
+			Set<URI> res = MetadataStores.get(spider.getId()).deduplicate(filteredOutlinks.stream().map(l -> l.uri()).collect(Collectors.toList()));
+			allFilteredOutlinks = filteredOutlinks.stream().filter(f -> res.contains(f.uri())).collect(Collectors.toSet());
+		}
+
+		log.trace("And filtering {}", allFilteredOutlinks);
+		return Pair.of(outlinks, allFilteredOutlinks);
 	}
 
 	public Set<Link> extractOutlinks(Map<String, Instance<?>> cachedSelectors, Blob blob, OutlinkExtractor extractor) {

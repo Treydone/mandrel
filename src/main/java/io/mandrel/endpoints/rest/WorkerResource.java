@@ -18,10 +18,10 @@
  */
 package io.mandrel.endpoints.rest;
 
+import io.mandrel.common.client.Clients;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.endpoints.contracts.WorkerContract;
-import io.mandrel.frontier.FrontierClient;
 import io.mandrel.metrics.MetricsService;
 import io.mandrel.worker.WorkerContainer;
 import io.mandrel.worker.WorkerContainers;
@@ -45,12 +45,12 @@ public class WorkerResource implements WorkerContract {
 
 	private final ExtractorService extractorService;
 	private final MetricsService metricsService;
-	private final FrontierClient frontierClient;
+	private final Clients clients;
 	private final DiscoveryClient discoveryClient;
 
 	@Override
 	public void create(Spider spider, URI target) {
-		WorkerContainer container = new WorkerContainer(extractorService, metricsService, spider, frontierClient, discoveryClient);
+		WorkerContainer container = new WorkerContainer(extractorService, metricsService, spider, clients, discoveryClient);
 		container.register();
 	}
 

@@ -21,6 +21,7 @@ package io.mandrel.frontier;
 import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
+import io.mandrel.frontier.store.Queue;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -54,28 +55,26 @@ public class SimpleFrontier extends Frontier {
 		}
 	}
 
+	private final Queue<URI> queue;
+
 	public SimpleFrontier(TaskContext context) {
 		super(context);
-	}
-
-	@Override
-	public void create() {
-		store().create(DEFAULT_QUEUE);
+		queue = store().create(DEFAULT_QUEUE);
 	}
 
 	@Override
 	public URI pool() {
-		return store().queue(DEFAULT_QUEUE).pool();
+		return queue.pool();
 	}
 
 	@Override
 	public void schedule(URI uri) {
-		store().queue(DEFAULT_QUEUE).schedule(uri);
+		queue.schedule(uri);
 	}
 
 	@Override
 	public void schedule(Set<URI> uris) {
-		uris.forEach(uri -> schedule(uri));
+		queue.schedule(uris);
 	}
 
 	@Override

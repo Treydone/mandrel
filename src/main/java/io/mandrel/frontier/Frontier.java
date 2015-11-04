@@ -22,8 +22,6 @@ import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.service.TaskContextAware;
-import io.mandrel.due.DuplicateUrlEliminator;
-import io.mandrel.due.DuplicateUrlEliminator.DuplicateUrlEliminatorDefinition;
 import io.mandrel.frontier.revisit.RevisitStrategy;
 import io.mandrel.frontier.revisit.SimpleRevisitStrategy;
 import io.mandrel.frontier.store.FrontierStore;
@@ -66,11 +64,8 @@ public abstract class Frontier extends TaskContextAware implements Checkable {
 		@JsonProperty("store")
 		protected FrontierStoreDefinition<? extends FrontierStore> store = new MongoFrontierStoreDefinition();
 
-		@JsonProperty("due")
-		protected DuplicateUrlEliminatorDefinition duplicateUrlEliminator;
-
 		public FRONTIER build(FRONTIER frontier, TaskContext context) {
-			frontier.duplicateUrlEliminator(duplicateUrlEliminator.build(context)).store(store.build(context)).politeness(politeness).revisit(revisit);
+			frontier.store(store.build(context)).politeness(politeness).revisit(revisit);
 			return frontier;
 		}
 	}
@@ -78,14 +73,11 @@ public abstract class Frontier extends TaskContextAware implements Checkable {
 	protected Politeness politeness;
 	protected RevisitStrategy revisit;
 	protected FrontierStore store;
-	protected DuplicateUrlEliminator duplicateUrlEliminator;
-
-	public abstract void create();
 
 	public abstract URI pool();
 
 	public abstract void schedule(URI uri);
-	
+
 	public abstract void schedule(Set<URI> uris);
 
 	public abstract void finished(URI uri);

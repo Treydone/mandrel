@@ -16,13 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.controller;
+package io.mandrel.controller.impl;
 
 import io.mandrel.cluster.idgenerator.IdGenerator;
 import io.mandrel.cluster.idgenerator.MongoIdGenerator;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.State;
+import io.mandrel.controller.ControllerRepository;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -34,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import org.bson.Document;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,6 +47,7 @@ import com.netflix.servo.util.Throwables;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
+@ConditionalOnProperty(value = "engine.mongodb.enabled", matchIfMissing = true)
 public class MongoControllerRepository implements ControllerRepository {
 
 	private final IdGenerator idGenerator = new MongoIdGenerator();
@@ -57,7 +61,7 @@ public class MongoControllerRepository implements ControllerRepository {
 		collection = client.getDatabase("default").getCollection("spiders");
 	}
 
-	@SneakyThrows
+	@SneakyThrows(IOException.class)
 	public Spider add(Spider spider) {
 		long id = idGenerator.generateId("spiders");
 		spider.setId(id);
@@ -65,7 +69,7 @@ public class MongoControllerRepository implements ControllerRepository {
 		return spider;
 	}
 
-	@SneakyThrows
+	@SneakyThrows(IOException.class)
 	public Spider update(Spider spider) {
 		collection.insertOne(Document.parse(mapper.writeValueAsString(spider)));
 		return spider;
@@ -75,7 +79,7 @@ public class MongoControllerRepository implements ControllerRepository {
 		collection.deleteOne(Filters.eq("_id", id));
 	}
 
-	@SneakyThrows
+	@SneakyThrows(IOException.class)
 	public Optional<Spider> get(long id) {
 		Document doc = collection.find(Filters.eq("_id", id)).first();
 		return doc == null ? Optional.empty() : Optional.of(mapper.readValue(doc.toJson(), Spider.class));

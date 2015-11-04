@@ -21,6 +21,7 @@ package io.mandrel.controller;
 import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.command.Commands;
 import io.mandrel.command.Commands.CommandGroup;
+import io.mandrel.common.client.Clients;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.State;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
@@ -28,11 +29,9 @@ import io.mandrel.data.filters.link.SkipAncorFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
 import io.mandrel.data.source.FixedSource.FixedSourceDefinition;
 import io.mandrel.data.validation.Validators;
-import io.mandrel.frontier.FrontierClient;
 import io.mandrel.timeline.SpiderEvent;
 import io.mandrel.timeline.SpiderEvent.SpiderEventType;
 import io.mandrel.timeline.TimelineService;
-import io.mandrel.worker.WorkerClient;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -63,8 +62,7 @@ public class ControllerService {
 
 	private final ControllerRepository spiderRepository;
 	private final TimelineService timelineService;
-	private final FrontierClient frontierClient;
-	private final WorkerClient workerClient;
+	private final Clients clients;
 	private final DiscoveryClient discoveryClient;
 	private final ScheduledExecutorService scheduledExecutorService;
 
@@ -93,10 +91,10 @@ public class ControllerService {
 	public void sync() {
 		List<Spider> spiders = spiderRepository.listActive().collect(Collectors.toList());
 		discoveryClient.getInstances(ServiceIds.WORKER).forEach(worker -> {
-			workerClient.sync(spiders, worker.getUri());
+			clients.workerClient().sync(spiders, worker.getUri());
 		});
 		discoveryClient.getInstances(ServiceIds.FRONTIER).forEach(worker -> {
-			frontierClient.sync(spiders, worker.getUri());
+			clients.frontierClient().sync(spiders, worker.getUri());
 		});
 	}
 
@@ -182,13 +180,13 @@ public class ControllerService {
 
 					CommandGroup startCommand = Commands.groupOf(
 					// Create the dedicated frontier
-							Commands.prepareFrontier(discoveryClient, frontierClient, spider),
+							Commands.prepareFrontier(discoveryClient, clients.frontierClient(), spider),
 							// Deploy the spider on the workers
-							Commands.prepareWorker(discoveryClient, workerClient, spider),
+							Commands.prepareWorker(discoveryClient, clients.workerClient(), spider),
 							// Start the frontier
-							Commands.startFrontier(discoveryClient, frontierClient, spider),
+							Commands.startFrontier(discoveryClient, clients.frontierClient(), spider),
 							// Start the workers
-							Commands.startWorker(discoveryClient, workerClient, spider));
+							Commands.startWorker(discoveryClient, clients.workerClient(), spider));
 
 					startCommand.apply();
 
@@ -209,9 +207,9 @@ public class ControllerService {
 
 			CommandGroup killCommand = Commands.groupOf(
 			// Kill the workers
-					Commands.killWorker(discoveryClient, workerClient, spider),
+					Commands.killWorker(discoveryClient, clients.workerClient(), spider),
 					// Kill the frontier
-					Commands.killFrontier(discoveryClient, frontierClient, spider));
+					Commands.killFrontier(discoveryClient, clients.frontierClient(), spider));
 
 			killCommand.apply();
 
@@ -231,9 +229,9 @@ public class ControllerService {
 
 			CommandGroup killCommand = Commands.groupOf(
 			// Kill the workers
-					Commands.killWorker(discoveryClient, workerClient, spider),
+					Commands.killWorker(discoveryClient, clients.workerClient(), spider),
 					// Kill the frontier
-					Commands.killFrontier(discoveryClient, frontierClient, spider));
+					Commands.killFrontier(discoveryClient, clients.frontierClient(), spider));
 
 			killCommand.apply();
 

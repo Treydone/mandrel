@@ -41,9 +41,7 @@ public abstract class FrontierStore extends TaskContextAware implements Checkabl
 		private static final long serialVersionUID = -8064877296016844646L;
 	}
 
-	public abstract Queue<URI> queue(String name);
-
-	public abstract void create(String defaultQueue);
+	public abstract Queue<URI> create(String name);
 
 	public abstract void finish(URI uri);
 

@@ -18,6 +18,8 @@
  */
 package io.mandrel.endpoints.rest;
 
+import java.net.URI;
+
 import io.mandrel.cluster.node.Node;
 import io.mandrel.endpoints.contracts.NodeContract;
 import io.mandrel.monitor.Infos;
@@ -45,7 +47,7 @@ public class NodeResource implements NodeContract {
 	private final DiscoveryClient discoveryClient;
 
 	@ApiOperation(value = "Return the current node", response = Node.class)
-	public Node dhis() {
+	public Node dhis(URI target) {
 		try {
 			Infos infos = sigarService.infos();
 			return new Node().infos(infos).uri(discoveryClient.getLocalServiceInstance().getUri());

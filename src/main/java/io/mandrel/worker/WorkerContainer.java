@@ -20,13 +20,13 @@ package io.mandrel.worker;
 
 import io.mandrel.blob.BlobStore;
 import io.mandrel.blob.BlobStores;
+import io.mandrel.common.client.Clients;
 import io.mandrel.common.container.Container;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.document.DocumentStores;
-import io.mandrel.frontier.FrontierClient;
 import io.mandrel.metadata.MetadataStore;
 import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.MetricsService;
@@ -54,7 +54,7 @@ public class WorkerContainer implements Container {
 	private final ExtractorService extractorService;
 	private final MetricsService metricsService;
 	private final Spider spider;
-	private final FrontierClient frontierClient;
+	private final Clients client;
 	private final DiscoveryClient discoveryClient;
 
 	private ExecutorService executor;

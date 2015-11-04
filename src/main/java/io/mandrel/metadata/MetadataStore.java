@@ -28,6 +28,8 @@ import io.mandrel.monitor.health.Checkable;
 import java.io.Closeable;
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Collection;
+import java.util.Set;
 
 public abstract class MetadataStore extends TaskContextAware implements Checkable, Initializable, Closeable {
 
@@ -38,6 +40,8 @@ public abstract class MetadataStore extends TaskContextAware implements Checkabl
 	public interface MetadataStoreDefinition extends NamedDefinition, ObjectFactory<MetadataStore>, Serializable {
 
 	}
+
+	public abstract Set<URI> deduplicate(Collection<URI> uris);
 
 	public abstract void addMetadata(URI uri, FetchMetadata metadata);
 

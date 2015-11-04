@@ -1086,4 +1086,14 @@
 		<artifactId>jdk.tools</artifactId>
 		<license>Oracle</license>
 	</artifact>
+	<artifact>
+		<groupId>com.sun.java</groupId>
+		<artifactId>tools</artifactId>
+		<license>Oracle</license>
+	</artifact>
+	<artifact>
+		<groupId>org.kohsuke.jetbrains</groupId>
+		<artifactId>annotations</artifactId>
+		<license>Unknown</license>
+	</artifact>
 </license-lookup>

@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.boot.autoconfigure.web.ErrorAttributes;
+import org.springframework.boot.autoconfigure.web.ErrorController;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +38,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Controller
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class ErrorsController {
+public class ErrorsController implements ErrorController {
 
 	private final ErrorAttributes errorAttributes;
 
@@ -57,5 +58,10 @@ public class ErrorsController {
 	@RequestMapping("/404/test")
 	public String exemple404() {
 		throw new NotFoundException("This exception have to be shown only for admin!");
+	}
+
+	@Override
+	public String getErrorPath() {
+		return "/error";
 	}
 }

@@ -24,18 +24,24 @@ import io.mandrel.metadata.MetadataStore;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collection;
+import java.util.Set;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 
 import org.bson.Document;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 
 public class MongoMetadataStore extends MetadataStore {
 
@@ -66,6 +72,7 @@ public class MongoMetadataStore extends MetadataStore {
 
 	private final MongoClient mongoClient;
 	private final MongoCollection<org.bson.Document> collection;
+	private final ObjectMapper mapper = new ObjectMapper();
 
 	public MongoMetadataStore(TaskContext context, MongoClient mongoClient, String databaseName, String collectionName) {
 		super(context);
@@ -79,21 +86,28 @@ public class MongoMetadataStore extends MetadataStore {
 	}
 
 	@Override
-	public void addMetadata(URI uri, FetchMetadata webPage) {
-		org.bson.Document document = new org.bson.Document();
+	@SneakyThrows(IOException.class)
+	public void addMetadata(URI uri, FetchMetadata metadata) {
+		String json = mapper.writeValueAsString(metadata);
+		org.bson.Document document = org.bson.Document.parse(json);
+		// TODO HASH?
 		document.append("_id", uri);
-		document.append("statusCode", webPage.statusCode());
-		// TODO
 		collection.insertOne(document);
 	}
 
 	@Override
+	public Set<URI> deduplicate(Collection<URI> uris) {
+		Set<URI> temp = Sets.newHashSet(uris);
+		temp.removeAll(Sets.newHashSet(collection.find(Filters.in("_id", uris)).projection(Projections.include("_id"))
+				.map(doc -> URI.create(doc.getString("_id"))).iterator()));
+		return temp;
+	}
+
+	@Override
+	@SneakyThrows(IOException.class)
 	public FetchMetadata getMetadata(URI uri) {
 		Document doc = collection.find(Filters.eq("_id", uri)).first();
-		FetchMetadata fetchMetadata = new FetchMetadata();
-		fetchMetadata.uri(doc.get("_id", URI.class));
-		fetchMetadata.statusCode(doc.getInteger("statusCode"));
-		// TODO
+		FetchMetadata fetchMetadata = mapper.readValue(doc.toJson(), FetchMetadata.class);
 		return fetchMetadata;
 	}
 
@@ -111,4 +125,5 @@ public class MongoMetadataStore extends MetadataStore {
 	public void close() throws IOException {
 		mongoClient.close();
 	}
+
 }

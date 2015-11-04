@@ -21,12 +21,12 @@ package io.mandrel.worker;
 import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobStores;
 import io.mandrel.cluster.discovery.ServiceIds;
+import io.mandrel.common.client.Clients;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.Link;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.document.Document;
-import io.mandrel.frontier.FrontierClient;
 import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.GlobalAccumulator;
 import io.mandrel.metrics.SpiderAccumulator;
@@ -63,7 +63,7 @@ public class Loop implements Runnable {
 
 	private final ExtractorService extractorService;
 	private final Spider spider;
-	private final FrontierClient frontierClient;
+	private final Clients client;
 	private final DiscoveryClient discoveryClient;
 
 	private final SpiderAccumulator spiderAccumulator;
@@ -162,10 +162,10 @@ public class Loop implements Runnable {
 	}
 
 	public void add(long spiderId, Set<URI> uris) {
-		frontierClient.schedule(spiderId, uris, discoveryClient.getInstances(ServiceIds.FRONTIER).get(0).getUri());
+		client.frontierClient().schedule(spiderId, uris, discoveryClient.getInstances(ServiceIds.FRONTIER).get(0).getUri());
 	}
 
 	public void add(long spiderId, URI uri) {
-		frontierClient.schedule(spiderId, uri, discoveryClient.getInstances(ServiceIds.FRONTIER).get(0).getUri());
+		client.frontierClient().schedule(spiderId, uri, discoveryClient.getInstances(ServiceIds.FRONTIER).get(0).getUri());
 	}
 }

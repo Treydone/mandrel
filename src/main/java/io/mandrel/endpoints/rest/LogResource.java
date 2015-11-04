@@ -20,16 +20,12 @@ package io.mandrel.endpoints.rest;
 
 import io.mandrel.endpoints.contracts.LogContract;
 
+import java.net.URI;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
-import lombok.RequiredArgsConstructor;
-
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import ch.qos.logback.classic.Level;
@@ -40,18 +36,17 @@ import com.wordnik.swagger.annotations.ApiOperation;
 
 @Api("/logs")
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class LogResource implements LogContract {
 
 	@ApiOperation(value = "List the loggers with their level")
-	public Map<String, String> all() {
+	public Map<String, String> all(URI target) {
 		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 		return loggerContext.getLoggerList() != null ? loggerContext.getLoggerList().stream()
 				.collect(Collectors.toMap(l -> l.getName(), l -> l.getLevel().toString())) : null;
 	}
 
 	@ApiOperation(value = "Change the log level")
-	public void set(@RequestParam String logger, @RequestParam String level) {
+	public void set(String logger, String level, URI target) {
 		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 		loggerContext.getLogger(logger).setLevel(Level.toLevel(level.toUpperCase(Locale.ROOT)));
 	}

@@ -18,9 +18,13 @@
  */
 package io.mandrel.frontier.store;
 
+import java.util.Set;
+
 public interface Queue<T> {
 
 	T pool();
 
-	void schedule(T uri);
+	void schedule(T item);
+
+	void schedule(Set<T> items);
 }

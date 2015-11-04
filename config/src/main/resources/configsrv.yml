@@ -10,23 +10,28 @@ spring:
       server:
         native:
           searchLocations: classpath:/repo
+    zookeeper:
+      enabled: true
+      connectString: localhost:2181
+      discovery:
+        enabled: true
 
-eureka:
-  instance:
-    hostname: localhost
-    statusPageUrlPath: ${management.context-path}/info
-    healthCheckUrlPath: ${management.context-path}/health
-  client:
-    registerWithEureka: true
-    fetchRegistry: false
-    serviceUrl:
-      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+#eureka:
+#  instance:
+#    hostname: localhost
+#    statusPageUrlPath: ${management.context-path}/info
+#    healthCheckUrlPath: ${management.context-path}/health
+#  client:
+#    registerWithEureka: true
+#    fetchRegistry: false
+#    serviceUrl:
+#      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
 #      defaultZone: http://mandrel:MAndR3L@${eureka.instance.hostname}:${server.port}/eureka/
-    server:
-      waitTimeInMsWhenSyncEmpty: 0
-  dashboard:
-    enabled: true
-    path: /eureka
+#    server:
+#      waitTimeInMsWhenSyncEmpty: 0
+#  dashboard:
+#    enabled: true
+#    path: /eureka
 
 #security:
 #  user:

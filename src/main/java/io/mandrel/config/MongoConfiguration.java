@@ -16,18 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.cluster.node;
+package io.mandrel.config;
 
-import java.net.URI;
-import java.util.Collection;
-import java.util.Optional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-public interface NodeRepository {
+import com.mongodb.MongoClient;
 
-	Collection<Node> findAll();
+@Configuration
+@ConditionalOnProperty(value = "engine.mongodb.enabled", matchIfMissing = true)
+public class MongoConfiguration {
 
-	Optional<Node> get(URI uri);
-
-	Collection<Node> findAll(Collection<URI> uris);
-
+	@Bean
+	public MongoClient client() {
+		return new MongoClient();
+	}
 }

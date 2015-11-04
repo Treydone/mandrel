@@ -21,7 +21,9 @@ package io.mandrel.timeline;
 import io.mandrel.messaging.StompService;
 
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
@@ -33,15 +35,23 @@ import org.springframework.stereotype.Component;
 public class TimelineService {
 
 	private final TimelineRepository timelineRepository;
-
 	private final StompService stompService;
+	private final ScheduledExecutorService executor;
 
 	public void add(Event event) {
 		timelineRepository.add(event);
-		stompService.publish(event);
 	}
 
 	public List<Event> page(int from, int size) {
 		return timelineRepository.page(from, size);
+	}
+
+	@PostConstruct
+	public void init() {
+		executor.submit(() -> pool());
+	}
+
+	public void pool() {
+		timelineRepository.pool(event -> stompService.publish(event));
 	}
 }

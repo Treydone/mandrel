@@ -32,14 +32,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+// @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class FrontierResource implements FrontierContract {
 
 	@Override
