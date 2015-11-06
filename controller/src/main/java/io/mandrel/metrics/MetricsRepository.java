@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import org.bson.Document;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +41,7 @@ import com.mongodb.client.model.UpdateOptions;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
+@ConditionalOnProperty(value = "engine.mongodb.enabled", matchIfMissing = true)
 public class MetricsRepository {
 
 	private final MongoClient mongoClient;
@@ -49,7 +51,7 @@ public class MetricsRepository {
 
 	@PostConstruct
 	public void init() {
-		counters = mongoClient.getDatabase("default").getCollection("counters");
+		counters = mongoClient.getDatabase("mandrel").getCollection("counters");
 	}
 
 	public void sync(HostAccumulator host) {
@@ -99,12 +101,12 @@ public class MetricsRepository {
 	@SneakyThrows(IOException.class)
 	public GlobalMetrics global() {
 		Document document = counters.find(Filters.eq("_id", "global")).first();
-		return mapper.readValue(document.toJson(), GlobalMetrics.class);
+		return document != null ? mapper.readValue(document.toJson(), GlobalMetrics.class) : new GlobalMetrics();
 	}
 
 	@SneakyThrows(IOException.class)
 	public SpiderMetrics spider(long spiderId) {
 		Document document = counters.find(Filters.eq("_id", spiderId)).first();
-		return mapper.readValue(document.toJson(), SpiderMetrics.class);
+		return document != null ? mapper.readValue(document.toJson(), SpiderMetrics.class) : new SpiderMetrics();
 	}
 }

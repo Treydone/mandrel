@@ -44,12 +44,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.kohsuke.randname.RandomNameGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindException;
@@ -57,14 +56,18 @@ import org.springframework.validation.BindingResult;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ControllerService {
 
-	private final ControllerRepository spiderRepository;
-	private final TimelineService timelineService;
-	private final Clients clients;
-	private final DiscoveryClient discoveryClient;
-	private final ScheduledExecutorService scheduledExecutorService;
+	@Autowired
+	private ControllerRepository spiderRepository;
+	@Autowired
+	private TimelineService timelineService;
+	@Autowired
+	private Clients clients;
+	@Autowired
+	private DiscoveryClient discoveryClient;
+	@Autowired
+	private ScheduledExecutorService scheduledExecutorService;
 
 	private RandomNameGenerator generator = new RandomNameGenerator();
 

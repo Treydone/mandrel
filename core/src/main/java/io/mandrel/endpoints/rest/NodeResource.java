@@ -18,18 +18,16 @@
  */
 package io.mandrel.endpoints.rest;
 
-import java.net.URI;
-
 import io.mandrel.cluster.node.Node;
 import io.mandrel.endpoints.contracts.NodeContract;
 import io.mandrel.monitor.Infos;
 import io.mandrel.monitor.SigarService;
 
-import javax.inject.Inject;
+import java.net.URI;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,11 +38,12 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @Slf4j
 @RestController
 @Api("/node")
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class NodeResource implements NodeContract {
 
-	private final SigarService sigarService;
-	private final DiscoveryClient discoveryClient;
+	@Autowired
+	private SigarService sigarService;
+	@Autowired
+	private DiscoveryClient discoveryClient;
 
 	@ApiOperation(value = "Return the current node", response = Node.class)
 	public Node dhis(URI target) {

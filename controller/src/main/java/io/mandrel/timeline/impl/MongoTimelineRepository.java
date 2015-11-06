@@ -60,7 +60,7 @@ public class MongoTimelineRepository implements TimelineRepository {
 
 	@PostConstruct
 	public void init() {
-		timeline = mongoClient.getDatabase("").getCollection("timeline");
+		timeline = mongoClient.getDatabase("mandrel").getCollection("timeline");
 	}
 
 	@Override

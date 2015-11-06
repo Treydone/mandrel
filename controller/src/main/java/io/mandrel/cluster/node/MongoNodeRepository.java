@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import org.bson.Document;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +42,7 @@ import com.netflix.servo.util.Throwables;
 
 @Repository
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
+@ConditionalOnProperty(value = "engine.mongodb.enabled", matchIfMissing = true)
 public class MongoNodeRepository implements NodeRepository {
 
 	private final MongoClient client;
@@ -50,7 +52,7 @@ public class MongoNodeRepository implements NodeRepository {
 
 	@PostConstruct
 	public void init() {
-		collection = client.getDatabase("default").getCollection("nodes");
+		collection = client.getDatabase("mandrel").getCollection("nodes");
 	}
 
 	@Override

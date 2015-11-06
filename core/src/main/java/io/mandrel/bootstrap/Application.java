@@ -23,15 +23,14 @@ import io.mandrel.endpoints.rest.ApiOriginFilter;
 import io.mandrel.monitor.SigarService;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.jhades.JHades;
 import org.springframework.boot.actuate.system.ApplicationPidFileWriter;
 import org.springframework.boot.actuate.system.EmbeddedServerPortFileWriter;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.ErrorMvcAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.context.embedded.ErrorPage;
@@ -39,12 +38,7 @@ import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.ComponentScan.Filter;
-import org.springframework.context.annotation.FilterType;
 
-@SpringBootApplication(exclude = { ErrorMvcAutoConfiguration.class, MongoAutoConfiguration.class })
-@ComponentScan(basePackages = "io.mandrel", excludeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = {}) })
 @Slf4j
 public abstract class Application extends SpringBootServletInitializer {
 
@@ -72,7 +66,7 @@ public abstract class Application extends SpringBootServletInitializer {
 
 	public void start(String[] args) {
 
-		// Map<String, Object> properties = new HashMap<>();
+		Map<String, Object> properties = new HashMap<>();
 		// properties.put("debug", "true");
 		// properties.put("spring.config.location",
 		// "classpath:/version.yml,classpath:/bootstrap.yml");
@@ -80,9 +74,8 @@ public abstract class Application extends SpringBootServletInitializer {
 		// Print some useful infos about the classpath and others things
 		new JHades().overlappingJarsReport();
 
-		context = new SpringApplicationBuilder(Application.class)
-		// .properties(properties)
-				.listeners(new ApplicationPidFileWriter(), new EmbeddedServerPortFileWriter()).run(args);
+		context = new SpringApplicationBuilder(getClass()).properties(properties).listeners(new ApplicationPidFileWriter(), new EmbeddedServerPortFileWriter())
+				.run(args);
 
 		InfoSettings settings = context.getBean(InfoSettings.class);
 		log.info("{} ({}) started", settings.getArtifact(), settings.getVersion());

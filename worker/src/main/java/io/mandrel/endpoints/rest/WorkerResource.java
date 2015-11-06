@@ -32,21 +32,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
-import lombok.RequiredArgsConstructor;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class WorkerResource implements WorkerContract {
 
-	private final ExtractorService extractorService;
-	private final MetricsService metricsService;
-	private final Clients clients;
-	private final DiscoveryClient discoveryClient;
+	@Autowired
+	private ExtractorService extractorService;
+	@Autowired
+	private MetricsService metricsService;
+	@Autowired
+	private Clients clients;
+	@Autowired
+	private DiscoveryClient discoveryClient;
 
 	@Override
 	public void create(Spider spider, URI target) {

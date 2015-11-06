@@ -24,24 +24,24 @@ import io.mandrel.timeline.NodeEvent.NodeEventType;
 
 import java.time.LocalDateTime;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.inject.Inject;
 
-import lombok.RequiredArgsConstructor;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class EventSyncer {
+public class EventSyncer implements ApplicationListener<ContextStartedEvent> {
 
-	private final DiscoveryClient discoveryClient;
-	private final Clients clients;
+	@Autowired
+	private DiscoveryClient discoveryClient;
+	@Autowired
+	private Clients clients;
 
-	@PostConstruct
-	public void init() {
+	@Override
+	public void onApplicationEvent(ContextStartedEvent event) {
 		discoveryClient
 				.getInstances(ServiceIds.CONTROLLER)
 				.stream()

@@ -18,28 +18,37 @@
  */
 package io.mandrel.cluster.node;
 
+import io.mandrel.cluster.discovery.ServiceIds;
+
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
-import lombok.RequiredArgsConstructor;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 
 @Component
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class NodeService {
 
-	private final NodeRepository nodeRepository;
+	@Autowired
+	private NodeRepository nodeRepository;
+	@Autowired
+	private DiscoveryClient discoveryClient;
 
 	public Map<URI, Node> nodes() {
-		return nodeRepository.findAll().stream().collect(Collectors.toMap(node -> node.uri(), node -> node));
+		List<ServiceInstance> instances = new ArrayList<>();
+		instances.addAll(discoveryClient.getInstances(ServiceIds.CONTROLLER));
+		instances.addAll(discoveryClient.getInstances(ServiceIds.FRONTIER));
+		instances.addAll(discoveryClient.getInstances(ServiceIds.WORKER));
+		return nodes(instances.stream().map(i -> i.getUri()).collect(Collectors.toList()));
 	}
 
 	public Optional<Node> node(URI uri) {

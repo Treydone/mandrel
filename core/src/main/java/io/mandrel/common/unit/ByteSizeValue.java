@@ -266,7 +266,7 @@ public class ByteSizeValue implements Serializable {
 				bytes = 0;
 			} else {
 				// Missing units:
-				throw new MandrelParseException("failed to parse value [{}] as a size in bytes: unit is missing or unrecognized", sValue);
+				bytes = Long.parseLong(lowerSValue.trim());
 			}
 		} catch (NumberFormatException e) {
 			throw new MandrelParseException("failed to parse [{}]", e, sValue);

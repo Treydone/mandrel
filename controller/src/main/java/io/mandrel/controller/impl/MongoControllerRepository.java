@@ -58,7 +58,7 @@ public class MongoControllerRepository implements ControllerRepository {
 
 	@PostConstruct
 	public void init() {
-		collection = client.getDatabase("default").getCollection("spiders");
+		collection = client.getDatabase("mandrel").getCollection("spiders");
 	}
 
 	@SneakyThrows(IOException.class)

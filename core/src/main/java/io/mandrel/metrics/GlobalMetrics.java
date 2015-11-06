@@ -24,8 +24,8 @@ import lombok.Data;
 
 @Data
 public class GlobalMetrics {
-	private Long nbPagesTotal;
-	private Long totalSizeTotal;
+	private Long nbPagesTotal = Long.valueOf(0);
+	private Long totalSizeTotal = Long.valueOf(0);
 	private Map<Integer, Long> statuses;
 	private Map<String, Long> hosts;
 	private Map<String, Long> contentTypes;

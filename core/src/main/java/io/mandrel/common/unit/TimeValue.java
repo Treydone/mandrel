@@ -277,7 +277,7 @@ public class TimeValue {
 				// Allow this special value to be unit-less:
 				millis = 0;
 			} else {
-				throw new MandrelParseException("Failed to parse value [{}] as a time value: unit is missing or unrecognized", sValue);
+				millis = (long) Double.parseDouble(lowerSValue);
 			}
 			return new TimeValue(millis, TimeUnit.MILLISECONDS);
 		} catch (NumberFormatException e) {
@@ -325,7 +325,7 @@ public class TimeValue {
 	public static class TimeValueSerializer extends JsonSerializer<TimeValue> {
 		@Override
 		public void serialize(TimeValue value, JsonGenerator jgen, SerializerProvider serializers) throws IOException, JsonProcessingException {
-			 jgen.writeString(value.toString());
+			jgen.writeString(value.toString());
 		}
 	}
 }
