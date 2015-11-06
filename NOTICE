@@ -17,61 +17,35 @@ under the License.
 
 This project includes:
   AOP alliance under Public Domain
-  Apache Commons BeanUtils under The Apache Software License, Version 2.0
   Apache Commons Codec under The Apache Software License, Version 2.0
-  Apache Commons Pool under The Apache Software License, Version 2.0
-  Apache Groovy under The Apache Software License, Version 2.0
-  Apache HttpAsyncClient under Apache License, Version 2.0
   Apache HttpClient under Apache License, Version 2.0
   Apache HttpCore under Apache License, Version 2.0
-  Apache HttpCore NIO under Apache License, Version 2.0
-  Apache Tika core under The Apache Software License, Version 2.0
   archaius-core under The Apache Software License, Version 2.0
-  ASM Analysis under BSD
-  ASM Core under BSD
-  ASM helper Minidev under The Apache Software License, Version 2.0
-  ASM Tree under BSD
-  ASM Util under BSD
-  AssertJ fluent assertions under Apache License, Version 2.0
-  AssertJ fluent assertions for Guava under Apache License, Version 2.0
-  Asynchronous Http Client under Apache License 2.0
+  assembly under The Apache Software License, Version 2.0
   Bean Validation API under The Apache Software License, Version 2.0
-  Bootstrap under MIT
-  bootstrap-datepicker under Apache-2.0
-  bootstrap-daterangepicker under MIT
-  BSON under The Apache Software License, Version 2.0
-  Chart.js under MIT
+  Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs under Bouncy Castle Licence
+  Bouncy Castle Provider under Bouncy Castle Licence
   ClassMate under The Apache Software License, Version 2.0
-  com.sun.java:tools under Oracle
   Common Annotations 1.2 API under CDDL or GPLv2 with exceptions
   Commons Collections under The Apache Software License, Version 2.0
-  Commons Compiler under New BSD License
   Commons Configuration under The Apache Software License, Version 2.0
-  Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
-  Commons VFS Core under The Apache Software License, Version 2.0
-  Crawler-commons under Apache License, Version 2.0
-  DataTables under MIT
-  Dozer under Apache 2
+  Controller under The Apache Software License, Version 2.0
+  Core under The Apache Software License, Version 2.0
+  Curator Client under The Apache Software License, Version 2.0
+  Curator Framework under The Apache Software License, Version 2.0
+  Curator Recipes under The Apache Software License, Version 2.0
+  Curator Service Discovery under The Apache Software License, Version 2.0
+  Data Mapper for Jackson under The Apache Software License, Version 2.0
   Expression Language 3.0 under CDDL + GPLv2 with classpath exception
-  FastClick under MIT
-  feign-core under The Apache Software License, Version 2.0
-  feign-ribbon under The Apache Software License, Version 2.0
-  feign-slf4j under The Apache Software License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
-  Font Awesome under CC BY 3.0
-  FreeMarker under Apache License, Version 2.0
-  Graphite Integration for Metrics under Apache License 2.0
+  Frontier under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
-  Hamcrest Core under New BSD License
-  Hamcrest library under New BSD License
   Hibernate Validator Engine under Apache License, Version 2.0
   HPPC Collections under The Apache Software License, Version 2.0
-  HyperSQL Database under HSQLDB License, a BSD open source license
   hystrix-core under The Apache Software License, Version 2.0
-  IntelliJ IDEA annotations under Unknown
-  Ionicons under MIT License
+  Jackson under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
@@ -82,67 +56,35 @@ This project includes:
   Jackson-Datatype-JSR310 under The Apache Software License, Version 2.0
   Jackson-module-Afterburner under The Apache Software License, Version 2.0
   jackson-module-jsonSchema under The Apache Software License, Version 2.0
-  Janino under New BSD License
-  Java Native Access under LGPL, version 2.1 or ASL, version 2
-  Java Native Access Platform under LGPL, version 2.1 or ASL, version 2
-  Java Service Wrapper under Tanuki Software license
   Java Servlet API under CDDL + GPLv2 with classpath exception
   Java(TM) API for WebSocket under Common Development and Distribution License or GNU General Public License, Version 2 with the Classpath Exception
-  JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
-  JavaMail API under CDDL/GPLv2+CE
+  JavaEWAH under Apache 2
   javax.inject under The Apache Software License, Version 2.0
   JBoss Logging 3 under Apache License, version 2.0
   JCL 1.1.1 implemented over SLF4J under MIT License
   Jersey Apache HTTP Client 4.x under CDDL 1.1 or GPL2 w/ CPE
   jersey-client under CDDL 1.1 or GPL2 w/ CPE
   jersey-core under CDDL 1.1 or GPL2 w/ CPE
-  Jhades core under The MIT License
+  JGit - Core under Eclipse Distribution License (New BSD License)
   JLine under BSD
   Joda-Time under Apache 2
-  jquery under MIT License
-  jQuery.Sparkline under BSD-3-Clause
-  JSON in Java under The JSON License
-  Json Path under The Apache Software License, Version 2.0
-  JSON Small and Fast Parser under The Apache Software License, Version 2.0
-  JSONassert under The Apache Software License, Version 2.0
-  jsoup under The MIT License
+  JSch under Revised BSD
+  jsr311-api under CDDL License
   JUL to SLF4J bridge under MIT License
-  JUnit under Common Public License Version 1.0
   Log4j Implemented Over SLF4J under Apache Software Licenses
   Logback Classic Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logback Core Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Mandrel under The Apache Software License, Version 2.0
-  Maven SCM API under The Apache Software License, Version 2.0
-  Metrics Core under Apache License 2.0
-  Mockito under The MIT License
-  moment under MIT
-  MongoDB Driver under The Apache Software License, Version 2.0
-  MongoDB Java Driver Core under The Apache Software License, Version 2.0
-  Neo4j - Cypher Compiler 2.1 under GNU General Public License, Version 3
   netflix-commons-util under The Apache Software License, Version 2.0
   netflix-statistics under The Apache Software License, Version 2.0
-  Netty under Apache License, Version 2.0
   Netty/Buffer under Apache License, Version 2.0
   Netty/Codec under Apache License, Version 2.0
-  Netty/Codec/DNS under Apache License, Version 2.0
   Netty/Codec/HTTP under Apache License, Version 2.0
   Netty/Common under Apache License, Version 2.0
   Netty/Handler under Apache License, Version 2.0
   Netty/Resolver under Apache License, Version 2.0
-  Netty/Resolver/DNS under Apache License, Version 2.0
   Netty/Transport under Apache License, Version 2.0
   Netty/Transport/Native/Epoll under Apache License, Version 2.0
-  Objenesis under Apache 2
-  opencsv under Apache 2
-  OpenHFT/Java-Lang/lang under The Apache Software License, Version 2.0
-  OpenHFT/Java-Runtime-Compiler under The Apache Software License, Version 2.0
-  OpenHFT/Java-Thread-Affinity/affinity under The Apache Software License, Version 2.0
-  OpenHTF/Chronicle-Queue/chronicle under The Apache Software License, Version 2.0
-  parboiled-core under Apache 2
-  parboiled-java under Apache 2
-  parboiled-scala under Apache 2
-  Plexus Common Utilities under The Apache Software License, Version 2.0
-  Project Lombok under The MIT License
   ribbon under The Apache Software License, Version 2.0
   ribbon-core under The Apache Software License, Version 2.0
   ribbon-httpclient under The Apache Software License, Version 2.0
@@ -152,70 +94,48 @@ This project includes:
   rxnetty under The Apache Software License, Version 2.0
   rxnetty-contexts under The Apache Software License, Version 2.0
   rxnetty-servo under The Apache Software License, Version 2.0
-  Scala Library under BSD-like
   servo-core under The Apache Software License, Version 2.0
   servo-internal under The Apache Software License, Version 2.0
-  SIGAR under Apache License Version 2.0
   SLF4J API Module under MIT License
-  slimScroll under MIT or GPL
-  SnakeYAML under Apache License Version 2.0
-  snappy-java under The Apache Software License, Version 2.0
-  SockJS-client under MIT
-  Spock Framework - Core Module under The Apache Software License, Version 2.0
+  SnakeYAML under Apache License, Version 2.0
   Spring AOP under The Apache Software License, Version 2.0
   Spring Beans under The Apache Software License, Version 2.0
   Spring Boot under Apache License, Version 2.0
   Spring Boot Actuator under Apache License, Version 2.0
   Spring Boot Actuator Starter under Apache License, Version 2.0
   Spring Boot AutoConfigure under Apache License, Version 2.0
-  Spring Boot FreeMarker Starter under Apache License, Version 2.0
-  Spring Boot JDBC Starter under Apache License, Version 2.0
   Spring Boot Logger Starter under Apache License, Version 2.0
-  Spring Boot Mail Starter under Apache License, Version 2.0
   Spring Boot Starter under Apache License, Version 2.0
-  Spring Boot Test Starter under Apache License, Version 2.0
+  Spring Boot Tomcat Starter under Apache License, Version 2.0
   Spring Boot Undertow Starter under Apache License, Version 2.0
+  Spring Boot Validation Starter under Apache License, Version 2.0
   Spring Boot Web Starter under Apache License, Version 2.0
-  Spring Boot WebSocket Starter under Apache License, Version 2.0
   Spring Cloud Commons under Apache License, Version 2.0
   Spring Cloud Config Client under Apache License, Version 2.0
   Spring Cloud Context under Apache License, Version 2.0
   Spring Cloud Netflix Core under Apache License, Version 2.0
   Spring Cloud Starter Zookeeper under Apache License, Version 2.0
+  Spring Cloud Starter Zookeeper Discovery under Apache License, Version 2.0
   Spring Cloud Zookeeper Core under Apache License, Version 2.0
+  Spring Cloud Zookeeper Discovery under Apache License, Version 2.0
   Spring Context under The Apache Software License, Version 2.0
-  Spring Context Support under The Apache Software License, Version 2.0
   Spring Core under The Apache Software License, Version 2.0
-  Spring Data Core under Apache License, Version 2.0
   Spring Expression Language (SpEL) under The Apache Software License, Version 2.0
-  Spring JDBC under The Apache Software License, Version 2.0
-  Spring Messaging under The Apache Software License, Version 2.0
-  Spring TestContext Framework under The Apache Software License, Version 2.0
-  Spring Transaction under The Apache Software License, Version 2.0
   Spring Web under The Apache Software License, Version 2.0
   Spring Web MVC under The Apache Software License, Version 2.0
-  Spring WebSocket under The Apache Software License, Version 2.0
-  spring-cloud-starter under Apache License, Version 2.0
-  spring-cloud-starter-config under Apache License, Version 2.0
-  spring-cloud-starter-feign under Apache License, Version 2.0
-  spring-cloud-starter-ribbon under Apache License, Version 2.0
+  spring-cloud-config-server under Apache License, Version 2.0
   spring-security-crypto under The Apache Software License, Version 2.0
-  stomp-websocket under Apache License 2.0
-  Super CSV Core under Apache License, Version 2.0
-  Super CSV Dozer Extension under Apache License, Version 2.0
-  Super CSV Joda-Time Extension under Apache License, Version 2.0
-  Swagger UI under Apache 2.0
-  swagger-annotations under Apache License 2.0
-  swagger-models under The Apache Software License, Version 2.0
-  swagger-springmvc under The Apache Software License, Version 2.0
-  tomcat-jdbc under Apache License, Version 2.0
-  tomcat-juli under Apache License, Version 2.0
+  spring-security-rsa under Apache 2.0
+  The Netty Project under Apache License, Version 2.0
+  tomcat-embed-core under Apache License, Version 2.0
+  tomcat-embed-el under Apache License, Version 2.0
+  tomcat-embed-logging-juli under Apache License, Version 2.0
+  tomcat-embed-websocket under Apache License, Version 2.0
   Undertow Core under Apache License Version 2.0
   Undertow Servlet under Apache License Version 2.0
   Undertow WebSockets JSR356 implementations under Apache License Version 2.0
-  WordNet Random Name Generator under MIT license
+  Worker under The Apache Software License, Version 2.0
   XNIO API under Public Domain
   XNIO NIO Implementation under Public Domain
-  xsoup under The MIT License
   zookeeper under The Apache Software License, Version 2.0
 

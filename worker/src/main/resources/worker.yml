@@ -1,0 +1,14 @@
+spring:
+  pidfile: worker.pid
+  application:
+    name: worker
+  cloud:
+    zookeeper:
+      enabled: true
+      connectString: localhost:2181
+      discovery:
+        enabled: true
+        root: /mandrel
+                    
+server:
+  port: 8070

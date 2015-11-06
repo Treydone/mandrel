@@ -1,0 +1,14 @@
+spring:
+  pidfile: frontier.pid
+  application:
+    name: frontier
+  cloud:
+    zookeeper:
+      enabled: true
+      connectString: localhost:2181
+      discovery:
+        enabled: true
+        root: /mandrel
+                    
+server:
+  port: 8090

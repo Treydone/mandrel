@@ -3,8 +3,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.mandrel</groupId>
-	<artifactId>mandrel</artifactId>
+	<artifactId>parent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
 	<name>Mandrel</name>
 	<description>The crawler at scale</description>
 
@@ -27,6 +28,14 @@
 		<url>http://github.com/Treydone/mandrel/issues</url>
 	</issueManagement>
 
+	<modules>
+		<module>core</module>
+		<module>frontier</module>
+		<module>worker</module>
+		<module>controller</module>
+		<module>assembly</module>
+	</modules>
+
 	<properties>
 		<!-- General Properties -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -36,7 +45,7 @@
 		<!-- Dependencies -->
 		<spring-boot.version>1.3.0.BUILD-SNAPSHOT</spring-boot.version>
 		<spring-cloud.version>Brixton.BUILD-SNAPSHOT</spring-cloud.version>
-		<spring-cloud-zookeeper>1.0.0.BUILD-SNAPSHOT</spring-cloud-zookeeper>
+		<spring-cloud-zookeper.version>1.0.0.BUILD-SNAPSHOT</spring-cloud-zookeper.version>
 
 		<jackson.version>2.6.0</jackson.version>
 		<netty.version>4.1.0.Beta5</netty.version>
@@ -53,795 +62,514 @@
 		<maven-gpg-plugin.version>1.4</maven-gpg-plugin.version>
 	</properties>
 
-	<dependencies>
-
-		<!-- <dependency> -->
-		<!-- <groupId>redis.clients</groupId> -->
-		<!-- <artifactId>jedis</artifactId> -->
-		<!-- <version>2.5.2</version> -->
-		<!-- </dependency> -->
-		<!-- <dependency> -->
-		<!-- <groupId>org.elasticsearch</groupId> -->
-		<!-- <artifactId>elasticsearch</artifactId> -->
-		<!-- <version>2.0.0-beta2</version> -->
-		<!-- </dependency> -->
-		<!-- <dependency> -->
-		<!-- <groupId>org.apache.jclouds</groupId> -->
-		<!-- <artifactId>jclouds-all</artifactId> -->
-		<!-- <version>1.9.1</version> -->
-		<!-- </dependency> -->
-
-		<dependency>
-			<groupId>javax.inject</groupId>
-			<artifactId>javax.inject</artifactId>
-		</dependency>
-
-		<!-- Commons -->
-		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.6</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-vfs2</artifactId>
-			<version>2.0</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>commons-logging</artifactId>
-					<groupId>commons-logging</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>maven-scm-provider-svnexe</artifactId>
-					<groupId>org.apache.maven.scm</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-pool2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.xerial.snappy</groupId>
-			<artifactId>snappy-java</artifactId>
-			<version>1.1.1.7</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.code.crawler-commons</groupId>
-			<artifactId>crawler-commons</artifactId>
-			<version>0.5</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.kohsuke</groupId>
-			<artifactId>wordnet-random-name</artifactId>
-			<version>1.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.parboiled</groupId>
-			<artifactId>parboiled-java</artifactId>
-			<version>1.1.7</version>
-		</dependency>
-
-		<!-- Jackson -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-guava</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-hppc</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jdk8</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.module</groupId>
-			<artifactId>jackson-module-afterburner</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-joda</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.module</groupId>
-			<artifactId>jackson-module-jsonSchema</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-
-		<!-- Data format -->
-		<dependency>
-			<groupId>org.jsoup</groupId>
-			<artifactId>jsoup</artifactId>
-			<version>1.7.2</version>
-		</dependency>
-		<dependency>
-			<groupId>us.codecraft</groupId>
-			<artifactId>xsoup</artifactId>
-			<version>0.3.0</version>
-		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>org.apache.tika</groupId> -->
-		<!-- <artifactId>tika-parsers</artifactId> -->
-		<!-- <version>1.8</version> -->
-		<!-- </dependency> -->
-		<dependency>
-			<groupId>net.sf.supercsv</groupId>
-			<artifactId>super-csv</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.supercsv</groupId>
-			<artifactId>super-csv-dozer</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.supercsv</groupId>
-			<artifactId>super-csv-joda</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.jayway.jsonpath</groupId>
-			<artifactId>json-path</artifactId>
-			<version>2.0.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>javax.el</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-validator</artifactId>
-		</dependency>
-
-		<!-- Http -->
-		<dependency>
-			<groupId>com.ning</groupId>
-			<artifactId>async-http-client</artifactId>
-			<version>1.9.22</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpasyncclient</artifactId>
-			<version>4.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.4.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-resolver-dns</artifactId>
-			<version>${netty.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-codec-dns</artifactId>
-			<version>${netty.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-transport-native-epoll</artifactId>
-			<version>${netty.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.14.8</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-		</dependency>
-
-		<!-- Monitoring -->
-		<dependency>
-			<groupId>org.hyperic</groupId>
-			<artifactId>sigar</artifactId>
-			<version>1.6.5.132</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/sigar/sigar-1.6.5.132.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>com.netflix.servo</groupId>
-			<artifactId>servo-core</artifactId>
-			<version>0.9.4</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.mangofactory</groupId>
-			<artifactId>swagger-springmvc</artifactId>
-			<version>0.9.5</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>servlet-api</artifactId>
-					<groupId>javax.servlet</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>slf4j-log4j12</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.freemarker</groupId>
-			<artifactId>freemarker</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>bootstrap</artifactId>
-			<version>3.3.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>bootstrap-3-datepicker</artifactId>
-			<version>1.4.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>bootstrap-daterangepicker</artifactId>
-			<version>1.3.22</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>font-awesome</artifactId>
-			<version>4.3.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>fastclick</artifactId>
-			<version>1.0.6</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>ionicons</artifactId>
-			<version>2.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>jquery</artifactId>
-			<version>2.1.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>jQuery-slimScroll</artifactId>
-			<version>1.3.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>swagger-ui</artifactId>
-			<version>2.0.24</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>stomp-websocket</artifactId>
-			<version>2.3.1-1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>sockjs-client</artifactId>
-			<version>0.3.4-1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>jquery.sparkline</artifactId>
-			<version>2.1.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>chartjs</artifactId>
-			<version>1.0.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>datatables</artifactId>
-			<version>1.10.7</version>
-		</dependency>
-
-		<dependency>
-			<groupId>net.openhft</groupId>
-			<artifactId>chronicle</artifactId>
-			<version>3.5.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongodb-driver</artifactId>
-			<version>3.1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.zookeeper</groupId>
-			<artifactId>zookeeper</artifactId>
-			<version>3.4.6</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>log4j</artifactId>
-					<groupId>log4j</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>slf4j-log4j12</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<!-- Spring -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>spring-boot-starter-tomcat</artifactId>
-					<groupId>org.springframework.boot</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-undertow</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jdbc</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-mail</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>org.springframework.boot</groupId> -->
-		<!-- <artifactId>spring-boot-starter-mustache</artifactId> -->
-		<!-- </dependency> -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-freemarker</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-commons</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-commons</artifactId>
-		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.springframework.cloud</groupId> -->
-<!-- 			<artifactId>spring-cloud-starter-feign</artifactId> -->
-<!-- 		</dependency> -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-config-server</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-feign</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-ribbon</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-config</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- <dependency> -->
-		<!-- <groupId>org.springframework.data</groupId> -->
-		<!-- <artifactId>spring-yarn-boot</artifactId> -->
-		<!-- <version>2.2.0.RELEASE</version> -->
-		<!-- <exclusions> -->
-		<!-- <exclusion> -->
-		<!-- <artifactId>commons-logging</artifactId> -->
-		<!-- <groupId>commons-logging</groupId> -->
-		<!-- </exclusion> -->
-		<!-- <exclusion> -->
-		<!-- <artifactId>servlet-api</artifactId> -->
-		<!-- <groupId>javax.servlet</groupId> -->
-		<!-- </exclusion> -->
-		<!-- <exclusion> -->
-		<!-- <artifactId>log4j</artifactId> -->
-		<!-- <groupId>log4j</groupId> -->
-		<!-- </exclusion> -->
-		<!-- <exclusion> -->
-		<!-- <artifactId>slf4j-log4j12</artifactId> -->
-		<!-- <groupId>org.slf4j</groupId> -->
-		<!-- </exclusion> -->
-		<!-- <exclusion> -->
-		<!-- <artifactId>spring-data-hadoop-hbase</artifactId> -->
-		<!-- <groupId>org.springframework.data</groupId> -->
-		<!-- </exclusion> -->
-		<!-- <exclusion> -->
-		<!-- <artifactId>spring-data-hadoop-pig</artifactId> -->
-		<!-- <groupId>org.springframework.data</groupId> -->
-		<!-- </exclusion> -->
-		<!-- <exclusion> -->
-		<!-- <artifactId>spring-data-hadoop-hive</artifactId> -->
-		<!-- <groupId>org.springframework.data</groupId> -->
-		<!-- </exclusion> -->
-		<!-- <exclusion> -->
-		<!-- <artifactId>spring-data-hadoop-batch</artifactId> -->
-		<!-- <groupId>org.springframework.data</groupId> -->
-		<!-- </exclusion> -->
-		<!-- </exclusions> -->
-		<!-- </dependency> -->
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-messaging</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-websocket</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- Administration -->
-		<dependency>
-			<groupId>io.dropwizard.metrics</groupId>
-			<artifactId>metrics-core</artifactId>
-		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>io.dropwizard.metrics</groupId> -->
-		<!-- <artifactId>metrics-servlet</artifactId> -->
-		<!-- <version>${dropwizard-metrics.version}</version> -->
-		<!-- </dependency> -->
-		<!-- <dependency> -->
-		<!-- <groupId>io.dropwizard.metrics</groupId> -->
-		<!-- <artifactId>metrics-httpasyncclient</artifactId> -->
-		<!-- <version>${dropwizard-metrics.version}</version> -->
-		<!-- </dependency> -->
-		<!-- <dependency> -->
-		<!-- <groupId>io.dropwizard.metrics</groupId> -->
-		<!-- <artifactId>metrics-logback</artifactId> -->
-		<!-- <version>${dropwizard-metrics.version}</version> -->
-		<!-- </dependency> -->
-		<!-- <dependency> -->
-		<!-- <groupId>io.dropwizard.metrics</groupId> -->
-		<!-- <artifactId>metrics-jvm</artifactId> -->
-		<!-- <version>${dropwizard-metrics.version}</version> -->
-		<!-- </dependency> -->
-		<dependency>
-			<groupId>io.dropwizard.metrics</groupId>
-			<artifactId>metrics-graphite</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.spockframework</groupId>
-			<artifactId>spock-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-guava</artifactId>
-			<version>1.3.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<version>3.0.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.skyscreamer</groupId>
-			<artifactId>jsonassert</artifactId>
-			<version>1.2.3</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.codehaus.janino</groupId>
-			<artifactId>janino</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>tanukisoft</groupId>
-			<artifactId>wrapper</artifactId>
-			<version>3.2.3</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jhades</groupId>
-			<artifactId>jhades</artifactId>
-			<version>1.0.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-library</artifactId>
-			<version>2.10.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j-cypher-compiler-2.1</artifactId>
-			<version>2.1.5</version>
-		</dependency>
-	</dependencies>
-
 	<dependencyManagement>
 		<dependencies>
+
+			<!-- Mandrel -->
 			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring-boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
+				<groupId>io.mandrel</groupId>
+				<artifactId>core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- Commons -->
+			<dependency>
+				<groupId>commons-configuration</groupId>
+				<artifactId>commons-configuration</artifactId>
+				<version>1.8</version>
+				<exclusions>
+					<exclusion>
+						<artifactId>commons-logging</artifactId>
+						<groupId>commons-logging</groupId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-zookeeper</artifactId>
-				<version>${spring-cloud-zookeper.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
+				<groupId>commons-lang</groupId>
+				<artifactId>commons-lang</artifactId>
+				<version>2.6</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-starter-parent</artifactId>
-				<version>${spring-cloud.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
+				<groupId>commons-cli</groupId>
+				<artifactId>commons-cli</artifactId>
+				<version>1.3.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-vfs2</artifactId>
+				<version>2.0</version>
+				<exclusions>
+					<exclusion>
+						<artifactId>commons-logging</artifactId>
+						<groupId>commons-logging</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>maven-scm-provider-svnexe</artifactId>
+						<groupId>org.apache.maven.scm</groupId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>2.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.xerial.snappy</groupId>
+				<artifactId>snappy-java</artifactId>
+				<version>1.1.1.7</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.code.crawler-commons</groupId>
+				<artifactId>crawler-commons</artifactId>
+				<version>0.5</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kohsuke</groupId>
+				<artifactId>wordnet-random-name</artifactId>
+				<version>1.3</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.parboiled</groupId>
+				<artifactId>parboiled-java</artifactId>
+				<version>1.1.7</version>
+			</dependency>
+
+			<!-- Jackson -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-annotations</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.datatype</groupId>
+				<artifactId>jackson-datatype-guava</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.datatype</groupId>
+				<artifactId>jackson-datatype-hppc</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.datatype</groupId>
+				<artifactId>jackson-datatype-jdk8</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.datatype</groupId>
+				<artifactId>jackson-datatype-jsr310</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.module</groupId>
+				<artifactId>jackson-module-afterburner</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.datatype</groupId>
+				<artifactId>jackson-datatype-joda</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.module</groupId>
+				<artifactId>jackson-module-jsonSchema</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+
+			<!-- Data format -->
+			<dependency>
+				<groupId>org.jsoup</groupId>
+				<artifactId>jsoup</artifactId>
+				<version>1.7.2</version>
+			</dependency>
+			<dependency>
+				<groupId>us.codecraft</groupId>
+				<artifactId>xsoup</artifactId>
+				<version>0.3.0</version>
+			</dependency>
+			<dependency>
+				<groupId>net.sf.supercsv</groupId>
+				<artifactId>super-csv</artifactId>
+				<version>2.3.0</version>
+			</dependency>
+			<dependency>
+				<groupId>net.sf.supercsv</groupId>
+				<artifactId>super-csv-dozer</artifactId>
+				<version>2.3.0</version>
+			</dependency>
+			<dependency>
+				<groupId>net.sf.supercsv</groupId>
+				<artifactId>super-csv-joda</artifactId>
+				<version>2.3.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.jayway.jsonpath</groupId>
+				<artifactId>json-path</artifactId>
+				<version>2.0.0</version>
+			</dependency>
+
+			<!-- Http -->
+			<dependency>
+				<groupId>com.ning</groupId>
+				<artifactId>async-http-client</artifactId>
+				<version>1.9.22</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpasyncclient</artifactId>
+				<version>4.1</version>
+				<exclusions>
+					<exclusion>
+						<artifactId>commons-logging</artifactId>
+						<groupId>commons-logging</groupId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>4.4.1</version>
+				<exclusions>
+					<exclusion>
+						<artifactId>commons-logging</artifactId>
+						<groupId>commons-logging</groupId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-resolver-dns</artifactId>
+				<version>${netty.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-codec-dns</artifactId>
+				<version>${netty.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-transport-native-epoll</artifactId>
+				<version>${netty.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>1.14.8</version>
+			</dependency>
+
+			<!-- Monitoring -->
+			<dependency>
+				<groupId>org.hyperic</groupId>
+				<artifactId>sigar</artifactId>
+				<version>1.6.5.132</version>
+				<scope>system</scope>
+				<systemPath>${project.basedir}/../lib/sigar/sigar-1.6.5.132.jar</systemPath>
+			</dependency>
+			<dependency>
+				<groupId>com.netflix.servo</groupId>
+				<artifactId>servo-core</artifactId>
+				<version>0.9.4</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.mangofactory</groupId>
+				<artifactId>swagger-springmvc</artifactId>
+				<version>0.9.5</version>
+				<exclusions>
+					<exclusion>
+						<artifactId>servlet-api</artifactId>
+						<groupId>javax.servlet</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>slf4j-log4j12</artifactId>
+						<groupId>org.slf4j</groupId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>bootstrap</artifactId>
+				<version>3.3.4</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars.bower</groupId>
+				<artifactId>bootstrap-3-datepicker</artifactId>
+				<version>1.4.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars.bower</groupId>
+				<artifactId>bootstrap-daterangepicker</artifactId>
+				<version>1.3.22</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>font-awesome</artifactId>
+				<version>4.3.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>fastclick</artifactId>
+				<version>1.0.6</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>ionicons</artifactId>
+				<version>2.0.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>jquery</artifactId>
+				<version>2.1.4</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>jQuery-slimScroll</artifactId>
+				<version>1.3.3</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>swagger-ui</artifactId>
+				<version>2.0.24</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>stomp-websocket</artifactId>
+				<version>2.3.1-1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>sockjs-client</artifactId>
+				<version>0.3.4-1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>jquery.sparkline</artifactId>
+				<version>2.1.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>chartjs</artifactId>
+				<version>1.0.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>datatables</artifactId>
+				<version>1.10.7</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mongodb</groupId>
+				<artifactId>mongodb-driver</artifactId>
+				<version>3.1.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.zookeeper</groupId>
+				<artifactId>zookeeper</artifactId>
+				<version>3.4.6</version>
+				<exclusions>
+					<exclusion>
+						<artifactId>log4j</artifactId>
+						<groupId>log4j</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>slf4j-log4j12</artifactId>
+						<groupId>org.slf4j</groupId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+			<dependency>
+				<groupId>org.assertj</groupId>
+				<artifactId>assertj-guava</artifactId>
+				<version>1.3.1</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.assertj</groupId>
+				<artifactId>assertj-core</artifactId>
+				<version>3.0.0</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.skyscreamer</groupId>
+				<artifactId>jsonassert</artifactId>
+				<version>1.2.3</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>tanukisoft</groupId>
+				<artifactId>wrapper</artifactId>
+				<version>3.2.3</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.jhades</groupId>
+				<artifactId>jhades</artifactId>
+				<version>1.0.4</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
 	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
-			</resource>
-		</resources>
+		<pluginManagement>
+			<plugins>
 
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>1.3.1</version>
-				<executions>
-					<execution>
-						<id>enforce-versions</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<phase>package</phase>
-						<configuration>
-							<rules>
-								<bannedDependencies>
-									<searchTransitive>true</searchTransitive>
-									<excludes>
-										<exclude>javax.servlet:servlet-api</exclude>
-										<exclude>javassist:javassist</exclude>
-										<exclude>commons-logging</exclude>
-										<exclude>aspectj:aspectj*</exclude>
-										<exclude>log4j:log4j</exclude>
-										<exclude>org.slf4j:1.5*</exclude>
-										<exclude>org.springframework:2.*</exclude>
-										<exclude>org.springframework:3.0.*</exclude>
-									</excludes>
-								</bannedDependencies>
-							</rules>
-							<fail>true</fail>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>1.3.1</version>
+					<executions>
+						<execution>
+							<id>enforce-versions</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+							<phase>package</phase>
+							<configuration>
+								<rules>
+									<bannedDependencies>
+										<searchTransitive>true</searchTransitive>
+										<excludes>
+											<exclude>javax.servlet:servlet-api</exclude>
+											<exclude>javassist:javassist</exclude>
+											<exclude>commons-logging</exclude>
+											<exclude>aspectj:aspectj*</exclude>
+											<exclude>log4j:log4j</exclude>
+											<exclude>org.slf4j:1.5*</exclude>
+											<exclude>org.springframework:2.*</exclude>
+											<exclude>org.springframework:3.0.*</exclude>
+										</excludes>
+									</bannedDependencies>
+								</rules>
+								<fail>true</fail>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
 
-			<plugin>
-				<groupId>pl.project13.maven</groupId>
-				<artifactId>git-commit-id-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>revision</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<verbose>true</verbose>
-					<dateFormat>yyyy-MM-dd'T'HH:mm:ssZ</dateFormat>
-					<dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.7</version>
-				<executions>
-					<execution>
-						<id>generate-resources</id>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/generated-resources/conf</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/resources</directory>
-									<filtering>true</filtering>
-									<includes>
-										<include>*.yml</include>
-										<include>*.xml</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+					</configuration>
+				</plugin>
 
-			<!-- <plugin> -->
-			<!-- <groupId>de.thetaphi</groupId> -->
-			<!-- <artifactId>forbiddenapis</artifactId> -->
-			<!-- <version>1.8</version> -->
-			<!-- <executions> -->
-			<!-- <execution> -->
-			<!-- <id>check-forbidden-apis</id> -->
-			<!-- <configuration> -->
-			<!-- <targetVersion>${java.version}</targetVersion> -->
-			<!-- <internalRuntimeForbidden>true</internalRuntimeForbidden> -->
-			<!-- <failOnUnsupportedJava>false</failOnUnsupportedJava> -->
-			<!-- <bundledSignatures> -->
-			<!-- <bundledSignature>jdk-unsafe</bundledSignature> -->
-			<!-- <bundledSignature>jdk-deprecated</bundledSignature> -->
-			<!-- <bundledSignature>jdk-system-out</bundledSignature> -->
-			<!-- </bundledSignatures> -->
-			<!-- <signaturesFiles> -->
-			<!-- <signaturesFile>${mandrel.tools.directory}/forbidden/core-signatures.txt</signaturesFile> -->
-			<!-- <signaturesFile>${mandrel.tools.directory}/forbidden/all-signatures.txt</signaturesFile> -->
-			<!-- <signaturesFile>${mandrel.tools.directory}/forbidden/third-party-${mandrel.thirdparty.config}-signatures.txt</signaturesFile> -->
-			<!-- </signaturesFiles> -->
-			<!-- <signatures>${forbidden.signatures}</signatures> -->
-			<!-- <suppressAnnotations> -->
-			<!-- <annotation>**.SuppressForbidden</annotation> -->
-			<!-- </suppressAnnotations> -->
-			<!-- </configuration> -->
-			<!-- <phase>compile</phase> -->
-			<!-- <goals> -->
-			<!-- <goal>check</goal> -->
-			<!-- </goals> -->
-			<!-- </execution> -->
-			<!-- </executions> -->
-			<!-- </plugin> -->
+				<!-- <plugin> -->
+				<!-- <groupId>de.thetaphi</groupId> -->
+				<!-- <artifactId>forbiddenapis</artifactId> -->
+				<!-- <version>1.8</version> -->
+				<!-- <executions> -->
+				<!-- <execution> -->
+				<!-- <id>check-forbidden-apis</id> -->
+				<!-- <configuration> -->
+				<!-- <targetVersion>${java.version}</targetVersion> -->
+				<!-- <internalRuntimeForbidden>true</internalRuntimeForbidden> -->
+				<!-- <failOnUnsupportedJava>false</failOnUnsupportedJava> -->
+				<!-- <bundledSignatures> -->
+				<!-- <bundledSignature>jdk-unsafe</bundledSignature> -->
+				<!-- <bundledSignature>jdk-deprecated</bundledSignature> -->
+				<!-- <bundledSignature>jdk-system-out</bundledSignature> -->
+				<!-- </bundledSignatures> -->
+				<!-- <signaturesFiles> -->
+				<!-- <signaturesFile>${mandrel.tools.directory}/forbidden/core-signatures.txt</signaturesFile> -->
+				<!-- <signaturesFile>${mandrel.tools.directory}/forbidden/all-signatures.txt</signaturesFile> -->
+				<!-- <signaturesFile>${mandrel.tools.directory}/forbidden/third-party-${mandrel.thirdparty.config}-signatures.txt</signaturesFile> -->
+				<!-- </signaturesFiles> -->
+				<!-- <signatures>${forbidden.signatures}</signatures> -->
+				<!-- <suppressAnnotations> -->
+				<!-- <annotation>**.SuppressForbidden</annotation> -->
+				<!-- </suppressAnnotations> -->
+				<!-- </configuration> -->
+				<!-- <phase>compile</phase> -->
+				<!-- <goals> -->
+				<!-- <goal>check</goal> -->
+				<!-- </goals> -->
+				<!-- </execution> -->
+				<!-- </executions> -->
+				<!-- </plugin> -->
 
-			<plugin>
-				<groupId>org.jasig.maven</groupId>
-				<artifactId>maven-notice-plugin</artifactId>
-				<version>1.0.6</version>
-				<configuration>
-					<noticeTemplate>NOTICE.template</noticeTemplate>
-					<licenseMapping>
-						<param>${mandrel.tools.directory}/license-check/license-mappings.xml</param>
-					</licenseMapping>
-					<generateChildNotices>false</generateChildNotices>
-				</configuration>
-				<executions>
-					<execution>
-						<id>check-license</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+				<plugin>
+					<groupId>org.jasig.maven</groupId>
+					<artifactId>maven-notice-plugin</artifactId>
+					<version>1.0.6</version>
+					<configuration>
+						<noticeTemplate>NOTICE.template</noticeTemplate>
+						<licenseMapping>
+							<param>${mandrel.tools.directory}/license-check/license-mappings.xml</param>
+						</licenseMapping>
+						<generateChildNotices>false</generateChildNotices>
+					</configuration>
+					<executions>
+						<execution>
+							<id>check-license</id>
+							<phase>initialize</phase>
+							<goals>
+								<goal>generate</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
 
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>license-maven-plugin</artifactId>
-				<version>1.8</version>
-			</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>1.8</version>
+				</plugin>
 
-			<plugin>
-				<groupId>com.mycila</groupId>
-				<artifactId>license-maven-plugin</artifactId>
-				<version>2.5</version>
-				<configuration>
-					<header>${mandrel.license.header}</header>
-					<headerDefinitions>
-						<headerDefinition>${mandrel.license.headerDefinition}</headerDefinition>
-					</headerDefinitions>
-					<includes>
-						<include>src/main/java/io/mandrel/**/*.java</include>
-						<include>src/test/java/io/mandrel/**/*.java</include>
-					</includes>
-				</configuration>
-				<executions>
-					<execution>
-						<id>check-license-headers</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>format</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+				<plugin>
+					<groupId>com.mycila</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>2.5</version>
+					<configuration>
+						<header>${mandrel.license.header}</header>
+						<headerDefinitions>
+							<headerDefinition>${mandrel.license.headerDefinition}</headerDefinition>
+						</headerDefinitions>
+						<includes>
+							<include>**/*.java</include>
+							<include>**/*.java</include>
+						</includes>
+					</configuration>
+					<executions>
+						<execution>
+							<id>check-license-headers</id>
+							<phase>compile</phase>
+							<goals>
+								<goal>format</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<version>2.9</version>
-				<configuration>
-					<buildOutputDirectory>eclipse-build</buildOutputDirectory>
-					<downloadSources>true</downloadSources>
-					<additionalConfig>
-						<file>
-							<name>.settings/org.eclipse.core.resources.prefs</name>
-							<content>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-eclipse-plugin</artifactId>
+					<version>2.9</version>
+					<configuration>
+						<buildOutputDirectory>eclipse-build</buildOutputDirectory>
+						<downloadSources>true</downloadSources>
+						<additionalConfig>
+							<file>
+								<name>.settings/org.eclipse.core.resources.prefs</name>
+								<content>
                                <![CDATA[eclipse.preferences.version=1
 encoding//src/main/java=UTF-8
 encoding//src/main/resources=UTF-8
@@ -849,11 +577,11 @@ encoding//src/test/java=UTF-8
 encoding//src/test/resources=UTF-8
 encoding/<project>=UTF-8
 ]]>
-							</content>
-						</file>
-						<file>
-							<name>.settings/org.eclipse.jdt.core.prefs</name>
-							<content>
+								</content>
+							</file>
+							<file>
+								<name>.settings/org.eclipse.jdt.core.prefs</name>
+								<content>
                                <![CDATA[eclipse.preferences.version=1
 org.eclipse.jdt.core.compiler.annotation.inheritNullAnnotations=enabled
 org.eclipse.jdt.core.compiler.annotation.missingNonNullByDefaultAnnotation=ignore
@@ -873,11 +601,11 @@ org.eclipse.jdt.core.formatter.lineSplit=140
 org.eclipse.jdt.core.formatter.tabulation.char=space
 org.eclipse.jdt.core.formatter.tabulation.size=4
 ]]>
-							</content>
-						</file>
-						<file>
-							<name>.settings/org.eclipse.jdt.ui.prefs</name>
-							<content>
+								</content>
+							</file>
+							<file>
+								<name>.settings/org.eclipse.jdt.ui.prefs</name>
+								<content>
                                <![CDATA[eclipse.preferences.version=1
 formatter_settings_version=12
 # Intellij IDEA import order
@@ -885,320 +613,344 @@ org.eclipse.jdt.ui.importorder=;com;org;java;javax;\#;
 # License header
 org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?><templates><template autoinsert\="false" context\="gettercomment_context" deleted\="false" description\="Comment for getter method" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.gettercomment" name\="gettercomment">/**\n *\n */</template><template autoinsert\="false" context\="settercomment_context" deleted\="false" description\="Comment for setter method" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.settercomment" name\="settercomment">/**\n *\n */</template><template autoinsert\="true" context\="constructorcomment_context" deleted\="false" description\="Comment for created constructors" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.constructorcomment" name\="constructorcomment">/**\n * ${tags}\n */</template><template autoinsert\="true" context\="filecomment_context" deleted\="false" description\="Comment for created Java files" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.filecomment" name\="filecomment">/**\n *\n */</template><template autoinsert\="false" context\="typecomment_context" deleted\="false" description\="Comment for created types" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.typecomment" name\="typecomment">/**\n *\n */</template><template autoinsert\="true" context\="fieldcomment_context" deleted\="false" description\="Comment for fields" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.fieldcomment" name\="fieldcomment">/**\n *\n */</template><template autoinsert\="true" context\="methodcomment_context" deleted\="false" description\="Comment for non-overriding methods" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.methodcomment" name\="methodcomment">/**\n * ${tags}\n */</template><template autoinsert\="false" context\="overridecomment_context" deleted\="false" description\="Comment for overriding methods" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.overridecomment" name\="overridecomment">/*\n *\n */</template><template autoinsert\="true" context\="delegatecomment_context" deleted\="false" description\="Comment for delegate methods" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.delegatecomment" name\="delegatecomment">/**\n * ${tags}\n * ${see_to_target}\n */</template><template autoinsert\="false" context\="newtype_context" deleted\="false" description\="Newly created files" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.newtype" name\="newtype">${filecomment}\n/*\n * Licensed to mandrel under one or more contributor\n * license agreements. See the NOTICE file distributed with\n * this work for additional information regarding copyright\n * ownership. mandrel licenses this file to you under\n * the Apache License, Version 2.0 (the "License"); you may\n * not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *    http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing,\n * software distributed under the License is distributed on an\n * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n * KIND, either express or implied.  See the License for the\n * specific language governing permissions and limitations\n * under the License.\n */\n\n${package_declaration}\n\n${typecomment}\n${type_declaration}</template><template autoinsert\="true" context\="classbody_context" deleted\="false" description\="Code in new class type bodies" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.classbody" name\="classbody">\n</template><template autoinsert\="true" context\="interfacebody_context" deleted\="false" description\="Code in new interface type bodies" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.interfacebody" name\="interfacebody">\n</template><template autoinsert\="true" context\="enumbody_context" deleted\="false" description\="Code in new enum type bodies" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.enumbody" name\="enumbody">\n</template><template autoinsert\="true" context\="annotationbody_context" deleted\="false" description\="Code in new annotation type bodies" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.annotationbody" name\="annotationbody">\n</template><template autoinsert\="false" context\="catchblock_context" deleted\="false" description\="Code in new catch blocks" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.catchblock" name\="catchblock">throw new RuntimeException();</template><template autoinsert\="false" context\="methodbody_context" deleted\="false" description\="Code in created method stubs" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.methodbody" name\="methodbody">${body_statement}</template><template autoinsert\="false" context\="constructorbody_context" deleted\="false" description\="Code in created constructor stubs" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.constructorbody" name\="constructorbody">${body_statement}</template><template autoinsert\="true" context\="getterbody_context" deleted\="false" description\="Code in created getters" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.getterbody" name\="getterbody">return ${field};</template><template autoinsert\="true" context\="setterbody_context" deleted\="false" description\="Code in created setters" enabled\="true" id\="org.eclipse.jdt.ui.text.codetemplates.setterbody" name\="setterbody">${field} \= ${param};</template></templates>
 ]]>
-							</content>
-						</file>
-					</additionalConfig>
-				</configuration>
-			</plugin>
+								</content>
+							</file>
+						</additionalConfig>
+					</configuration>
+				</plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.6</version>
-				<configuration>
-					<includes>
-						<include>**/*</include>
-					</includes>
-					<excludes>
-						<exlude>*.yml</exlude>
-						<exlude>*.xml</exlude>
-					</excludes>
-				</configuration>
-			</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>appassembler-maven-plugin</artifactId>
+					<version>1.9</version>
+					<executions>
+						<execution>
+							<id>daemons</id>
+							<phase>package</phase>
+							<goals>
+								<goal>generate-daemons</goal>
+							</goals>
+							<configuration>
+								<licenseHeaderFile>${basedir}/license-header.txt</licenseHeaderFile>
+								<useWildcardClassPath>true</useWildcardClassPath>
+								<repositoryLayout>flat</repositoryLayout>
+								<configurationSourceDirectory>${project.build.directory}/generated-resources/conf</configurationSourceDirectory>
+								<copyConfigurationDirectory>true</copyConfigurationDirectory>
+								<configurationDirectory>conf</configurationDirectory>
+								<logsDirectory>logs</logsDirectory>
+								<daemons>
+									<daemon>
+										<id>${component.id}d</id>
+										<commandLineArguments>
+											<commandLineArgument>--spring.config.location=/usr/share/mandrel/conf/${component.id}.yml</commandLineArgument>
+										</commandLineArguments>
+										<jvmSettings>
+											<initialMemorySize>1024</initialMemorySize>
+											<maxMemorySize>1024</maxMemorySize>
+											<maxStackSize>128</maxStackSize>
+											<extraArguments>
+												<extraArgument>-Dlogback.configurationFile=/usr/share/mandrel/conf/logback.xml</extraArgument>
+												<extraArgument>-Dlogging.file=logs/${component.id}d.log</extraArgument>
+												<extraArgument>-Dlogging.mode=file</extraArgument>
+												<extraArgument>-server</extraArgument>
+												<extraArgument>-XX:+UseConcMarkSweepGC</extraArgument>
+												<extraArgument>-XX:+CMSParallelRemarkEnabled</extraArgument>
+												<extraArgument>-XX:+UseCMSInitiatingOccupancyOnly</extraArgument>
+												<extraArgument>-XX:+ScavengeBeforeFullGC</extraArgument>
+												<extraArgument>-XX:+CMSScavengeBeforeRemark</extraArgument>
+												<extraArgument>-XX:+PrintGCDateStamps</extraArgument>
+												<extraArgument>-verbose:gc</extraArgument>
+												<extraArgument>-XX:+PrintGCDetails</extraArgument>
+												<extraArgument>-Xloggc:logs/gc.%t.%p.log</extraArgument>
+												<extraArgument>-XX:+UseGCLogFileRotation</extraArgument>
+												<extraArgument>-XX:NumberOfGCLogFiles=10</extraArgument>
+												<extraArgument>-XX:GCLogFileSize=100M</extraArgument>
+												<extraArgument>-XX:+HeapDumpOnOutOfMemoryError</extraArgument>
+												<extraArgument>-XX:HeapDumpPath=logs/${component.id}d-heapdump`date`.hprof</extraArgument>
+												<extraArgument>-Djava.net.preferIPv4Stack=true</extraArgument>
+											</extraArguments>
+										</jvmSettings>
+										<wrapperMainClass>${component.class.wrapper}</wrapperMainClass>
+										<platforms>
+											<platform>jsw</platform>
+										</platforms>
+										<generatorConfigurations>
+											<generatorConfiguration>
+												<generator>jsw</generator>
+												<includes>
+													<include>linux-x86-32</include>
+													<include>linux-x86-64</include>
+												</includes>
+												<configuration>
+													<property>
+														<name>wrapper.logfile</name>
+														<value>../logs/${component.id}-wrapper.log</value>
+													</property>
+												</configuration>
+											</generatorConfiguration>
+										</generatorConfigurations>
+									</daemon>
+								</daemons>
+							</configuration>
+						</execution>
+						<execution>
+							<id>programs</id>
+							<phase>package</phase>
+							<goals>
+								<goal>assemble</goal>
+							</goals>
+							<configuration>
+								<programs>
+									<program>
+										<id>${component.id}</id>
+										<mainClass>${component.class.main}</mainClass>
+										<commandLineArguments>
+											<commandLineArgument>--spring.config.location=/usr/share/mandrel/conf/${component.id}.yml</commandLineArgument>
+										</commandLineArguments>
+										<jvmSettings>
+											<initialMemorySize>1024m</initialMemorySize>
+											<maxMemorySize>1024m</maxMemorySize>
+											<maxStackSize>128m</maxStackSize>
+											<extraArguments>
+												<extraArgument>-Dlogback.configurationFile=/usr/share/mandrel/conf/logback.xml</extraArgument>
+												<extraArgument>-Dlogging.file=logs/${component.id}.log</extraArgument>
+												<extraArgument>-Dlogging.mode=file</extraArgument>
+												<extraArgument>-server</extraArgument>
+												<extraArgument>-XX:+UseConcMarkSweepGC</extraArgument>
+												<extraArgument>-XX:+CMSParallelRemarkEnabled</extraArgument>
+												<extraArgument>-XX:+UseCMSInitiatingOccupancyOnly</extraArgument>
+												<extraArgument>-XX:+ScavengeBeforeFullGC</extraArgument>
+												<extraArgument>-XX:+CMSScavengeBeforeRemark</extraArgument>
+												<extraArgument>-XX:+PrintGCDateStamps</extraArgument>
+												<extraArgument>-verbose:gc</extraArgument>
+												<extraArgument>-XX:+PrintGCDetails</extraArgument>
+												<extraArgument>-Xloggc:logs/gc.%t.%p.log</extraArgument>
+												<extraArgument>-XX:+UseGCLogFileRotation</extraArgument>
+												<extraArgument>-XX:NumberOfGCLogFiles=10</extraArgument>
+												<extraArgument>-XX:GCLogFileSize=100M</extraArgument>
+												<extraArgument>-XX:+HeapDumpOnOutOfMemoryError</extraArgument>
+												<extraArgument>-XX:HeapDumpPath=logs/${component.id}-heapdump`date`.hprof</extraArgument>
+												<extraArgument>-Djava.net.preferIPv4Stack=true</extraArgument>
+											</extraArguments>
+										</jvmSettings>
+									</program>
+								</programs>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
 
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>appassembler-maven-plugin</artifactId>
-				<version>1.9</version>
-				<executions>
-					<execution>
-						<id>generate-jsw-scripts</id>
-						<phase>package</phase>
-						<goals>
-							<goal>generate-daemons</goal>
-						</goals>
-						<configuration>
-							<licenseHeaderFile>${basedir}/license-header.txt</licenseHeaderFile>
-							<useWildcardClassPath>true</useWildcardClassPath>
-							<repositoryLayout>flat</repositoryLayout>
-							<configurationSourceDirectory>${project.build.directory}/generated-resources/conf</configurationSourceDirectory>
-							<copyConfigurationDirectory>true</copyConfigurationDirectory>
-							<configurationDirectory>conf</configurationDirectory>
-							<logsDirectory>logs</logsDirectory>
-							<programs>
-								<program>
-									<mainClass>io.mandrel.cluster.yarn.ClientApplication</mainClass>
-									<id>yarn-deploy</id>
-								</program>
-							</programs>
-							<daemons>
-								<daemon>
-									<id>mandrel</id>
-									<commandLineArguments>
-										<commandLineArgument>--spring.config.location=/usr/share/mandrel/conf/application.yml</commandLineArgument>
-									</commandLineArguments>
-									<jvmSettings>
-										<initialMemorySize>1024</initialMemorySize>
-										<maxMemorySize>1024</maxMemorySize>
-										<maxStackSize>128</maxStackSize>
-										<extraArguments>
-											<extraArgument>-Dlogback.configurationFile=/usr/share/mandrel/conf/logback.xml</extraArgument>
-											<extraArgument>-Dlogging.file=logs/application.log</extraArgument>
-											<extraArgument>-Dlogging.mode=file</extraArgument>
-											<extraArgument>-server</extraArgument>
-											<extraArgument>-XX:+UseConcMarkSweepGC</extraArgument>
-											<extraArgument>-XX:+CMSParallelRemarkEnabled</extraArgument>
-											<extraArgument>-XX:+UseCMSInitiatingOccupancyOnly</extraArgument>
-											<extraArgument>-XX:+ScavengeBeforeFullGC</extraArgument>
-											<extraArgument>-XX:+CMSScavengeBeforeRemark</extraArgument>
-											<extraArgument>-XX:+PrintGCDateStamps</extraArgument>
-											<extraArgument>-verbose:gc</extraArgument>
-											<extraArgument>-XX:+PrintGCDetails</extraArgument>
-											<extraArgument>-Xloggc:logs/gc.%t.%p.log</extraArgument>
-											<extraArgument>-XX:+UseGCLogFileRotation</extraArgument>
-											<extraArgument>-XX:NumberOfGCLogFiles=10</extraArgument>
-											<extraArgument>-XX:GCLogFileSize=100M</extraArgument>
-											<extraArgument>-XX:+HeapDumpOnOutOfMemoryError</extraArgument>
-											<extraArgument>-XX:HeapDumpPath=logs/heapdump`date`.hprof</extraArgument>
-											<extraArgument>-Djava.net.preferIPv4Stack=true</extraArgument>
-										</extraArguments>
-									</jvmSettings>
-									<wrapperMainClass>io.mandrel.bootstrap.Wrapper</wrapperMainClass>
-									<platforms>
-										<platform>jsw</platform>
-									</platforms>
-									<generatorConfigurations>
-										<generatorConfiguration>
-											<generator>jsw</generator>
-											<includes>
-												<include>linux-x86-32</include>
-												<include>linux-x86-64</include>
-											</includes>
-											<configuration>
-												<property>
-													<name>wrapper.logfile</name>
-													<value>../logs/wrapper.log</value>
-												</property>
-											</configuration>
-										</generatorConfiguration>
-									</generatorConfigurations>
-								</daemon>
-							</daemons>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+<!-- 				<plugin> -->
+<!-- 					<artifactId>maven-resources-plugin</artifactId> -->
+<!-- 					<version>2.7</version> -->
+<!-- 					<executions> -->
+<!-- 						<execution> -->
+<!-- 							<id>copy-resources</id> -->
+<!-- 							<phase>package</phase> -->
+<!-- 							<goals> -->
+<!-- 								<goal>copy-resources</goal> -->
+<!-- 							</goals> -->
+<!-- 							<configuration> -->
+<!-- 								<outputDirectory>${project.build.directory}/generated-resources/appassembler/jsw/mandrel/lib</outputDirectory> -->
+<!-- 								<resources> -->
+<!-- 									<resource> -->
+<!-- 										<directory>lib/sigar</directory> -->
+<!-- 									</resource> -->
+<!-- 								</resources> -->
+<!-- 							</configuration> -->
+<!-- 						</execution> -->
+<!-- 					</executions> -->
+<!-- 				</plugin> -->
 
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.7</version>
-				<executions>
-					<execution>
-						<id>copy-resources</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/generated-resources/appassembler/jsw/mandrel/lib</outputDirectory>
-							<resources>
-								<resource>
-									<directory>lib/sigar</directory>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+				<plugin>
+					<artifactId>jdeb</artifactId>
+					<groupId>org.vafer</groupId>
+					<version>1.0.1</version>
+					<executions>
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>jdeb</goal>
+							</goals>
+							<configuration>
+								<verbose>true</verbose>
+								<controlDir>${basedir}/src/deb/control</controlDir>
+								<dataSet>
+									<data>
+										<src>target/generated-resources/appassembler/jsw/mandrel/bin/</src>
+										<type>directory</type>
+										<excludes>*.bat, .DS_Store, *.exe</excludes>
+										<mapper>
+											<type>perm</type>
+											<prefix>/usr/share/mandrel/bin</prefix>
+											<filemode>755</filemode>
+											<user>root</user>
+											<group>root</group>
+										</mapper>
+									</data>
+									<data>
+										<src>target/generated-resources/appassembler/jsw/mandrel/lib/</src>
+										<includes>*</includes>
+										<type>directory</type>
+										<mapper>
+											<type>perm</type>
+											<prefix>/usr/share/mandrel/lib</prefix>
+											<user>root</user>
+											<group>root</group>
+										</mapper>
+									</data>
+									<data>
+										<src>${project.basedir}/src/deb/init.d/</src>
+										<type>directory</type>
+										<excludes>.DS_Store</excludes>
+										<mapper>
+											<type>perm</type>
+											<prefix>/etc/init.d</prefix>
+											<filemode>755</filemode>
+											<user>root</user>
+											<group>root</group>
+										</mapper>
+									</data>
+									<data>
+										<src>target/generated-resources/appassembler/jsw/mandrel/conf/</src>
+										<type>directory</type>
+										<mapper>
+											<type>perm</type>
+											<prefix>/usr/share/mandrel/conf/</prefix>
+											<user>root</user>
+											<group>root</group>
+										</mapper>
+									</data>
+								</dataSet>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
 
-			<plugin>
-				<artifactId>jdeb</artifactId>
-				<groupId>org.vafer</groupId>
-				<version>1.0.1</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>jdeb</goal>
-						</goals>
-						<configuration>
-							<verbose>true</verbose>
-							<controlDir>${basedir}/src/deb/control</controlDir>
-							<dataSet>
-								<data>
-									<src>target/generated-resources/appassembler/jsw/mandrel/bin/</src>
-									<type>directory</type>
-									<excludes>*.bat, .DS_Store, *.exe</excludes>
-									<mapper>
-										<type>perm</type>
-										<prefix>/usr/share/mandrel/bin</prefix>
-										<filemode>755</filemode>
-										<user>root</user>
-										<group>root</group>
-									</mapper>
-								</data>
-								<data>
-									<src>target/generated-resources/appassembler/jsw/mandrel/lib/</src>
-									<includes>*</includes>
-									<type>directory</type>
-									<mapper>
-										<type>perm</type>
-										<prefix>/usr/share/mandrel/lib</prefix>
-										<user>root</user>
-										<group>root</group>
-									</mapper>
-								</data>
-								<data>
-									<src>${project.basedir}/src/deb/init.d/</src>
-									<type>directory</type>
-									<excludes>.DS_Store</excludes>
-									<mapper>
-										<type>perm</type>
-										<prefix>/etc/init.d</prefix>
-										<filemode>755</filemode>
-										<user>root</user>
-										<group>root</group>
-									</mapper>
-								</data>
-								<data>
-									<src>target/generated-resources/appassembler/jsw/mandrel/conf/</src>
-									<type>directory</type>
-									<mapper>
-										<type>perm</type>
-										<prefix>/usr/share/mandrel/conf/</prefix>
-										<user>root</user>
-										<group>root</group>
-									</mapper>
-								</data>
-							</dataSet>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>rpm-maven-plugin</artifactId>
+					<version>2.1-alpha-3</version>
+					<executions>
+						<execution>
+							<id>attach-rpm</id>
+							<goals>
+								<goal>attached-rpm</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<copyright>Apache 2</copyright>
+						<distribution>Apache 2</distribution>
+						<group>Application/Internet</group>
+						<prefix>/usr</prefix>
+						<changelogFile>src/changelog</changelogFile>
+						<defineStatements>
+							<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+							<defineStatement>_binaries_in_noarch_packages_terminate_build 0</defineStatement>
+						</defineStatements>
+						<defaultFilemode>644</defaultFilemode>
+						<defaultDirmode>755</defaultDirmode>
+						<defaultUsername>root</defaultUsername>
+						<defaultGroupname>root</defaultGroupname>
+						<mappings>
+							<mapping>
+								<directory>/usr/share/mandrel/bin/</directory>
+								<filemode>755</filemode>
+								<sources>
+									<source>
+										<location>target/generated-resources/appassembler/jsw/mandrel/bin/</location>
+										<excludes>
+											<exclude>*.bat</exclude>
+										</excludes>
+									</source>
+								</sources>
+							</mapping>
+							<mapping>
+								<directory>/etc/sysconfig/</directory>
+								<configuration>noreplace</configuration>
+								<sources>
+									<source>
+										<location>src/rpm/sysconfig</location>
+										<includes>
+											<include>mandrel</include>
+										</includes>
+									</source>
+								</sources>
+							</mapping>
+							<mapping>
+								<directory>/etc/rc.d/init.d/</directory>
+								<filemode>755</filemode>
+								<configuration>true</configuration>
+								<sources>
+									<source>
+										<location>src/rpm/init.d/mandrel</location>
+									</source>
+								</sources>
+							</mapping>
+							<mapping>
+								<directory>/usr/share/mandrel/lib/</directory>
+								<sources>
+									<source>
+										<location>target/generated-resources/appassembler/jsw/mandrel/lib/</location>
+									</source>
+								</sources>
+							</mapping>
+							<mapping>
+								<directory>/usr/share/mandrel/conf/</directory>
+								<sources>
+									<source>
+										<location>target/generated-resources/appassembler/jsw/mandrel/conf/</location>
+									</source>
+								</sources>
+							</mapping>
+							<mapping>
+								<directory>/var/log/mandrel/</directory>
+								<filemode>755</filemode>
+								<username>mandrel</username>
+								<groupname>mandrel</groupname>
+							</mapping>
+							<mapping>
+								<directory>/usr/share/mandrel/</directory>
+								<sources>
+									<source>
+										<location>.</location>
+										<includes>
+											<include>README.textile</include>
+										</includes>
+									</source>
+								</sources>
+							</mapping>
+						</mappings>
+						<preinstallScriptlet>
+							<scriptFile>src/rpm/scripts/preinstall</scriptFile>
+							<fileEncoding>utf-8</fileEncoding>
+						</preinstallScriptlet>
+						<postinstallScriptlet>
+							<scriptFile>src/rpm/scripts/postinstall</scriptFile>
+							<fileEncoding>utf-8</fileEncoding>
+						</postinstallScriptlet>
+						<preremoveScriptlet>
+							<scriptFile>src/rpm/scripts/preremove</scriptFile>
+							<fileEncoding>utf-8</fileEncoding>
+						</preremoveScriptlet>
+						<postremoveScriptlet>
+							<scriptFile>src/rpm/scripts/postremove</scriptFile>
+							<fileEncoding>utf-8</fileEncoding>
+						</postremoveScriptlet>
+					</configuration>
+				</plugin>
 
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>rpm-maven-plugin</artifactId>
-				<version>2.1-alpha-3</version>
-				<executions>
-					<execution>
-						<id>attach-rpm</id>
-						<goals>
-							<goal>attached-rpm</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<copyright>Apache 2</copyright>
-					<distribution>Apache 2</distribution>
-					<group>Application/Internet</group>
-					<prefix>/usr</prefix>
-					<changelogFile>src/changelog</changelogFile>
-					<defineStatements>
-						<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
-						<defineStatement>_binaries_in_noarch_packages_terminate_build 0</defineStatement>
-					</defineStatements>
-					<defaultFilemode>644</defaultFilemode>
-					<defaultDirmode>755</defaultDirmode>
-					<defaultUsername>root</defaultUsername>
-					<defaultGroupname>root</defaultGroupname>
-					<mappings>
-						<mapping>
-							<directory>/usr/share/mandrel/bin/</directory>
-							<filemode>755</filemode>
-							<sources>
-								<source>
-									<location>target/generated-resources/appassembler/jsw/mandrel/bin/</location>
-									<excludes>
-										<exclude>*.bat</exclude>
-									</excludes>
-								</source>
-							</sources>
-						</mapping>
-						<mapping>
-							<directory>/etc/sysconfig/</directory>
-							<configuration>noreplace</configuration>
-							<sources>
-								<source>
-									<location>src/rpm/sysconfig</location>
-									<includes>
-										<include>mandrel</include>
-									</includes>
-								</source>
-							</sources>
-						</mapping>
-						<mapping>
-							<directory>/etc/rc.d/init.d/</directory>
-							<filemode>755</filemode>
-							<configuration>true</configuration>
-							<sources>
-								<source>
-									<location>src/rpm/init.d/mandrel</location>
-								</source>
-							</sources>
-						</mapping>
-						<mapping>
-							<directory>/usr/share/mandrel/lib/</directory>
-							<sources>
-								<source>
-									<location>target/generated-resources/appassembler/jsw/mandrel/lib/</location>
-								</source>
-							</sources>
-						</mapping>
-						<mapping>
-							<directory>/usr/share/mandrel/conf/</directory>
-							<sources>
-								<source>
-									<location>target/generated-resources/appassembler/jsw/mandrel/conf/</location>
-								</source>
-							</sources>
-						</mapping>
-						<mapping>
-							<directory>/var/log/mandrel/</directory>
-							<filemode>755</filemode>
-							<username>mandrel</username>
-							<groupname>mandrel</groupname>
-						</mapping>
-						<mapping>
-							<directory>/usr/share/mandrel/</directory>
-							<sources>
-								<source>
-									<location>.</location>
-									<includes>
-										<include>README.textile</include>
-									</includes>
-								</source>
-							</sources>
-						</mapping>
-					</mappings>
-					<preinstallScriptlet>
-						<scriptFile>src/rpm/scripts/preinstall</scriptFile>
-						<fileEncoding>utf-8</fileEncoding>
-					</preinstallScriptlet>
-					<postinstallScriptlet>
-						<scriptFile>src/rpm/scripts/postinstall</scriptFile>
-						<fileEncoding>utf-8</fileEncoding>
-					</postinstallScriptlet>
-					<preremoveScriptlet>
-						<scriptFile>src/rpm/scripts/preremove</scriptFile>
-						<fileEncoding>utf-8</fileEncoding>
-					</preremoveScriptlet>
-					<postremoveScriptlet>
-						<scriptFile>src/rpm/scripts/postremove</scriptFile>
-						<fileEncoding>utf-8</fileEncoding>
-					</postremoveScriptlet>
-				</configuration>
-			</plugin>
+				<plugin>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<configuration>
+						<!-- need to point the library path to the location of the native libraries -->
+						<argLine>-Djava.library.path=${project.build.directory}/lib</argLine>
+					</configuration>
+				</plugin>
 
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<!-- need to point the library path to the location of the native libraries -->
-					<argLine>-Djava.library.path=${project.build.directory}/lib</argLine>
-				</configuration>
-			</plugin>
-
-		</plugins>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<profiles>
