@@ -43,6 +43,7 @@ import org.bson.types.ObjectId;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -54,7 +55,6 @@ import com.mongodb.client.gridfs.GridFSDownloadStream;
 import com.mongodb.client.gridfs.GridFSUploadStream;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
-import com.netflix.servo.util.Throwables;
 
 public class MongoBlobStore extends BlobStore {
 

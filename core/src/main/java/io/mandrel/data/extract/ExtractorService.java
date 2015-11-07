@@ -71,7 +71,7 @@ import us.codecraft.xsoup.xevaluator.XElement;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.netflix.servo.util.Throwables;
+import com.google.common.base.Throwables;
 
 @Component
 @Slf4j

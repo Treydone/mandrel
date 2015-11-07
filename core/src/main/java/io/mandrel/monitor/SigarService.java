@@ -28,7 +28,7 @@ import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import org.springframework.stereotype.Component;
 
-import com.netflix.servo.util.Throwables;
+import com.google.common.base.Throwables;
 
 @Component
 @Slf4j

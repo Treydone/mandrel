@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.netflix.servo.util.Throwables;
+import com.google.common.base.Throwables;
 
 import crawlercommons.sitemaps.AbstractSiteMap;
 import crawlercommons.sitemaps.SiteMapIndex;

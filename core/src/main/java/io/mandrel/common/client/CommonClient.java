@@ -16,21 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.cluster.node;
+package io.mandrel.common.client;
 
-import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import io.mandrel.endpoints.contracts.NodeContract;
 
-public interface NodeRepository {
-
-	Collection<Node> findAll();
-
-	Optional<Node> get(URI uri);
-
-	Collection<Node> findAll(Collection<URI> uris);
-
-	void update(List<Node> nodes);
-
+public interface CommonClient extends NodeContract {
 }

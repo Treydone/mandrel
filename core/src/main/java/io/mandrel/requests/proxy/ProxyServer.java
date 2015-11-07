@@ -83,11 +83,6 @@ public class ProxyServer {
 		this(Protocol.HTTP, host, port, null, null);
 	}
 
-	public Realm.RealmBuilder realmBuilder() {
-		return new Realm.RealmBuilder()//
-				.setTargetProxy(true).setNtlmDomain(ntlmDomain).setNtlmHost(ntlmHost).setPrincipal(principal).setPassword(password).setScheme(scheme);
-	}
-
 	public Protocol getProtocol() {
 		return protocol;
 	}

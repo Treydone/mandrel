@@ -111,12 +111,14 @@ public class Clients {
 	private WorkerClient worker;
 	private FrontierClient frontier;
 	private AdminClient admin;
+	private CommonClient common;
 
 	@PostConstruct
 	public void init() {
 		worker = feign(WorkerClient.class);
 		frontier = feign(FrontierClient.class);
 		admin = feign(AdminClient.class);
+		common = feign(CommonClient.class);
 	}
 
 	public WorkerClient workerClient() {
@@ -129,5 +131,9 @@ public class Clients {
 
 	public AdminClient controllerClient() {
 		return admin;
+	}
+
+	public CommonClient commonClient() {
+		return common;
 	}
 }

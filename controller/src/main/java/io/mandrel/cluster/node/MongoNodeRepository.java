@@ -21,7 +21,9 @@ package io.mandrel.cluster.node;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -34,11 +36,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
-import com.netflix.servo.util.Throwables;
 
 @Repository
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
@@ -82,5 +84,16 @@ public class MongoNodeRepository implements NodeRepository {
 				throw Throwables.propagate(e);
 			}
 		}));
+	}
+
+	@Override
+	public void update(List<Node> nodes) {
+		collection.insertMany(nodes.stream().map(node -> {
+			try {
+				return Document.parse(mapper.writeValueAsString(node));
+			} catch (Exception e) {
+				throw Throwables.propagate(e);
+			}
+		}).collect(Collectors.toList()));
 	}
 }

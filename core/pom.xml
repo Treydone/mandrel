@@ -39,6 +39,15 @@
 
 	<dependencies>
 
+		<dependency>
+			<groupId>javax.inject</groupId>
+			<artifactId>javax.inject</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>jsr305</artifactId>
+		</dependency>
+
 		<!-- Commons -->
 		<dependency>
 			<groupId>commons-lang</groupId>
@@ -51,15 +60,21 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-vfs2</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>maven-scm-api</artifactId>
+					<groupId>org.apache.maven.scm</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.xerial.snappy</groupId>
-			<artifactId>snappy-java</artifactId>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>org.xerial.snappy</groupId> -->
+		<!-- <artifactId>snappy-java</artifactId> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>com.google.code.crawler-commons</groupId>
 			<artifactId>crawler-commons</artifactId>
@@ -144,10 +159,10 @@
 		</dependency>
 
 		<!-- Http -->
-		<dependency>
-			<groupId>com.ning</groupId>
-			<artifactId>async-http-client</artifactId>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>com.ning</groupId> -->
+		<!-- <artifactId>async-http-client</artifactId> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpasyncclient</artifactId>
@@ -185,10 +200,10 @@
 			<groupId>org.hyperic</groupId>
 			<artifactId>sigar</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.netflix.servo</groupId>
-			<artifactId>servo-core</artifactId>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>com.netflix.servo</groupId> -->
+		<!-- <artifactId>servo-core</artifactId> -->
+		<!-- </dependency> -->
 
 		<dependency>
 			<groupId>io.dropwizard.metrics</groupId>
@@ -252,6 +267,28 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>archaius-core</artifactId>
+					<groupId>com.netflix.archaius</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>ribbon</artifactId>
+					<groupId>com.netflix.ribbon</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>ribbon-core</artifactId>
+					<groupId>com.netflix.ribbon</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>ribbon-httpclient</artifactId>
+					<groupId>com.netflix.ribbon</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>ribbon-loadbalancer</artifactId>
+					<groupId>com.netflix.ribbon</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- <dependency> -->
 		<!-- <groupId>org.springframework.boot</groupId> -->
@@ -265,11 +302,21 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-feign</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>feign-hystrix</artifactId>
+					<groupId>com.netflix.feign</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-cloud-starter-ribbon</artifactId>
+					<groupId>org.springframework.cloud</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-ribbon</artifactId>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>org.springframework.cloud</groupId> -->
+		<!-- <artifactId>spring-cloud-starter-ribbon</artifactId> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

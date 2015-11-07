@@ -72,6 +72,12 @@
 				<version>${project.version}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>com.google.code.findbugs</groupId>
+				<artifactId>jsr305</artifactId>
+				<version>3.0.0</version>
+			</dependency>
+
 			<!-- Commons -->
 			<dependency>
 				<groupId>commons-configuration</groupId>
@@ -740,27 +746,27 @@ org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UT
 					</executions>
 				</plugin>
 
-<!-- 				<plugin> -->
-<!-- 					<artifactId>maven-resources-plugin</artifactId> -->
-<!-- 					<version>2.7</version> -->
-<!-- 					<executions> -->
-<!-- 						<execution> -->
-<!-- 							<id>copy-resources</id> -->
-<!-- 							<phase>package</phase> -->
-<!-- 							<goals> -->
-<!-- 								<goal>copy-resources</goal> -->
-<!-- 							</goals> -->
-<!-- 							<configuration> -->
-<!-- 								<outputDirectory>${project.build.directory}/generated-resources/appassembler/jsw/mandrel/lib</outputDirectory> -->
-<!-- 								<resources> -->
-<!-- 									<resource> -->
-<!-- 										<directory>lib/sigar</directory> -->
-<!-- 									</resource> -->
-<!-- 								</resources> -->
-<!-- 							</configuration> -->
-<!-- 						</execution> -->
-<!-- 					</executions> -->
-<!-- 				</plugin> -->
+				<!-- <plugin> -->
+				<!-- <artifactId>maven-resources-plugin</artifactId> -->
+				<!-- <version>2.7</version> -->
+				<!-- <executions> -->
+				<!-- <execution> -->
+				<!-- <id>copy-resources</id> -->
+				<!-- <phase>package</phase> -->
+				<!-- <goals> -->
+				<!-- <goal>copy-resources</goal> -->
+				<!-- </goals> -->
+				<!-- <configuration> -->
+				<!-- <outputDirectory>${project.build.directory}/generated-resources/appassembler/jsw/mandrel/lib</outputDirectory> -->
+				<!-- <resources> -->
+				<!-- <resource> -->
+				<!-- <directory>lib/sigar</directory> -->
+				<!-- </resource> -->
+				<!-- </resources> -->
+				<!-- </configuration> -->
+				<!-- </execution> -->
+				<!-- </executions> -->
+				<!-- </plugin> -->
 
 				<plugin>
 					<artifactId>jdeb</artifactId>

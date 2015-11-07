@@ -18,10 +18,11 @@
  */
 package io.mandrel.requests.proxy;
 
-import static com.ning.http.util.MiscUtils.isNonEmpty;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.net.URI;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -29,9 +30,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import lombok.Data;
 
-import com.ning.http.client.uri.Uri;
-import com.ning.http.util.AuthenticatorUtils;
-import com.ning.http.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This class is required when authentication is needed. The class support
@@ -54,7 +53,7 @@ public class Realm {
 	private final String qop;
 	private final String nc;
 	private final String cnonce;
-	private final Uri uri;
+	private final URI uri;
 	private final String methodName;
 	private final boolean usePreemptiveAuth;
 	private final Charset charset;
@@ -70,7 +69,7 @@ public class Realm {
 	}
 
 	private Realm(AuthScheme scheme, String principal, String password, String realmName, String nonce, String algorithm, String response, String qop,
-			String nc, String cnonce, Uri uri, String method, boolean usePreemptiveAuth, String ntlmDomain, Charset charset, String ntlmHost, String opaque,
+			String nc, String cnonce, URI uri, String method, boolean usePreemptiveAuth, String ntlmDomain, Charset charset, String ntlmHost, String opaque,
 			boolean useAbsoluteURI, boolean omitQuery, boolean targetProxy) {
 
 		this.principal = principal;
@@ -172,7 +171,7 @@ public class Realm {
 		private String qop;
 		private String nc = DEFAULT_NC;
 		private String cnonce;
-		private Uri uri;
+		private URI uri;
 		private String methodName = "GET";
 		private boolean usePreemptive = false;
 		private String ntlmDomain = System.getProperty("http.auth.ntlm.domain", "");
@@ -288,7 +287,7 @@ public class Realm {
 		}
 
 		public RealmBuilder setQop(String qop) {
-			if (isNonEmpty(qop)) {
+			if (StringUtils.isNotEmpty(qop)) {
 				this.qop = qop;
 			}
 			return this;
@@ -303,11 +302,11 @@ public class Realm {
 			return this;
 		}
 
-		public Uri getUri() {
+		public URI getUri() {
 			return uri;
 		}
 
-		public RealmBuilder setUri(Uri uri) {
+		public RealmBuilder setUri(URI uri) {
 			this.uri = uri;
 			return this;
 		}
@@ -382,7 +381,7 @@ public class Realm {
 			setRealmName(match(headerLine, "realm"));
 			setNonce(match(headerLine, "nonce"));
 			String algorithm = match(headerLine, "algorithm");
-			if (isNonEmpty(algorithm)) {
+			if (StringUtils.isNotEmpty(algorithm)) {
 				setAlgorithm(algorithm);
 			}
 			setOpaque(match(headerLine, "opaque"));
@@ -392,7 +391,7 @@ public class Realm {
 				setQop(parseRawQop(rawQop));
 			}
 
-			if (isNonEmpty(getNonce())) {
+			if (StringUtils.isNotEmpty(getNonce())) {
 				setScheme(AuthScheme.DIGEST);
 			} else {
 				setScheme(AuthScheme.BASIC);
@@ -405,11 +404,11 @@ public class Realm {
 			setNonce(match(headerLine, "nonce"));
 			setOpaque(match(headerLine, "opaque"));
 			String algorithm = match(headerLine, "algorithm");
-			if (isNonEmpty(algorithm)) {
+			if (StringUtils.isNotEmpty(algorithm)) {
 				setAlgorithm(algorithm);
 			}
 			setQop(match(headerLine, "qop"));
-			if (isNonEmpty(getNonce())) {
+			if (StringUtils.isNotEmpty(getNonce())) {
 				setScheme(AuthScheme.DIGEST);
 			} else {
 				setScheme(AuthScheme.BASIC);
@@ -476,7 +475,7 @@ public class Realm {
 		}
 
 		private byte[] md5FromRecycledStringBuilder(StringBuilder sb, MessageDigest md) {
-			md.update(StringUtils.charSequence2ByteBuffer(sb, ISO_8859_1));
+			md.update(ISO_8859_1.encode(CharBuffer.wrap(sb)));
 			sb.setLength(0);
 			return md.digest();
 		}
@@ -519,13 +518,13 @@ public class Realm {
 
 		private void newResponse(MessageDigest md) {
 			// BEWARE: compute first as it used the cached StringBuilder
-			String digestUri = AuthenticatorUtils.computeRealmURI(uri, useAbsoluteURI, omitQuery);
+			String digestURI = AuthenticatorUtils.computeRealmURI(uri, useAbsoluteURI, omitQuery);
 
-			StringBuilder sb = StringUtils.stringBuilder();
+			StringBuilder sb = new StringBuilder();
 
 			// WARNING: DON'T MOVE, BUFFER IS RECYCLED!!!!
 			byte[] secretDigest = secretDigest(sb, md);
-			byte[] dataDigest = dataDigest(sb, digestUri, md);
+			byte[] dataDigest = dataDigest(sb, digestURI, md);
 
 			appendBase16(sb, secretDigest);
 			appendDataBase(sb);
@@ -536,7 +535,7 @@ public class Realm {
 		}
 
 		private static String toHexString(byte[] data) {
-			StringBuilder sb = StringUtils.stringBuilder();
+			StringBuilder sb = new StringBuilder();
 			appendBase16(sb, data);
 			String hex = sb.toString();
 			sb.setLength(0);
@@ -562,7 +561,7 @@ public class Realm {
 		public Realm build() {
 
 			// Avoid generating
-			if (isNonEmpty(nonce)) {
+			if (StringUtils.isNotEmpty(nonce)) {
 				MessageDigest md = digestThreadLocal.get();
 				newCnonce(md);
 				newResponse(md);

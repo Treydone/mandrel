@@ -40,10 +40,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Throwables;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
-import com.netflix.servo.util.Throwables;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
