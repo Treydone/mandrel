@@ -26,7 +26,6 @@ import io.mandrel.timeline.Event;
 import io.mandrel.timeline.TimelineService;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -58,8 +57,7 @@ public class HomeController {
 		model.addAttribute("metrics", metricsRepository.global());
 		model.addAttribute("spiders", spiderService.list().collect(Collectors.toList()));
 		model.addAttribute("nodes", nodeService.nodes());
-		List<Event> page = timelineService.page(0, 20);
-		model.addAttribute("events", page.stream().collect(Collectors.groupingBy(event -> event.getTime().toLocalDate().toString())));
+		model.addAttribute("events", timelineService.pageByDate(0, 20));
 		return "views/home";
 	}
 

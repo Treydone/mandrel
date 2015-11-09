@@ -54,7 +54,7 @@ public class MetricsRepository {
 		counters = mongoClient.getDatabase("mandrel").getCollection("counters");
 	}
 
-	public void sync(HostAccumulator host) {
+	public void sync(NodeAccumulator host) {
 
 		// Update host and global metrics
 		Document update = new Document();
@@ -86,16 +86,47 @@ public class MetricsRepository {
 		counters.updateOne(Filters.eq("_id", "global"), update, new UpdateOptions().upsert(true));
 		counters.updateOne(Filters.eq("_id", host.getHostname()), update, new UpdateOptions().upsert(true));
 
-		// Update spider metrics
-		// TODO
-
 	}
 
 	public void sync(Map<Long, SpiderAccumulator> spiders) {
 
 		// Update spider metrics
-		// TODO
+		Document update = new Document();
+		for (Entry<Long, SpiderAccumulator> couple : spiders.entrySet()) {
+			Document inc = new Document().append("nbPages", couple.getValue().getNbPages().getAndSet(0)).append("totalSize",
+					couple.getValue().getTotalSize().getAndSet(0));
+			update.append("$inc", inc);
 
+			//
+			Document statusesDoc = new Document();
+			for (Entry<Integer, AtomicLong> entry : couple.getValue().getStatuses().entrySet()) {
+				statusesDoc.append("statuses." + entry.getKey(), entry.getValue().getAndSet(0));
+			}
+			update.append("$inc", statusesDoc);
+
+			//
+			Document hostsDoc = new Document();
+			for (Entry<String, AtomicLong> entry : couple.getValue().getHosts().entrySet()) {
+				hostsDoc.append("hosts." + entry.getKey(), entry.getValue().getAndSet(0));
+			}
+			update.append("$inc", hostsDoc);
+
+			//
+			Document contentTypesDoc = new Document();
+			for (Entry<String, AtomicLong> entry : couple.getValue().getContentTypes().entrySet()) {
+				contentTypesDoc.append("contentTypes." + entry.getKey(), entry.getValue().getAndSet(0));
+			}
+			update.append("$inc", contentTypesDoc);
+
+			counters.updateOne(Filters.eq("_id", couple.getKey()), update, new UpdateOptions().upsert(true));
+		}
+
+	}
+
+	@SneakyThrows(IOException.class)
+	public NodeMetrics node(String nodeId) {
+		Document document = counters.find(Filters.eq("_id", nodeId)).first();
+		return document != null ? mapper.readValue(document.toJson(), NodeMetrics.class) : new NodeMetrics();
 	}
 
 	@SneakyThrows(IOException.class)

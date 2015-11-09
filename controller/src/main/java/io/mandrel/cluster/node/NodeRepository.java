@@ -27,7 +27,7 @@ public interface NodeRepository {
 
 	Collection<Node> findAll();
 
-	Optional<Node> get(URI uri);
+	Optional<Node> get(String id);
 
 	Collection<Node> findAll(Collection<URI> uris);
 

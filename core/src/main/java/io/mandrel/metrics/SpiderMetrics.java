@@ -25,8 +25,8 @@ import lombok.Data;
 @Data
 public class SpiderMetrics {
 
+	private Long pendings;
 	private Long nbPages;
-	private Map<String, Boolean> pendings;
 	private Long totalSize;
 	private Long totalTimeToFetch;
 
@@ -34,10 +34,8 @@ public class SpiderMetrics {
 	private Long connectTimeout;
 	private Long connectException;
 
-	private Map<String, Long> pagesByContentType;
-	private Map<String, Long> getPagesByStatus;
-	private Map<String, Long> documentsByExtractor;
-	private Map<String, Long> pagesByHost;
-
-	private long spiderd;
+	private Map<String, Long> extractors;
+	private Map<String, Long> statuses;
+	private Map<String, Long> hosts;
+	private Map<String, Long> contentTypes;
 }

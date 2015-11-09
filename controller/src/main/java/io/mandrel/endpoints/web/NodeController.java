@@ -21,16 +21,14 @@ package io.mandrel.endpoints.web;
 import io.mandrel.cluster.node.NodeService;
 import io.mandrel.metrics.MetricsRepository;
 
-import java.net.URI;
-
 import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RequestMapping(value = "/nodes")
 @Controller
@@ -48,9 +46,11 @@ public class NodeController {
 		return "views/nodes";
 	}
 
-	@RequestMapping(params = "uri")
-	public String node(@RequestParam URI uri, Model model) {
-		model.addAttribute("node", nodeService.node(uri));
+	@RequestMapping("/{id}")
+	public String node(@PathVariable String id, Model model) {
+		// TODO 404 on not found
+		model.addAttribute("node", nodeService.node(id).get());
+		model.addAttribute("metrics", metricsRepository.node(id));
 		return "views/node";
 	}
 }

@@ -16,26 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.timeline;
+package io.mandrel.metrics;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Map;
 
 import lombok.Data;
-import lombok.experimental.Accessors;
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @Data
-@Accessors(chain = true)
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
-public class Event implements Serializable {
-
-	private static final long serialVersionUID = -6126722656700114179L;
-
-	private LocalDateTime time;
-
-	private String title;
-
-	private String text;
+public class NodeMetrics {
+	private Long nbPagesTotal = Long.valueOf(0);
+	private Long totalSizeTotal = Long.valueOf(0);
+	private Map<Integer, Long> statuses;
+	private Map<String, Long> hosts;
+	private Map<String, Long> contentTypes;
 }

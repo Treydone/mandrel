@@ -72,14 +72,14 @@ public class MongoNodeRepository implements NodeRepository {
 
 	@Override
 	@SneakyThrows(IOException.class)
-	public Optional<Node> get(URI uri) {
-		Document doc = collection.find(Filters.eq("_id", uri)).first();
+	public Optional<Node> get(String id) {
+		Document doc = collection.find(Filters.eq("_id", id)).first();
 		return doc == null ? Optional.empty() : Optional.of(mapper.readValue(doc.toJson(), Node.class));
 	}
 
 	@Override
 	public Collection<Node> findAll(Collection<URI> uris) {
-		return Lists.newArrayList(collection.find(Filters.in("_id", uris)).map(doc -> {
+		return Lists.newArrayList(collection.find(Filters.in("_id", uris.stream().map(Node::idOf).collect(Collectors.toList()))).map(doc -> {
 			try {
 				return mapper.readValue(doc.toJson(), Node.class);
 			} catch (Exception e) {
@@ -94,7 +94,7 @@ public class MongoNodeRepository implements NodeRepository {
 				.stream()
 				.map(node -> {
 					try {
-						return new ReplaceOneModel<Document>(Filters.eq("_id", node.getUri()), Document.parse(mapper.writeValueAsString(node)),
+						return new ReplaceOneModel<Document>(Filters.eq("_id", Node.idOf(node.getUri())), Document.parse(mapper.writeValueAsString(node)),
 								new UpdateOptions().upsert(true));
 					} catch (Exception e) {
 						throw Throwables.propagate(e);

@@ -26,7 +26,7 @@ import lombok.Data;
 
 @Data
 // TODO Use LongAdder
-public class HostAccumulator {
+public class NodeAccumulator {
 	private final AtomicLong nbPagesTotal = new AtomicLong(0);
 	private final AtomicLong totalSizeTotal = new AtomicLong(0);
 	private final Map<Integer, AtomicLong> statuses = new ConcurrentHashMap<>();

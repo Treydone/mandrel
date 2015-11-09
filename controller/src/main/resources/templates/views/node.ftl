@@ -25,7 +25,7 @@
 	        <span class="info-box-icon bg-aqua"><i class="fa fa-signal"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Bandwidth</span>
-	          <span class="info-box-number">${printBytesSize(metrics.totalSize / (clusterTime - now * 1000))}/s</span>
+	          <span class="info-box-number">?/s</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -34,7 +34,7 @@
 	        <span class="info-box-icon bg-green"><i class="fa fa-download"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Total size</span>
-	          <span class="info-box-number">${printBytesSize(metrics.totalSize)}</span>
+	          <span class="info-box-number">${printBytesSize(metrics.totalSizeTotal)}</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -43,7 +43,7 @@
 	        <span class="info-box-icon bg-yellow"><i class="fa fa-files-o"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Total pages</span>
-	          <span class="info-box-number">${metrics.nbPages}</span>
+	          <span class="info-box-number">${metrics.nbPagesTotal}</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -52,7 +52,7 @@
 	        <span class="info-box-icon bg-red"><i class="fa fa-star-o"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Timeout</span>
-	          <span class="info-box-number">${metrics.connectTimeout + metrics.readTimeout}</span>
+	          <span class="info-box-number">O</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -67,7 +67,7 @@
             </div><!-- /.box-header -->
             <div class="box-body">
 	            <ul>
-			      <li><a href="/nodes/${node.uri}">${node.uri}</a></li>
+			      <li><a href="/nodes?uri=${node.uri}">${node.uri}</a></li>
 			      <li>${node.infos.hostname}</li>
 			      <li>${node.infos.fqdn}</li>
 			      <li><span class="label label-success">OK</span></li>

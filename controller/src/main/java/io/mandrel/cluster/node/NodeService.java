@@ -53,10 +53,7 @@ public class NodeService {
 	@Scheduled(fixedRate = 5000)
 	public void sync() {
 		if (stateService.isStarted()) {
-			List<ServiceInstance> instances = new ArrayList<>();
-			instances.addAll(discoveryClient.getInstances(ServiceIds.CONTROLLER));
-			instances.addAll(discoveryClient.getInstances(ServiceIds.FRONTIER));
-			instances.addAll(discoveryClient.getInstances(ServiceIds.WORKER));
+			List<ServiceInstance> instances = allInstances();
 
 			List<Node> nodes = instances.stream().map(i -> {
 				return clients.nodeClient().dhis(i.getUri());
@@ -66,18 +63,27 @@ public class NodeService {
 	}
 
 	public Map<URI, Node> nodes() {
-		List<ServiceInstance> instances = new ArrayList<>();
-		instances.addAll(discoveryClient.getInstances(ServiceIds.CONTROLLER));
-		instances.addAll(discoveryClient.getInstances(ServiceIds.FRONTIER));
-		instances.addAll(discoveryClient.getInstances(ServiceIds.WORKER));
+		List<ServiceInstance> instances = allInstances();
 		return nodes(instances.stream().map(si -> si.getUri()).collect(Collectors.toList()));
 	}
 
 	public Optional<Node> node(URI uri) {
-		return nodeRepository.get(uri);
+		return nodeRepository.get(Node.idOf(uri));
+	}
+
+	public Optional<Node> node(String id) {
+		return nodeRepository.get(id);
 	}
 
 	public Map<URI, Node> nodes(Collection<URI> uris) {
 		return Lists.newArrayList(nodeRepository.findAll(uris)).stream().collect(Collectors.toMap(node -> node.getUri(), node -> node));
+	}
+
+	private List<ServiceInstance> allInstances() {
+		List<ServiceInstance> instances = new ArrayList<>();
+		instances.addAll(discoveryClient.getInstances(ServiceIds.CONTROLLER));
+		instances.addAll(discoveryClient.getInstances(ServiceIds.FRONTIER));
+		instances.addAll(discoveryClient.getInstances(ServiceIds.WORKER));
+		return instances;
 	}
 }

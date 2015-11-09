@@ -21,7 +21,9 @@ package io.mandrel.timeline;
 import io.mandrel.messaging.StompService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -44,6 +46,11 @@ public class TimelineService {
 
 	public List<Event> page(int from, int size) {
 		return timelineRepository.page(from, size);
+	}
+
+	public Map<String, List<Event>> pageByDate(int from, int size) {
+		List<Event> page = timelineRepository.page(from, size);
+		return page.stream().filter(e -> e.getTime() != null).collect(Collectors.groupingBy(event -> event.getTime().toLocalDate().toString()));
 	}
 
 	@PostConstruct

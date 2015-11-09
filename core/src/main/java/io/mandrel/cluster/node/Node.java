@@ -22,18 +22,28 @@ import io.mandrel.monitor.Infos;
 
 import java.io.Serializable;
 import java.net.URI;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Base64;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Charsets;
 
 @Data
 @Accessors(chain = true)
 public class Node implements Serializable {
 	private static final long serialVersionUID = 9044434196832084086L;
 
-	@JsonProperty("_id")
 	private URI uri;
 	private Infos infos;
+
+	@JsonProperty("_id")
+	public String getId() {
+		return idOf(uri);
+	}
+
+	public static String idOf(URI uri) {
+		return uri != null ? Base64.getUrlEncoder().encodeToString(uri.toString().getBytes(Charsets.UTF_8)) : null;
+	}
 }

@@ -38,7 +38,7 @@
 	                    <#list nodes?keys as key> 
 							<#assign node = nodes?values[key_index]>
 							<tr>
-		                      <td><a href="/nodes/${node.uri}">${node.uri}</a></td>
+		                      <td><a href="/nodes/${node.id}">${node.id}</a></td>
 		                      <td>${node.infos.hostname}</td>
 		                      <td>${node.infos.fqdn}</td>
 		                      <td><span class="label label-success">OK</span></td>

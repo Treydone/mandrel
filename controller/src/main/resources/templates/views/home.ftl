@@ -83,17 +83,16 @@
                 <div class="box-body table-responsive no-padding">
                   <table class="table table-hover">
                     <tbody><tr>
-                      <th>UUID</th>
+                      <th>ID</th>
                       <th>Hostname</th>
                       <th>FQDN</th>
                       <th>Status</th>
                       <th>Memory</th>
                     </tr>
-                    <#assign keys = nodes?keys>
-					<#list keys as key>
-						<#assign node = nodes[key]>
+                    <#list nodes?keys as key> 
+						<#assign node = nodes?values[key_index]>
 						<tr>
-	                      <td><a href="/nodes/${node.uuid}">${node.uuid}</a></td>
+	                      <td><a href="/nodes/${node.id}">${node.id}</a></td>
 	                      <td>${node.infos.hostname}</td>
 	                      <td>${node.infos.fqdn}</td>
 	                      <td><span class="label label-success">OK</span></td>
