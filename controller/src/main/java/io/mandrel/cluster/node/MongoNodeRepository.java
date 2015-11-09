@@ -41,6 +41,8 @@ import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.ReplaceOneModel;
+import com.mongodb.client.model.UpdateOptions;
 
 @Repository
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
@@ -88,12 +90,15 @@ public class MongoNodeRepository implements NodeRepository {
 
 	@Override
 	public void update(List<Node> nodes) {
-		collection.insertMany(nodes.stream().map(node -> {
-			try {
-				return Document.parse(mapper.writeValueAsString(node));
-			} catch (Exception e) {
-				throw Throwables.propagate(e);
-			}
-		}).collect(Collectors.toList()));
+		collection.bulkWrite(nodes
+				.stream()
+				.map(node -> {
+					try {
+						return new ReplaceOneModel<Document>(Filters.eq("_id", node.getUri()), Document.parse(mapper.writeValueAsString(node)),
+								new UpdateOptions().upsert(true));
+					} catch (Exception e) {
+						throw Throwables.propagate(e);
+					}
+				}).collect(Collectors.toList()));
 	}
 }

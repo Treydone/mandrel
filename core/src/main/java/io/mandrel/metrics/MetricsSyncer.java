@@ -19,26 +19,24 @@
 package io.mandrel.metrics;
 
 import io.mandrel.cluster.discovery.ServiceIds;
+import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.client.Clients;
 
 import java.net.URI;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 @Slf4j
 @Component
-public class MetricsSyncer implements ApplicationListener<ContextStartedEvent> {
+public class MetricsSyncer {
 
 	@Autowired
 	private MetricsService metricsService;
@@ -46,17 +44,12 @@ public class MetricsSyncer implements ApplicationListener<ContextStartedEvent> {
 	private Clients clients;
 	@Autowired
 	private DiscoveryClient discoveryClient;
-
-	private final AtomicBoolean started = new AtomicBoolean();
-
-	@Override
-	public void onApplicationEvent(ContextStartedEvent event) {
-		started.compareAndSet(true, true);
-	}
+	@Autowired
+	private StateService stateService;
 
 	@Scheduled(fixedRate = 5000)
 	public void sync() {
-		if (started.get()) {
+		if (stateService.isStarted()) {
 			List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.CONTROLLER);
 			if (!CollectionUtils.isEmpty(instances)) {
 				URI uri = instances.get(0).getUri();

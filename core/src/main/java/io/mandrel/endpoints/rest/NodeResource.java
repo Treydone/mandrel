@@ -49,7 +49,7 @@ public class NodeResource implements NodeContract {
 	public Node dhis(URI target) {
 		try {
 			Infos infos = sigarService.infos();
-			return new Node().infos(infos).uri(discoveryClient.getLocalServiceInstance().getUri());
+			return new Node().setInfos(infos).setUri(discoveryClient.getLocalServiceInstance().getUri());
 		} catch (Exception e) {
 			log.warn("Can not set the infos for the endpoint", e);
 			throw Throwables.propagate(e);

@@ -68,14 +68,13 @@ public abstract class Application extends SpringBootServletInitializer {
 
 		Map<String, Object> properties = new HashMap<>();
 		// properties.put("debug", "true");
-		// properties.put("spring.config.location",
-		// "classpath:/version.yml,classpath:/bootstrap.yml");
 
 		// Print some useful infos about the classpath and others things
 		new JHades().overlappingJarsReport();
 
 		context = new SpringApplicationBuilder(getClass()).properties(properties).listeners(new ApplicationPidFileWriter(), new EmbeddedServerPortFileWriter())
 				.run(args);
+		context.start();
 
 		InfoSettings settings = context.getBean(InfoSettings.class);
 		log.info("{} ({}) started", settings.getArtifact(), settings.getVersion());

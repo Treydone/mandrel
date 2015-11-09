@@ -28,7 +28,6 @@ import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -146,7 +145,7 @@ public class Infos implements Serializable {
 			info.inputArguments = runtimeMXBean.getInputArguments().toArray(new String[runtimeMXBean.getInputArguments().size()]);
 			info.bootClassPath = runtimeMXBean.getBootClassPath();
 			info.classPath = runtimeMXBean.getClassPath();
-			info.systemProperties = runtimeMXBean.getSystemProperties();
+			// info.systemProperties = runtimeMXBean.getSystemProperties();
 
 			List<GarbageCollectorMXBean> gcMxBeans = ManagementFactory.getGarbageCollectorMXBeans();
 			info.gcCollectors = new String[gcMxBeans.size()];
@@ -186,7 +185,7 @@ public class Infos implements Serializable {
 
 		private String classPath;
 
-		private Map<String, String> systemProperties;
+		// private Map<String, String> systemProperties;
 
 		private String[] gcCollectors = new String[0];
 		private String[] memoryPools = new String[0];

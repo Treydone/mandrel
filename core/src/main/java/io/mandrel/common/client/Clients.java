@@ -18,6 +18,11 @@
  */
 package io.mandrel.common.client;
 
+import io.mandrel.endpoints.contracts.AdminContract;
+import io.mandrel.endpoints.contracts.FrontierContract;
+import io.mandrel.endpoints.contracts.NodeContract;
+import io.mandrel.endpoints.contracts.WorkerContract;
+
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -108,32 +113,32 @@ public class Clients {
 		return builder.target(EmptyTarget.create(clazz));
 	}
 
-	private WorkerClient worker;
-	private FrontierClient frontier;
-	private AdminClient admin;
-	private CommonClient common;
+	private WorkerContract worker;
+	private FrontierContract frontier;
+	private AdminContract admin;
+	private NodeContract common;
 
 	@PostConstruct
 	public void init() {
-		worker = feign(WorkerClient.class);
-		frontier = feign(FrontierClient.class);
-		admin = feign(AdminClient.class);
-		common = feign(CommonClient.class);
+		worker = feign(WorkerContract.class);
+		frontier = feign(FrontierContract.class);
+		admin = feign(AdminContract.class);
+		common = feign(NodeContract.class);
 	}
 
-	public WorkerClient workerClient() {
+	public WorkerContract workerClient() {
 		return worker;
 	}
 
-	public FrontierClient frontierClient() {
+	public FrontierContract frontierClient() {
 		return frontier;
 	}
 
-	public AdminClient controllerClient() {
+	public AdminContract controllerClient() {
 		return admin;
 	}
 
-	public CommonClient commonClient() {
+	public NodeContract nodeClient() {
 		return common;
 	}
 }

@@ -13,7 +13,7 @@
           <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
             <li><a href="/nodes"><i class="fa fa-laptop"></i> Nodes</a></li>
-            <li class="active">${node.uuid}</li>
+            <li class="active">${node.uri}</li>
           </ol>
 </#macro>
 
@@ -67,7 +67,7 @@
             </div><!-- /.box-header -->
             <div class="box-body">
 	            <ul>
-			      <li><a href="/nodes/${node.uuid}">${node.uuid}</a></li>
+			      <li><a href="/nodes/${node.uri}">${node.uri}</a></li>
 			      <li>${node.infos.hostname}</li>
 			      <li>${node.infos.fqdn}</li>
 			      <li><span class="label label-success">OK</span></li>

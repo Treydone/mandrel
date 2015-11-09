@@ -9,6 +9,7 @@ spring:
       discovery:
         enabled: true
         root: /mandrel
+        instanceHost: localhost
   data:
     mongodb:
       host: localhost

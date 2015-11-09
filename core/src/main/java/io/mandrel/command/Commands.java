@@ -20,10 +20,10 @@ package io.mandrel.command;
 
 import io.mandrel.blob.BlobStores;
 import io.mandrel.cluster.discovery.ServiceIds;
-import io.mandrel.common.client.FrontierClient;
-import io.mandrel.common.client.WorkerClient;
 import io.mandrel.common.data.Spider;
 import io.mandrel.document.DocumentStores;
+import io.mandrel.endpoints.contracts.FrontierContract;
+import io.mandrel.endpoints.contracts.WorkerContract;
 import io.mandrel.metadata.MetadataStores;
 
 import java.util.ArrayList;
@@ -105,7 +105,7 @@ public class Commands {
 	public static class CreateFrontier implements Command, Rollbackable {
 
 		private final DiscoveryClient discoveryClient;
-		private final FrontierClient frontierClient;
+		private final FrontierContract frontierClient;
 		private final Spider spider;
 
 		@Override
@@ -124,7 +124,7 @@ public class Commands {
 	public static class StartFrontier implements Command, Rollbackable {
 
 		private final DiscoveryClient discoveryClient;
-		private final FrontierClient frontierClient;
+		private final FrontierContract frontierClient;
 		private final Spider spider;
 
 		@Override
@@ -143,7 +143,7 @@ public class Commands {
 	public static class KillFrontier implements Command {
 
 		private final DiscoveryClient discoveryClient;
-		private final FrontierClient frontierClient;
+		private final FrontierContract frontierClient;
 		private final Spider spider;
 
 		@Override
@@ -157,7 +157,7 @@ public class Commands {
 	public static class PrepareWorker implements Command, Rollbackable {
 
 		private final DiscoveryClient discoveryClient;
-		private final WorkerClient workerClient;
+		private final WorkerContract workerClient;
 		private final Spider spider;
 
 		@Override
@@ -176,7 +176,7 @@ public class Commands {
 	public static class StartWorker implements Command, Rollbackable {
 
 		private final DiscoveryClient discoveryClient;
-		private final WorkerClient workerClient;
+		private final WorkerContract workerClient;
 		private final Spider spider;
 
 		@Override
@@ -195,7 +195,7 @@ public class Commands {
 	public static class KillWorker implements Command {
 
 		private final DiscoveryClient discoveryClient;
-		private final WorkerClient workerClient;
+		private final WorkerContract workerClient;
 		private final Spider spider;
 
 		@Override
@@ -207,30 +207,30 @@ public class Commands {
 	//
 	// FRONTIER
 	//
-	public static CreateFrontier prepareFrontier(DiscoveryClient discoveryClient, FrontierClient frontierClient, Spider spider) {
+	public static CreateFrontier prepareFrontier(DiscoveryClient discoveryClient, FrontierContract frontierClient, Spider spider) {
 		return new CreateFrontier(discoveryClient, frontierClient, spider);
 	}
 
-	public static StartFrontier startFrontier(DiscoveryClient discoveryClient, FrontierClient frontierClient, Spider spider) {
+	public static StartFrontier startFrontier(DiscoveryClient discoveryClient, FrontierContract frontierClient, Spider spider) {
 		return new StartFrontier(discoveryClient, frontierClient, spider);
 	}
 
-	public static KillFrontier killFrontier(DiscoveryClient discoveryClient, FrontierClient frontierClient, Spider spider) {
+	public static KillFrontier killFrontier(DiscoveryClient discoveryClient, FrontierContract frontierClient, Spider spider) {
 		return new KillFrontier(discoveryClient, frontierClient, spider);
 	}
 
 	//
 	// WORKER
 	//
-	public static PrepareWorker prepareWorker(DiscoveryClient discoveryClient, WorkerClient workerClient, Spider spider) {
+	public static PrepareWorker prepareWorker(DiscoveryClient discoveryClient, WorkerContract workerClient, Spider spider) {
 		return new PrepareWorker(discoveryClient, workerClient, spider);
 	}
 
-	public static StartWorker startWorker(DiscoveryClient discoveryClient, WorkerClient workerClient, Spider spider) {
+	public static StartWorker startWorker(DiscoveryClient discoveryClient, WorkerContract workerClient, Spider spider) {
 		return new StartWorker(discoveryClient, workerClient, spider);
 	}
 
-	public static KillWorker killWorker(DiscoveryClient discoveryClient, WorkerClient workerClient, Spider spider) {
+	public static KillWorker killWorker(DiscoveryClient discoveryClient, WorkerContract workerClient, Spider spider) {
 		return new KillWorker(discoveryClient, workerClient, spider);
 	}
 

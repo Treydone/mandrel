@@ -23,14 +23,17 @@ import io.mandrel.monitor.Infos;
 import java.io.Serializable;
 import java.net.URI;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 @Data
-@Accessors(chain = true, fluent = true)
+@Accessors(chain = true)
 public class Node implements Serializable {
 	private static final long serialVersionUID = 9044434196832084086L;
 
+	@JsonProperty("_id")
 	private URI uri;
 	private Infos infos;
 }

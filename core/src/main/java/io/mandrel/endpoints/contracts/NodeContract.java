@@ -27,10 +27,12 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @RequestMapping(value = Apis.PREFIX + "/node", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 public interface NodeContract {
 
 	@RequestMapping(method = RequestMethod.GET)
+	@ResponseBody
 	public Node dhis(@RequestHeader("target") URI target);
 }
