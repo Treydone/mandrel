@@ -1,6 +1,7 @@
 package io.mandrel.cluster.instance;
 
 import io.mandrel.cluster.discovery.ServiceIds;
+import io.mandrel.cluster.node.Node;
 import io.mandrel.common.client.Clients;
 import io.mandrel.timeline.NodeEvent;
 import io.mandrel.timeline.NodeEvent.NodeEventType;
@@ -36,8 +37,8 @@ public class StateService implements ApplicationListener<ContextStartedEvent> {
 		started.set(true);
 		Optional<ServiceInstance> controller = discoveryClient.getInstances(ServiceIds.CONTROLLER).stream().findFirst();
 		if (controller.isPresent()) {
-			clients.controllerClient()
-					.add(new NodeEvent().setUri(discoveryClient.getLocalServiceInstance().getUri()).setType(NodeEventType.NODE_STARTED)
+			clients.controllerClient().add(
+					new NodeEvent().setNodeId(Node.idOf(discoveryClient.getLocalServiceInstance().getUri())).setType(NodeEventType.NODE_STARTED)
 							.setTime(LocalDateTime.now()), controller.get().getUri());
 		} else {
 			log.warn("No controller found");
@@ -52,8 +53,8 @@ public class StateService implements ApplicationListener<ContextStartedEvent> {
 	public void destroy() {
 		Optional<ServiceInstance> controller = discoveryClient.getInstances(ServiceIds.CONTROLLER).stream().findFirst();
 		if (controller.isPresent()) {
-			clients.controllerClient()
-					.add(new NodeEvent().setUri(discoveryClient.getLocalServiceInstance().getUri()).setType(NodeEventType.NODE_STOPPED)
+			clients.controllerClient().add(
+					new NodeEvent().setNodeId(Node.idOf(discoveryClient.getLocalServiceInstance().getUri())).setType(NodeEventType.NODE_STOPPED)
 							.setTime(LocalDateTime.now()), controller.get().getUri());
 		} else {
 			log.warn("No controller found");

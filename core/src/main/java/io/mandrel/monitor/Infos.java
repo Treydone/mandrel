@@ -143,8 +143,8 @@ public class Infos implements Serializable {
 				// ignore
 			}
 			info.inputArguments = runtimeMXBean.getInputArguments().toArray(new String[runtimeMXBean.getInputArguments().size()]);
-			info.bootClassPath = runtimeMXBean.getBootClassPath();
-			info.classPath = runtimeMXBean.getClassPath();
+			// info.bootClassPath = runtimeMXBean.getBootClassPath();
+			// info.classPath = runtimeMXBean.getClassPath();
 			// info.systemProperties = runtimeMXBean.getSystemProperties();
 
 			List<GarbageCollectorMXBean> gcMxBeans = ManagementFactory.getGarbageCollectorMXBeans();
@@ -181,9 +181,9 @@ public class Infos implements Serializable {
 
 		private String[] inputArguments;
 
-		private String bootClassPath;
+		// private String bootClassPath;
 
-		private String classPath;
+		// private String classPath;
 
 		// private Map<String, String> systemProperties;
 

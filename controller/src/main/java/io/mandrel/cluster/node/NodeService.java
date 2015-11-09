@@ -56,7 +56,7 @@ public class NodeService {
 			List<ServiceInstance> instances = allInstances();
 
 			List<Node> nodes = instances.stream().map(i -> {
-				return clients.nodeClient().dhis(i.getUri());
+				return clients.nodeClient().dhis(i.getUri()).setType(i.getServiceId());
 			}).collect(Collectors.toList());
 			nodeRepository.update(nodes);
 		}

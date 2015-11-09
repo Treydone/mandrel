@@ -29,9 +29,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-@RequestMapping(value = Apis.PREFIX + "/admin", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = Apis.PREFIX, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 public interface AdminContract {
 
-	@RequestMapping(value = "/events/", method = RequestMethod.POST)
+	@RequestMapping(value = "/events", method = RequestMethod.POST)
 	void add(@RequestBody Event event, @RequestHeader("target") URI target);
 }

@@ -67,7 +67,7 @@
             </div><!-- /.box-header -->
             <div class="box-body">
 	            <ul>
-			      <li><a href="/nodes?uri=${node.uri}">${node.uri}</a></li>
+			      <li><a href="/nodes/${node.id}">${node.uri}</a></li>
 			      <li>${node.infos.hostname}</li>
 			      <li>${node.infos.fqdn}</li>
 			      <li><span class="label label-success">OK</span></li>

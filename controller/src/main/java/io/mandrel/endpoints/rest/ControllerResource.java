@@ -28,6 +28,7 @@ import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -36,8 +37,7 @@ public class ControllerResource implements AdminContract {
 
 	private final TimelineService timelineService;
 
-	@Override
-	public void add(Event event, URI target) {
+	public void add(@RequestBody Event event, URI target) {
 		timelineService.add(event);
 	}
 }
