@@ -1,6 +1,7 @@
-io.mandrel.data.filters.link.BooleanLinkFilters.AndFilter
-io.mandrel.data.filters.link.BooleanLinkFilters.OrFilter
-io.mandrel.data.filters.link.BooleanLinkFilters.NotFilter
+io.mandrel.data.filters.link.BooleanLinkFilters$AndFilter
+io.mandrel.data.filters.link.BooleanLinkFilters$OrFilter
+io.mandrel.data.filters.link.BooleanLinkFilters$NotFilter
+io.mandrel.data.filters.link.BooleanLinkFilters$TrueFilter
 io.mandrel.data.filters.link.AllowedForDomainsFilter
 io.mandrel.data.filters.link.SkipAncorFilter
 io.mandrel.data.filters.link.UrlPatternFilter

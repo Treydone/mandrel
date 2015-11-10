@@ -21,6 +21,7 @@ package io.mandrel.common.data;
 import io.mandrel.common.service.TaskContext;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -28,5 +29,23 @@ public class FtpStrategy extends Strategy {
 
 	public FtpStrategy(TaskContext context) {
 		super(context);
+	}
+
+	@Data
+	@Accessors(chain = false, fluent = false)
+	@EqualsAndHashCode(callSuper = false)
+	public static class FtpStrategyDefinition extends StrategyDefinition<FtpStrategy> {
+
+		private static final long serialVersionUID = 252540570641044928L;
+
+		@Override
+		public String name() {
+			return "ftp";
+		}
+
+		@Override
+		public FtpStrategy build(TaskContext context) {
+			return build(new FtpStrategy(context), context);
+		}
 	}
 }

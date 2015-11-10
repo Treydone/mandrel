@@ -21,12 +21,10 @@ package io.mandrel.requests.http;
 import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobMetadata;
 import io.mandrel.common.data.HttpStrategy;
-import io.mandrel.common.data.Param;
 import io.mandrel.common.data.HttpStrategy.HttpStrategyDefinition;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.requests.Requester;
-import io.mandrel.requests.http.ua.UserAgentProvisionner.UserAgentProvisionnerDefinition;
 import io.mandrel.requests.proxy.ProxyServer;
 
 import java.io.IOException;
@@ -136,7 +134,7 @@ public class ApacheHttpRequester extends Requester {
 		private int ioThreadCount = Runtime.getRuntime().availableProcessors();
 
 		@JsonProperty("strategy")
-		private HttpStrategyDefinition strategy;
+		private HttpStrategyDefinition strategy = new HttpStrategyDefinition();
 
 		@Override
 		public String name() {

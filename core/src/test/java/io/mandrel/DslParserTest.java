@@ -34,15 +34,13 @@ public class DslParserTest {
 	@Test
 	public void start_simple() {
 		LinkFilter filter = DslParser.parseLinkFilter("start_with(value:'ertertert123!?;/')");
-		Assertions.assertThat(filter).isInstanceOf(StartWithFilter.class)
-				.isEqualToIgnoringGivenFields(new StartWithFilter().setValue("ertertert123!?;/"), "compiledPattern");
+		Assertions.assertThat(filter).isInstanceOf(StartWithFilter.class).isEqualToIgnoringGivenFields(new StartWithFilter().setValue("ertertert123!?;/"));
 	}
 
 	@Test
 	public void start_with_spaces() {
 		LinkFilter filter = DslParser.parseLinkFilter("start_with( value : 'ertertert123' )");
-		Assertions.assertThat(filter).isInstanceOf(StartWithFilter.class)
-				.isEqualToIgnoringGivenFields(new StartWithFilter().setValue("ertertert123"), "compiledPattern");
+		Assertions.assertThat(filter).isInstanceOf(StartWithFilter.class).isEqualToIgnoringGivenFields(new StartWithFilter().setValue("ertertert123"));
 	}
 
 	@Test

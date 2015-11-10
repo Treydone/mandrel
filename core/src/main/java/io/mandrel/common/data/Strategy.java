@@ -22,9 +22,7 @@ import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.service.TaskContextAware;
-import io.mandrel.requests.dns.CachedNameResolver.CachedNameResolverDefinition;
 import io.mandrel.requests.dns.DNSNameResolver.DNSNameResolverDefinition;
-import io.mandrel.requests.dns.CachedNameResolver;
 import io.mandrel.requests.dns.NameResolver;
 import io.mandrel.requests.dns.NameResolver.NameResolverDefinition;
 import io.mandrel.requests.proxy.NoProxyProxyServersSource.NoProxyProxyServersSourceDefinition;
@@ -32,7 +30,6 @@ import io.mandrel.requests.proxy.ProxyServersSource;
 import io.mandrel.requests.proxy.ProxyServersSource.ProxyServersSourceDefinition;
 
 import java.io.Serializable;
-import java.util.Map;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

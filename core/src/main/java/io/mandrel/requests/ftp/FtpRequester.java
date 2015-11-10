@@ -49,7 +49,7 @@ public class FtpRequester extends Requester {
 		private static final long serialVersionUID = -9205125497698919267L;
 
 		@JsonProperty("strategy")
-		private FtpStrategy strategy;
+		private FtpStrategyDefinition strategy = new FtpStrategyDefinition();
 
 		@Override
 		public String name() {
