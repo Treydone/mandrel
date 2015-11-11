@@ -240,9 +240,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
-			<artifactId>kafka_2.11</artifactId>
+			<artifactId>kafka-clients</artifactId>
+			<version>0.8.2.0</version>
 		</dependency>
-
+		
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

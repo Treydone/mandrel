@@ -18,32 +18,31 @@
  */
 package io.mandrel.frontier.store.impl;
 
-import io.mandrel.common.kafka.JsonDecoder;
-import io.mandrel.common.kafka.JsonEncoder;
+import io.mandrel.common.kafka.JsonDeserializer;
+import io.mandrel.common.kafka.JsonSerializer;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.frontier.store.FrontierStore;
 import io.mandrel.frontier.store.Queue;
 
+import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import kafka.consumer.Consumer;
-import kafka.consumer.ConsumerConfig;
-import kafka.consumer.ConsumerIterator;
-import kafka.consumer.KafkaStream;
-import kafka.javaapi.consumer.ConsumerConnector;
-import kafka.javaapi.producer.Producer;
-import kafka.producer.KeyedMessage;
-import kafka.producer.ProducerConfig;
-import kafka.serializer.StringDecoder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -60,13 +59,25 @@ public class KafkaFrontierStore extends FrontierStore {
 		private Properties properties = new Properties();
 
 		public KafkaFrontierStoreDefinition() {
-			properties.put("group.id", "mandrel");
+
 			properties.put("zookeeper.connect", "127.0.0.1:2181");
 			properties.put("zookeeper.connectiontimeout.ms", "1000000");
 			properties.put("zookeeper.session.timeout.ms", "400");
 			properties.put("zookeeper.sync.time.ms", "200");
-			properties.put("auto.commit.interval.ms", "1000");
-			properties.put("serializer.class", JsonEncoder.class.getSimpleName());
+
+			properties.put("json.class", URI.class);
+
+			properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+			properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
+			properties.put(ConsumerConfig.SESSION_TIMEOUT_MS, "30000");
+			properties.put(ConsumerConfig.GROUP_ID_CONFIG, "mandrel");
+			properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+			properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
+			properties.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY, "range");
+
+			properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+			properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName());
+			properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
 		}
 
 		@JsonAnyGetter
@@ -87,59 +98,70 @@ public class KafkaFrontierStore extends FrontierStore {
 		@Override
 		public KafkaFrontierStore build(TaskContext context) {
 
-			ProducerConfig config = new ProducerConfig(properties);
-			Producer<String, URI> producer = new Producer<String, URI>(config);
-
-			ConsumerConfig consumerConfig = new ConsumerConfig(properties);
-			ConsumerConnector consumer = Consumer.createJavaConsumerConnector(consumerConfig);
+			Producer<String, URI> producer = new KafkaProducer<>(properties);
+			Consumer<String, URI> consumer = new KafkaConsumer<>(properties);
 
 			return new KafkaFrontierStore(context, producer, consumer);
 		}
 	}
 
 	private final Producer<String, URI> producer;
-	private final ConsumerConnector consumer;
+	private final Consumer<String, URI> consumer;
 	private final ObjectMapper mapper = new ObjectMapper();
 
-	public KafkaFrontierStore(TaskContext context, Producer<String, URI> producer, ConsumerConnector consumer) {
+	public KafkaFrontierStore(TaskContext context, Producer<String, URI> producer, Consumer<String, URI> consumer) {
 		super(context);
 		this.producer = producer;
 		this.consumer = consumer;
 	}
 
 	@Override
-	public Queue<URI> create(String name) {
-		Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
-		topicCountMap.put(name, new Integer(1)); // TODO only 1?
-
-		Map<String, List<KafkaStream<String, URI>>> consumerMap = consumer.createMessageStreams(topicCountMap, new StringDecoder(null), new JsonDecoder<>(
-				URI.class));
-		KafkaStream<String, URI> stream = consumerMap.get(name).get(0);
-
-		return new KafkaQueue<>(name, producer, stream.iterator(), mapper);
+	public KafkaQueue<URI> create(String name) {
+		return new KafkaQueue<>(name, producer, consumer, mapper);
 	}
 
+	@Slf4j
 	@Data
 	public static class KafkaQueue<T> implements Queue<T> {
 
 		private final String name;
 		private final Producer<String, T> producer;
-		private final ConsumerIterator<String, T> consumer;
+		private final Consumer<String, URI> consumer;
 		private final ObjectMapper mapper;
 
 		@Override
 		public T pool() {
-			return consumer.next().message();
+			// ConsumerRecords<String, URI> records =
+			// consumer.poll(3000).get(name);
+			// for (ConsumerRecord<Integer, String> record : records) {
+			// System.out.println("Received message: (" + record.key() + ", " +
+			// record.value() + ") at offset " + record.offset());
+			// }
+			return null;
 		}
 
 		@Override
 		public void schedule(T item) {
-			producer.send(new KeyedMessage<String, T>(name, item));
+			producer.send(new ProducerRecord<String, T>(name, item));
 		}
 
 		@Override
 		public void schedule(Set<T> items) {
-			producer.send(items.stream().map(item -> new KeyedMessage<String, T>(name, item)).collect(Collectors.toList()));
+			items.stream().map(item -> new ProducerRecord<String, T>(name, item)).forEach(producer::send);
+		}
+
+		@Override
+		public void close() throws IOException {
+			try {
+				consumer.close();
+			} catch (Exception e) {
+				log.info("", e);
+			}
+			try {
+				producer.close();
+			} catch (Exception e) {
+				log.info("", e);
+			}
 		}
 	}
 

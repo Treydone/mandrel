@@ -18,9 +18,10 @@
  */
 package io.mandrel.frontier.store;
 
+import java.io.Closeable;
 import java.util.Set;
 
-public interface Queue<T> {
+public interface Queue<T> extends Closeable {
 
 	T pool();
 
