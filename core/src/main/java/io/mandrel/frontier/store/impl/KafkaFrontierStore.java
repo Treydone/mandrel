@@ -66,7 +66,7 @@ public class KafkaFrontierStore extends FrontierStore {
 			properties.put("zookeeper.session.timeout.ms", "400");
 			properties.put("zookeeper.sync.time.ms", "200");
 			properties.put("auto.commit.interval.ms", "1000");
-			properties.put("serializer.class", JsonEncoder.class);
+			properties.put("serializer.class", JsonEncoder.class.getSimpleName());
 		}
 
 		@JsonAnyGetter

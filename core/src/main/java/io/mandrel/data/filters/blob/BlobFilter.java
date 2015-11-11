@@ -16,27 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.data.filters.page;
+package io.mandrel.data.filters.blob;
 
+import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.metadata.FetchMetadata;
 
 import java.io.Serializable;
 
 import lombok.Data;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
-@JsonSubTypes({ @Type(value = LargeFilter.class, name = "large"), @Type(value = BooleanDataObjectFilters.AndFilter.class, name = "and"),
-		@Type(value = BooleanDataObjectFilters.OrFilter.class, name = "or"), @Type(value = BooleanDataObjectFilters.NotFilter.class, name = "not") })
 @Data
-public abstract class DataObjectFilter implements Serializable {
+public abstract class BlobFilter implements NamedDefinition, Serializable {
 
 	private static final long serialVersionUID = -2594414302045717456L;
 
 	public abstract boolean isValid(FetchMetadata data);
 
-	public abstract String getType();
 }

@@ -20,10 +20,10 @@ package io.mandrel.data.filters;
 
 import static org.junit.Assert.assertEquals;
 import io.mandrel.config.BindConfiguration;
-import io.mandrel.data.filters.WebPageFiltersTest.LocalConfiguration;
-import io.mandrel.data.filters.page.LargeFilter;
-import io.mandrel.data.filters.page.DataObjectFilter;
-import io.mandrel.data.filters.page.BooleanDataObjectFilters.NotFilter;
+import io.mandrel.data.filters.BlobFiltersTest.LocalConfiguration;
+import io.mandrel.data.filters.blob.BlobFilter;
+import io.mandrel.data.filters.blob.LargeBlobFilter;
+import io.mandrel.data.filters.blob.BooleanBlobFilters.NotFilter;
 
 import java.io.IOException;
 
@@ -40,7 +40,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ContextConfiguration(classes = LocalConfiguration.class)
 @RunWith(SpringJUnit4ClassRunner.class)
-public class WebPageFiltersTest {
+public class BlobFiltersTest {
 
 	@Configuration
 	@Import(BindConfiguration.class)
@@ -54,11 +54,11 @@ public class WebPageFiltersTest {
 	@Test
 	public void large() throws IOException {
 
-		LargeFilter filter = new LargeFilter();
+		LargeBlobFilter filter = new LargeBlobFilter();
 
 		String json = objectMapper.writeValueAsString(filter);
 		System.err.println(json);
-		DataObjectFilter read = objectMapper.readValue(json, DataObjectFilter.class);
+		BlobFilter read = objectMapper.readValue(json, BlobFilter.class);
 		assertEquals(filter, read);
 	}
 
@@ -66,11 +66,11 @@ public class WebPageFiltersTest {
 	public void not() throws IOException {
 
 		NotFilter filter = new NotFilter();
-		filter.setFilter(new LargeFilter());
+		filter.setFilter(new LargeBlobFilter());
 
 		String json = objectMapper.writeValueAsString(filter);
 		System.err.println(json);
-		DataObjectFilter read = objectMapper.readValue(json, DataObjectFilter.class);
+		BlobFilter read = objectMapper.readValue(json, BlobFilter.class);
 		assertEquals(filter, read);
 	}
 }

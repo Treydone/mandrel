@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.data.filters.page;
+package io.mandrel.data.filters.blob;
 
 import io.mandrel.metadata.FetchMetadata;
 import lombok.Data;
@@ -24,7 +24,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class LargeFilter extends DataObjectFilter {
+public class LargeBlobFilter extends BlobFilter {
 
 	private static final long serialVersionUID = -5624619977747831604L;
 
@@ -35,7 +35,7 @@ public class LargeFilter extends DataObjectFilter {
 	}
 
 	@Override
-	public String getType() {
+	public String name() {
 		return "large";
 	}
 }

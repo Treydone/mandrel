@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.data.filters.page;
+package io.mandrel.data.filters.blob;
 
 import io.mandrel.metadata.FetchMetadata;
 
@@ -24,59 +24,82 @@ import java.util.List;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
-public interface BooleanDataObjectFilters {
+public interface BooleanBlobFilters {
 
 	@Data
+	@Accessors(chain = true)
 	@EqualsAndHashCode(callSuper = false)
-	public class NotFilter extends DataObjectFilter {
+	public class NotFilter extends BlobFilter {
 
 		private static final long serialVersionUID = -2429186996142024643L;
 
-		private DataObjectFilter filter;
+		private BlobFilter filter;
 
 		public boolean isValid(FetchMetadata webPage) {
 			return !filter.isValid(webPage);
 		}
 
 		@Override
-		public String getType() {
+		public String name() {
 			return "not";
 		}
 	}
 
 	@Data
+	@Accessors(chain = true)
 	@EqualsAndHashCode(callSuper = false)
-	public class OrFilter extends DataObjectFilter {
+	public class TrueFilter extends BlobFilter {
+
+		private static final long serialVersionUID = -2429186996142024643L;
+
+		private BlobFilter filter;
+
+		public boolean isValid(FetchMetadata webPage) {
+			return true;
+		}
+
+		@Override
+		public String name() {
+			return "true";
+		}
+	}
+
+	@Data
+	@Accessors(chain = true)
+	@EqualsAndHashCode(callSuper = false)
+	public class OrFilter extends BlobFilter {
 
 		private static final long serialVersionUID = 7721027082341003067L;
 
-		private List<DataObjectFilter> filters;
+		private List<BlobFilter> filters;
 
 		public boolean isValid(FetchMetadata webPage) {
 			return filters.stream().anyMatch(f -> f.isValid(webPage));
 		}
 
 		@Override
-		public String getType() {
+		public String name() {
 			return "or";
 		}
 	}
 
 	@Data
+	@Accessors(chain = true)
 	@EqualsAndHashCode(callSuper = false)
-	public class AndFilter extends DataObjectFilter {
+	public class AndFilter extends BlobFilter {
 
 		private static final long serialVersionUID = -7125723269925872394L;
 
-		private List<DataObjectFilter> filters;
+		private List<BlobFilter> filters;
 
 		public boolean isValid(FetchMetadata webPage) {
 			return filters.stream().allMatch(f -> f.isValid(webPage));
 		}
 
 		@Override
-		public String getType() {
+		public String name() {
 			return "and";
 		}
 	}

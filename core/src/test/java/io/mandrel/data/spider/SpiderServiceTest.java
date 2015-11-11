@@ -24,11 +24,11 @@ import io.mandrel.common.data.Filters;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.StoresDefinition;
 import io.mandrel.config.BindConfiguration;
+import io.mandrel.data.filters.blob.BlobFilter;
+import io.mandrel.data.filters.blob.LargeBlobFilter;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.LinkFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
-import io.mandrel.data.filters.page.DataObjectFilter;
-import io.mandrel.data.filters.page.LargeFilter;
 import io.mandrel.data.spider.SpiderServiceTest.LocalConfiguration;
 import io.mandrel.data.validation.Validators;
 
@@ -125,11 +125,11 @@ public class SpiderServiceTest {
 	public void pageFilters_large() throws IOException {
 
 		// URL
-		LargeFilter filter = new LargeFilter();
+		LargeBlobFilter filter = new LargeBlobFilter();
 
 		String json = objectMapper.writeValueAsString(filter);
 		System.err.println(json);
-		DataObjectFilter read = objectMapper.readValue(json, DataObjectFilter.class);
+		BlobFilter read = objectMapper.readValue(json, BlobFilter.class);
 		assertEquals(filter, read);
 	}
 
