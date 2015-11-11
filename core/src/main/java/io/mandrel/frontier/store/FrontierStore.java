@@ -43,7 +43,4 @@ public abstract class FrontierStore extends TaskContextAware implements Checkabl
 
 	public abstract Queue<URI> create(String name);
 
-	public abstract void finish(URI uri);
-
-	public abstract void delete(URI uri);
 }

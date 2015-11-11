@@ -40,23 +40,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.jboss.netty.channel.ConnectTimeoutException;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.jboss.netty.handler.timeout.ReadTimeoutException;
-import org.jboss.netty.handler.timeout.TimeoutException;
 import org.jboss.netty.handler.timeout.WriteTimeoutException;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StopWatch;
 
 /**
  * Weeeeeeeeeeeeeeeeehhh!!
  */
-@Data
 @Slf4j
 @RequiredArgsConstructor
 public class Loop implements Runnable {
@@ -69,94 +71,146 @@ public class Loop implements Runnable {
 	private final SpiderAccumulator spiderAccumulator;
 	private final GlobalAccumulator globalAccumulator;
 
+	private final AtomicBoolean run = new AtomicBoolean(false);
+
+	public void start() {
+		run.set(true);
+	}
+
+	public void pause() {
+		run.set(false);
+	}
+
+	public boolean isRunning() {
+		return run.get();
+	}
+
 	@Override
 	public void run() {
 
 		while (true) {
 
-			URI uri = null;
-			// Take on elements
-			// uri = ...
-
-			//
-			StopWatch watch = new StopWatch();
-			watch.start();
-
-			//
-			Optional<Requester> requester = Requesters.of(spider.getId(), uri.getScheme());
-			if (requester.isPresent()) {
-				Requester r = requester.get();
+			if (!run.get()) {
+				log.trace("Waiting...");
 				try {
-					Blob blob = r.getBlocking(uri);
+					TimeUnit.MILLISECONDS.sleep(2000);
+				} catch (InterruptedException e) {
+					// Don't care
+					log.trace("", e);
+				}
+				continue;
+			}
 
-					watch.stop();
+			URI uri = null;
 
-					log.trace("> Start parsing data for {}", uri);
+			// Take on elements
+			List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.FRONTIER);
+			if (!CollectionUtils.isEmpty(instances)) {
+				URI frontier = instances.get(0).getUri();
+				uri = client.frontierClient().next(spider.getId(), frontier);
+			} else {
+				log.warn("Can not find any frontier");
+				try {
+					TimeUnit.MILLISECONDS.sleep(10000);
+				} catch (InterruptedException e) {
+					// Don't care
+					log.trace("", e);
+				}
+			}
 
-					blob.metadata().fetchMetadata().timeToFetch(watch.getTotalTimeMillis());
+			if (uri != null) {
 
-					spiderAccumulator.incNbPages();
-					globalAccumulator.incNbPages();
+				//
+				StopWatch watch = new StopWatch();
+				watch.start();
 
-					spiderAccumulator.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
-					globalAccumulator.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
+				//
+				Optional<Requester> requester = Requesters.of(spider.getId(), uri.getScheme());
+				if (requester.isPresent()) {
+					Requester r = requester.get();
+					try {
+						Blob blob = r.getBlocking(uri);
 
-					spiderAccumulator.incPageForHost(blob.metadata().uri().getHost());
-					globalAccumulator.incPageForHost(blob.metadata().uri().getHost());
+						watch.stop();
 
-					spiderAccumulator.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
-					spiderAccumulator.incTotalSize(blob.metadata().size());
-					globalAccumulator.incTotalSize(blob.metadata().size());
+						log.trace("> Start parsing data for {}", uri);
 
-					Map<String, Instance<?>> cachedSelectors = new HashMap<>();
-					if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
-						log.trace(">  - Extracting documents for {}...", uri);
-						spider.getExtractors().getPages().forEach(ex -> {
-							List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, blob, ex);
+						blob.metadata().fetchMetadata().timeToFetch(watch.getTotalTimeMillis());
 
-							if (documents != null) {
-								spiderAccumulator.incDocumentForExtractor(ex.getName(), documents.size());
-							}
-						});
-						log.trace(">  - Extracting documents for {} done!", uri);
+						spiderAccumulator.incNbPages();
+						globalAccumulator.incNbPages();
+
+						spiderAccumulator.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
+						globalAccumulator.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
+
+						spiderAccumulator.incPageForHost(blob.metadata().uri().getHost());
+						globalAccumulator.incPageForHost(blob.metadata().uri().getHost());
+
+						spiderAccumulator.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
+						spiderAccumulator.incTotalSize(blob.metadata().size());
+						globalAccumulator.incTotalSize(blob.metadata().size());
+
+						Map<String, Instance<?>> cachedSelectors = new HashMap<>();
+						if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
+							log.trace(">  - Extracting documents for {}...", uri);
+							spider.getExtractors().getPages().forEach(ex -> {
+								List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, blob, ex);
+
+								if (documents != null) {
+									spiderAccumulator.incDocumentForExtractor(ex.getName(), documents.size());
+								}
+							});
+							log.trace(">  - Extracting documents for {} done!", uri);
+						}
+
+						if (spider.getExtractors().getOutlinks() != null) {
+							log.trace(">  - Extracting outlinks for {}...", uri);
+							final URI theURI = uri;
+							spider.getExtractors()
+									.getOutlinks()
+									.forEach(
+											ol -> {
+												Set<Link> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, theURI, cachedSelectors,
+														blob, ol).getRight();
+												blob.metadata().fetchMetadata().outlinks(allFilteredOutlinks);
+												add(spider.getId(), allFilteredOutlinks.stream().map(l -> l.uri()).collect(Collectors.toSet()));
+											});
+							log.trace(">  - Extracting outlinks done for {}!", uri);
+						}
+
+						BlobStores.get(spider.getId()).ifPresent(b -> b.putBlob(blob.metadata().uri(), blob));
+
+						log.trace(">  - Storing metadata for {}...", uri);
+						MetadataStores.get(spider.getId()).addMetadata(blob.metadata().uri(), blob.metadata().fetchMetadata());
+						log.trace(">  - Storing metadata for {} done!", uri);
+
+						log.trace("> End parsing data for {}", uri);
+					} catch (Exception t) {
+						// Well...
+						if (t instanceof ConnectTimeoutException) {
+							spiderAccumulator.incConnectTimeout();
+							add(spider.getId(), uri);
+						} else if (t instanceof ReadTimeoutException) {
+							spiderAccumulator.incReadTimeout();
+							add(spider.getId(), uri);
+						} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException
+								|| t instanceof java.util.concurrent.TimeoutException) {
+							spiderAccumulator.incConnectException();
+							add(spider.getId(), uri);
+						}
+
 					}
-
-					if (spider.getExtractors().getOutlinks() != null) {
-						log.trace(">  - Extracting outlinks for {}...", uri);
-						spider.getExtractors().getOutlinks().forEach(ol -> {
-							Set<Link> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, uri, cachedSelectors, blob, ol).getRight();
-							blob.metadata().fetchMetadata().outlinks(allFilteredOutlinks);
-							add(spider.getId(), allFilteredOutlinks.stream().map(l -> l.uri()).collect(Collectors.toSet()));
-						});
-						log.trace(">  - Extracting outlinks done for {}!", uri);
-					}
-
-					BlobStores.get(spider.getId()).ifPresent(b -> b.putBlob(blob.metadata().uri(), blob));
-
-					log.trace(">  - Storing metadata for {}...", uri);
-					MetadataStores.get(spider.getId()).addMetadata(blob.metadata().uri(), blob.metadata().fetchMetadata());
-					log.trace(">  - Storing metadata for {} done!", uri);
-
-					log.trace("> End parsing data for {}", uri);
-				} catch (Exception t) {
-					// Well...
-					if (t instanceof ConnectTimeoutException) {
-						spiderAccumulator.incConnectTimeout();
-						add(spider.getId(), uri);
-					} else if (t instanceof ReadTimeoutException) {
-						spiderAccumulator.incReadTimeout();
-						add(spider.getId(), uri);
-					} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException
-							|| t instanceof java.util.concurrent.TimeoutException) {
-						spiderAccumulator.incConnectException();
-						add(spider.getId(), uri);
-					}
-
+				} else {
+					// TODO Unknown protocol
 				}
 			} else {
-
-				// TODO Unknown protocol
-
+				log.trace("Frontier returned null URI, waiting");
+				try {
+					TimeUnit.MILLISECONDS.sleep(10000);
+				} catch (InterruptedException e) {
+					// Don't care
+					log.trace("", e);
+				}
 			}
 		}
 	}

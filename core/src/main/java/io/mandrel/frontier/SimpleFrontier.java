@@ -78,16 +78,6 @@ public class SimpleFrontier extends Frontier {
 	}
 
 	@Override
-	public void finished(URI uri) {
-		store().finish(uri);
-	}
-
-	@Override
-	public void delete(URI uri) {
-		store().delete(uri);
-	}
-
-	@Override
 	public boolean check() {
 		return true;
 	}

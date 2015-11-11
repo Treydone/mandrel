@@ -33,12 +33,13 @@ import io.mandrel.metrics.MetricsService;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.Requesters;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,7 +49,6 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 @Data
 @Accessors(chain = true, fluent = true)
 @Slf4j
-@RequiredArgsConstructor
 public class WorkerContainer implements Container {
 
 	private final ExtractorService extractorService;
@@ -58,8 +58,19 @@ public class WorkerContainer implements Container {
 	private final DiscoveryClient discoveryClient;
 
 	private ExecutorService executor;
+	private List<Loop> loops;
 
-	public void start() {
+	public WorkerContainer(ExtractorService extractorService, MetricsService metricsService, Spider spider, Clients client, DiscoveryClient discoveryClient) {
+		super();
+		this.extractorService = extractorService;
+		this.metricsService = metricsService;
+		this.spider = spider;
+		this.client = client;
+		this.discoveryClient = discoveryClient;
+		init();
+	}
+
+	public void init() {
 
 		// Create the thread factory
 		BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("workerthread-%d").daemon(true).priority(Thread.MAX_PRIORITY).build();
@@ -71,10 +82,13 @@ public class WorkerContainer implements Container {
 		// spider.getClient().
 
 		// Create loop
+		loops = new ArrayList<>(parallel);
 		IntStream.range(0, parallel).forEach(
 				idx -> {
-					executor.submit(new Loop(extractorService, spider, null, discoveryClient, metricsService.spiderAccumulator(spider.getId()), metricsService
-							.globalAccumulator()));
+					Loop loop = new Loop(extractorService, spider, null, discoveryClient, metricsService.spiderAccumulator(spider.getId()), metricsService
+							.globalAccumulator());
+					loops.add(loop);
+					executor.submit(loop);
 				});
 
 		// Create context
@@ -119,12 +133,24 @@ public class WorkerContainer implements Container {
 	}
 
 	@Override
-	public void pause() {
+	public void start() {
+		loops.forEach(loop -> loop.start());
+	}
 
+	@Override
+	public void pause() {
+		loops.forEach(loop -> loop.pause());
 	}
 
 	@Override
 	public void kill() {
+
+		loops.forEach(loop -> loop.pause());
+		try {
+			executor.shutdownNow();
+		} catch (Exception e) {
+			log.debug(e.getMessage(), e);
+		}
 
 		try {
 			MetadataStores.remove(spider.getId());
@@ -150,11 +176,6 @@ public class WorkerContainer implements Container {
 			log.debug(e.getMessage(), e);
 		}
 
-		try {
-			executor.shutdownNow();
-		} catch (Exception e) {
-			log.debug(e.getMessage(), e);
-		}
 	}
 
 	public void register() {
@@ -164,4 +185,5 @@ public class WorkerContainer implements Container {
 	public void unregister() {
 		WorkerContainers.remove(spider.getId());
 	}
+
 }

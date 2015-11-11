@@ -24,28 +24,31 @@ import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.source.Source;
 import io.mandrel.metadata.MetadataStores;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true, fluent = true)
-@RequiredArgsConstructor
 public class FrontierContainer implements Container {
 
 	private final Spider spider;
 
+	private TaskContext context = new TaskContext();
 	private Frontier frontier;
+
+	public FrontierContainer(Spider spider) {
+		super();
+		this.spider = spider;
+		init();
+	}
 
 	@Override
 	public String type() {
 		return "frontier";
 	}
 
-	@Override
-	public void start() {
+	public void init() {
 
 		// Create context
-		TaskContext context = new TaskContext();
 		context.setDefinition(spider);
 
 		// Init stores
@@ -54,16 +57,20 @@ public class FrontierContainer implements Container {
 		// Init frontier
 		frontier = spider.getFrontier().build(context);
 
+	}
+
+	@Override
+	public void start() {
+
 		// Init sources
 		spider.getSources().forEach(s -> {
 			Source source = s.build(context);
-			// TODO
-				if (!source.singleton() && source.check()) {
-					source.register(uri -> {
-						frontier.schedule(uri);
-					});
-				}
-			});
+			if (!source.singleton() && source.check()) {
+				source.register(uri -> {
+					frontier.schedule(uri);
+				});
+			}
+		});
 
 	}
 
@@ -85,4 +92,5 @@ public class FrontierContainer implements Container {
 	public void unregister() {
 		FrontierContainers.remove(spider.getId());
 	}
+
 }

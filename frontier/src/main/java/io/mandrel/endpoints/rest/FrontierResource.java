@@ -32,14 +32,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-// @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class FrontierResource implements FrontierContract {
 
 	@Override
-	public void create(Spider spider, URI target) {
+	public void create(@RequestBody Spider spider, URI target) {
 		FrontierContainer container = new FrontierContainer(spider);
 		container.register();
 	}
@@ -91,7 +91,7 @@ public class FrontierResource implements FrontierContract {
 	}
 
 	@Override
-	public void sync(List<Spider> spiders, URI target) {
+	public void sync(@RequestBody List<Spider> spiders, URI target) {
 		Map<Long, Spider> ids = spiders.stream().collect(Collectors.toMap(spider -> spider.getId(), spider -> spider));
 
 		List<Long> existingSpiders = new ArrayList<>();

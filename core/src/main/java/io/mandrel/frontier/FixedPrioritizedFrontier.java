@@ -108,18 +108,6 @@ public class FixedPrioritizedFrontier extends Frontier {
 		return store().create("queue-" + p.level());
 	}
 
-	@Override
-	public void finished(URI uri) {
-		// duplicateUrlEliminator().removePending(uri);
-		store().finish(uri);
-	}
-
-	@Override
-	public void delete(URI uri) {
-		// duplicateUrlEliminator().removePending(uri);
-		store().delete(uri);
-	}
-
 	@Data
 	@Accessors(chain = true, fluent = true)
 	public static class Priority implements Serializable {

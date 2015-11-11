@@ -1,2 +1,2 @@
-io.mandrel.frontier.PrioritizedFrontier$PrioritizedFrontierDefinition
+io.mandrel.frontier.FixedPrioritizedFrontier$FixedPrioritizedFrontierDefinition
 io.mandrel.frontier.SimpleFrontier$SimpleFrontierDefinition

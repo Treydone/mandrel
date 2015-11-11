@@ -82,16 +82,13 @@ public class ControllerService {
 	@PostConstruct
 	public void init() {
 
-		// TODO Load the existing spiders from the database
-
-		// TODO Prepare and initiate the spiders, build the containers
-
 		// TODO Load the journal of commands
 
 		scheduledExecutorService.scheduleAtFixedRate(() -> sync(), 0, 10000, TimeUnit.MILLISECONDS);
 	}
 
 	public void sync() {
+		// Load the existing spiders from the database
 		List<Spider> spiders = spiderRepository.listActive().collect(Collectors.toList());
 		discoveryClient.getInstances(ServiceIds.WORKER).forEach(worker -> {
 			clients.workerClient().sync(spiders, worker.getUri());
@@ -199,6 +196,8 @@ public class ControllerService {
 
 					timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_STARTED)
 							.setTime(LocalDateTime.now()));
+
+					// TODO Deploy singleton sources on a random frontier
 
 					return spider;
 

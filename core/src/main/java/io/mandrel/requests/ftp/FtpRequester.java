@@ -20,6 +20,7 @@ package io.mandrel.requests.ftp;
 
 import io.mandrel.blob.Blob;
 import io.mandrel.common.data.FtpStrategy;
+import io.mandrel.common.data.FtpStrategy.FtpStrategyDefinition;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.requests.Requester;
@@ -58,7 +59,7 @@ public class FtpRequester extends Requester {
 
 		@Override
 		public Requester build(TaskContext context) {
-			return new FtpRequester(context).strategy(strategy);
+			return new FtpRequester(context).strategy(strategy.build(context));
 		}
 	}
 
