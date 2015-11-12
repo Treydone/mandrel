@@ -154,7 +154,7 @@ public class DelimiterSeparatedValuesExporter implements Exporter {
 	public void export(Collection<Blob> blobs) {
 		if (addHeader && !headerAdded) {
 			try {
-				csvWriter.writeHeader("url", "statusCode", "statusText", "lastCrawlDate", "outlinks", "headers");
+				csvWriter.writeHeader("url", "statusCode", "statusText", "lastCrawlDate", "outlinks", "timeToFetch");
 			} catch (Exception e) {
 				log.debug("Can not write header {}", csvWriter.getLineNumber(), e);
 			}
@@ -169,6 +169,7 @@ public class DelimiterSeparatedValuesExporter implements Exporter {
 			buffer.add(page.metadata().fetchMetadata().statusText());
 			buffer.add(page.metadata().fetchMetadata().lastCrawlDate());
 			buffer.add(page.metadata().fetchMetadata().outlinks());
+			buffer.add(page.metadata().fetchMetadata().timeToFetch());
 
 			try {
 				csvWriter.write(buffer);

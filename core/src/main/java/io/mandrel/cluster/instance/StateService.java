@@ -37,7 +37,7 @@ public class StateService implements ApplicationListener<ContextStartedEvent> {
 		started.set(true);
 		Optional<ServiceInstance> controller = discoveryClient.getInstances(ServiceIds.CONTROLLER).stream().findFirst();
 		if (controller.isPresent()) {
-			clients.controllerClient().add(
+			clients.controllerClient().addEvent(
 					new NodeEvent().setNodeId(Node.idOf(discoveryClient.getLocalServiceInstance().getUri())).setType(NodeEventType.NODE_STARTED)
 							.setTime(LocalDateTime.now()), controller.get().getUri());
 		} else {
@@ -53,7 +53,7 @@ public class StateService implements ApplicationListener<ContextStartedEvent> {
 	public void destroy() {
 		Optional<ServiceInstance> controller = discoveryClient.getInstances(ServiceIds.CONTROLLER).stream().findFirst();
 		if (controller.isPresent()) {
-			clients.controllerClient().add(
+			clients.controllerClient().addEvent(
 					new NodeEvent().setNodeId(Node.idOf(discoveryClient.getLocalServiceInstance().getUri())).setType(NodeEventType.NODE_STOPPED)
 							.setTime(LocalDateTime.now()), controller.get().getUri());
 		} else {

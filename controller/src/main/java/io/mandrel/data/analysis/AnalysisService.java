@@ -26,7 +26,7 @@ import io.mandrel.data.Link;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.document.Document;
-import io.mandrel.requests.Requester;
+import io.mandrel.requests.Requesters;
 
 import java.net.URI;
 import java.net.URL;
@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.io.IOUtils;
@@ -55,16 +54,20 @@ import crawlercommons.sitemaps.SiteMapParser;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class AnalysisService {
 
 	private final ExtractorService extractorService;
-	private final Requester requester;
+
+	@Inject
+	public AnalysisService(ExtractorService extractorService) {
+		this.extractorService = extractorService;
+	}
 
 	public Analysis analyze(Spider spider, String source) {
 		Blob blob;
 		try {
-			blob = requester.getBlocking(URI.create(source), spider);
+			URI uri = URI.create(source);
+			blob = Requesters.of(uri.getScheme()).get().getBlocking(uri, spider);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
@@ -75,7 +78,30 @@ public class AnalysisService {
 	}
 
 	protected Analysis buildReport(Spider spider, Blob blob) {
-		Analysis report = new Analysis();
+		Analysis report;
+		if (blob.metadata().uri().getScheme().startsWith("http")) {
+			HttpAnalysis temp = new HttpAnalysis();
+
+			// Robots.txt
+			URI pageURL = blob.metadata().uri();
+			String robotsTxtUrl = pageURL.getScheme() + "://" + pageURL.getHost() + ":" + pageURL.getPort() + "/robots.txt";
+			ExtendedRobotRules robotRules = RobotsTxtUtils.getRobotRules(robotsTxtUrl);
+			temp.robotRules(robotRules);
+
+			// Sitemaps
+			if (robotRules != null && robotRules.getSitemaps() != null) {
+				Map<String, List<AbstractSiteMap>> sitemaps = new HashMap<>();
+				robotRules.getSitemaps().forEach(url -> {
+					List<AbstractSiteMap> results = getSitemapsForUrl(url);
+					sitemaps.put(url, results);
+				});
+				temp.sitemaps(sitemaps);
+			}
+			report = temp;
+		} else {
+			report = new Analysis();
+		}
+
 		if (spider.getExtractors() != null) {
 			Map<String, Instance<?>> cachedSelectors = new HashMap<>();
 
@@ -98,21 +124,6 @@ public class AnalysisService {
 				report.filteredOutlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getRight()));
 			}
 
-			// Robots.txt
-			URI pageURL = blob.metadata().uri();
-			String robotsTxtUrl = pageURL.getScheme() + "://" + pageURL.getHost() + ":" + pageURL.getPort() + "/robots.txt";
-			ExtendedRobotRules robotRules = RobotsTxtUtils.getRobotRules(robotsTxtUrl);
-			report.robotRules(robotRules);
-
-			// Sitemaps
-			if (robotRules != null && robotRules.getSitemaps() != null) {
-				Map<String, List<AbstractSiteMap>> sitemaps = new HashMap<>();
-				robotRules.getSitemaps().forEach(url -> {
-					List<AbstractSiteMap> results = getSitemapsForUrl(url);
-					sitemaps.put(url, results);
-				});
-				report.sitemaps(sitemaps);
-			}
 		}
 
 		report.metadata(blob.metadata());
@@ -124,7 +135,8 @@ public class AnalysisService {
 
 		SiteMapParser siteMapParser = new SiteMapParser();
 		try {
-			Blob blob = requester.getBlocking(new URI(sitemapUrl));
+			URI uri = URI.create(sitemapUrl);
+			Blob blob = Requesters.of(uri.getScheme()).get().getBlocking(uri);
 			String contentType = blob.metadata().contentMetadata().contentType() != null ? blob.metadata().contentMetadata().contentType() : "text/xml";
 
 			AbstractSiteMap sitemap = siteMapParser.parseSiteMap(contentType, IOUtils.toByteArray(blob.payload().openStream()), new URL(sitemapUrl));

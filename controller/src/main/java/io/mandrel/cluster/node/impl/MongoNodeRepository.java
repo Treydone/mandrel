@@ -16,7 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.cluster.node;
+package io.mandrel.cluster.node.impl;
+
+import io.mandrel.cluster.node.Node;
+import io.mandrel.cluster.node.NodeRepository;
 
 import java.io.IOException;
 import java.net.URI;

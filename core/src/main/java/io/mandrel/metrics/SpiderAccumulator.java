@@ -18,113 +18,58 @@
  */
 package io.mandrel.metrics;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
-// TODO Use LongAdder
-public class SpiderAccumulator {
+@EqualsAndHashCode(callSuper = false)
+public class SpiderAccumulator extends Accumulator {
 
-	private final AtomicLong pendings = new AtomicLong(0);
-	private final AtomicLong nbPages = new AtomicLong(0);
-	private final AtomicLong totalSize = new AtomicLong(0);
-	private final AtomicLong totalTimeToFetch = new AtomicLong(0);
-
-	private final AtomicLong readTimeout = new AtomicLong(0);
-	private final AtomicLong connectTimeout = new AtomicLong(0);
-	private final AtomicLong connectException = new AtomicLong(0);
-
-	private final Map<String, AtomicLong> extractors = new ConcurrentHashMap<>();
-	private final Map<Integer, AtomicLong> statuses = new ConcurrentHashMap<>();
-	private final Map<String, AtomicLong> hosts = new ConcurrentHashMap<>();
-	private final Map<String, AtomicLong> contentTypes = new ConcurrentHashMap<>();
+	private static final String PREFIX = "spider_";
 
 	private final long spiderId;
+
+	public void incNbPages() {
+		add(PREFIX + spiderId + ".nbPages", 1);
+	}
+
+	public void incTotalSize(long size) {
+		add(PREFIX + spiderId + ".totalSize", size);
+	}
+
+	public void incPageForStatus(int httpStatus) {
+		add(PREFIX + spiderId + ".statuses." + httpStatus, 1);
+	}
+
+	public void incPageForHost(String host) {
+		add(PREFIX + spiderId + ".hosts." + host, 1);
+	}
+
+	public void incPageForContentType(String contentType) {
+		add(PREFIX + spiderId + "contentTypes." + contentType, 1);
+	}
+
+	public void incDocumentForExtractor(String extractor, int number) {
+		add(PREFIX + spiderId + "extractors." + extractor, number);
+	}
 
 	public SpiderAccumulator(long spiderId) {
 		this.spiderId = spiderId;
 	}
 
-	public long incConnectException() {
-		return connectException.incrementAndGet();
+	public void incConnectException() {
+		add(PREFIX + spiderId + "connectException", 1);
 	}
 
-	public long incReadTimeout() {
-		return readTimeout.incrementAndGet();
+	public void incReadTimeout() {
+		add(PREFIX + spiderId + "readTimeout", 1);
 	}
 
-	public long incConnectTimeout() {
-		return connectTimeout.incrementAndGet();
+	public void incConnectTimeout() {
+		add(PREFIX + spiderId + "connectTimeout", 1);
 	}
 
-	public long incNbPages() {
-		return nbPages.incrementAndGet();
-	}
-
-	public long incTotalSize(long size) {
-		return totalSize.addAndGet(size);
-	}
-
-	public long incTotalTimeToFetch(long time) {
-		return totalTimeToFetch.addAndGet(time);
-	}
-
-	public long incPendings() {
-		return pendings.incrementAndGet();
-	}
-
-	public long incPageForStatus(int httpStatus) {
-		AtomicLong res = statuses.get(httpStatus);
-		if (res == null) {
-			synchronized (statuses) {
-				if (res == null) {
-					res = new AtomicLong(0);
-					statuses.put(httpStatus, res);
-				}
-			}
-		}
-		return res.addAndGet(1);
-	}
-
-	public long incPageForHost(String host) {
-		AtomicLong res = hosts.get(host);
-		if (res == null) {
-			synchronized (hosts) {
-				if (res == null) {
-					res = new AtomicLong(0);
-					hosts.put(host, res);
-				}
-			}
-		}
-		return res.addAndGet(1);
-	}
-
-	public long incPageForContentType(String contentType) {
-		AtomicLong res = contentTypes.get(contentType);
-		if (res == null) {
-			synchronized (contentTypes) {
-				if (res == null) {
-					res = new AtomicLong(0);
-					contentTypes.put(contentType, res);
-				}
-			}
-		}
-		return res.addAndGet(1);
-	}
-
-	public long incDocumentForExtractor(String extractor, int number) {
-		AtomicLong res = extractors.get(extractor);
-		if (res == null) {
-			synchronized (extractors) {
-				if (res == null) {
-					res = new AtomicLong(0);
-					extractors.put(extractor, res);
-				}
-			}
-		}
-		return res.addAndGet(number);
+	public void incTotalTimeToFetch(long time) {
+		add(PREFIX + spiderId + "totalTimeToFetch", 1);
 	}
 }

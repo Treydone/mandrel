@@ -24,9 +24,11 @@ import io.mandrel.common.client.Clients;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.assertj.core.util.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -39,7 +41,7 @@ import org.springframework.util.CollectionUtils;
 public class MetricsSyncer {
 
 	@Autowired
-	private MetricsService metricsService;
+	private Accumulators accumulators;
 	@Autowired
 	private Clients clients;
 	@Autowired
@@ -53,9 +55,13 @@ public class MetricsSyncer {
 			List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.CONTROLLER);
 			if (!CollectionUtils.isEmpty(instances)) {
 				URI uri = instances.get(0).getUri();
-				// TODO
-				// clients.controllerClient().updateMetrics(metricsService.globalAccumulator(),
-				// metricsService.spiderAccumulators(), uri);
+
+				Map<String, Long> total = Maps.newHashMap();
+				total.putAll(accumulators.globalAccumulator().tick());
+				total.putAll(accumulators.nodeAccumulator().tick());
+				accumulators.spiderAccumulators().forEach((spiderId, acc) -> total.putAll(acc.tick()));
+
+				clients.controllerClient().updateMetrics(total, uri);
 			} else {
 				log.warn("Can not find any controller");
 			}

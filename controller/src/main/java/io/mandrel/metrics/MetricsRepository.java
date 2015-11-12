@@ -19,9 +19,9 @@
 package io.mandrel.metrics;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -29,6 +29,7 @@ import javax.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -37,6 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.UpdateOptions;
 
 @Component
@@ -54,73 +56,18 @@ public class MetricsRepository {
 		counters = mongoClient.getDatabase("mandrel").getCollection("counters");
 	}
 
-	public void sync(NodeAccumulator host) {
+	public void sync(Map<String, Long> accumulators) {
+		Map<String, List<Pair<String, Long>>> byKey = accumulators.entrySet().stream().map(e -> Pair.of(e.getKey(), e.getValue()))
+				.collect(Collectors.groupingBy(e -> e.getLeft()));
 
-		// Update host and global metrics
-		Document update = new Document();
-		Document inc = new Document().append("nbPagesTotal", host.getNbPagesTotal().getAndSet(0)).append("totalSizeTotal",
-				host.getTotalSizeTotal().getAndSet(0));
-		update.append("$inc", inc);
+		List<ReplaceOneModel<Document>> requests = byKey.entrySet().stream().map(e -> {
+			Document updates = new Document();
+			e.getValue().stream().forEach(i -> updates.append(i.getKey(), i.getValue()));
+			return Pair.of(e.getKey().split(".")[0], new Document("$inc", updates));
+		}).map(pair -> new ReplaceOneModel<Document>(Filters.eq("_id", pair.getLeft()), pair.getRight(), new UpdateOptions().upsert(true)))
+				.collect(Collectors.toList());
 
-		//
-		Document statusesDoc = new Document();
-		for (Entry<Integer, AtomicLong> entry : host.getStatuses().entrySet()) {
-			statusesDoc.append("statuses." + entry.getKey(), entry.getValue().getAndSet(0));
-		}
-		update.append("$inc", statusesDoc);
-
-		//
-		Document hostsDoc = new Document();
-		for (Entry<String, AtomicLong> entry : host.getHosts().entrySet()) {
-			hostsDoc.append("hosts." + entry.getKey(), entry.getValue().getAndSet(0));
-		}
-		update.append("$inc", hostsDoc);
-
-		//
-		Document contentTypesDoc = new Document();
-		for (Entry<String, AtomicLong> entry : host.getContentTypes().entrySet()) {
-			contentTypesDoc.append("contentTypes." + entry.getKey(), entry.getValue().getAndSet(0));
-		}
-		update.append("$inc", contentTypesDoc);
-
-		counters.updateOne(Filters.eq("_id", "global"), update, new UpdateOptions().upsert(true));
-		counters.updateOne(Filters.eq("_id", host.getHostname()), update, new UpdateOptions().upsert(true));
-
-	}
-
-	public void sync(Map<Long, SpiderAccumulator> spiders) {
-
-		// Update spider metrics
-		Document update = new Document();
-		for (Entry<Long, SpiderAccumulator> couple : spiders.entrySet()) {
-			Document inc = new Document().append("nbPages", couple.getValue().getNbPages().getAndSet(0)).append("totalSize",
-					couple.getValue().getTotalSize().getAndSet(0));
-			update.append("$inc", inc);
-
-			//
-			Document statusesDoc = new Document();
-			for (Entry<Integer, AtomicLong> entry : couple.getValue().getStatuses().entrySet()) {
-				statusesDoc.append("statuses." + entry.getKey(), entry.getValue().getAndSet(0));
-			}
-			update.append("$inc", statusesDoc);
-
-			//
-			Document hostsDoc = new Document();
-			for (Entry<String, AtomicLong> entry : couple.getValue().getHosts().entrySet()) {
-				hostsDoc.append("hosts." + entry.getKey(), entry.getValue().getAndSet(0));
-			}
-			update.append("$inc", hostsDoc);
-
-			//
-			Document contentTypesDoc = new Document();
-			for (Entry<String, AtomicLong> entry : couple.getValue().getContentTypes().entrySet()) {
-				contentTypesDoc.append("contentTypes." + entry.getKey(), entry.getValue().getAndSet(0));
-			}
-			update.append("$inc", contentTypesDoc);
-
-			counters.updateOne(Filters.eq("_id", couple.getKey()), update, new UpdateOptions().upsert(true));
-		}
-
+		counters.bulkWrite(requests);
 	}
 
 	@SneakyThrows(IOException.class)

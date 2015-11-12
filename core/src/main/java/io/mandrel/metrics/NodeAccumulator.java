@@ -18,67 +18,34 @@
  */
 package io.mandrel.metrics;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
-// TODO Use LongAdder
-public class NodeAccumulator {
-	private final AtomicLong nbPagesTotal = new AtomicLong(0);
-	private final AtomicLong totalSizeTotal = new AtomicLong(0);
-	private final Map<Integer, AtomicLong> statuses = new ConcurrentHashMap<>();
-	private final Map<String, AtomicLong> hosts = new ConcurrentHashMap<>();
-	private final Map<String, AtomicLong> contentTypes = new ConcurrentHashMap<>();
+@EqualsAndHashCode(callSuper = false)
+public class NodeAccumulator extends Accumulator {
 
-	private String hostname;
+	private static final String PREFIX = "node_";
 
-	public long incNbPages() {
-		return nbPagesTotal.incrementAndGet();
+	private String id;
+
+	public void incNbPages() {
+		add(PREFIX + id + ".nbPagesTotal", 1);
 	}
 
-	public long incTotalSize(long size) {
-		return totalSizeTotal.addAndGet(size);
+	public void incTotalSize(long size) {
+		add(PREFIX + id + ".totalSizeTotal", size);
 	}
 
-	public long incPageForStatus(int httpStatus) {
-		AtomicLong res = statuses.get(httpStatus);
-		if (res == null) {
-			synchronized (statuses) {
-				if (res == null) {
-					res = new AtomicLong(0);
-					statuses.put(httpStatus, res);
-				}
-			}
-		}
-		return res.addAndGet(1);
+	public void incPageForStatus(int httpStatus) {
+		add(PREFIX + id + ".statuses." + httpStatus, 1);
 	}
 
-	public long incPageForHost(String host) {
-		AtomicLong res = hosts.get(host);
-		if (res == null) {
-			synchronized (hosts) {
-				if (res == null) {
-					res = new AtomicLong(0);
-					hosts.put(host, res);
-				}
-			}
-		}
-		return res.addAndGet(1);
+	public void incPageForHost(String host) {
+		add(PREFIX + id + ".hosts." + host, 1);
 	}
 
-	public long incPageForContentType(String contentType) {
-		AtomicLong res = contentTypes.get(contentType);
-		if (res == null) {
-			synchronized (contentTypes) {
-				if (res == null) {
-					res = new AtomicLong(0);
-					contentTypes.put(contentType, res);
-				}
-			}
-		}
-		return res.addAndGet(1);
+	public void incPageForContentType(String contentType) {
+		add(PREFIX + id + ".contentTypes." + contentType, 1);
 	}
 }

@@ -18,65 +18,26 @@
  */
 package io.mandrel.metrics;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+public class GlobalAccumulator extends Accumulator {
+	private static final String PREFIX = "global.";
 
-import lombok.Data;
-
-@Data
-// TODO Use LongAdder
-public class GlobalAccumulator {
-	private final AtomicLong nbPagesTotal = new AtomicLong(0);
-	private final AtomicLong totalSizeTotal = new AtomicLong(0);
-	private final Map<Integer, AtomicLong> statuses = new ConcurrentHashMap<>();
-	private final Map<String, AtomicLong> hosts = new ConcurrentHashMap<>();
-	private final Map<String, AtomicLong> contentTypes = new ConcurrentHashMap<>();
-
-	public long incNbPages() {
-		return nbPagesTotal.incrementAndGet();
+	public void incNbPages() {
+		add(PREFIX + "nbPagesTotal", 1);
 	}
 
-	public long incTotalSize(long size) {
-		return totalSizeTotal.addAndGet(size);
+	public void incTotalSize(long size) {
+		add(PREFIX + "totalSizeTotal", size);
 	}
 
-	public long incPageForStatus(int httpStatus) {
-		AtomicLong res = statuses.get(httpStatus);
-		if (res == null) {
-			synchronized (statuses) {
-				if (res == null) {
-					res = new AtomicLong(0);
-					statuses.put(httpStatus, res);
-				}
-			}
-		}
-		return res.addAndGet(1);
+	public void incPageForStatus(int httpStatus) {
+		add(PREFIX + "statuses." + httpStatus, 1);
 	}
 
-	public long incPageForHost(String host) {
-		AtomicLong res = hosts.get(host);
-		if (res == null) {
-			synchronized (hosts) {
-				if (res == null) {
-					res = new AtomicLong(0);
-					hosts.put(host, res);
-				}
-			}
-		}
-		return res.addAndGet(1);
+	public void incPageForHost(String host) {
+		add(PREFIX + "hosts." + host, 1);
 	}
 
-	public long incPageForContentType(String contentType) {
-		AtomicLong res = contentTypes.get(contentType);
-		if (res == null) {
-			synchronized (contentTypes) {
-				if (res == null) {
-					res = new AtomicLong(0);
-					contentTypes.put(contentType, res);
-				}
-			}
-		}
-		return res.addAndGet(1);
+	public void incPageForContentType(String contentType) {
+		add(PREFIX + "contentTypes." + contentType, 1);
 	}
 }

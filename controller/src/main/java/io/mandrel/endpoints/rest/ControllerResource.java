@@ -19,10 +19,12 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.endpoints.contracts.AdminContract;
+import io.mandrel.metrics.MetricsRepository;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.TimelineService;
 
 import java.net.URI;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -37,7 +39,14 @@ public class ControllerResource implements AdminContract {
 
 	private final TimelineService timelineService;
 
-	public void add(@RequestBody Event event, URI target) {
+	private final MetricsRepository metricsRepository;
+
+	public void addEvent(@RequestBody Event event, URI target) {
 		timelineService.add(event);
+	}
+
+	@Override
+	public void updateMetrics(Map<String, Long> accumulators, URI uri) {
+		metricsRepository.sync(accumulators);
 	}
 }

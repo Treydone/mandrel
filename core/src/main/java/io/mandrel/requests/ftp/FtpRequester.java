@@ -67,6 +67,10 @@ public class FtpRequester extends Requester {
 		super(context);
 	}
 
+	public FtpRequester() {
+		super(null);
+	}
+
 	private FtpStrategy strategy;
 
 	@Override

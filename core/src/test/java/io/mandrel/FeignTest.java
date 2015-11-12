@@ -89,7 +89,7 @@ public class FeignTest {
 
 		ObjectMapper mapper = new ObjectMapper();
 		System.err.println(mapper.writeValueAsString(event));
-		target.add(event, URI.create("http://localhost:8080"));
+		target.addEvent(event, URI.create("http://localhost:8080"));
 	}
 
 	@Test

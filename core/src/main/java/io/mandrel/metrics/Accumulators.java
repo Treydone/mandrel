@@ -25,13 +25,18 @@ import java.util.concurrent.ConcurrentMap;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MetricsService {
+public class Accumulators {
 
 	private final GlobalAccumulator global = new GlobalAccumulator();
+	private final NodeAccumulator node = new NodeAccumulator();
 	private final ConcurrentMap<Long, SpiderAccumulator> spiders = new ConcurrentHashMap<>();
 
 	public GlobalAccumulator globalAccumulator() {
 		return global;
+	}
+
+	public NodeAccumulator nodeAccumulator() {
+		return node;
 	}
 
 	public Map<Long, SpiderAccumulator> spiderAccumulators() {
@@ -39,13 +44,7 @@ public class MetricsService {
 	}
 
 	public SpiderAccumulator spiderAccumulator(long spiderId) {
-		return spiders.get(spiderId);
-	}
-
-	public SpiderAccumulator create(long spiderId) {
-		synchronized (spiders) {
-			return spiders.put(spiderId, new SpiderAccumulator(spiderId));
-		}
+		return spiders.putIfAbsent(spiderId, new SpiderAccumulator(spiderId));
 	}
 
 	public void destroy(long spiderId) {

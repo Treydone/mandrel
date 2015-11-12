@@ -36,20 +36,33 @@
  */
 package io.mandrel.config;
 
+import io.mandrel.common.data.FtpStrategy.FtpStrategyDefinition;
 import io.mandrel.common.data.HttpStrategy.HttpStrategyDefinition;
+import io.mandrel.requests.Requesters;
+import io.mandrel.requests.ftp.FtpRequester;
 import io.mandrel.requests.http.ApacheHttpRequester;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class HttpConfiguration {
+public class RequestersConfiguration {
 
 	@Bean
-	public ApacheHttpRequester defaultRequester() {
+	public ApacheHttpRequester defaultHttpRequester() {
 		ApacheHttpRequester hcRequester = new ApacheHttpRequester();
 		hcRequester.strategy(new HttpStrategyDefinition().build(null));
 		hcRequester.init();
+		Requesters.add(hcRequester);
 		return hcRequester;
+	}
+
+	@Bean
+	public FtpRequester defaultFtpRequester() {
+		FtpRequester ftpRequester = new FtpRequester();
+		ftpRequester.strategy(new FtpStrategyDefinition().build(null));
+		ftpRequester.init();
+		Requesters.add(ftpRequester);
+		return ftpRequester;
 	}
 }

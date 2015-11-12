@@ -22,7 +22,7 @@ import io.mandrel.common.client.Clients;
 import io.mandrel.common.data.Spider;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.endpoints.contracts.WorkerContract;
-import io.mandrel.metrics.MetricsService;
+import io.mandrel.metrics.Accumulators;
 import io.mandrel.worker.WorkerContainer;
 import io.mandrel.worker.WorkerContainers;
 
@@ -42,7 +42,7 @@ public class WorkerResource implements WorkerContract {
 	@Autowired
 	private ExtractorService extractorService;
 	@Autowired
-	private MetricsService metricsService;
+	private Accumulators accumulators;
 	@Autowired
 	private Clients clients;
 	@Autowired
@@ -50,7 +50,7 @@ public class WorkerResource implements WorkerContract {
 
 	@Override
 	public void create(Spider spider, URI target) {
-		WorkerContainer container = new WorkerContainer(extractorService, metricsService, spider, clients, discoveryClient);
+		WorkerContainer container = new WorkerContainer(extractorService, accumulators, spider, clients, discoveryClient);
 		container.register();
 	}
 

@@ -22,6 +22,7 @@ import io.mandrel.endpoints.rest.Apis;
 import io.mandrel.timeline.Event;
 
 import java.net.URI;
+import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,5 +34,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public interface AdminContract {
 
 	@RequestMapping(value = "/events", method = RequestMethod.POST)
-	void add(@RequestBody Event event, @RequestHeader("target") URI target);
+	void addEvent(@RequestBody Event event, @RequestHeader("target") URI target);
+
+	@RequestMapping(value = "/metrics", method = RequestMethod.POST)
+	void updateMetrics(@RequestBody Map<String, Long> accumulators, @RequestHeader("target") URI uri);
 }

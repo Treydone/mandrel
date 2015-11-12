@@ -28,9 +28,20 @@ import com.google.common.collect.ImmutableList;
 public class Requesters {
 
 	private final static Map<Long, Map<String, Requester>> requesters = new HashMap<>();
+	private final static Map<String, Requester> globalRequesters = new HashMap<>();
 
 	public static Iterable<Map<String, Requester>> list() {
 		return ImmutableList.copyOf(requesters.values());
+	}
+
+	public static void add(Requester requester) {
+		synchronized (globalRequesters) {
+			globalRequesters.putAll(requester.getProtocols().stream().collect(Collectors.toMap(p -> p, p -> requester)));
+		}
+	}
+
+	public static Optional<Requester> of(String protocol) {
+		return globalRequesters.get(protocol) != null ? Optional.of(globalRequesters.get(protocol)) : Optional.empty();
 	}
 
 	public static void add(long spiderId, Requester requester) {

@@ -29,7 +29,7 @@ import io.mandrel.document.DocumentStore;
 import io.mandrel.document.DocumentStores;
 import io.mandrel.metadata.MetadataStore;
 import io.mandrel.metadata.MetadataStores;
-import io.mandrel.metrics.MetricsService;
+import io.mandrel.metrics.Accumulators;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.Requesters;
 
@@ -52,7 +52,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 public class WorkerContainer implements Container {
 
 	private final ExtractorService extractorService;
-	private final MetricsService metricsService;
+	private final Accumulators accumulators;
 	private final Spider spider;
 	private final Clients client;
 	private final DiscoveryClient discoveryClient;
@@ -60,10 +60,10 @@ public class WorkerContainer implements Container {
 	private ExecutorService executor;
 	private List<Loop> loops;
 
-	public WorkerContainer(ExtractorService extractorService, MetricsService metricsService, Spider spider, Clients client, DiscoveryClient discoveryClient) {
+	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Spider spider, Clients client, DiscoveryClient discoveryClient) {
 		super();
 		this.extractorService = extractorService;
-		this.metricsService = metricsService;
+		this.accumulators = accumulators;
 		this.spider = spider;
 		this.client = client;
 		this.discoveryClient = discoveryClient;
@@ -85,7 +85,7 @@ public class WorkerContainer implements Container {
 		loops = new ArrayList<>(parallel);
 		IntStream.range(0, parallel).forEach(
 				idx -> {
-					Loop loop = new Loop(extractorService, spider, null, discoveryClient, metricsService.spiderAccumulator(spider.getId()), metricsService
+					Loop loop = new Loop(extractorService, spider, null, discoveryClient, accumulators.spiderAccumulator(spider.getId()), accumulators
 							.globalAccumulator());
 					loops.add(loop);
 					executor.submit(loop);
