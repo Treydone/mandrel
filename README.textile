@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/Treydone/mandrel.svg?branch=master)](https://travis-ci.org/Treydone/mandrel)
+[![Build Status](https://travis-ci.org/Treydone/mandrel.svg?branch=dev)](https://travis-ci.org/Treydone/mandrel)
+
 h1. Mandrel
 
 h2. A Distributed Crawler Engine
