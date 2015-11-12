@@ -176,6 +176,7 @@ public class WorkerContainer implements Container {
 			log.debug(e.getMessage(), e);
 		}
 
+		accumulators.destroy(spider.getId());
 	}
 
 	public void register() {

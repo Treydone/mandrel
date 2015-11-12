@@ -29,6 +29,8 @@ import io.mandrel.data.filters.link.SkipAncorFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
 import io.mandrel.data.source.FixedSource.FixedSourceDefinition;
 import io.mandrel.data.validation.Validators;
+import io.mandrel.metrics.Accumulators;
+import io.mandrel.metrics.MetricsRepository;
 import io.mandrel.timeline.SpiderEvent;
 import io.mandrel.timeline.SpiderEvent.SpiderEventType;
 import io.mandrel.timeline.TimelineService;
@@ -68,6 +70,10 @@ public class ControllerService {
 	private DiscoveryClient discoveryClient;
 	@Autowired
 	private ScheduledExecutorService scheduledExecutorService;
+	@Autowired
+	private Accumulators accumulators;
+	@Autowired
+	private MetricsRepository metricsRepository;
 
 	private RandomNameGenerator generator = new RandomNameGenerator();
 
@@ -243,6 +249,8 @@ public class ControllerService {
 
 				timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_DELETED)
 						.setTime(LocalDateTime.now()));
+
+				metricsRepository.delete(spiderId);
 
 				return spiderRepository.update(spider);
 			});

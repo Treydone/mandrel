@@ -18,11 +18,13 @@
  */
 package io.mandrel.endpoints.rest;
 
+import io.mandrel.common.client.Clients;
 import io.mandrel.common.data.Spider;
 import io.mandrel.endpoints.contracts.FrontierContract;
 import io.mandrel.frontier.Frontier;
 import io.mandrel.frontier.FrontierContainer;
 import io.mandrel.frontier.FrontierContainers;
+import io.mandrel.metrics.Accumulators;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -32,15 +34,24 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class FrontierResource implements FrontierContract {
 
+	@Autowired
+	private Accumulators accumulators;
+	@Autowired
+	private Clients clients;
+	@Autowired
+	private DiscoveryClient discoveryClient;
+
 	@Override
 	public void create(@RequestBody Spider spider, URI target) {
-		FrontierContainer container = new FrontierContainer(spider);
+		FrontierContainer container = new FrontierContainer(spider, accumulators, clients, discoveryClient);
 		container.register();
 	}
 

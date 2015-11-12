@@ -18,73 +18,17 @@
  */
 package io.mandrel.metrics;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+public interface MetricsRepository {
 
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+	void sync(Map<String, Long> accumulators);
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.bson.Document;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
+	NodeMetrics node(String nodeId);
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.MongoClient;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.ReplaceOneModel;
-import com.mongodb.client.model.UpdateOptions;
+	GlobalMetrics global();
 
-@Component
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
-@ConditionalOnProperty(value = "engine.mongodb.enabled", matchIfMissing = true)
-public class MetricsRepository {
+	SpiderMetrics spider(long spiderId);
 
-	private final MongoClient mongoClient;
-	private final ObjectMapper mapper;
-
-	private MongoCollection<Document> counters;
-
-	@PostConstruct
-	public void init() {
-		counters = mongoClient.getDatabase("mandrel").getCollection("counters");
-	}
-
-	public void sync(Map<String, Long> accumulators) {
-		Map<String, List<Pair<String, Long>>> byKey = accumulators.entrySet().stream().map(e -> Pair.of(e.getKey(), e.getValue()))
-				.collect(Collectors.groupingBy(e -> e.getLeft()));
-
-		List<ReplaceOneModel<Document>> requests = byKey.entrySet().stream().map(e -> {
-			Document updates = new Document();
-			e.getValue().stream().forEach(i -> updates.append(i.getKey(), i.getValue()));
-			return Pair.of(e.getKey().split(".")[0], new Document("$inc", updates));
-		}).map(pair -> new ReplaceOneModel<Document>(Filters.eq("_id", pair.getLeft()), pair.getRight(), new UpdateOptions().upsert(true)))
-				.collect(Collectors.toList());
-
-		counters.bulkWrite(requests);
-	}
-
-	@SneakyThrows(IOException.class)
-	public NodeMetrics node(String nodeId) {
-		Document document = counters.find(Filters.eq("_id", nodeId)).first();
-		return document != null ? mapper.readValue(document.toJson(), NodeMetrics.class) : new NodeMetrics();
-	}
-
-	@SneakyThrows(IOException.class)
-	public GlobalMetrics global() {
-		Document document = counters.find(Filters.eq("_id", "global")).first();
-		return document != null ? mapper.readValue(document.toJson(), GlobalMetrics.class) : new GlobalMetrics();
-	}
-
-	@SneakyThrows(IOException.class)
-	public SpiderMetrics spider(long spiderId) {
-		Document document = counters.find(Filters.eq("_id", spiderId)).first();
-		return document != null ? mapper.readValue(document.toJson(), SpiderMetrics.class) : new SpiderMetrics();
-	}
+	void delete(long spiderId);
 }

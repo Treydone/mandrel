@@ -18,26 +18,36 @@
  */
 package io.mandrel.frontier;
 
+import io.mandrel.common.client.Clients;
 import io.mandrel.common.container.Container;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.source.Source;
 import io.mandrel.metadata.MetadataStores;
+import io.mandrel.metrics.Accumulators;
 import lombok.Data;
 import lombok.experimental.Accessors;
+
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 
 @Data
 @Accessors(chain = true, fluent = true)
 public class FrontierContainer implements Container {
 
 	private final Spider spider;
+	private final Accumulators accumulators;
+	private final Clients clients;
+	private final DiscoveryClient discoveryClient;
 
 	private TaskContext context = new TaskContext();
 	private Frontier frontier;
 
-	public FrontierContainer(Spider spider) {
+	public FrontierContainer(Spider spider, Accumulators accumulators, Clients clients, DiscoveryClient discoveryClient) {
 		super();
 		this.spider = spider;
+		this.accumulators = accumulators;
+		this.clients = clients;
+		this.discoveryClient = discoveryClient;
 		init();
 	}
 
@@ -81,7 +91,7 @@ public class FrontierContainer implements Container {
 
 	@Override
 	public void kill() {
-
+		accumulators.destroy(spider.getId());
 	}
 
 	@Override
