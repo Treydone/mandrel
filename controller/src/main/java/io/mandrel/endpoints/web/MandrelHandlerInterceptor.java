@@ -19,7 +19,6 @@
 package io.mandrel.endpoints.web;
 
 import io.mandrel.common.settings.InfoSettings;
-import io.mandrel.common.settings.NetworkSettings;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -44,8 +43,6 @@ public class MandrelHandlerInterceptor implements HandlerInterceptor {
 
 	private final static BeansWrapper BEANSWRAPPER = new BeansWrapperBuilder(Configuration.VERSION_2_3_22).build();
 
-	private final NetworkSettings networkSettings;
-
 	private final InfoSettings infoSettings;
 
 	@Override
@@ -59,7 +56,6 @@ public class MandrelHandlerInterceptor implements HandlerInterceptor {
 			modelAndView.getModelMap().addAttribute("now", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
 			modelAndView.getModelMap().addAttribute("statics", BEANSWRAPPER.getStaticModels());
 
-			modelAndView.getModelMap().addAttribute("networkSettings", networkSettings);
 			modelAndView.getModelMap().addAttribute("infoSettings", infoSettings);
 		}
 	}

@@ -46,7 +46,6 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class KafkaFrontierStore extends FrontierStore {
 
@@ -107,7 +106,6 @@ public class KafkaFrontierStore extends FrontierStore {
 
 	private final Producer<String, URI> producer;
 	private final Consumer<String, URI> consumer;
-	private final ObjectMapper mapper = new ObjectMapper();
 
 	public KafkaFrontierStore(TaskContext context, Producer<String, URI> producer, Consumer<String, URI> consumer) {
 		super(context);
@@ -117,7 +115,7 @@ public class KafkaFrontierStore extends FrontierStore {
 
 	@Override
 	public KafkaQueue<URI> create(String name) {
-		return new KafkaQueue<>(name, producer, consumer, mapper);
+		return new KafkaQueue<>(name, producer, consumer);
 	}
 
 	@Slf4j
@@ -127,7 +125,6 @@ public class KafkaFrontierStore extends FrontierStore {
 		private final String name;
 		private final Producer<String, T> producer;
 		private final Consumer<String, URI> consumer;
-		private final ObjectMapper mapper;
 
 		@Override
 		public T pool() {
