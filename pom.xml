@@ -645,7 +645,7 @@ org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UT
 								<licenseHeaderFile>${basedir}/license-header.txt</licenseHeaderFile>
 								<useWildcardClassPath>true</useWildcardClassPath>
 								<repositoryLayout>flat</repositoryLayout>
-								<configurationSourceDirectory>${project.build.directory}/generated-resources/conf</configurationSourceDirectory>
+								<configurationSourceDirectory>src/main/resources</configurationSourceDirectory>
 								<copyConfigurationDirectory>true</copyConfigurationDirectory>
 								<configurationDirectory>conf</configurationDirectory>
 								<logsDirectory>logs</logsDirectory>

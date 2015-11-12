@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -85,7 +85,9 @@ public class MongoDocumentStore extends DocumentStore {
 
 	private final static Function<? super org.bson.Document, ? extends Document> fromBson = entry -> {
 		Document document = new Document();
-		document.putAll((Map<? extends String, ? extends List<? extends Object>>) entry);
+		for (Entry<String, Object> item : entry.entrySet()) {
+			document.put(item.getKey(), (List<? extends Object>) item.getValue());
+		}
 		document.setId(entry.getString("_id"));
 		return document;
 	};
