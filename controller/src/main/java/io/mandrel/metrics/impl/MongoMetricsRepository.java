@@ -35,11 +35,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.assertj.core.util.Iterables;
 import org.bson.Document;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Splitter;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
@@ -53,6 +55,7 @@ public class MongoMetricsRepository implements MetricsRepository {
 
 	private final MongoClient mongoClient;
 	private final ObjectMapper mapper;
+	private final Splitter splitter = Splitter.on('.').limit(1).trimResults();
 
 	private MongoCollection<Document> counters;
 
@@ -67,8 +70,10 @@ public class MongoMetricsRepository implements MetricsRepository {
 
 		List<ReplaceOneModel<Document>> requests = byKey.entrySet().stream().map(e -> {
 			Document updates = new Document();
-			e.getValue().stream().forEach(i -> updates.append(i.getKey(), i.getValue()));
-			return Pair.of(e.getKey().split(".")[0], new Document("$inc", updates));
+			Iterable<String> results = splitter.split(e.getKey());
+			String[] elts = Iterables.toArray(results);
+			e.getValue().stream().forEach(i -> updates.append(elts[1], i.getValue()));
+			return Pair.of(elts[0], new Document("$inc", updates));
 		}).map(pair -> new ReplaceOneModel<Document>(Filters.eq("_id", pair.getLeft()), pair.getRight(), new UpdateOptions().upsert(true)))
 				.collect(Collectors.toList());
 

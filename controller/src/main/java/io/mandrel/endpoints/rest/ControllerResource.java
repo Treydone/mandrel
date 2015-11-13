@@ -30,6 +30,7 @@ import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
+import org.apache.commons.collections.MapUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,7 +47,9 @@ public class ControllerResource implements AdminContract {
 	}
 
 	@Override
-	public void updateMetrics(Map<String, Long> accumulators, URI uri) {
-		metricsRepository.sync(accumulators);
+	public void updateMetrics(@RequestBody Map<String, Long> accumulators, URI uri) {
+		if (MapUtils.isNotEmpty(accumulators)) {
+			metricsRepository.sync(accumulators);
+		}
 	}
 }

@@ -2,6 +2,8 @@ spring:
   pidfile: controller.pid
   application:
     name: controller
+    admin:
+      enabled: false
   cloud:
     zookeeper:
       enabled: true
@@ -14,6 +16,8 @@ spring:
     mongodb:
       host: localhost
       port: 27017
+  jmx:
+    enabled: false
           
 server:
   port: 8080

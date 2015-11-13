@@ -18,6 +18,7 @@
  */
 package io.mandrel.bootstrap;
 
+import io.mandrel.common.NotFoundException;
 import io.mandrel.common.settings.InfoSettings;
 import io.mandrel.endpoints.rest.ApiOriginFilter;
 import io.mandrel.monitor.SigarService;
@@ -28,7 +29,6 @@ import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.jhades.JHades;
 import org.springframework.boot.actuate.system.ApplicationPidFileWriter;
 import org.springframework.boot.actuate.system.EmbeddedServerPortFileWriter;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -55,7 +55,7 @@ public abstract class Application extends SpringBootServletInitializer {
 	@Bean
 	public EmbeddedServletContainerCustomizer containerCustomizer() {
 		return container -> {
-			container.addErrorPages(new ErrorPage("/error"));
+			container.addErrorPages(new ErrorPage(NotFoundException.class, "/404"), new ErrorPage("/error"));
 		};
 	}
 
@@ -70,7 +70,7 @@ public abstract class Application extends SpringBootServletInitializer {
 		// properties.put("debug", "true");
 
 		// Print some useful infos about the classpath and others things
-		new JHades().overlappingJarsReport();
+		// new JHades().overlappingJarsReport();
 
 		context = new SpringApplicationBuilder(getClass()).properties(properties).listeners(new ApplicationPidFileWriter(), new EmbeddedServerPortFileWriter())
 				.run(args);
