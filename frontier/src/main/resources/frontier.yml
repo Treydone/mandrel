@@ -2,6 +2,8 @@ spring:
   pidfile: frontier.pid
   application:
     name: frontier
+    admin:
+      enabled: false    
   cloud:
     zookeeper:
       enabled: true
@@ -9,6 +11,8 @@ spring:
       discovery:
         enabled: true
         root: /mandrel
-                    
+  jmx:
+    enabled: false
+                        
 server:
   port: 8090
