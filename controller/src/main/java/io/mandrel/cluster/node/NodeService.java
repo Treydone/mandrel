@@ -20,6 +20,7 @@ package io.mandrel.cluster.node;
 
 import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.instance.StateService;
+import io.mandrel.common.NotFoundException;
 import io.mandrel.common.client.Clients;
 
 import java.net.URI;
@@ -71,8 +72,8 @@ public class NodeService {
 		return nodeRepository.get(Node.idOf(uri));
 	}
 
-	public Optional<Node> node(String id) {
-		return nodeRepository.get(id);
+	public Node node(String id) {
+		return nodeRepository.get(id).orElseThrow(() -> new NotFoundException("Unknown node"));
 	}
 
 	public Map<URI, Node> nodes(Collection<URI> uris) {

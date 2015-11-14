@@ -23,7 +23,8 @@ import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.service.TaskContextAware;
 import io.mandrel.frontier.revisit.RevisitStrategy;
-import io.mandrel.frontier.revisit.SimpleRevisitStrategy;
+import io.mandrel.frontier.revisit.RevisitStrategy.RevisitStrategyDefinition;
+import io.mandrel.frontier.revisit.SimpleRevisitStrategy.SimpleRevisitStrategyDefinition;
 import io.mandrel.frontier.store.FrontierStore;
 import io.mandrel.frontier.store.FrontierStore.FrontierStoreDefinition;
 import io.mandrel.frontier.store.impl.KafkaFrontierStore.KafkaFrontierStoreDefinition;
@@ -59,13 +60,13 @@ public abstract class Frontier extends TaskContextAware implements Checkable {
 		protected Politeness politeness = new Politeness();
 
 		@JsonProperty("revist")
-		protected RevisitStrategy revisit = new SimpleRevisitStrategy();
+		protected RevisitStrategyDefinition<? extends RevisitStrategy> revisit = new SimpleRevisitStrategyDefinition();
 
 		@JsonProperty("store")
 		protected FrontierStoreDefinition<? extends FrontierStore> store = new KafkaFrontierStoreDefinition();
 
 		public FRONTIER build(FRONTIER frontier, TaskContext context) {
-			frontier.store(store.build(context)).politeness(politeness).revisit(revisit);
+			frontier.store(store.build(context)).politeness(politeness).revisit(revisit.build(context));
 			return frontier;
 		}
 	}
@@ -75,9 +76,7 @@ public abstract class Frontier extends TaskContextAware implements Checkable {
 	protected FrontierStore store;
 
 	public abstract URI pool();
-
 	public abstract void schedule(URI uri);
-
 	public abstract void schedule(Set<URI> uris);
 
 }

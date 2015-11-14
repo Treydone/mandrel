@@ -48,8 +48,7 @@ public class NodeController {
 
 	@RequestMapping("/{id}")
 	public String node(@PathVariable String id, Model model) {
-		// TODO 404 on not found
-		model.addAttribute("node", nodeService.node(id).get());
+		model.addAttribute("node", nodeService.node(id));
 		model.addAttribute("metrics", metricsRepository.node(id));
 		return "views/node";
 	}

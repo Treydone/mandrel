@@ -18,6 +18,7 @@
  */
 package io.mandrel.endpoints.web;
 
+import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
 import io.mandrel.controller.ControllerService;
 import io.mandrel.metrics.MetricsRepository;
@@ -67,7 +68,7 @@ public class SpiderController {
 
 	@RequestMapping(value = "/{id}/start")
 	public String start(@PathVariable Long id) {
-		spiderService.start(id);
+		spiderService.start(id).orElseThrow(() -> new NotFoundException("Spider not found"));
 		return "redirect:/spiders/{id}";
 	}
 
