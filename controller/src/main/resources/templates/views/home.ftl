@@ -147,7 +147,7 @@
 	                      <td>Sources:
 	                      <#if spider.sources??>
 	                      <#list spider.sources as source>
-	                      	${source.name} /
+	                      	${source.name()} /
 	                      </#list>
 	                      </#if>
 	                      </td>

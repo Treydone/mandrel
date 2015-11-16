@@ -67,8 +67,7 @@ public class FixedPrioritizedFrontier extends Frontier {
 
 	private List<Priority> priorities = new ArrayList<Priority>();
 
-	public FixedPrioritizedFrontier(TaskContext context) {
-		super(context);
+	public void init() {
 		// Add default if not present
 		if (priorities.stream().noneMatch(p -> p.defaultPriority())) {
 			priorities.add(Priority.of(new BooleanLinkFilters.TrueFilter(), true));
@@ -80,6 +79,10 @@ public class FixedPrioritizedFrontier extends Frontier {
 			// Create queue in store
 				store().create("queue-" + idx);
 			});
+	}
+
+	public FixedPrioritizedFrontier(TaskContext context) {
+		super(context);
 	}
 
 	@Override

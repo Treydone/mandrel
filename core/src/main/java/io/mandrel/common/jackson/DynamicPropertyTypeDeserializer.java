@@ -58,6 +58,9 @@ public class DynamicPropertyTypeDeserializer extends AsPropertyTypeDeserializer 
 		JsonNode node = jp.readValueAsTree();
 
 		NamedDefinition res = NamedProviders.get((Class<NamedDefinition>) _baseType.getRawClass(), node.get("type").asText());
+		if (res == null) {
+			return null;
+		}
 		JavaType type = SimpleType.construct(res.getClass());
 
 		JsonParser jsonParser = new TreeTraversingParser(node, jp.getCodec());

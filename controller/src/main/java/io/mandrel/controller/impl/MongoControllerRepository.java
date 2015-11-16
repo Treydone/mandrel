@@ -22,6 +22,7 @@ import io.mandrel.cluster.idgenerator.IdGenerator;
 import io.mandrel.cluster.idgenerator.MongoIdGenerator;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.State;
+import io.mandrel.config.BindConfiguration;
 import io.mandrel.controller.ControllerRepository;
 
 import java.io.IOException;
@@ -39,6 +40,9 @@ import org.bson.Document;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.SerializableString;
+import com.fasterxml.jackson.core.io.CharacterEscapes;
+import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.mongodb.MongoClient;
@@ -52,12 +56,16 @@ public class MongoControllerRepository implements ControllerRepository {
 
 	private final IdGenerator idGenerator = new MongoIdGenerator();
 	private final MongoClient client;
-	private final ObjectMapper mapper;
+	private ObjectMapper mapper;
 
 	private MongoCollection<Document> collection;
 
 	@PostConstruct
 	public void init() {
+		mapper = new ObjectMapper();
+		BindConfiguration.configure(mapper);
+		mapper.getFactory().setCharacterEscapes(new BsonEscaper());
+
 		collection = client.getDatabase("mandrel").getCollection("spiders");
 	}
 
@@ -103,5 +111,30 @@ public class MongoControllerRepository implements ControllerRepository {
 				throw Throwables.propagate(e);
 			}
 		}).spliterator(), false);
+	}
+
+	public static class BsonEscaper extends CharacterEscapes {
+
+		private static final long serialVersionUID = 496536831641799617L;
+		private final int[] _asciiEscapes;
+
+		public BsonEscaper() {
+			_asciiEscapes = standardAsciiEscapesForJSON();
+			_asciiEscapes['.'] = CharacterEscapes.ESCAPE_CUSTOM;
+		}
+
+		@Override
+		public int[] getEscapeCodesForAscii() {
+			return _asciiEscapes;
+		}
+
+		@Override
+		public SerializableString getEscapeSequence(int i) {
+			if (i == '.') {
+				return new SerializedString("->");
+			} else {
+				return null;
+			}
+		}
 	}
 }

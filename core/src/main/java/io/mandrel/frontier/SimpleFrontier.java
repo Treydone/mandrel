@@ -55,10 +55,13 @@ public class SimpleFrontier extends Frontier {
 		}
 	}
 
-	private final Queue<URI> queue;
+	private Queue<URI> queue;
 
 	public SimpleFrontier(TaskContext context) {
 		super(context);
+	}
+
+	public void init() {
 		queue = store().create(DEFAULT_QUEUE);
 	}
 

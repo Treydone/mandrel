@@ -31,7 +31,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 @Configuration
 public class BindConfiguration {
@@ -43,7 +42,7 @@ public class BindConfiguration {
 		return objectMapper;
 	}
 
-	protected void configure(ObjectMapper objectMapper) {
+	public static void configure(ObjectMapper objectMapper) {
 		// SerializationFeature for changing how JSON is written
 
 		// to allow serialization of "empty" POJOs (no properties to serialize)
