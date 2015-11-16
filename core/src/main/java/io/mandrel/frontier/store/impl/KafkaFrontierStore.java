@@ -26,17 +26,21 @@ import io.mandrel.frontier.store.Queue;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import kafka.consumer.ConsumerIterator;
+import kafka.consumer.KafkaStream;
+import kafka.javaapi.consumer.ConsumerConnector;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -46,6 +50,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class KafkaFrontierStore extends FrontierStore {
 
@@ -63,8 +68,6 @@ public class KafkaFrontierStore extends FrontierStore {
 			properties.put("zookeeper.connectiontimeout.ms", "1000000");
 			properties.put("zookeeper.session.timeout.ms", "400");
 			properties.put("zookeeper.sync.time.ms", "200");
-
-			properties.put("json.class", URI.class);
 
 			properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
 			properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
@@ -96,35 +99,51 @@ public class KafkaFrontierStore extends FrontierStore {
 
 		@Override
 		public KafkaFrontierStore build(TaskContext context) {
-
-			Producer<String, URI> producer = new KafkaProducer<>(properties);
-			Consumer<String, URI> consumer = new KafkaConsumer<>(properties);
-
-			return new KafkaFrontierStore(context, producer, consumer);
+			return new KafkaFrontierStore(context, properties);
 		}
 	}
 
-	private final Producer<String, URI> producer;
-	private final Consumer<String, URI> consumer;
+	private final Properties properties;
 
-	public KafkaFrontierStore(TaskContext context, Producer<String, URI> producer, Consumer<String, URI> consumer) {
+	public KafkaFrontierStore(TaskContext context, Properties properties) {
 		super(context);
-		this.producer = producer;
-		this.consumer = consumer;
+		this.properties = properties;
 	}
 
 	@Override
 	public KafkaQueue<URI> create(String name) {
-		return new KafkaQueue<>(name, producer, consumer);
+		return new KafkaQueue<>(name, URI.class, properties);
 	}
 
 	@Slf4j
-	@Data
 	public static class KafkaQueue<T> implements Queue<T> {
 
 		private final String name;
+		private final Class<T> clazz;
 		private final Producer<String, T> producer;
-		private final Consumer<String, URI> consumer;
+		// private final Consumer<String, URI> consumer;
+
+		// TODO TO BE REMOVED
+		private final ConsumerIterator<byte[], byte[]> stream;
+		private final ObjectMapper mapper = new ObjectMapper();
+
+		public KafkaQueue(String name, Class<T> clazz, Properties properties) {
+			super();
+			this.name = name;
+			this.clazz = clazz;
+
+			properties.put("json.class", clazz);
+
+			this.producer = new KafkaProducer<>(properties);
+			// consumer = new KafkaConsumer<>(properties);
+
+			// TODO TO BE REMOVED
+			ConsumerConnector connector = kafka.consumer.Consumer.createJavaConsumerConnector(new kafka.consumer.ConsumerConfig(properties));
+			Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
+			topicCountMap.put(name, new Integer(1));
+			Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = connector.createMessageStreams(topicCountMap);
+			this.stream = consumerMap.get(name).get(0).iterator();
+		}
 
 		@Override
 		public T pool() {
@@ -134,6 +153,14 @@ public class KafkaFrontierStore extends FrontierStore {
 			// System.out.println("Received message: (" + record.key() + ", " +
 			// record.value() + ") at offset " + record.offset());
 			// }
+
+			if (stream.hasNext()) {
+				try {
+					return mapper.readValue(stream.next().message(), clazz);
+				} catch (Exception e) {
+					log.info("Can not parse message:", e);
+				}
+			}
 			return null;
 		}
 
@@ -149,11 +176,11 @@ public class KafkaFrontierStore extends FrontierStore {
 
 		@Override
 		public void close() throws IOException {
-			try {
-				consumer.close();
-			} catch (Exception e) {
-				log.info("", e);
-			}
+			// try {
+			// consumer.close();
+			// } catch (Exception e) {
+			// log.info("", e);
+			// }
 			try {
 				producer.close();
 			} catch (Exception e) {

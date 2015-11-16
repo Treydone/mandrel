@@ -238,12 +238,18 @@
 			<groupId>org.apache.zookeeper</groupId>
 			<artifactId>zookeeper</artifactId>
 		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.kafka</groupId> -->
+		<!-- <artifactId>kafka-clients</artifactId> -->
+		<!-- <version>0.8.2.0</version> -->
+		<!-- </dependency> -->
+		<!-- TO BE REMOVED -->
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
-			<artifactId>kafka-clients</artifactId>
-			<version>0.8.2.0</version>
+			<artifactId>kafka_2.11</artifactId>
+			<version>0.8.2.2</version>
 		</dependency>
-		
+
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
