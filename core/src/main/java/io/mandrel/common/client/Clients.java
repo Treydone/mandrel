@@ -27,13 +27,17 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
 import org.springframework.cloud.netflix.feign.support.SpringDecoder;
 import org.springframework.cloud.netflix.feign.support.SpringEncoder;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import feign.Client;
 import feign.Client.Default;
@@ -53,14 +57,23 @@ import feign.slf4j.Slf4jLogger;
 public class Clients {
 
 	@Autowired
-	private ObjectFactory<HttpMessageConverters> messageConverters;
+	private ObjectMapper objectMapper;
+
+	public ObjectFactory<HttpMessageConverters> messageConverters() {
+		return new ObjectFactory<HttpMessageConverters>() {
+			@Override
+			public HttpMessageConverters getObject() throws BeansException {
+				return new HttpMessageConverters(new MappingJackson2HttpMessageConverter(objectMapper));
+			}
+		};
+	};
 
 	public Decoder feignDecoder() {
-		return new ResponseEntityDecoder(new SpringDecoder(messageConverters));
+		return new ResponseEntityDecoder(new SpringDecoder(messageConverters()));
 	}
 
 	public Encoder feignEncoder() {
-		return new SpringEncoder(messageConverters);
+		return new SpringEncoder(messageConverters());
 	}
 
 	public Logger feignLogger() {

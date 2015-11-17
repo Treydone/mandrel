@@ -8,6 +8,7 @@ import feign.Target.EmptyTarget;
 import feign.slf4j.Slf4jLogger;
 import io.mandrel.cluster.node.Node;
 import io.mandrel.common.client.SpringMvcContract;
+import io.mandrel.config.BindConfiguration;
 import io.mandrel.endpoints.contracts.AdminContract;
 import io.mandrel.endpoints.contracts.NodeContract;
 import io.mandrel.monitor.SigarService;
@@ -41,11 +42,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.std.CustomLongDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
@@ -73,8 +69,11 @@ public class FeignTest {
 	@Test
 	public void test2() throws JsonProcessingException {
 
+		ObjectMapper mapper = new ObjectMapper();
+		BindConfiguration.configure(mapper);
+
 		List<HttpMessageConverter<?>> converters = new ArrayList<>();
-		converters.add(new MappingJackson2HttpMessageConverter());
+		converters.add(new MappingJackson2HttpMessageConverter(mapper));
 		ObjectFactory<HttpMessageConverters> convert = new ObjectFactory<HttpMessageConverters>() {
 			@Override
 			public HttpMessageConverters getObject() throws BeansException {
@@ -87,7 +86,6 @@ public class FeignTest {
 
 		Event event = new NodeEvent().setTime(LocalDateTime.now()).setText("test");
 
-		ObjectMapper mapper = new ObjectMapper();
 		System.err.println(mapper.writeValueAsString(event));
 		target.addEvent(event, URI.create("http://localhost:8080"));
 	}
@@ -97,11 +95,10 @@ public class FeignTest {
 
 		Event event = new NodeEvent().setTime(LocalDateTime.now()).setText("test");
 
-		String text = "{\"@ref\":\"io.mandrel.timeline.NodeEvent\",\"time\":[2015,11,9,18,51,30,685000000],\"title\":null,\"text\":\"test\",\"type\":null,\"uri\":null}";
+		String text = "{\"@ref\":\"io.mandrel.timeline.NodeEvent\",\"time\":1447752862905,\"title\":null,\"text\":\"test\",\"type\":null,\"nodeId\":null}";
 
 		ObjectMapper mapper = new ObjectMapper();
-		mapper.registerModule(new JSR310Module());
-		mapper.registerModule(new JavaTimeModule());
+		BindConfiguration.configure(mapper);
 
 		Event res = mapper.readValue(text, Event.class);
 		assertEquals(res, event);
@@ -136,9 +133,10 @@ public class FeignTest {
 		module.addDeserializer(long.class, CustomLongDeserializer.primitiveInstance);
 		objectMapper.registerModule(module);
 
-		objectMapper.registerModules(new JodaModule(), new Jdk8Module(), new JavaTimeModule()
+		// objectMapper.registerModules(new JodaModule(), new Jdk8Module(), new
+		// JavaTimeModule()
 		// , new AfterburnerModule()
-				);
+		// );
 		objectMapper.writer(new DefaultPrettyPrinter());
 
 		System.err.println(objectMapper.writeValueAsString(new Node().setInfos(new SigarService().infos())));
@@ -149,5 +147,4 @@ public class FeignTest {
 		Node res = objectMapper.readValue(doc.toJson(new JsonWriterSettings(JsonMode.STRICT)), Node.class);
 		System.err.println(res);
 	}
-
 }

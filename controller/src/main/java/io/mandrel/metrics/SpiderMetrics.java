@@ -25,10 +25,9 @@ import lombok.Data;
 @Data
 public class SpiderMetrics {
 
-	private Long pendings;
 	private Long nbPages;
-	private Long totalSize;
-	private Long totalTimeToFetch;
+	private Long totalSize = Long.valueOf(0);
+	private Long totalTimeToFetch = Long.valueOf(0);
 
 	private Long readTimeout;
 	private Long connectTimeout;

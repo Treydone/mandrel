@@ -57,7 +57,7 @@ public class HomeController {
 		model.addAttribute("metrics", metricsRepository.global());
 		model.addAttribute("spiders", spiderService.list().collect(Collectors.toList()));
 		model.addAttribute("nodes", nodeService.nodes());
-		model.addAttribute("events", timelineService.pageByDate(0, 20));
+		model.addAttribute("events", timelineService.pageByDate(0, 10));
 		return "views/home";
 	}
 

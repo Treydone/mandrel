@@ -26,6 +26,7 @@
 			  var pagesByHostChart = new Chart(pagesByHostChartCanvas);
 			    
 			    var pagesByHost = [
+			    <#if (metrics.pagesByHost)??>
 				<#list metrics.pagesByHost?keys as key>
 					<#assign value = metrics.pagesByHost[key]>
 					<#if key?starts_with("1")>
@@ -48,12 +49,14 @@
 				      label: "${key}"
 				    }<#sep>, </#sep>
 				</#list>
+				</#if>
 				];
 			  
 			  var pagesByStatusChartCanvas = $("#pagesByStatusChart").get(0).getContext("2d");
 			  var pagesByStatusChart = new Chart(pagesByStatusChartCanvas);
 	            
 	            var pagesByStatus = [
+	            <#if (metrics.pagesByStatus)??>
 				<#list metrics.pagesByStatus?keys as key>
 					<#assign value = metrics.pagesByStatus[key]>
 					<#if key?starts_with("1")>
@@ -76,6 +79,7 @@
 				      label: "${key}"
 				    }<#sep>, </#sep>
 				</#list>
+				</#if>
 				];
 				
 			  var pieOptions = {
@@ -219,7 +223,7 @@
 	        <span class="info-box-icon bg-aqua"><i class="fa fa-signal"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Bandwidth</span>
-	          <span class="info-box-number">${printBytesSize(metrics.totalSize / (clusterTime - now * 1000))}/s</span>
+	          <span class="info-box-number">?/s</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -237,7 +241,7 @@
 	        <span class="info-box-icon bg-yellow"><i class="fa fa-files-o"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Total pages</span>
-	          <span class="info-box-number">${metrics.nbPages}</span>
+	          <span class="info-box-number">${(metrics.nbPages)!0}</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -246,7 +250,7 @@
 	        <span class="info-box-icon bg-red"><i class="fa fa-star-o"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Timeout</span>
-	          <span class="info-box-number">${metrics.connectTimeout + metrics.readTimeout}</span>
+	          <span class="info-box-number">${(metrics.connectTimeout)!0 + (metrics.readTimeout)!0}</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -265,16 +269,16 @@
 					      <a class="btn btn-app <#if spider.state != "NEW">disabled</#if>">
 					        <i class="fa fa-edit"></i> Edit
 					      </a>
-					      <a class="btn btn-app <#if spider.state != "NEW">disabled</#if>" href="/spiders/${spider.id}/start">
+					      <a class="btn btn-app <#if spider.state != "NEW">disabled</#if>" href="/spiders/${spider.id?c}/start">
 					        <i class="fa fa-play"></i> Start
 					      </a>
-					      <a class="btn btn-app <#if spider.state != "STARTED">disabled</#if>" href="/spiders/${spider.id}/pause">
+					      <a class="btn btn-app <#if spider.state != "STARTED">disabled</#if>" href="/spiders/${spider.id?c}/pause">
 					        <i class="fa fa-pause"></i> Pause
 					      </a>
-					      <a class="btn btn-app <#if spider.state != "NEW" && spider.state != "STARTED">disabled</#if>" href="/spiders/${spider.id}/cancel">
+					      <a class="btn btn-app <#if spider.state != "NEW" && spider.state != "STARTED">disabled</#if>" href="/spiders/${spider.id?c}/cancel">
 					        <i class="fa fa-exclamation-triangle"></i> Cancel
 					      </a>
-					      <a class="btn btn-app <#if spider.state != "CANCELLED" && spider.state != "ENDED">disabled</#if>" href="/spiders/${spider.id}/delete">
+					      <a class="btn btn-app <#if spider.state != "CANCELLED" && spider.state != "ENDED">disabled</#if>" href="/spiders/${spider.id?c}/delete">
 					        <i class="fa fa-eraser"></i> Delete
 					      </a>
 					    </div><!-- /.box-body -->
@@ -322,9 +326,11 @@
 			                    </div><!-- /.col -->
 			                    <div class="col-md-4">
 			                      <ul class="chart-legend clearfix">
+			                        <#if (metrics.pagesByHost)??>
 				                    <#list metrics.pagesByHost?keys as key>
 			                        <li><i class="fa fa-circle-o text-red"></i> ${key}</li>
 			                        </#list>
+			                        </#if>
 			                      </ul>
 			                    </div><!-- /.col -->
 			                  </div><!-- /.row -->
@@ -396,7 +402,7 @@
             <div class="col-md-4">
 	        	<div class="small-box bg-aqua disabled">
 	                <div class="inner">
-	                  <h3>${metrics.nbPages}</h3>
+	                  <h3>${(metrics.nbPages)!0}</h3>
 	                  <p>Raw data</p>
 	                </div>
 	                <div class="icon">

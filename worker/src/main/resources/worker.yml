@@ -16,3 +16,26 @@ spring:
                         
 server:
   port: 8070
+  undertow:
+    buffer-size: 16000
+    buffers-per-region: 20
+    direct-buffers: true
+    io-threads: 4
+    worker-threads: 32
+
+logging:
+  console:
+    enabled: true
+    level: WARN
+  level:
+    org.springframework: INFO
+    io.mandrel: DEBUG
+    
+management:
+  context-path: /admin
+
+endpoints:
+  shutdown:
+    enabled: true
+  health:
+    time-to-live: 5000

@@ -1,1 +1,1 @@
-io.mandrel.document.impl.InternalDocumentStore$InternalDocumentStoreDefinition
+io.mandrel.document.impl.MongoDocumentStore$MongoDocumentStoreDefinition

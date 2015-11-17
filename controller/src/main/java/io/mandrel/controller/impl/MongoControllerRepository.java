@@ -79,7 +79,7 @@ public class MongoControllerRepository implements ControllerRepository {
 
 	@SneakyThrows(IOException.class)
 	public Spider update(Spider spider) {
-		collection.insertOne(Document.parse(mapper.writeValueAsString(spider)));
+		collection.replaceOne(Filters.eq("_id", spider.getId()), Document.parse(mapper.writeValueAsString(spider)));
 		return spider;
 	}
 

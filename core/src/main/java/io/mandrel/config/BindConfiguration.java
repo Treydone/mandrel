@@ -18,6 +18,11 @@
  */
 package io.mandrel.config;
 
+import io.mandrel.common.jackson.LocalDateTimeDeserializer;
+import io.mandrel.common.jackson.LocalDateTimeSerializer;
+
+import java.time.LocalDateTime;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -27,10 +32,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.std.CustomLongDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.hppc.HppcModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
 public class BindConfiguration {
@@ -60,14 +61,19 @@ public class BindConfiguration {
 		// to allow coercion of JSON empty String ("") to null Object value:
 		// objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
 
-		objectMapper.registerModules(new JodaModule(),
+		objectMapper.registerModules(
+		// new JodaModule(),
 		// new AfterburnerModule(),
-				new Jdk8Module(), new HppcModule(), new JSR310Module(), new JavaTimeModule());
+		// new Jdk8Module(),
+		// new JavaTimeModule(),
+				new HppcModule());
 
 		SimpleModule module = new SimpleModule();
 		module.addDeserializer(Long.class, CustomLongDeserializer.wrapperInstance);
 		module.addDeserializer(long.class, CustomLongDeserializer.primitiveInstance);
+
+		module.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer());
+		module.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer());
 		objectMapper.registerModule(module);
 	}
-
 }

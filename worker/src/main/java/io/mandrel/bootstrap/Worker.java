@@ -19,6 +19,7 @@
 package io.mandrel.bootstrap;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.ErrorMvcAutoConfiguration;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -26,7 +27,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 
-@SpringBootApplication(exclude = { ErrorMvcAutoConfiguration.class, MongoAutoConfiguration.class })
+@SpringBootApplication(exclude = { ErrorMvcAutoConfiguration.class, MongoAutoConfiguration.class, JacksonAutoConfiguration.class })
 @ComponentScan(basePackages = "io.mandrel", excludeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = {}) })
 @EnableDiscoveryClient
 public class Worker extends Application {

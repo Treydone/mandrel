@@ -37,9 +37,13 @@ public class StateService implements ApplicationListener<ContextStartedEvent> {
 		started.set(true);
 		Optional<ServiceInstance> controller = discoveryClient.getInstances(ServiceIds.CONTROLLER).stream().findFirst();
 		if (controller.isPresent()) {
-			clients.controllerClient().addEvent(
-					new NodeEvent().setNodeId(Node.idOf(discoveryClient.getLocalServiceInstance().getUri())).setType(NodeEventType.NODE_STARTED)
-							.setTime(LocalDateTime.now()), controller.get().getUri());
+			try {
+				clients.controllerClient().addEvent(
+						new NodeEvent().setNodeId(Node.idOf(discoveryClient.getLocalServiceInstance().getUri())).setType(NodeEventType.NODE_STARTED)
+								.setTime(LocalDateTime.now()), controller.get().getUri());
+			} catch (Exception e) {
+				log.info("Can not send starting event", e);
+			}
 		} else {
 			log.warn("No controller found");
 		}

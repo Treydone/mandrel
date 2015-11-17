@@ -43,7 +43,9 @@ public class MongoConfiguration {
 
 	@Bean
 	public MongoClientOptions options() {
-		CodecRegistry codecRegistry = CodecRegistries.fromRegistries(MongoClient.getDefaultCodecRegistry(), CodecRegistries.fromCodecs(new URICodec()));
+		CodecRegistry codecRegistry = CodecRegistries.fromRegistries(MongoClient.getDefaultCodecRegistry(), CodecRegistries.fromCodecs(new URICodec()
+		// , new LocalDateTimeCodec()
+				));
 		return MongoClientOptions.builder().codecRegistry(codecRegistry).build();
 	}
 

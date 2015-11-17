@@ -22,7 +22,7 @@ import io.mandrel.timeline.Event;
 import io.mandrel.timeline.TimelineRepository;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -42,8 +42,11 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.mongodb.CursorType;
 import com.mongodb.MongoClient;
+import com.mongodb.ReadPreference;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 
@@ -58,9 +61,33 @@ public class MongoTimelineRepository implements TimelineRepository {
 
 	private MongoCollection<Document> timeline;
 
+	private String collectionName = "timeline";
+	private int size = 5 * 1024 * 1024;
+	private int maxDocuments = 5000;
+
 	@PostConstruct
 	public void init() {
-		timeline = mongoClient.getDatabase("mandrel").getCollection("timeline");
+		MongoDatabase database = mongoClient.getDatabase("mandrel");
+
+		if (Lists.newArrayList(database.listCollectionNames()).contains(collectionName)) {
+			log.debug("'{}' collection already exists...", collectionName);
+
+			// Check if already capped
+			Document command = new Document("collStats", collectionName);
+			boolean isCapped = database.runCommand(command, ReadPreference.primary()).getBoolean("capped").booleanValue();
+
+			if (!isCapped) {
+				log.info("'{}' is not capped, converting it...", collectionName);
+				command = new Document("convertToCapped", collectionName).append("size", size).append("max", maxDocuments);
+				database.runCommand(command, ReadPreference.primary());
+			} else {
+				log.debug("'{}' collection already capped!", collectionName);
+			}
+
+		} else {
+			database.createCollection(collectionName, new CreateCollectionOptions().capped(true).maxDocuments(maxDocuments).sizeInBytes(size));
+		}
+		timeline = database.getCollection(collectionName);
 	}
 
 	@Override
@@ -83,32 +110,36 @@ public class MongoTimelineRepository implements TimelineRepository {
 	@Override
 	public void pool(Listener listener) {
 
-		Date date = new Date();
+		LocalDateTime date = LocalDateTime.now();
 		Bson query = new Document();
 
-		while (true) {
-			MongoCursor<Document> cursor = timeline.find(query).cursorType(CursorType.TailableAwait).iterator();
-
+		try {
 			while (true) {
-				if (!cursor.hasNext()) {
-					if (cursor.getServerCursor() == null) {
-						break;
+				MongoCursor<Document> cursor = timeline.find(query).cursorType(CursorType.TailableAwait).iterator();
+
+				while (true) {
+					if (!cursor.hasNext()) {
+						if (cursor.getServerCursor() == null) {
+							break;
+						}
+						continue;
 					}
-					continue;
+
+					Document result = cursor.next();
+					try {
+						Event event = mapper.readValue(result.toJson(), Event.class);
+						date = event.getTime();
+
+						listener.on(event);
+					} catch (Exception e) {
+						log.warn("Error while getting the event", e);
+					}
 				}
 
-				Document result = cursor.next();
-				date = result.getDate("time");
-
-				try {
-					Event event = mapper.readValue(result.toJson(), Event.class);
-					listener.on(event);
-				} catch (Exception e) {
-					log.warn("Error while getting the event", e);
-				}
+				query = Filters.gt("time", date);
 			}
-
-			query = Filters.gt("time", date);
+		} catch (Exception e) {
+			log.warn("Event pool process is down!", e);
 		}
 	}
 }

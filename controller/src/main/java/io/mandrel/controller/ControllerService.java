@@ -77,14 +77,6 @@ public class ControllerService {
 
 	private RandomNameGenerator generator = new RandomNameGenerator();
 
-	/**
-	 * On start:
-	 * <ul>
-	 * <li>Find the available spiders, and foreach spider:
-	 * <li>Start the spider
-	 * <li>Start the sources
-	 * </ul>
-	 */
 	@PostConstruct
 	public void init() {
 
