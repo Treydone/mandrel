@@ -11,6 +11,7 @@ spring:
       discovery:
         enabled: true
         root: /mandrel
+        instanceHost: localhost
   jmx:
     enabled: false
                         

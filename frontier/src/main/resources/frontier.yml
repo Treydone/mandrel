@@ -11,12 +11,13 @@ spring:
       discovery:
         enabled: true
         root: /mandrel
+        instanceHost: localhost
   jmx:
     enabled: false
                         
 server:
   port: 8090
-    undertow:
+  undertow:
     buffer-size: 16000
     buffers-per-region: 20
     direct-buffers: true
