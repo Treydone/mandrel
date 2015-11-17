@@ -34,8 +34,8 @@
                     </tr>
                     <#list spiders as spider>
                 		<tr>
-	                      <td><a href="/spiders/${spider.id}">${spider.id}</a></td>
-	                      <td><a href="/spiders/${spider.id}">${spider.name}</a></td>
+	                      <td><a href="/spiders/${spider.id?c}">${spider.id?c}</a></td>
+	                      <td><a href="/spiders/${spider.id?c}">${spider.name}</a></td>
 	                      <td>${spider.added}</td>
 	                      <#switch spider.state>
 								<#case "NEW">

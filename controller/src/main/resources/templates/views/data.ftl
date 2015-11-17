@@ -34,7 +34,7 @@
                     <#list spiders as spider>
                     	<#list spider.extractors.pages as extractor>
                 		<tr>
-	                      <td><a href="/spiders/${spider.id}">${spider.name}</a></td>
+	                      <td><a href="/spiders/${spider.id?c}">${spider.name}</a></td>
 	                      <td>${spider.added}</td>
 	                      <#switch spider.state>
 								<#case "NEW">
@@ -54,7 +54,7 @@
 									<#break>
 							</#switch>
 	                      <td><span class="label label-${label}">${spider.state}</span></td>
-	                      <td><a href="/spiders/${spider.id}/data/${extractor.name}">${extractor.name}</a></td>
+	                      <td><a href="/spiders/${spider.id?c}/data/${extractor.name}">${extractor.name}</a></td>
 	                    </tr>
 	                    </#list>
 				    </#list>
