@@ -19,7 +19,10 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.client.Clients;
+import io.mandrel.common.client.Container;
+import io.mandrel.common.client.SyncRequest;
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Statuses;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.endpoints.contracts.WorkerContract;
 import io.mandrel.metrics.Accumulators;
@@ -70,23 +73,27 @@ public class WorkerResource implements WorkerContract {
 	}
 
 	@Override
-	public Map<Long, Long> listActive(URI target) {
-		return WorkerContainers.list().stream().map(w -> w.spider().getId()).collect(Collectors.toMap(i -> i, i -> i));
+	public List<Container> listContainers(URI target) {
+		return WorkerContainers.list().stream()
+				.map(f -> new Container().setSpiderId(f.spider().getId()).setVersion(f.spider().getVersion()).setStatus(f.status()))
+				.collect(Collectors.toList());
 	}
 
 	@Override
-	public void sync(List<Spider> spiders, URI target) {
-		Map<Long, Spider> ids = spiders.stream().collect(Collectors.toMap(spider -> spider.getId(), spider -> spider));
+	public void sync(SyncRequest sync, URI target) {
+		Map<Long, Spider> ids = sync.getSpiders().stream().collect(Collectors.toMap(spider -> spider.getId(), spider -> spider));
 
 		List<Long> existingSpiders = new ArrayList<>();
 		WorkerContainers.list().forEach(c -> {
 			existingSpiders.add(c.spider().getId());
 			if (!ids.containsKey(c.spider().getId())) {
 				kill(c.spider().getId(), null);
-			} else {
-				if (ids.get(c.spider().getId()).getVersion() != c.spider().getVersion()) {
-					kill(c.spider().getId(), null);
-					create(ids.get(c.spider().getId()), null);
+			} else if (ids.get(c.spider().getId()).getVersion() != c.spider().getVersion()) {
+				kill(c.spider().getId(), null);
+				create(ids.get(c.spider().getId()), null);
+
+				if (Statuses.STARTED.equals(ids.get(c.spider().getId()).getStatus())) {
+					start(c.spider().getId(), null);
 				}
 			}
 		});
@@ -94,6 +101,10 @@ public class WorkerResource implements WorkerContract {
 		ids.forEach((id, spider) -> {
 			if (!existingSpiders.contains(id)) {
 				create(spider, null);
+
+				if (Statuses.STARTED.equals(spider.getStatus())) {
+					start(spider.getId(), null);
+				}
 			}
 		});
 	}

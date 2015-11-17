@@ -83,6 +83,7 @@ public class MongoDocumentStore extends DocumentStore {
 		return document;
 	};
 
+	@SuppressWarnings("unchecked")
 	private final static Function<? super org.bson.Document, ? extends Document> fromBson = entry -> {
 		Document document = new Document();
 		for (Entry<String, Object> item : entry.entrySet()) {

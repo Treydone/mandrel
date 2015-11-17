@@ -19,11 +19,10 @@
 package io.mandrel.controller;
 
 import io.mandrel.cluster.discovery.ServiceIds;
-import io.mandrel.command.Commands;
-import io.mandrel.command.Commands.CommandGroup;
 import io.mandrel.common.client.Clients;
+import io.mandrel.common.client.SyncRequest;
 import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.State;
+import io.mandrel.common.data.Statuses;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.SkipAncorFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
@@ -49,6 +48,7 @@ import javax.annotation.PostConstruct;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.kohsuke.randname.RandomNameGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -61,7 +61,7 @@ import org.springframework.validation.BindingResult;
 public class ControllerService {
 
 	@Autowired
-	private ControllerRepository spiderRepository;
+	private ControllerRepository controllerRepository;
 	@Autowired
 	private TimelineService timelineService;
 	@Autowired
@@ -79,21 +79,37 @@ public class ControllerService {
 
 	@PostConstruct
 	public void init() {
-
 		// TODO Load the journal of commands
 
 		scheduledExecutorService.scheduleAtFixedRate(() -> sync(), 0, 10000, TimeUnit.MILLISECONDS);
 	}
 
 	public void sync() {
+		// TODO HOW TO in case of multiple controller
+		log.debug("Syncing the nodes from the controller...");
 		// Load the existing spiders from the database
-		List<Spider> spiders = spiderRepository.listActive().collect(Collectors.toList());
-		discoveryClient.getInstances(ServiceIds.WORKER).forEach(worker -> {
-			clients.workerClient().sync(spiders, worker.getUri());
-		});
-		discoveryClient.getInstances(ServiceIds.FRONTIER).forEach(worker -> {
-			clients.frontierClient().sync(spiders, worker.getUri());
-		});
+		List<Spider> spiders = controllerRepository.listActive().collect(Collectors.toList());
+		SyncRequest sync = new SyncRequest();
+		sync.setSpiders(spiders);
+
+		if (CollectionUtils.isNotEmpty(spiders)) {
+			discoveryClient.getInstances(ServiceIds.WORKER).forEach(worker -> {
+				try {
+					clients.workerClient().sync(sync, worker.getUri());
+				} catch (Exception e) {
+					log.warn("Can not sync due to", e);
+				}
+			});
+			discoveryClient.getInstances(ServiceIds.FRONTIER).forEach(worker -> {
+				try {
+					clients.frontierClient().sync(sync, worker.getUri());
+				} catch (Exception e) {
+					log.warn("Can not sync due to", e);
+				}
+			});
+		} else {
+			log.debug("Nothing to sync...");
+		}
 	}
 
 	public Spider update(Spider spider) throws BindException {
@@ -107,7 +123,7 @@ public class ControllerService {
 		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_STARTED)
 				.setTime(LocalDateTime.now()));
 
-		return spiderRepository.update(spider);
+		return controllerRepository.update(spider);
 	}
 
 	/**
@@ -143,55 +159,41 @@ public class ControllerService {
 			throw new BindException(errors);
 		}
 
-		spider.setAdded(LocalDateTime.now());
-		spider = spiderRepository.add(spider);
+		spider.setStatus(Statuses.CREATED);
+		spider.setCreated(LocalDateTime.now());
+		spider = controllerRepository.add(spider);
 
-		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_NEW)
+		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_CREATED)
 				.setTime(LocalDateTime.now()));
 
 		return spider;
 	}
 
 	public Optional<Spider> get(long id) {
-		return spiderRepository.get(id);
+		return controllerRepository.get(id);
 	}
 
 	public Stream<Spider> list() {
-		return spiderRepository.list();
+		return controllerRepository.list();
 	}
 
 	public Stream<Spider> listActive() {
-		return spiderRepository.listActive();
+		return controllerRepository.listActive();
 	}
 
 	public Optional<Spider> start(long spiderId) {
 		return get(spiderId).map(
 				spider -> {
 
-					if (State.STARTED.equals(spider.getState())) {
+					if (Statuses.STARTED.equals(spider.getStatus())) {
 						return spider;
 					}
 
-					if (State.KILLED.equals(spider.getState())) {
+					if (Statuses.KILLED.equals(spider.getStatus())) {
 						throw new RuntimeException("Spider cancelled!");
 					}
 
-					CommandGroup startCommand = Commands.groupOf(
-					// Create the dedicated frontier
-							Commands.prepareFrontier(discoveryClient, clients.frontierClient(), spider),
-							// Deploy the spider on the workers
-							Commands.prepareWorker(discoveryClient, clients.workerClient(), spider),
-							// Start the frontier
-							Commands.startFrontier(discoveryClient, clients.frontierClient(), spider),
-							// Start the workers
-							Commands.startWorker(discoveryClient, clients.workerClient(), spider));
-
-					startCommand.apply();
-
-					spider.setState(State.STARTED);
-					spider.setStarted(LocalDateTime.now());
-					spiderRepository.update(spider);
-
+					controllerRepository.updateStatus(spiderId, Statuses.STARTED);
 					timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_STARTED)
 							.setTime(LocalDateTime.now()));
 
@@ -202,49 +204,41 @@ public class ControllerService {
 				});
 	}
 
+	public Optional<Spider> pause(long spiderId) {
+		return get(spiderId).map(spider -> {
+
+			// Update status
+				controllerRepository.updateStatus(spiderId, Statuses.PAUSED);
+				timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_PAUSED)
+						.setTime(LocalDateTime.now()));
+
+				return controllerRepository.update(spider);
+			});
+	}
+
 	public Optional<Spider> kill(long spiderId) {
 		return get(spiderId).map(spider -> {
 
-			CommandGroup killCommand = Commands.groupOf(
-			// Kill the workers
-					Commands.killWorker(discoveryClient, clients.workerClient(), spider),
-					// Kill the frontier
-					Commands.killFrontier(discoveryClient, clients.frontierClient(), spider));
-
-			killCommand.apply();
-
 			// Update status
-				spider.setCancelled(LocalDateTime.now());
-				spider.setState(State.KILLED);
-
+				controllerRepository.updateStatus(spiderId, Statuses.KILLED);
 				timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_KILLED)
 						.setTime(LocalDateTime.now()));
 
-				return spiderRepository.update(spider);
+				return controllerRepository.update(spider);
 			});
 	}
 
 	public Optional<Spider> delete(long spiderId) {
 		return get(spiderId).map(spider -> {
 
-			CommandGroup killCommand = Commands.groupOf(
-			// Kill the workers
-					Commands.killWorker(discoveryClient, clients.workerClient(), spider),
-					// Kill the frontier
-					Commands.killFrontier(discoveryClient, clients.frontierClient(), spider));
-
-			killCommand.apply();
-
 			// Update status
-				spider.setCancelled(LocalDateTime.now());
-				spider.setState(State.DELETED);
-
+				controllerRepository.updateStatus(spiderId, Statuses.DELETED);
 				timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_DELETED)
 						.setTime(LocalDateTime.now()));
 
 				metricsRepository.delete(spiderId);
 
-				return spiderRepository.update(spider);
+				return controllerRepository.update(spider);
 			});
 	}
 }

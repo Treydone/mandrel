@@ -62,7 +62,11 @@ public class MetricsSyncer {
 				total.putAll(accumulators.nodeAccumulator().tick());
 				accumulators.spiderAccumulators().forEach((spiderId, acc) -> total.putAll(acc.tick()));
 
-				clients.controllerClient().updateMetrics(total, uri);
+				try {
+					clients.controllerClient().updateMetrics(total, uri);
+				} catch (Exception e) {
+					log.debug("Can not update metrics due to", e);
+				}
 			} else {
 				log.warn("Can not find any controller");
 			}

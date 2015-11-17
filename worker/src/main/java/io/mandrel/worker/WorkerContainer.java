@@ -21,7 +21,8 @@ package io.mandrel.worker;
 import io.mandrel.blob.BlobStore;
 import io.mandrel.blob.BlobStores;
 import io.mandrel.common.client.Clients;
-import io.mandrel.common.container.Container;
+import io.mandrel.common.container.AbstractContainer;
+import io.mandrel.common.container.Status;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.extract.ExtractorService;
@@ -40,16 +41,18 @@ import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 
-@Data
-@Accessors(chain = true, fluent = true)
 @Slf4j
-public class WorkerContainer implements Container {
+@Data
+@EqualsAndHashCode(callSuper = false)
+@Accessors(chain = true, fluent = true)
+public class WorkerContainer extends AbstractContainer {
 
 	private final ExtractorService extractorService;
 	private final Accumulators accumulators;
@@ -125,6 +128,8 @@ public class WorkerContainer implements Container {
 
 				Requesters.add(spider.getId(), requester);
 			});
+
+		current.set(Status.INITIATED);
 	}
 
 	@Override
@@ -135,11 +140,13 @@ public class WorkerContainer implements Container {
 	@Override
 	public void start() {
 		loops.forEach(loop -> loop.start());
+		current.set(Status.STARTED);
 	}
 
 	@Override
 	public void pause() {
 		loops.forEach(loop -> loop.pause());
+		current.set(Status.PAUSED);
 	}
 
 	@Override

@@ -42,7 +42,7 @@ public class Spider implements Serializable {
 
 	@JsonProperty("_id")
 	private long id;
-	
+
 	@JsonProperty("version")
 	private long version;
 
@@ -50,19 +50,25 @@ public class Spider implements Serializable {
 	private String name;
 
 	@JsonProperty("status")
-	private State state = State.NEW;
+	private String status = null;
 
-	@JsonProperty("added")
-	private LocalDateTime added;
+	@JsonProperty("created")
+	private LocalDateTime created;
 
 	@JsonProperty("started")
 	private LocalDateTime started;
 
+	@JsonProperty("paused")
+	private LocalDateTime paused;
+
 	@JsonProperty("ended")
 	private LocalDateTime ended;
 
-	@JsonProperty("cancelled")
-	private LocalDateTime cancelled;
+	@JsonProperty("killed")
+	private LocalDateTime killed;
+
+	@JsonProperty("deleted")
+	private LocalDateTime deleted;
 
 	@JsonProperty("sources")
 	private List<SourceDefinition<? extends Source>> sources = new ArrayList<>();

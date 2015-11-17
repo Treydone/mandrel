@@ -36,25 +36,28 @@
                 		<tr>
 	                      <td><a href="/spiders/${spider.id?c}">${spider.id?c}</a></td>
 	                      <td><a href="/spiders/${spider.id?c}">${spider.name}</a></td>
-	                      <td>${spider.added}</td>
-	                      <#switch spider.state>
-								<#case "NEW">
+	                      <td>${spider.created}</td>
+	                      <#switch spider.status>
+								<#case "created">
 									<#assign label = "primary">
 									<#break>
-								<#case "STARTED">
+								<#case "started">
 									<#assign label = "info">
 									<#break>
-								<#case "ENDED">
+								<#case "paused">
+									<#assign label = "warning">
+									<#break>
+								<#case "ended">
 									<#assign label = "success">
 		 							<#break>
-		 						<#case "CANCELLED">
+		 						<#case "killed">
 		 							<#assign label = "danger">
 		 							<#break>
 								<#default>
 									<#assign label = "warning">
 									<#break>
 							</#switch>
-	                      <td><span class="label label-${label}">${spider.state}</span></td>
+	                      <td><span class="label label-${label}">${spider.status}</span></td>
 	                      <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
 	                    </tr>
 				    </#list>

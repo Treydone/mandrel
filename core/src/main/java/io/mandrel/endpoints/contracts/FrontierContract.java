@@ -18,13 +18,14 @@
  */
 package io.mandrel.endpoints.contracts;
 
+import io.mandrel.common.client.Container;
+import io.mandrel.common.client.SyncRequest;
 import io.mandrel.common.data.Spider;
 import io.mandrel.endpoints.rest.Apis;
 import io.mandrel.frontier.Frontier;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,10 +40,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public interface FrontierContract {
 
 	@RequestMapping(value = "/sync", method = RequestMethod.POST)
-	public void sync(@RequestBody List<Spider> spiders, @RequestHeader("target") URI target);
+	public void sync(@RequestBody SyncRequest sync, @RequestHeader("target") URI target);
 
 	@RequestMapping(value = "/active", method = RequestMethod.GET)
-	public Map<Long, Long> listActive(@RequestHeader("target") URI target);
+	public List<Container> listContainers(@RequestHeader("target") URI target);
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public Optional<Frontier> id(@PathVariable("id") Long id, @RequestHeader("target") URI target);

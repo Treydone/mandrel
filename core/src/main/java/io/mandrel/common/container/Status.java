@@ -16,10 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.common.data;
+package io.mandrel.common.container;
 
-import java.io.Serializable;
-
-public enum State implements Serializable {
-	NEW, STARTED, ENDED, KILLED, DELETED
+public enum Status {
+	CREATED, INITIATED, STARTED, PAUSED
 }

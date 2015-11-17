@@ -47,4 +47,8 @@ public class Node implements Serializable {
 	public static String idOf(URI uri) {
 		return uri != null ? Base64.getUrlEncoder().encodeToString(uri.toString().getBytes(Charsets.UTF_8)) : null;
 	}
+
+	public static URI uriOf(String id) {
+		return id != null ? URI.create(new String(Base64.getUrlDecoder().decode(id), Charsets.UTF_8)) : null;
+	}
 }

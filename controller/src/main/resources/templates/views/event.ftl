@@ -16,10 +16,10 @@
 								<#case "NODE_STOPPED">
 									<#assign icon = "fa-laptop">
 									<#assign color = "bg-red">
-									<#assign title = '<a href="/nodes/${event.nodeId}">${event.nodeId}</a> successfully joined the cluster'>
+									<#assign title = '<a href="/nodes/${event.nodeId}">${event.nodeId}</a> just leaved the cluster'>
 									<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" href="/nodes/${event.nodeId}">View node</a>'>
 									<#break>
-								<#case "SPIDER_NEW">
+								<#case "SPIDER_CREATED">
 		 							<#assign icon = "fa-tasks">
 		 							<#assign color = "bg-blue">
 		 							<#assign title = '<a href="/spiders/${event.spiderId?c}">${event.spiderName}</a> has been added to the spiders'>
@@ -28,6 +28,12 @@
 		 						<#case "SPIDER_STARTED">
 		 							<#assign icon = "fa-tasks">
 		 							<#assign title = '<a href="/spiders/${event.spiderId?c}">${event.spiderName}</a> has been started'>
+									<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spiderId}">View spider</a>'>
+		 							<#break>
+		 						<#case "SPIDER_PAUSED">
+		 							<#assign icon = "fa-tasks">
+		 							<#assign color = "bg-orange">
+		 							<#assign title = '<a href="/spiders/${event.spiderId?c}">${event.spiderName}</a> has been paused'>
 									<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spiderId}">View spider</a>'>
 		 							<#break>
 		 						<#case "SPIDER_ENDED">

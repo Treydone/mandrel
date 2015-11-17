@@ -18,6 +18,7 @@
  */
 package io.mandrel.common.client;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import io.mandrel.endpoints.contracts.AdminContract;
 import io.mandrel.endpoints.contracts.FrontierContract;
 import io.mandrel.endpoints.contracts.NodeContract;
@@ -68,33 +69,30 @@ public class Clients {
 		};
 	};
 
-	public Decoder feignDecoder() {
+	public Decoder decoder() {
 		return new ResponseEntityDecoder(new SpringDecoder(messageConverters()));
 	}
 
-	public Encoder feignEncoder() {
+	public Encoder encoder() {
 		return new SpringEncoder(messageConverters());
 	}
 
-	public Logger feignLogger() {
+	public Logger logger() {
 		return new Slf4jLogger();
 	}
 
-	public Contract feignContract() {
+	public Contract contract() {
 		return new SpringMvcContract();
 	}
 
 	@Autowired(required = false)
-	private Logger.Level logLevel;
+	private Logger.Level logLevel = Logger.Level.FULL;
 
-	@Autowired(required = false)
-	private Retryer retryer;
+	private Retryer retryer = new Retryer.Default(100, SECONDS.toMillis(1), 3);
 
-	@Autowired(required = false)
-	private ErrorDecoder errorDecoder;
+	private ErrorDecoder errorDecoder = new ErrorDecoder.Default();
 
-	@Autowired(required = false)
-	private Request.Options options;
+	private Request.Options options = new Request.Options(10 * 1000, 60 * 1000);
 
 	private Client client = new Default(null, null);
 
@@ -104,7 +102,7 @@ public class Clients {
 	protected <T> T feign(Class<T> clazz) {
 		Feign.Builder builder = Feign.builder()
 		// required values
-				.logger(this.feignLogger()).encoder(this.feignEncoder()).decoder(this.feignDecoder()).contract(this.feignContract()).client(this.client);
+				.logger(this.logger()).encoder(this.encoder()).decoder(this.decoder()).contract(this.contract()).client(this.client);
 
 		// optional values
 		if (this.logLevel != null) {

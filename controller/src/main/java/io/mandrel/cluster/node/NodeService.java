@@ -22,6 +22,7 @@ import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.client.Clients;
+import io.mandrel.common.client.Container;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -72,6 +73,17 @@ public class NodeService {
 		return nodeRepository.get(Node.idOf(uri));
 	}
 
+	public List<Container> containers(String id) {
+		return nodeRepository.get(id).map(node -> {
+			if (node.getType().equals("worker")) {
+				return clients.workerClient().listContainers(Node.uriOf(id));
+			} else if (node.getType().equals("frontier")) {
+				return clients.frontierClient().listContainers(Node.uriOf(id));
+			}
+			return null;
+		}).orElse(new ArrayList<>());
+	}
+
 	public Node node(String id) {
 		return nodeRepository.get(id).orElseThrow(() -> new NotFoundException("Unknown node"));
 	}
@@ -87,4 +99,5 @@ public class NodeService {
 		instances.addAll(discoveryClient.getInstances(ServiceIds.WORKER));
 		return instances;
 	}
+
 }

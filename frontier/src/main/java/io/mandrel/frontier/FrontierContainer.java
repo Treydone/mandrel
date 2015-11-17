@@ -19,20 +19,23 @@
 package io.mandrel.frontier;
 
 import io.mandrel.common.client.Clients;
-import io.mandrel.common.container.Container;
+import io.mandrel.common.container.AbstractContainer;
+import io.mandrel.common.container.Status;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.source.Source;
 import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.Accumulators;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true, fluent = true)
-public class FrontierContainer implements Container {
+public class FrontierContainer extends AbstractContainer {
 
 	private final Spider spider;
 	private final Accumulators accumulators;
@@ -67,6 +70,7 @@ public class FrontierContainer implements Container {
 		// Init frontier
 		frontier = spider.getFrontier().build(context);
 
+		current.set(Status.INITIATED);
 	}
 
 	@Override
@@ -82,11 +86,12 @@ public class FrontierContainer implements Container {
 			}
 		});
 
+		current.set(Status.STARTED);
 	}
 
 	@Override
 	public void pause() {
-
+		current.set(Status.PAUSED);
 	}
 
 	@Override
@@ -102,5 +107,4 @@ public class FrontierContainer implements Container {
 	public void unregister() {
 		FrontierContainers.remove(spider.getId());
 	}
-
 }

@@ -80,21 +80,29 @@
           </div><!-- /.box -->
         </div><!-- ./col -->
         <div class="col-md-6">
-          <div class="box box-solid">
-            <div class="box-header with-border">
-              <i class="fa fa-text-width"></i>
-              <h3 class="box-title">Text Emphasis</h3>
+          <#if node.type != "controller">
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title">Containers</h3>
             </div><!-- /.box-header -->
-            <div class="box-body">
-              <p class="lead">Lead to emphasize importance</p>
-              <p class="text-green">Text green to emphasize success</p>
-              <p class="text-aqua">Text aqua to emphasize info</p>
-              <p class="text-light-blue">Text light blue to emphasize info (2)</p>
-              <p class="text-red">Text red to emphasize danger</p>
-              <p class="text-yellow">Text yellow to emphasize warning</p>
-              <p class="text-muted">Text muted to emphasize general</p>
+            <div class="box-body table-responsive no-padding">
+              <table class="table table-hover">
+                <tbody><tr>
+                  <th>Spider</th>
+                  <th>Version</th>
+                  <th>Status</th>
+                </tr>
+                <#list containers as container> 
+					<tr>
+                      <td><a href="/spiders/${container.spiderId?c}">${container.spiderId?c}</a></td>
+                      <td>${container.version?c}</td>
+                      <td>${container.status}</td>
+                    </tr>
+			    </#list>
+              </tbody></table>
             </div><!-- /.box-body -->
-          </div><!-- /.box -->
+          </div>
+          </#if>
         </div><!-- ./col -->
       </div>
 		                    

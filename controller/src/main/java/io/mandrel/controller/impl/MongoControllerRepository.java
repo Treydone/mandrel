@@ -21,11 +21,13 @@ package io.mandrel.controller.impl;
 import io.mandrel.cluster.idgenerator.IdGenerator;
 import io.mandrel.cluster.idgenerator.MongoIdGenerator;
 import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.State;
+import io.mandrel.common.data.Statuses;
 import io.mandrel.config.BindConfiguration;
 import io.mandrel.controller.ControllerRepository;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -79,8 +81,13 @@ public class MongoControllerRepository implements ControllerRepository {
 
 	@SneakyThrows(IOException.class)
 	public Spider update(Spider spider) {
-		collection.replaceOne(Filters.eq("_id", spider.getId()), Document.parse(mapper.writeValueAsString(spider)));
+		collection.replaceOne(new Document("_id", spider.getId()), Document.parse(mapper.writeValueAsString(spider)));
 		return spider;
+	}
+
+	public void updateStatus(long spiderId, String status) {
+		collection.updateOne(new Document("_id", spiderId),
+				new Document("$set", new Document("status", status).append(status, LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli())));
 	}
 
 	public void delete(long id) {
@@ -104,7 +111,7 @@ public class MongoControllerRepository implements ControllerRepository {
 	}
 
 	public Stream<Spider> listActive() {
-		return StreamSupport.stream(collection.find(Filters.eq("state", State.STARTED)).map(doc -> {
+		return StreamSupport.stream(collection.find(Filters.or(Filters.eq("status", Statuses.STARTED), Filters.eq("status", Statuses.PAUSED))).map(doc -> {
 			try {
 				return mapper.readValue(doc.toJson(), Spider.class);
 			} catch (Exception e) {

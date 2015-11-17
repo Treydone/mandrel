@@ -49,6 +49,7 @@ public class NodeController {
 	@RequestMapping("/{id}")
 	public String node(@PathVariable String id, Model model) {
 		model.addAttribute("node", nodeService.node(id));
+		model.addAttribute("containers", nodeService.containers(id));
 		model.addAttribute("metrics", metricsRepository.node(id));
 		return "views/node";
 	}

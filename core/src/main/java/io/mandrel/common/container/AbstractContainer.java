@@ -16,27 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.controller;
+package io.mandrel.common.container;
 
-import io.mandrel.common.data.Spider;
+import java.util.concurrent.atomic.AtomicReference;
 
-import java.util.Optional;
-import java.util.stream.Stream;
+public abstract class AbstractContainer implements Container {
 
-public interface ControllerRepository {
+	protected final AtomicReference<Status> current = new AtomicReference<>(Status.CREATED);
 
-	Spider add(Spider spider);
-
-	Spider update(Spider spider);
-
-	void updateStatus(long spiderId, String status);
-
-	void delete(long id);
-
-	Optional<Spider> get(long id);
-
-	Stream<Spider> list();
-
-	Stream<Spider> listActive();
-
+	@Override
+	public Status status() {
+		return current.get();
+	}
 }

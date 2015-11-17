@@ -18,12 +18,13 @@
  */
 package io.mandrel.endpoints.contracts;
 
+import io.mandrel.common.client.Container;
+import io.mandrel.common.client.SyncRequest;
 import io.mandrel.common.data.Spider;
 import io.mandrel.endpoints.rest.Apis;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,10 +37,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public interface WorkerContract {
 
 	@RequestMapping(value = "/sync", method = RequestMethod.POST)
-	public void sync(@RequestBody List<Spider> spiders, @RequestHeader("target") URI target);
+	public void sync(@RequestBody SyncRequest sync, @RequestHeader("target") URI target);
 
 	@RequestMapping(value = "/active", method = RequestMethod.GET)
-	public Map<Long, Long> listActive(@RequestHeader("target") URI target);
+	public List<Container> listContainers(@RequestHeader("target") URI target);
 
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
 	public void create(@RequestBody Spider spider, @RequestHeader("target") URI target);
