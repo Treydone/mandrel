@@ -78,7 +78,7 @@ public class Clients {
 	}
 
 	public Logger logger() {
-		return new Slf4jLogger();
+		return new Slf4jLogger(Clients.class);
 	}
 
 	public Contract contract() {

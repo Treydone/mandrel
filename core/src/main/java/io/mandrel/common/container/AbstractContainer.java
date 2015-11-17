@@ -18,9 +18,25 @@
  */
 package io.mandrel.common.container;
 
+import io.mandrel.common.client.Clients;
+import io.mandrel.common.data.Spider;
+import io.mandrel.metrics.Accumulators;
+
 import java.util.concurrent.atomic.AtomicReference;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+
+@Data
+@Accessors(chain = true, fluent = true)
 public abstract class AbstractContainer implements Container {
+
+	protected final Accumulators accumulators;
+	protected final Spider spider;
+	protected final Clients client;
+	protected final DiscoveryClient discoveryClient;
 
 	protected final AtomicReference<Status> current = new AtomicReference<>(Status.CREATED);
 

@@ -18,19 +18,17 @@
  */
 package io.mandrel.worker;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import com.google.common.collect.ImmutableList;
 
 public class WorkerContainers {
 
 	private final static Map<Long, WorkerContainer> workerContainers = new HashMap<>();
 
-	public static List<WorkerContainer> list() {
-		return ImmutableList.copyOf(workerContainers.values());
+	public static Collection<WorkerContainer> list() {
+		return workerContainers.values();
 	}
 
 	public static void add(long spiderId, WorkerContainer WorkerContainer) {

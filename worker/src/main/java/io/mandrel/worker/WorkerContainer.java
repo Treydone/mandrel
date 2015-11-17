@@ -55,21 +55,13 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 public class WorkerContainer extends AbstractContainer {
 
 	private final ExtractorService extractorService;
-	private final Accumulators accumulators;
-	private final Spider spider;
-	private final Clients client;
-	private final DiscoveryClient discoveryClient;
 
 	private ExecutorService executor;
 	private List<Loop> loops;
 
 	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Spider spider, Clients client, DiscoveryClient discoveryClient) {
-		super();
+		super(accumulators, spider, client, discoveryClient);
 		this.extractorService = extractorService;
-		this.accumulators = accumulators;
-		this.spider = spider;
-		this.client = client;
-		this.discoveryClient = discoveryClient;
 		init();
 	}
 

@@ -18,6 +18,8 @@
  */
 package io.mandrel.common.container;
 
+import io.mandrel.common.data.Spider;
+
 public interface Container {
 
 	String type();
@@ -33,4 +35,6 @@ public interface Container {
 	void kill();
 
 	Status status();
+	
+	Spider spider();
 }

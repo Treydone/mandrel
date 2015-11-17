@@ -19,10 +19,11 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.client.Clients;
-import io.mandrel.common.client.Container;
-import io.mandrel.common.client.SyncRequest;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Statuses;
+import io.mandrel.common.sync.Container;
+import io.mandrel.common.sync.SyncRequest;
+import io.mandrel.common.sync.SyncResponse;
 import io.mandrel.endpoints.contracts.FrontierContract;
 import io.mandrel.frontier.Frontier;
 import io.mandrel.frontier.FrontierContainer;
@@ -31,6 +32,7 @@ import io.mandrel.metrics.Accumulators;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -107,17 +109,26 @@ public class FrontierResource implements FrontierContract {
 	}
 
 	@Override
-	public void sync(@RequestBody SyncRequest sync, URI target) {
+	public SyncResponse sync(@RequestBody SyncRequest sync, URI target) {
+		Collection<? extends io.mandrel.common.container.Container> containers = FrontierContainers.list();
 		Map<Long, Spider> ids = sync.getSpiders().stream().collect(Collectors.toMap(spider -> spider.getId(), spider -> spider));
 
+		SyncResponse response = new SyncResponse();
+		List<Long> created = new ArrayList<>();
+		List<Long> updated = new ArrayList<>();
+		List<Long> deleted = new ArrayList<>();
+		response.setCreated(created).setDeleted(deleted).setUpdated(updated);
+
 		List<Long> existingSpiders = new ArrayList<>();
-		FrontierContainers.list().forEach(c -> {
+		containers.forEach(c -> {
 			existingSpiders.add(c.spider().getId());
 			if (!ids.containsKey(c.spider().getId())) {
 				kill(c.spider().getId(), null);
+				deleted.add(c.spider().getId());
 			} else if (ids.get(c.spider().getId()).getVersion() != c.spider().getVersion()) {
 				kill(c.spider().getId(), null);
 				create(ids.get(c.spider().getId()), null);
+				updated.add(c.spider().getId());
 
 				if (Statuses.STARTED.equals(ids.get(c.spider().getId()).getStatus())) {
 					start(c.spider().getId(), null);
@@ -132,7 +143,9 @@ public class FrontierResource implements FrontierContract {
 				if (Statuses.STARTED.equals(spider.getStatus())) {
 					start(spider.getId(), null);
 				}
+				created.add(spider.getId());
 			}
 		});
+		return response;
 	}
 }

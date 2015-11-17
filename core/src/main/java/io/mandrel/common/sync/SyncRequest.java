@@ -1,4 +1,4 @@
-package io.mandrel.common.client;
+package io.mandrel.common.sync;
 
 import io.mandrel.common.data.Spider;
 

@@ -24,6 +24,7 @@ import io.mandrel.metadata.MetadataStore;
 
 import java.io.IOException;
 import java.net.URI;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Set;
 
@@ -52,9 +53,9 @@ public class MongoMetadataStore extends MetadataStore {
 
 		private static final long serialVersionUID = -9205125497698919267L;
 
-		private String uri;
-		private String database;
-		private String collection;
+		private String uri = "mongodb://localhost";
+		private String database = "test";
+		private String collection = "metadata_{0}";
 
 		@Override
 		public String name() {
@@ -66,7 +67,7 @@ public class MongoMetadataStore extends MetadataStore {
 			MongoClientOptions.Builder options = MongoClientOptions.builder();
 			// TODO options.description("");
 			MongoClientURI uri = new MongoClientURI(this.uri, options);
-			return new MongoMetadataStore(context, new MongoClient(uri), database, collection);
+			return new MongoMetadataStore(context, new MongoClient(uri), database, MessageFormat.format(collection, context.getSpiderId()));
 		}
 	}
 

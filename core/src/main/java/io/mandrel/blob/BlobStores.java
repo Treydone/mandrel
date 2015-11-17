@@ -22,14 +22,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.google.common.collect.ImmutableList;
-
 public class BlobStores {
 
 	private final static Map<Long, BlobStore> stores = new HashMap<>();
 
 	public static Iterable<BlobStore> list() {
-		return ImmutableList.copyOf(stores.values());
+		return stores.values();
 	}
 
 	public static void add(long spiderId, BlobStore BlobStore) {

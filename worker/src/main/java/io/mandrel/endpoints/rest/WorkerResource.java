@@ -19,10 +19,11 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.client.Clients;
-import io.mandrel.common.client.Container;
-import io.mandrel.common.client.SyncRequest;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Statuses;
+import io.mandrel.common.sync.Container;
+import io.mandrel.common.sync.SyncRequest;
+import io.mandrel.common.sync.SyncResponse;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.endpoints.contracts.WorkerContract;
 import io.mandrel.metrics.Accumulators;
@@ -31,12 +32,14 @@ import io.mandrel.worker.WorkerContainers;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -79,18 +82,28 @@ public class WorkerResource implements WorkerContract {
 				.collect(Collectors.toList());
 	}
 
+
 	@Override
-	public void sync(SyncRequest sync, URI target) {
+	public SyncResponse sync(@RequestBody SyncRequest sync, URI target) {
+		Collection<? extends io.mandrel.common.container.Container> containers = WorkerContainers.list();
 		Map<Long, Spider> ids = sync.getSpiders().stream().collect(Collectors.toMap(spider -> spider.getId(), spider -> spider));
 
+		SyncResponse response = new SyncResponse();
+		List<Long> created = new ArrayList<>();
+		List<Long> updated = new ArrayList<>();
+		List<Long> deleted = new ArrayList<>();
+		response.setCreated(created).setDeleted(deleted).setUpdated(updated);
+
 		List<Long> existingSpiders = new ArrayList<>();
-		WorkerContainers.list().forEach(c -> {
+		containers.forEach(c -> {
 			existingSpiders.add(c.spider().getId());
 			if (!ids.containsKey(c.spider().getId())) {
 				kill(c.spider().getId(), null);
+				deleted.add(c.spider().getId());
 			} else if (ids.get(c.spider().getId()).getVersion() != c.spider().getVersion()) {
 				kill(c.spider().getId(), null);
 				create(ids.get(c.spider().getId()), null);
+				updated.add(c.spider().getId());
 
 				if (Statuses.STARTED.equals(ids.get(c.spider().getId()).getStatus())) {
 					start(c.spider().getId(), null);
@@ -105,7 +118,9 @@ public class WorkerResource implements WorkerContract {
 				if (Statuses.STARTED.equals(spider.getStatus())) {
 					start(spider.getId(), null);
 				}
+				created.add(spider.getId());
 			}
 		});
+		return response;
 	}
 }

@@ -22,7 +22,7 @@ import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.client.Clients;
-import io.mandrel.common.client.Container;
+import io.mandrel.common.sync.Container;
 
 import java.net.URI;
 import java.util.ArrayList;

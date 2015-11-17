@@ -65,9 +65,9 @@ public class MongoBlobStore extends BlobStore {
 
 		private static final long serialVersionUID = -9205125497698919267L;
 
-		private String uri;
-		private String database;
-		private String bucket;
+		private String uri = "mongodb://localhost";
+		private String database = "test";
+		private String bucket = "blob_{0}";
 		private int batchSize = 10;
 
 		@Override

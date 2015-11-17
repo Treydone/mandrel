@@ -23,15 +23,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.ImmutableList;
-
 public class Requesters {
 
 	private final static Map<Long, Map<String, Requester>> requesters = new HashMap<>();
 	private final static Map<String, Requester> globalRequesters = new HashMap<>();
 
 	public static Iterable<Map<String, Requester>> list() {
-		return ImmutableList.copyOf(requesters.values());
+		return requesters.values();
 	}
 
 	public static void add(Requester requester) {

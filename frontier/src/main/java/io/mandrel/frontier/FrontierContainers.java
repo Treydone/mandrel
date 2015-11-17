@@ -18,19 +18,17 @@
  */
 package io.mandrel.frontier;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import com.google.common.collect.ImmutableList;
 
 public class FrontierContainers {
 
 	private final static Map<Long, FrontierContainer> frontierContainers = new HashMap<>();
 
-	public static List<FrontierContainer> list() {
-		return ImmutableList.copyOf(frontierContainers.values());
+	public static Collection<FrontierContainer> list() {
+		return frontierContainers.values();
 	}
 
 	public static void add(long spiderId, FrontierContainer FrontierContainer) {

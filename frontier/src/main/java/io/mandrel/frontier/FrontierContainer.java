@@ -37,20 +37,11 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 @Accessors(chain = true, fluent = true)
 public class FrontierContainer extends AbstractContainer {
 
-	private final Spider spider;
-	private final Accumulators accumulators;
-	private final Clients clients;
-	private final DiscoveryClient discoveryClient;
-
 	private TaskContext context = new TaskContext();
 	private Frontier frontier;
 
 	public FrontierContainer(Spider spider, Accumulators accumulators, Clients clients, DiscoveryClient discoveryClient) {
-		super();
-		this.spider = spider;
-		this.accumulators = accumulators;
-		this.clients = clients;
-		this.discoveryClient = discoveryClient;
+		super(accumulators, spider, clients, discoveryClient);
 		init();
 	}
 

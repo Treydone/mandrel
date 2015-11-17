@@ -19,10 +19,11 @@
 package io.mandrel.controller;
 
 import io.mandrel.cluster.discovery.ServiceIds;
+import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.client.Clients;
-import io.mandrel.common.client.SyncRequest;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Statuses;
+import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.SkipAncorFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
@@ -39,8 +40,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,6 +51,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.kohsuke.randname.RandomNameGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
@@ -69,7 +69,7 @@ public class ControllerService {
 	@Autowired
 	private DiscoveryClient discoveryClient;
 	@Autowired
-	private ScheduledExecutorService scheduledExecutorService;
+	private StateService stateService;
 	@Autowired
 	private Accumulators accumulators;
 	@Autowired
@@ -80,35 +80,36 @@ public class ControllerService {
 	@PostConstruct
 	public void init() {
 		// TODO Load the journal of commands
-
-		scheduledExecutorService.scheduleAtFixedRate(() -> sync(), 0, 10000, TimeUnit.MILLISECONDS);
 	}
 
+	@Scheduled(fixedRate = 10000)
 	public void sync() {
-		// TODO HOW TO in case of multiple controller
-		log.debug("Syncing the nodes from the controller...");
-		// Load the existing spiders from the database
-		List<Spider> spiders = controllerRepository.listActive().collect(Collectors.toList());
-		SyncRequest sync = new SyncRequest();
-		sync.setSpiders(spiders);
+		if (stateService.isStarted()) {
+			// TODO HOW TO in case of multiple controller
+			log.debug("Syncing the nodes from the controller...");
+			// Load the existing spiders from the database
+			List<Spider> spiders = controllerRepository.listActive().collect(Collectors.toList());
+			SyncRequest sync = new SyncRequest();
+			sync.setSpiders(spiders);
 
-		if (CollectionUtils.isNotEmpty(spiders)) {
-			discoveryClient.getInstances(ServiceIds.WORKER).forEach(worker -> {
-				try {
-					clients.workerClient().sync(sync, worker.getUri());
-				} catch (Exception e) {
-					log.warn("Can not sync due to", e);
-				}
-			});
-			discoveryClient.getInstances(ServiceIds.FRONTIER).forEach(worker -> {
-				try {
-					clients.frontierClient().sync(sync, worker.getUri());
-				} catch (Exception e) {
-					log.warn("Can not sync due to", e);
-				}
-			});
-		} else {
-			log.debug("Nothing to sync...");
+			if (CollectionUtils.isNotEmpty(spiders)) {
+				discoveryClient.getInstances(ServiceIds.WORKER).forEach(worker -> {
+					try {
+						clients.workerClient().sync(sync, worker.getUri());
+					} catch (Exception e) {
+						log.warn("Can not sync due to", e);
+					}
+				});
+				discoveryClient.getInstances(ServiceIds.FRONTIER).forEach(worker -> {
+					try {
+						clients.frontierClient().sync(sync, worker.getUri());
+					} catch (Exception e) {
+						log.warn("Can not sync due to", e);
+					}
+				});
+			} else {
+				log.debug("Nothing to sync...");
+			}
 		}
 	}
 
