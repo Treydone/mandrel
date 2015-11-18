@@ -269,7 +269,7 @@
 					      <a class="btn btn-app <#if spider.status != "created">disabled</#if>">
 					        <i class="fa fa-edit"></i> Edit
 					      </a>
-					      <a class="btn btn-app <#if spider.status != "created">disabled</#if>" href="/spiders/${spider.id?c}/start">
+					      <a class="btn btn-app <#if spider.status != "created" && spider.status != "paused">disabled</#if>" href="/spiders/${spider.id?c}/start">
 					        <i class="fa fa-play"></i> Start
 					      </a>
 					      <a class="btn btn-app <#if spider.status != "started">disabled</#if>" href="/spiders/${spider.id?c}/pause">
