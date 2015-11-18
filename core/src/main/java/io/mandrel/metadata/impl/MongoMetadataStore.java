@@ -35,6 +35,7 @@ import lombok.experimental.Accessors;
 
 import org.bson.Document;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.mongodb.MongoClient;
@@ -53,8 +54,11 @@ public class MongoMetadataStore extends MetadataStore {
 
 		private static final long serialVersionUID = -9205125497698919267L;
 
+		@JsonProperty("uri")
 		private String uri = "mongodb://localhost";
+		@JsonProperty("database")
 		private String database = "test";
+		@JsonProperty("collection")
 		private String collection = "metadata_{0}";
 
 		@Override

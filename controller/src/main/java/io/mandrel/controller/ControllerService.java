@@ -20,6 +20,7 @@ package io.mandrel.controller;
 
 import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.instance.StateService;
+import io.mandrel.common.NotFoundException;
 import io.mandrel.common.client.Clients;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Statuses;
@@ -39,7 +40,6 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -170,8 +170,8 @@ public class ControllerService {
 		return spider;
 	}
 
-	public Optional<Spider> get(long id) {
-		return controllerRepository.get(id);
+	public Spider get(long id) {
+		return controllerRepository.get(id).orElseThrow(() -> new NotFoundException("Spider not found"));
 	}
 
 	public Stream<Spider> list() {
@@ -182,64 +182,54 @@ public class ControllerService {
 		return controllerRepository.listActive();
 	}
 
-	public Optional<Spider> start(long spiderId) {
-		return get(spiderId).map(
-				spider -> {
+	public void start(long spiderId) {
+		Spider spider = get(spiderId);
 
-					if (Statuses.STARTED.equals(spider.getStatus())) {
-						return spider;
-					}
+		if (Statuses.STARTED.equals(spider.getStatus())) {
+			return;
+		}
 
-					if (Statuses.KILLED.equals(spider.getStatus())) {
-						throw new RuntimeException("Spider cancelled!");
-					}
+		if (Statuses.KILLED.equals(spider.getStatus())) {
+			throw new RuntimeException("Spider cancelled!");
+		}
 
-					controllerRepository.updateStatus(spiderId, Statuses.STARTED);
-					timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_STARTED)
-							.setTime(LocalDateTime.now()));
+		controllerRepository.updateStatus(spiderId, Statuses.STARTED);
+		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_STARTED)
+				.setTime(LocalDateTime.now()));
 
-					// TODO Deploy singleton sources on a random frontier
+		// TODO Deploy singleton sources on a random frontier
 
-					return spider;
-
-				});
 	}
 
-	public Optional<Spider> pause(long spiderId) {
-		return get(spiderId).map(spider -> {
+	public void pause(long spiderId) {
+		Spider spider = get(spiderId);
 
-			// Update status
-				controllerRepository.updateStatus(spiderId, Statuses.PAUSED);
-				timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_PAUSED)
-						.setTime(LocalDateTime.now()));
+		// Update status
+		controllerRepository.updateStatus(spiderId, Statuses.PAUSED);
+		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_PAUSED)
+				.setTime(LocalDateTime.now()));
 
-				return controllerRepository.update(spider);
-			});
 	}
 
-	public Optional<Spider> kill(long spiderId) {
-		return get(spiderId).map(spider -> {
+	public void kill(long spiderId) {
+		Spider spider = get(spiderId);
 
-			// Update status
-				controllerRepository.updateStatus(spiderId, Statuses.KILLED);
-				timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_KILLED)
-						.setTime(LocalDateTime.now()));
+		// Update status
+		controllerRepository.updateStatus(spiderId, Statuses.KILLED);
+		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_KILLED)
+				.setTime(LocalDateTime.now()));
 
-				return controllerRepository.update(spider);
-			});
 	}
 
-	public Optional<Spider> delete(long spiderId) {
-		return get(spiderId).map(spider -> {
+	public void delete(long spiderId) {
+		Spider spider = get(spiderId);
 
-			// Update status
-				controllerRepository.updateStatus(spiderId, Statuses.DELETED);
-				timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_DELETED)
-						.setTime(LocalDateTime.now()));
+		// Update status
+		controllerRepository.updateStatus(spiderId, Statuses.DELETED);
+		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_DELETED)
+				.setTime(LocalDateTime.now()));
 
-				metricsRepository.delete(spiderId);
+		metricsRepository.delete(spiderId);
 
-				return controllerRepository.update(spider);
-			});
 	}
 }

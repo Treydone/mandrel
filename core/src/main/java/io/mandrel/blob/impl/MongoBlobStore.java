@@ -40,6 +40,7 @@ import org.apache.commons.io.IOUtils;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
@@ -65,9 +66,13 @@ public class MongoBlobStore extends BlobStore {
 
 		private static final long serialVersionUID = -9205125497698919267L;
 
+		@JsonProperty("uri")
 		private String uri = "mongodb://localhost";
+		@JsonProperty("database")
 		private String database = "test";
+		@JsonProperty("bucket")
 		private String bucket = "blob_{0}";
+		@JsonProperty("batch_size")
 		private int batchSize = 10;
 
 		@Override

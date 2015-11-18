@@ -26,7 +26,6 @@ import io.mandrel.metrics.MetricsRepository;
 import io.mandrel.metrics.SpiderMetrics;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -83,43 +82,45 @@ public class SpiderResource {
 
 	@ApiOperation(value = "Find a spider by its id", response = Spider.class)
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	public Optional<Spider> id(@PathVariable Long id) {
-		return spiderService.get(id).map(opt -> opt);
+	public Spider id(@PathVariable Long id) {
+		return spiderService.get(id);
 	}
 
 	@ApiOperation(value = "Start a spider")
 	@RequestMapping(value = "/{id}/start", method = RequestMethod.GET)
-	public Optional<Spider> start(@PathVariable Long id) {
-		return spiderService.start(id);
+	public void start(@PathVariable Long id) {
+		spiderService.start(id);
 	}
 
 	@ApiOperation(value = "Analyze a source against a spider")
 	@RequestMapping(value = "/{id}/analyze", method = RequestMethod.GET)
-	public Optional<Analysis> analyze(@PathVariable Long id, @RequestParam String source) {
-		return spiderService.get(id).map(spider -> analysisService.analyze(spider, source));
+	public Analysis analyze(@PathVariable Long id, @RequestParam String source) {
+		Spider spider = spiderService.get(id);
+		return analysisService.analyze(spider, source);
 	}
 
 	@ApiOperation(value = "Pause a spider")
 	@RequestMapping(value = "/{id}/pause", method = RequestMethod.GET)
 	public void pause(@PathVariable Long id) {
-		// TODO
+		spiderService.pause(id);
 	}
 
 	@ApiOperation(value = "Cancel a spider")
 	@RequestMapping(value = "/{id}/cancel", method = RequestMethod.GET)
-	public Optional<Spider> cancel(@PathVariable Long id) {
-		return spiderService.kill(id);
+	public void cancel(@PathVariable Long id) {
+		spiderService.kill(id);
 	}
 
 	@ApiOperation(value = "Delete a spider")
 	@RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
-	public Optional<Spider> delete(@PathVariable Long id) {
-		return spiderService.delete(id);
+	public void delete(@PathVariable Long id) {
+		spiderService.delete(id);
 	}
 
 	@ApiOperation(value = "Retrieve the stats of a spider")
 	@RequestMapping(value = "/{id}/stats", method = RequestMethod.GET)
-	public Optional<SpiderMetrics> stats(@PathVariable Long id) {
-		return spiderService.get(id).map(spider -> metricsRepository.spider(spider.getId()));
+	public SpiderMetrics stats(@PathVariable Long id) {
+		Spider spider = spiderService.get(id);
+		return metricsRepository.spider(spider.getId());
 	}
 }

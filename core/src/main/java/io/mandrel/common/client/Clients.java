@@ -85,8 +85,7 @@ public class Clients {
 		return new SpringMvcContract();
 	}
 
-	@Autowired(required = false)
-	private Logger.Level logLevel = Logger.Level.FULL;
+	private Logger.Level logLevel = Logger.Level.NONE;
 
 	private Retryer retryer = new Retryer.Default(100, SECONDS.toMillis(1), 3);
 

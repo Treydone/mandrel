@@ -96,7 +96,7 @@ public class ExporterServiceTest {
 
 		BlobStores.add(0, store);
 
-		Mockito.when(spiderService.get(0)).thenReturn(Optional.of(new Spider()));
+		Mockito.when(spiderService.get(0)).thenReturn(new Spider());
 		// Mockito.when(store.byPages(0L, 1000, captor.capture()));
 
 		// Actions

@@ -57,7 +57,7 @@ public class DataController {
 
 	@RequestMapping("/spiders/{id}/data/{extractor}")
 	public String view(@PathVariable Long id, @PathVariable String extractor, Model model) {
-		Spider spider = spiderService.get(id).get();
+		Spider spider = spiderService.get(id);
 		model.addAttribute("spider", spider);
 		model.addAttribute("extractor",
 				spider.getExtractors().getPages().stream().filter(ex -> extractor.equals(ex.getName())).findFirst()
@@ -68,10 +68,10 @@ public class DataController {
 	@RequestMapping(value = "/spiders/{id}/data/{extractor}", method = RequestMethod.POST)
 	@ResponseBody
 	public PageResponse data(@PathVariable Long id, @PathVariable String extractor, PageRequest request, Model model) {
-		Spider spider = spiderService.get(id).get();
+		Spider spider = spiderService.get(id);
 
 		DocumentStore store = DocumentStores.get(id, extractor).orElseThrow(() -> new NotFoundException(""));
-		
+
 		// TODO get the extractor from the store!
 		MetadataExtractor theExtractor = spider.getExtractors().getPages().stream().filter(ex -> extractor.equals(ex.getName())).findFirst()
 				.orElseThrow(() -> new NotFoundException(""));

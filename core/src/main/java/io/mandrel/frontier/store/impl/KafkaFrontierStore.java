@@ -50,6 +50,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class KafkaFrontierStore extends FrontierStore {
@@ -60,6 +61,7 @@ public class KafkaFrontierStore extends FrontierStore {
 	public static class KafkaFrontierStoreDefinition extends FrontierStoreDefinition<KafkaFrontierStore> {
 		private static final long serialVersionUID = -5715057009212205361L;
 
+		@JsonIgnore
 		private Properties properties = new Properties();
 
 		public KafkaFrontierStoreDefinition() {

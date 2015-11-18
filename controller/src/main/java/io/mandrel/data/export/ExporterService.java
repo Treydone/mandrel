@@ -45,58 +45,22 @@ public class ExporterService {
 	private final ControllerService spiderService;
 
 	public void export(Long id, String extractorName, Exporter exporter, Writer writer) {
-		Optional<Spider> oSpider = spiderService.get(id);
+		Spider spider = spiderService.get(id);
 
-		if (oSpider.isPresent()) {
-			Spider spider = oSpider.get();
-			Optional<MetadataExtractor> oExtractor = spider.getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
-			if (oExtractor.isPresent()) {
-				try {
-					exporter.init(writer);
-					MetadataExtractor extractor = oExtractor.get();
-					DocumentStores.get(id, extractorName).get().byPages(1000, data -> {
-						try {
-							exporter.export(data, extractor.getFields());
-						} catch (Exception e) {
-							log.debug("Uhhh...", e);
-							return false;
-						}
-						return CollectionUtils.isNotEmpty(data);
-					});
-				} catch (Exception e) {
-					log.debug("Uhhh...", e);
-				} finally {
-					try {
-						exporter.close();
-					} catch (Exception e1) {
-						log.debug("Uhhh...", e1);
-					}
-				}
-			} else {
-				notFound("Extractor not found");
-				log.debug("Extract {} not found for spider {}", extractorName, id);
-			}
-		} else {
-			notFound("Spider not found");
-			log.debug("Spider {} not found", id);
-		}
-	}
-
-	public void export(Long id, Exporter exporter, Writer writer) {
-		Optional<Spider> optional = spiderService.get(id);
-
-		if (optional.isPresent()) {
+		Optional<MetadataExtractor> oExtractor = spider.getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
+		if (oExtractor.isPresent()) {
 			try {
-				exporter.init(new BufferedWriter(writer));
-				BlobStores.get(id).ifPresent(b -> b.byPages(1000, data -> {
+				exporter.init(writer);
+				MetadataExtractor extractor = oExtractor.get();
+				DocumentStores.get(id, extractorName).get().byPages(1000, data -> {
 					try {
-						exporter.export(data);
+						exporter.export(data, extractor.getFields());
 					} catch (Exception e) {
 						log.debug("Uhhh...", e);
 						return false;
 					}
 					return CollectionUtils.isNotEmpty(data);
-				}));
+				});
 			} catch (Exception e) {
 				log.debug("Uhhh...", e);
 			} finally {
@@ -107,10 +71,32 @@ public class ExporterService {
 				}
 			}
 		} else {
-			notFound("Spider not found");
-			log.debug("Spider {} not found", id);
+			notFound("Extractor not found");
+			log.debug("Extract {} not found for spider {}", extractorName, id);
 		}
+	}
 
+	public void export(Long id, Exporter exporter, Writer writer) {
+		try {
+			exporter.init(new BufferedWriter(writer));
+			BlobStores.get(id).ifPresent(b -> b.byPages(1000, data -> {
+				try {
+					exporter.export(data);
+				} catch (Exception e) {
+					log.debug("Uhhh...", e);
+					return false;
+				}
+				return CollectionUtils.isNotEmpty(data);
+			}));
+		} catch (Exception e) {
+			log.debug("Uhhh...", e);
+		} finally {
+			try {
+				exporter.close();
+			} catch (Exception e1) {
+				log.debug("Uhhh...", e1);
+			}
+		}
 	}
 
 	private void notFound(String message) {
