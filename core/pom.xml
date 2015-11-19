@@ -226,11 +226,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.freemarker</groupId>
-			<artifactId>freemarker</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver</artifactId>
 		</dependency>
@@ -390,11 +385,6 @@
 		<dependency>
 			<groupId>org.jhades</groupId>
 			<artifactId>jhades</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 	</dependencies>
 
