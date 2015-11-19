@@ -1,12 +1,377 @@
-= Introduction to AsciiDoc
-Doc Writer <doc@example.com>
 
-A preface about http://asciidoc.org[AsciiDoc].
+= Mandrel
+Vincent Devillers <https://twitter.com/treydone[@Treydone]>;
 
-== First Section
+[NOTE]
+.This document is under active development
+====
+If you find errors or omissions in this document, please don't hesitate to submit an issue or open a pull request with a fix.
+New contributors are always welcome!
+====
 
-* item 1
-* item 2
+Mandrel is a distributed Crawler engine built for the cloud. Features include:
 
-[source,ruby]
-puts "Hello, World!"
+* Distributed and Highly Available Crawler Engine.
+* Powerful and customizable
+* HTTP RESTful API
+* Open Source under the Apache License, version 2 ("ALv2")
+
+= Introduction
+
+== What is Mandrel?
+
+=== The Big Picture
+
+=== Compared to...
+
+= Quick Starts
+
+== Getting Started
+
+TIP: A useful tip
+
+
+=== System Requirements
+Mandrel works on Linux, Mac and Windows. All you need is Java 8.
+
+== Installation
+
+=== From the sources
+
+Mandrel uses Maven for its build system. Simply run:
+
+[source]
+mvn clean package -DskipTests
+
+=== Install with +yum+
+
+//tag::yum[]
+To install Mandrel on Fedora or other RPM-based systems:
+
+. Open a terminal
+. Run the installation command
+
+  Fedora 21 or earlier::
++
+ $ sudo yum install mandrel
+
+  Fedora 22 or later::
++
+ $ sudo dnf install mandrel
+
+=== Install with +apt-get+
+
+//tag::aptget[]
+To install Mandrel on Debian Sid or Ubuntu Saucy or greater:
+
+. Open a terminal
+. Type the +apt-get+ command
+
+ $ sudo apt-get install mandrel
+
+
+== REST API
+
+=== Filtering
+
+You can add filters to your spider. There are two types of filters:
+
+* link filters
+* blob filters
+
+Link filters apply conditions only on the link whereas blob filters apply conditions on the downloaded blob. This means also that link filters are applied BEFORE the crawling and blob filters AFTER. Take this in consideration when developping new spiders
+
+==== Link filters
+
+
+*Domains*
+
+Example:
+[source]
+{
+    "type":"allowed_for_domains",
+    "domains": [
+        "mydomain1",
+        "mydomain2"
+    ]
+}
+
+*Skip ancor*
+
+Example:
+
+[source]
+{
+    "type":"skip_ancor"
+}
+
+*Pattern*
+
+Example:
+
+[source]
+{
+    "type":"pattern",
+    "pattern": "..."
+}
+
+*Sanitize*
+
+Remove all the parameters in a URI (tck=..., timestamp=..., adsclick=...)
+
+Example:
+
+[source]
+{
+    "type":"sanitize_params"
+}
+
+*Booleans*
+
+or|and|not|true|false
+
+Example:
+
+[source]
+{
+  "not": {
+      "type":"allowed_for_domains",
+      "domains": [
+          "mydomain1",
+          "mydomain2"
+      ]
+  }
+}
+
+[source]
+{
+  "and": [
+      {
+          "type":"allowed_for_domains",
+          "domains": [
+              "mydomain1",
+              "mydomain2"
+          ]
+      },
+      {
+          "type":"pattern",
+          "pattern": "..."
+      }
+  ]
+}
+
+To be continued...
+
+* Keep only some parameters
+* ...
+
+==== Blob filters
+
+*Size*
+
+*Booleans*
+
+or|and|not|true|false
+
+To be continued...
+
+
+=== Raw exporting
+
+Your spider is now done. Or not. We don't care, we just want to export the raw data of the pages/documents. You have to two ways to do this:
+
+- Extract the data from the page store if you have specified one during the creation (SQL, Cassandra...)
+- Use the dedicated endpoint
+
+[source]
+$ curl -X GET http://localhost:8080/spiders/wikipedia/raw/export?format=csv|json
+
+To be continued...
+
+- Define options for the exporters
+- Add formats for parquet
+- Support compression
+
+=== Extracting
+
+Somethimes we want to crawl pages. But what we really want is the data INSIDE the pages.
+
+[source]
+$ curl -X POST http://localhost:8080/spiders/imdb -d '
+{
+   "sources":[
+      {
+         "type":"fixed",
+         "urls":[
+            "http://www.imdb.com/"
+         ]
+      }
+   ],
+   "extractors":[
+      {
+         "name":"movie_extractor"
+         "filters":[
+            {
+               "type":"patterns",
+               "value":[
+                  "/title"
+               ]
+            }
+         ],
+         "fields":[
+            {
+               "title":{
+                  "extractor":{
+                     "type":"xpath",
+                     "value":"//*[@id="overview-top"]/h1/span[1]/text()",
+                     "source":"body"
+                  }
+               }
+            },
+            {
+               "description":{
+                  "extractor":{
+                     "type":"xpath",
+                     "value":"//*[@id="overview-top"]/p[2]/text()",
+                     "source":"body"
+                  }
+               }
+            },
+            {
+               "actors":{
+                  "extractor":{
+                     "type":"xpath",
+                     "value":"//*[@id="overview-top"]/div[6]/a/span",
+                     "source":"body"
+                  }
+               }
+            }
+         ]
+      }
+   ]
+}
+'
+
+This will extract the fields 'title', 'description' and 'actors' from the page.
+
+=== Data exporting
+
+Ok, now we got some data, we can export them by calling:
+
+[source]
+$ curl -X POST http://localhost:8080/spiders/export/movie_extractor?format=csv|json
+
+==== JSON
+
+[source]
+{
+    "type":"json"
+}
+
+==== Delimited separated values
+
+[source]
+{
+    "type":"csv",
+    "quote_char":"\"",
+    "delimiter_values":44,
+    "delimiter_multivalues":124,
+    "keep_only_first_value":false,
+    "add_header":true,
+    "end_of_line_symbols":"\r\n"
+}
+
+=== Stores
+
+[source]
+{
+   "stores":{
+      "metadata":{
+         "type":"internal"
+      },
+      "page":{
+         "type":"internal"
+      }
+   }
+}
+
+[source]
+{
+   "stores":{
+      "metadata":{
+         "type":"internal"
+      },
+      "page":null
+   }
+}
+
+
+=== Client
+
+Each spider can be configured with a specified HTTP client in order to configure:
+
+* Proxies
+* Request and connection timeouts
+* User-agent generation
+* Custom cookies (jsessionid...) and headers (X-Request-By, Basic-Authentication...)
+* DNS resolution strategies
+* Politeness
+
+[source]
+{
+ "request_time_out":3000,
+ "headers":null,
+ "params":null,
+ "follow_redirects":false,
+ "cookies":null,
+ "user_agent_provisionner":{
+     "type":"fixed",
+     "ua":"Mandrel"
+ },
+ "dns_cache":{
+     "type":"internal"
+ },
+ "proxy":{
+     "type":"no"
+ },
+ "politeness":{
+     "global_rate":1000,
+     "per_node_rate":500,
+     "max_pages":500,
+     "wait":100,
+     "ignore_robots_txt":false,
+     "recrawl_after":-1
+ }
+}
+
+== Production considerations
+
+NOTE: Section pending
+
+== Troubleshooting
+
+NOTE: Section pending
+
+== Glossary
+
+NOTE: Section pending
+
+== Copyright and License
+
+NOTE: Section pending
+
+This software is licensed under the Apache License, version 2 ("ALv2"), quoted below.
+
+Copyright 2009-2015 Mandrel
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
