@@ -23,11 +23,9 @@ import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
 import io.mandrel.endpoints.rest.Apis;
-import io.mandrel.frontier.Frontier;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.http.MediaType;
@@ -45,9 +43,6 @@ public interface FrontierContract {
 
 	@RequestMapping(value = "/active", method = RequestMethod.GET)
 	public List<Container> listContainers(@RequestHeader("target") URI target);
-
-	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	public Optional<Frontier> id(@PathVariable("id") Long id, @RequestHeader("target") URI target);
 
 	@RequestMapping(value = "/{id}/next", method = RequestMethod.GET)
 	public URI next(@PathVariable("id") Long id, @RequestHeader("target") URI target);

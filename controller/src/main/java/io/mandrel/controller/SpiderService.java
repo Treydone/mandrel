@@ -257,10 +257,12 @@ public class SpiderService {
 			Source source = s.build(context);
 
 			if (source.singleton() && source.check()) {
+				log.debug("Injecting source '{}' ({})", s.name(), s.toString());
 				ServiceInstance frontier = discoveryClient.getInstances(ServiceIds.FRONTIER).get(0);
 
 				source.register(uri -> {
 					try {
+						log.trace("Adding uri '{}'", uri);
 						clients.frontierClient().schedule(spider.getId(), uri, frontier.getUri());
 					} catch (Exception e) {
 						log.warn("Can not sync due to", e);

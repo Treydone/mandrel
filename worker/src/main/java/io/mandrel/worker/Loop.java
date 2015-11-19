@@ -189,7 +189,6 @@ public class Loop implements Runnable {
 								spiderAccumulator.incConnectException();
 								add(spider.getId(), uri);
 							}
-
 						}
 					} else {
 						// TODO Unknown protocol

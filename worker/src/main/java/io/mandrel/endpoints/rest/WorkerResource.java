@@ -18,6 +18,7 @@
  */
 package io.mandrel.endpoints.rest;
 
+import io.mandrel.common.NotFoundException;
 import io.mandrel.common.client.Clients;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Statuses;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +59,8 @@ public class WorkerResource implements WorkerContract {
 	@Autowired
 	private DiscoveryClient discoveryClient;
 
+	private Supplier<? extends NotFoundException> workerNotFound = () -> new NotFoundException("Worker not found");
+
 	@Override
 	public void create(Spider spider, URI target) {
 		WorkerContainer container = new WorkerContainer(extractorService, accumulators, spider, clients, discoveryClient);
@@ -65,17 +69,17 @@ public class WorkerResource implements WorkerContract {
 
 	@Override
 	public void start(Long id, URI target) {
-		WorkerContainers.get(id).ifPresent(c -> c.start());
+		WorkerContainers.get(id).orElseThrow(workerNotFound).start();
 	}
 
 	@Override
 	public void pause(Long id, URI target) {
-		WorkerContainers.get(id).ifPresent(c -> c.pause());
+		WorkerContainers.get(id).orElseThrow(workerNotFound).pause();
 	}
 
 	@Override
 	public void kill(Long id, URI target) {
-		WorkerContainers.get(id).ifPresent(c -> c.kill());
+		WorkerContainers.get(id).orElseThrow(workerNotFound).kill();
 	}
 
 	@Override
