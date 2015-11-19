@@ -41,7 +41,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -63,37 +65,37 @@ public class FrontierResource implements FrontierContract {
 	}
 
 	@Override
-	public void start(Long id, URI target) {
+	public void start(@PathVariable("id") Long id, URI target) {
 		FrontierContainers.get(id).orElseThrow(frontierNotFound).start();
 	}
 
 	@Override
-	public void pause(Long id, URI target) {
+	public void pause(@PathVariable("id") Long id, URI target) {
 		FrontierContainers.get(id).orElseThrow(frontierNotFound).pause();
 	}
 
 	@Override
-	public void kill(Long id, URI target) {
+	public void kill(@PathVariable("id") Long id, URI target) {
 		FrontierContainers.get(id).orElseThrow(frontierNotFound).kill();
 	}
 
 	@Override
-	public URI next(Long id, URI target) {
+	public URI next(@PathVariable("id") Long id, URI target) {
 		return FrontierContainers.get(id).map(f -> f.frontier().pool()).orElseThrow(frontierNotFound);
 	}
 
 	@Override
-	public void schedule(Long id, URI uri, URI target) {
+	public void schedule(@PathVariable("id") Long id, @RequestParam("uri") URI uri, URI target) {
 		FrontierContainers.get(id).orElseThrow(frontierNotFound).frontier().schedule(uri);
 	}
 
 	@Override
-	public void schedule(Long id, Set<URI> uris, URI target) {
+	public void schedule(@PathVariable("id") Long id, @RequestBody Set<URI> uris, URI target) {
 		FrontierContainers.get(id).orElseThrow(frontierNotFound).frontier().schedule(uris);
 	}
 
 	@Override
-	public void delete(Long id, URI uri, URI target) {
+	public void delete(@PathVariable("id") Long id, @RequestParam("uri") URI uri, URI target) {
 		FrontierContainers.get(id).orElseThrow(frontierNotFound).frontier().schedule(uri);
 	}
 

@@ -31,9 +31,9 @@ public class FrontierContainers {
 		return frontierContainers.values();
 	}
 
-	public static void add(long spiderId, FrontierContainer FrontierContainer) {
+	public static void add(long spiderId, FrontierContainer frontierContainer) {
 		synchronized (frontierContainers) {
-			frontierContainers.put(spiderId, FrontierContainer);
+			frontierContainers.put(spiderId, frontierContainer);
 		}
 	}
 

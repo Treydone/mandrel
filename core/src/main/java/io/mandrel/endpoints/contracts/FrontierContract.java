@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RequestMapping(value = Apis.PREFIX + "/frontiers", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 public interface FrontierContract {
@@ -48,13 +49,13 @@ public interface FrontierContract {
 	public URI next(@PathVariable("id") Long id, @RequestHeader("target") URI target);
 
 	@RequestMapping(value = "/{id}/delete", method = RequestMethod.GET)
-	public void delete(@PathVariable("id") Long id, URI uri, @RequestHeader("target") URI target);
+	public void delete(@PathVariable("id") Long id, @RequestParam("uri") URI uri, @RequestHeader("target") URI target);
 
 	@RequestMapping(value = "/{id}/schedule", method = RequestMethod.GET)
-	public void schedule(@PathVariable("id") Long id, URI uri, @RequestHeader("target") URI target);
+	public void schedule(@PathVariable("id") Long id, @RequestParam("uri") URI uri, @RequestHeader("target") URI target);
 
-	@RequestMapping(value = "/{id}/mschedule", method = RequestMethod.GET)
-	public void schedule(@PathVariable("id") Long id, Set<URI> uri, @RequestHeader("target") URI target);
+	@RequestMapping(value = "/{id}/mschedule", method = RequestMethod.POST)
+	public void schedule(@PathVariable("id") Long id, @RequestBody Set<URI> uris, @RequestHeader("target") URI target);
 
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
 	public void create(@RequestBody Spider spider, @RequestHeader("target") URI target);

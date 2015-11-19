@@ -43,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -62,23 +63,23 @@ public class WorkerResource implements WorkerContract {
 	private Supplier<? extends NotFoundException> workerNotFound = () -> new NotFoundException("Worker not found");
 
 	@Override
-	public void create(Spider spider, URI target) {
+	public void create(@RequestBody Spider spider, URI target) {
 		WorkerContainer container = new WorkerContainer(extractorService, accumulators, spider, clients, discoveryClient);
 		container.register();
 	}
 
 	@Override
-	public void start(Long id, URI target) {
+	public void start(@PathVariable("id") Long id, URI target) {
 		WorkerContainers.get(id).orElseThrow(workerNotFound).start();
 	}
 
 	@Override
-	public void pause(Long id, URI target) {
+	public void pause(@PathVariable("id") Long id, URI target) {
 		WorkerContainers.get(id).orElseThrow(workerNotFound).pause();
 	}
 
 	@Override
-	public void kill(Long id, URI target) {
+	public void kill(@PathVariable("id") Long id, URI target) {
 		WorkerContainers.get(id).orElseThrow(workerNotFound).kill();
 	}
 
