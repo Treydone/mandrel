@@ -64,7 +64,7 @@ public class HttpStrategy extends Strategy {
 		private List<Cookie> cookies;
 
 		@JsonProperty("user_agent_provisionner")
-		private UserAgentProvisionnerDefinition userAgentProvisionner = new FixedUserAgentProvisionnerDefinition("Mandrel");
+		private UserAgentProvisionnerDefinition userAgentProvisionner = new FixedUserAgentProvisionnerDefinition();
 
 		@Override
 		public String name() {

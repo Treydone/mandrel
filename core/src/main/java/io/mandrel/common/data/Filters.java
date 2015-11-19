@@ -34,9 +34,9 @@ public class Filters implements Serializable {
 
 	private static final long serialVersionUID = -482772147190412226L;
 
-	@JsonProperty("pages")
-	private List<BlobFilter> forPages = new ArrayList<>();
+	@JsonProperty("blobs")
+	private List<BlobFilter> blobs = new ArrayList<>();
 	
 	@JsonProperty("links")
-	private List<LinkFilter> forLinks = new ArrayList<>();
+	private List<LinkFilter> links = new ArrayList<>();
 }

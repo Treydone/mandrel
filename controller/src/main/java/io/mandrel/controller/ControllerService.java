@@ -61,7 +61,7 @@ import org.springframework.validation.BindingResult;
 public class ControllerService {
 
 	@Autowired
-	private ControllerRepository controllerRepository;
+	private SpiderRepository controllerRepository;
 	@Autowired
 	private TimelineService timelineService;
 	@Autowired
@@ -143,11 +143,11 @@ public class ControllerService {
 		spider.setSources(Arrays.asList(source));
 
 		// Add filters
-		spider.getFilters().getForLinks().add(new AllowedForDomainsFilter().domains(urls.stream().map(url -> {
+		spider.getFilters().getLinks().add(new AllowedForDomainsFilter().domains(urls.stream().map(url -> {
 			return URI.create(url).getHost();
 		}).collect(Collectors.toList())));
-		spider.getFilters().getForLinks().add(new SkipAncorFilter());
-		spider.getFilters().getForLinks().add(UrlPatternFilter.STATIC);
+		spider.getFilters().getLinks().add(new SkipAncorFilter());
+		spider.getFilters().getLinks().add(UrlPatternFilter.STATIC);
 
 		return add(spider);
 	}

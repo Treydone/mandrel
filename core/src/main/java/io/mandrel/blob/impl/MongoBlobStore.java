@@ -26,6 +26,7 @@ import io.mandrel.io.Payloads;
 
 import java.io.IOException;
 import java.net.URI;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -86,7 +87,7 @@ public class MongoBlobStore extends BlobStore {
 			// TODO options.description("");
 			MongoClientURI uri = new MongoClientURI(this.uri, options);
 			MongoClient client = new MongoClient(uri);
-			return new MongoBlobStore(context, client, database, bucket, batchSize);
+			return new MongoBlobStore(context, client, database, MessageFormat.format(bucket, context.getSpiderId()), batchSize);
 		}
 	}
 

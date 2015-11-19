@@ -16,15 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.command;
+package io.mandrel.controller;
 
-public class Journal {
+import io.mandrel.common.data.Spider;
 
-	public void log() {
+import java.util.Optional;
+import java.util.stream.Stream;
 
-	}
+public interface SpiderRepository {
 
-	public void replay() {
+	Spider add(Spider spider);
 
-	}
+	Spider update(Spider spider);
+
+	void updateStatus(long spiderId, String status);
+
+	void delete(long id);
+
+	Optional<Spider> get(long id);
+
+	Stream<Spider> list();
+
+	Stream<Spider> listActive();
+
 }

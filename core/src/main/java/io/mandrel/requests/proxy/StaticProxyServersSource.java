@@ -64,9 +64,9 @@ public class StaticProxyServersSource extends ProxyServersSource {
 
 	private List<ProxyServer> servers = Arrays.asList((ProxyServer) null);
 
-	private transient AtomicInteger currentProxyServerIndex = new AtomicInteger();
+	private AtomicInteger currentProxyServerIndex = new AtomicInteger();
 
-	private transient Iterator<ProxyServer> roundRobin;
+	private Iterator<ProxyServer> roundRobin;
 
 	public void init() {
 		roundRobin = getProxyServersIterator(servers);

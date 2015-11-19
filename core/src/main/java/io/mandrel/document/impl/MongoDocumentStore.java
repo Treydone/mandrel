@@ -24,6 +24,7 @@ import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -35,6 +36,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
@@ -53,9 +55,13 @@ public class MongoDocumentStore extends DocumentStore {
 
 		private static final long serialVersionUID = -9205125497698919267L;
 
-		private String uri;
-		private String database;
-		private String collection;
+		@JsonProperty("uri")
+		private String uri = "mongodb://localhost";
+		@JsonProperty("database")
+		private String database = "test";
+		@JsonProperty("collection")
+		private String collection = "document_{0}";
+		@JsonProperty("batch_size")
 		private int batchSize = 1000;
 
 		@Override
@@ -68,7 +74,8 @@ public class MongoDocumentStore extends DocumentStore {
 			MongoClientOptions.Builder options = MongoClientOptions.builder();
 			// TODO options.description("");
 			MongoClientURI uri = new MongoClientURI(this.uri, options);
-			return new MongoDocumentStore(context, metadataExtractor, new MongoClient(uri), database, collection, batchSize);
+			return new MongoDocumentStore(context, metadataExtractor, new MongoClient(uri), database, MessageFormat.format(collection, context.getSpiderId()),
+					batchSize);
 		}
 	}
 

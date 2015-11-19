@@ -32,12 +32,17 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Splitter;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import com.google.common.net.InetAddresses;
 
 @Data
 @Accessors(chain = true, fluent = true)
@@ -50,14 +55,13 @@ public class DNSNameResolver extends NameResolver {
 	public static class DNSNameResolverDefinition extends NameResolverDefinition<DNSNameResolver> {
 		private static final long serialVersionUID = -2800579764535044200L;
 
-		private static final List<InetSocketAddress> DEFAULT_SERVERS = Arrays.asList(new InetSocketAddress("37.235.1.177", 53), new InetSocketAddress(
-				"8.8.8.8", 53), // Google Public DNS
-				new InetSocketAddress("8.8.4.4", 53), new InetSocketAddress("208.67.222.222", 53), // OpenDNS
-				new InetSocketAddress("208.67.220.220", 53), new InetSocketAddress("37.235.1.174", 53) // FreeDNS
-				);
+		private static final List<String> DEFAULT_SERVERS = Arrays.asList("37.235.1.177:53", "8.8.8.8:53", // Google
+				"8.8.4.4:53", "208.67.222.222:53", // OpenDNS
+				"208.67.220.220:53", "37.235.1.174:53" // FreeDNS
+		);
 
 		@JsonProperty("servers")
-		private List<InetSocketAddress> servers = DEFAULT_SERVERS;
+		private List<String> servers = DEFAULT_SERVERS;
 
 		@JsonProperty("max_tries_per_query")
 		private int maxTriesPerQuery = DEFAULT_SERVERS.size();
@@ -70,7 +74,15 @@ public class DNSNameResolver extends NameResolver {
 
 		@Override
 		public DNSNameResolver build(TaskContext context) {
-			return new DNSNameResolver(context).maxTriesPerQuery(maxTriesPerQuery).maxTtl(maxTtl).minTtl(minTtl).servers(servers);
+			Splitter splitter = Splitter.on(":");
+			return new DNSNameResolver(context).maxTriesPerQuery(maxTriesPerQuery).maxTtl(maxTtl).minTtl(minTtl).servers(servers.stream().map(add -> {
+				List<String> split = Lists.newArrayList(splitter.split(add));
+				try {
+					return new InetSocketAddress(InetAddresses.forString(split.get(0)), split.size() == 2 ? Integer.valueOf(split.get(1)) : 53);
+				} catch (Exception e) {
+					throw Throwables.propagate(e);
+				}
+			}).collect(Collectors.toList()));
 		}
 
 		@Override

@@ -71,7 +71,7 @@ public class WorkerContainer extends AbstractContainer {
 		BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("workerthread-%d").daemon(true).priority(Thread.MAX_PRIORITY).build();
 
 		// Get number of parallel loops
-		int parallel = 0;
+		int parallel = Runtime.getRuntime().availableProcessors();
 		executor = Executors.newFixedThreadPool(parallel, threadFactory);
 
 		// spider.getClient().
@@ -107,7 +107,7 @@ public class WorkerContainer extends AbstractContainer {
 
 		// Init requesters
 		spider.getClient().getRequesters().forEach(r -> {
-			Requester requester = r.build(context);
+			Requester<?> requester = r.build(context);
 
 			// Prepare client
 				if (requester.strategy().nameResolver() != null) {

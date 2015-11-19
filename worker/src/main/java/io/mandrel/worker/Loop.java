@@ -23,6 +23,7 @@ import io.mandrel.blob.BlobStores;
 import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.common.client.Clients;
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Strategy;
 import io.mandrel.data.Link;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
@@ -125,9 +126,9 @@ public class Loop implements Runnable {
 				watch.start();
 
 				//
-				Optional<Requester> requester = Requesters.of(spider.getId(), uri.getScheme());
+				Optional<Requester<? extends Strategy>> requester = Requesters.of(spider.getId(), uri.getScheme());
 				if (requester.isPresent()) {
-					Requester r = requester.get();
+					Requester<? extends Strategy> r = requester.get();
 					try {
 						Blob blob = r.getBlocking(uri);
 

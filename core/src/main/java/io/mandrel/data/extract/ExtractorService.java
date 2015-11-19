@@ -94,8 +94,8 @@ public class ExtractorService {
 		Set<Link> filteredOutlinks = null;
 		if (outlinks != null) {
 			Stream<Link> stream = outlinks.stream().filter(l -> l != null && l.uri() != null);
-			if (spider.getFilters() != null && CollectionUtils.isNotEmpty(spider.getFilters().getForLinks())) {
-				stream = stream.filter(link -> spider.getFilters().getForLinks().stream().allMatch(f -> f.isValid(link)));
+			if (spider.getFilters() != null && CollectionUtils.isNotEmpty(spider.getFilters().getLinks())) {
+				stream = stream.filter(link -> spider.getFilters().getLinks().stream().allMatch(f -> f.isValid(link)));
 			}
 			filteredOutlinks = stream.collect(Collectors.toSet());
 		}
@@ -161,8 +161,8 @@ public class ExtractorService {
 
 		List<Document> documents = null;
 
-		if (extractor.getFilters() == null && extractor.getFilters().getForLinks() == null || extractor.getFilters().getForLinks() != null
-				&& extractor.getFilters().getForLinks().stream().allMatch(f -> f.isValid(new Link().uri(blob.metadata().uri())))) {
+		if (extractor.getFilters() == null && extractor.getFilters().getLinks() == null || extractor.getFilters().getLinks() != null
+				&& extractor.getFilters().getLinks().stream().allMatch(f -> f.isValid(new Link().uri(blob.metadata().uri())))) {
 
 			if (extractor.getMultiple() != null) {
 

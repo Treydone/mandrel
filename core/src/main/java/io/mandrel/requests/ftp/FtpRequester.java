@@ -31,35 +31,33 @@ import java.util.Set;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 
-@Slf4j
 @Data
 @Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
-public class FtpRequester extends Requester {
+public class FtpRequester extends Requester<FtpStrategy> {
 
 	@Data
 	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
-	public static class FtpRequesterDefinition implements RequesterDefinition {
+	public static class FtpRequesterDefinition extends RequesterDefinition<FtpStrategy, FtpRequester> {
 
 		private static final long serialVersionUID = -9205125497698919267L;
-
-		@JsonProperty("strategy")
-		private FtpStrategyDefinition strategy = new FtpStrategyDefinition();
 
 		@Override
 		public String name() {
 			return "ftp";
 		}
 
+		public FtpRequesterDefinition() {
+			setStrategy(new FtpStrategyDefinition());
+		}
+
 		@Override
-		public Requester build(TaskContext context) {
-			return new FtpRequester(context).strategy(strategy.build(context));
+		public FtpRequester build(TaskContext context) {
+			return build(new FtpRequester(context), context);
 		}
 	}
 

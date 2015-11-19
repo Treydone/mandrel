@@ -42,7 +42,7 @@ public class FixedUserAgentProvisionner extends UserAgentProvisionner {
 		private static final long serialVersionUID = -4024901085285125948L;
 
 		@JsonProperty("ua")
-		private String ua;
+		private String ua = "Mandrel";
 
 		@Override
 		public FixedUserAgentProvisionner build(TaskContext context) {
@@ -52,10 +52,6 @@ public class FixedUserAgentProvisionner extends UserAgentProvisionner {
 		@Override
 		public String name() {
 			return "fixed";
-		}
-
-		public FixedUserAgentProvisionnerDefinition(String ua) {
-			this.ua = ua;
 		}
 	}
 

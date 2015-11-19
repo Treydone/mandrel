@@ -18,6 +18,8 @@
  */
 package io.mandrel.requests;
 
+import io.mandrel.common.data.Strategy;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -25,26 +27,26 @@ import java.util.stream.Collectors;
 
 public class Requesters {
 
-	private final static Map<Long, Map<String, Requester>> requesters = new HashMap<>();
-	private final static Map<String, Requester> globalRequesters = new HashMap<>();
+	private final static Map<Long, Map<String, Requester<? extends Strategy>>> requesters = new HashMap<>();
+	private final static Map<String, Requester<? extends Strategy>> globalRequesters = new HashMap<>();
 
-	public static Iterable<Map<String, Requester>> list() {
+	public static Iterable<Map<String, Requester<? extends Strategy>>> list() {
 		return requesters.values();
 	}
 
-	public static void add(Requester requester) {
+	public static void add(Requester<? extends Strategy> requester) {
 		synchronized (globalRequesters) {
 			globalRequesters.putAll(requester.getProtocols().stream().collect(Collectors.toMap(p -> p, p -> requester)));
 		}
 	}
 
-	public static Optional<Requester> of(String protocol) {
+	public static Optional<Requester<? extends Strategy>> of(String protocol) {
 		return globalRequesters.get(protocol) != null ? Optional.of(globalRequesters.get(protocol)) : Optional.empty();
 	}
 
-	public static void add(long spiderId, Requester requester) {
+	public static void add(long spiderId, Requester<? extends Strategy> requester) {
 		synchronized (requesters) {
-			Map<String, Requester> map = requesters.get(spiderId);
+			Map<String, Requester<? extends Strategy>> map = requesters.get(spiderId);
 			if (map == null) {
 				map = new HashMap<>();
 				requesters.put(spiderId, map);
@@ -54,7 +56,7 @@ public class Requesters {
 		}
 	}
 
-	public static Optional<Map<String, Requester>> of(Long spiderId) {
+	public static Optional<Map<String, Requester<? extends Strategy>>> of(Long spiderId) {
 		return requesters.get(spiderId) != null ? Optional.of(requesters.get(spiderId)) : Optional.empty();
 	}
 
@@ -64,7 +66,7 @@ public class Requesters {
 		}
 	}
 
-	public static Optional<Requester> of(Long spiderId, String protocol) {
+	public static Optional<Requester<? extends Strategy>> of(Long spiderId, String protocol) {
 		return requesters.get(spiderId) != null ? (requesters.get(spiderId).get(protocol) != null ? Optional.of(requesters.get(spiderId).get(protocol))
 				: Optional.empty()) : Optional.empty();
 	}

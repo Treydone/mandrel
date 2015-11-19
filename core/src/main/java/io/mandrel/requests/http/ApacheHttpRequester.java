@@ -49,7 +49,6 @@ import javax.net.ssl.SSLContext;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.http.Consts;
 import org.apache.http.Header;
@@ -111,16 +110,15 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 
-@Slf4j
 @Data
 @Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
-public class ApacheHttpRequester extends Requester {
+public class ApacheHttpRequester extends Requester<HttpStrategy> {
 
 	@Data
 	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
-	public static class ApacheHttpRequesterDefinition implements RequesterDefinition {
+	public static class ApacheHttpRequesterDefinition extends RequesterDefinition<HttpStrategy, ApacheHttpRequester> {
 
 		private static final long serialVersionUID = -9205125497698919267L;
 
@@ -133,8 +131,9 @@ public class ApacheHttpRequester extends Requester {
 		@JsonProperty("io_thread_count")
 		private int ioThreadCount = Runtime.getRuntime().availableProcessors();
 
-		@JsonProperty("strategy")
-		private HttpStrategyDefinition strategy = new HttpStrategyDefinition();
+		public ApacheHttpRequesterDefinition() {
+			setStrategy(new HttpStrategyDefinition());
+		}
 
 		@Override
 		public String name() {
@@ -142,10 +141,10 @@ public class ApacheHttpRequester extends Requester {
 		}
 
 		@Override
-		public Requester build(TaskContext context) {
-			return new ApacheHttpRequester(context).maxLineLength(maxLineLength).maxHeaderCount(maxHeaderCount).ioThreadCount(ioThreadCount)
-					.strategy(strategy.build(context));
+		public ApacheHttpRequester build(TaskContext context) {
+			return build(new ApacheHttpRequester(context).maxLineLength(maxLineLength).maxHeaderCount(maxHeaderCount).ioThreadCount(ioThreadCount), context);
 		}
+
 	}
 
 	public ApacheHttpRequester() {
@@ -155,8 +154,6 @@ public class ApacheHttpRequester extends Requester {
 	public ApacheHttpRequester(TaskContext context) {
 		super(context);
 	}
-
-	private HttpStrategy strategy;
 
 	private int maxLineLength = -1;
 
@@ -177,7 +174,7 @@ public class ApacheHttpRequester extends Requester {
 
 	public void init() {
 
-		available = new Semaphore(strategy.maxParallel(), true);
+		available = new Semaphore(strategy().maxParallel(), true);
 
 		NHttpMessageParserFactory<HttpResponse> responseParserFactory = new DefaultHttpResponseParserFactory() {
 			@Override
@@ -213,16 +210,16 @@ public class ApacheHttpRequester extends Requester {
 				if (host.equalsIgnoreCase("localhost")) {
 					return new InetAddress[] { InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }) };
 				} else {
-					return new InetAddress[] { strategy.nameResolver().resolve(host) };
+					return new InetAddress[] { strategy().nameResolver().resolve(host) };
 				}
 			}
 		};
 
 		// Create I/O reactor configuration
 
-		IOReactorConfig ioReactorConfig = IOReactorConfig.custom().setIoThreadCount(ioThreadCount).setConnectTimeout(strategy.connectTimeout())
-				.setSoReuseAddress(strategy.reuseAddress()).setSoKeepAlive(strategy.keepAlive()).setTcpNoDelay(strategy.tcpNoDelay())
-				.setSoTimeout(strategy.socketTimeout()).build();
+		IOReactorConfig ioReactorConfig = IOReactorConfig.custom().setIoThreadCount(ioThreadCount).setConnectTimeout(strategy().connectTimeout())
+				.setSoReuseAddress(strategy().reuseAddress()).setSoKeepAlive(strategy().keepAlive()).setTcpNoDelay(strategy().tcpNoDelay())
+				.setSoTimeout(strategy().socketTimeout()).build();
 
 		// Create a custom I/O reactor
 		ConnectingIOReactor ioReactor;
@@ -245,8 +242,8 @@ public class ApacheHttpRequester extends Requester {
 
 		// Configure total max or per route limits for persistent connections
 		// that can be kept in the pool or leased by the connection manager.
-		connManager.setMaxTotal(strategy.maxPersistentConnections());
-		connManager.setDefaultMaxPerRoute(strategy.maxPersistentConnections());
+		connManager.setMaxTotal(strategy().maxPersistentConnections());
+		connManager.setDefaultMaxPerRoute(strategy().maxPersistentConnections());
 
 		// TODO
 		// Use custom credentials provider if necessary.
@@ -256,9 +253,9 @@ public class ApacheHttpRequester extends Requester {
 		// Create global request configuration
 		defaultRequestConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.DEFAULT).setExpectContinueEnabled(true).setStaleConnectionCheckEnabled(true)
 				.setTargetPreferredAuthSchemes(Arrays.asList(AuthSchemes.NTLM, AuthSchemes.DIGEST))
-				.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC)).setMaxRedirects(strategy.maxRedirects())
-				.setSocketTimeout(strategy.socketTimeout()).setConnectTimeout(strategy.connectTimeout()).setConnectionRequestTimeout(strategy.requestTimeOut())
-				.setRedirectsEnabled(strategy.followRedirects()).build();
+				.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC)).setMaxRedirects(strategy().maxRedirects())
+				.setSocketTimeout(strategy().socketTimeout()).setConnectTimeout(strategy().connectTimeout())
+				.setConnectionRequestTimeout(strategy().requestTimeOut()).setRedirectsEnabled(strategy().followRedirects()).build();
 
 		// Create an HttpClient with the given custom dependencies and
 		// configuration.
@@ -326,8 +323,8 @@ public class ApacheHttpRequester extends Requester {
 
 	public HttpContext prepareContext(Spider spider) {
 		CookieStore store = new BasicCookieStore();
-		if (strategy.cookies() != null)
-			strategy.cookies().forEach(cookie -> {
+		if (strategy().cookies() != null)
+			strategy().cookies().forEach(cookie -> {
 				BasicClientCookie theCookie = new BasicClientCookie(cookie.name(), cookie.value());
 				theCookie.setDomain(cookie.domain());
 				theCookie.setPath(cookie.path());
@@ -361,8 +358,8 @@ public class ApacheHttpRequester extends Requester {
 		HttpGet request = new HttpGet(uri);
 
 		// Add headers, cookies and ohter stuff
-		if (strategy.headers() != null) {
-			strategy.headers().forEach(header -> {
+		if (strategy().headers() != null) {
+			strategy().headers().forEach(header -> {
 				if (header != null) {
 					request.addHeader(header.getName(), header.getValue());
 				}
@@ -370,8 +367,8 @@ public class ApacheHttpRequester extends Requester {
 		}
 
 		HttpParams params = new BasicHttpParams();
-		if (strategy.params() != null) {
-			strategy.params().forEach(param -> {
+		if (strategy().params() != null) {
+			strategy().params().forEach(param -> {
 				if (param != null) {
 					params.setParameter(param.getName(), param.getValue());
 				}
@@ -380,13 +377,13 @@ public class ApacheHttpRequester extends Requester {
 		request.setParams(params);
 
 		// Configure the user -agent
-		String userAgent = strategy.userAgentProvisionner().get(uri.toString(), spider);
+		String userAgent = strategy().userAgentProvisionner().get(uri.toString(), spider);
 		if (Strings.isNullOrEmpty(userAgent)) {
 			request.addHeader("User-Agent", userAgent);
 		}
 
 		// Configure the proxy
-		ProxyServer proxy = strategy.proxyServersSource().findProxy(spider);
+		ProxyServer proxy = strategy().proxyServersSource().findProxy(spider);
 		if (proxy != null) {
 			// TODO Auth!
 			HttpHost proxyHost = new HttpHost(proxy.getHost(), proxy.getPort(), proxy.getProtocol().getProtocol());

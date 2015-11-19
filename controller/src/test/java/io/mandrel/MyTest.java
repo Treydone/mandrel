@@ -2,7 +2,7 @@ package io.mandrel;
 
 import java.util.stream.Collectors;
 
-import io.mandrel.controller.impl.MongoControllerRepository;
+import io.mandrel.controller.impl.MongoSpiderRepository;
 
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ public class MyTest {
 
 		MongoClient mongo = new MongoClient();
 
-		MongoControllerRepository repository = new MongoControllerRepository(mongo);
+		MongoSpiderRepository repository = new MongoSpiderRepository(mongo);
 		repository.init();
 
 		repository.list().collect(Collectors.toList());

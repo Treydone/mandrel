@@ -50,7 +50,7 @@ public class Spider implements Serializable {
 	private String name;
 
 	@JsonProperty("status")
-	private String status = null;
+	private String status;
 
 	@JsonProperty("created")
 	private LocalDateTime created;
