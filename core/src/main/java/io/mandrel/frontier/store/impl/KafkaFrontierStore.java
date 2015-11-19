@@ -32,14 +32,17 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import kafka.admin.AdminUtils;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
+import kafka.utils.ZKStringSerializer$;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
+import org.I0Itec.zkclient.ZkClient;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -51,6 +54,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class KafkaFrontierStore extends FrontierStore {
@@ -63,6 +67,16 @@ public class KafkaFrontierStore extends FrontierStore {
 
 		@JsonIgnore
 		private Properties properties = new Properties();
+
+		@JsonProperty("partitions")
+		private int partitions = 1;
+		@JsonProperty("replication_factor")
+		private int replicationFactor = 1;
+
+		@JsonProperty("session_timeout")
+		private int sessionTimeout = 10000;
+		@JsonProperty("connection_timeout")
+		private int connectionTimeout = 10000;
 
 		public KafkaFrontierStoreDefinition() {
 
@@ -101,20 +115,29 @@ public class KafkaFrontierStore extends FrontierStore {
 
 		@Override
 		public KafkaFrontierStore build(TaskContext context) {
-			return new KafkaFrontierStore(context, properties);
+			return new KafkaFrontierStore(context, properties, partitions, replicationFactor, sessionTimeout, connectionTimeout);
 		}
 	}
 
 	private final Properties properties;
+	private final int partitions;
+	private final int replicationFactor;
+	private final int sessionTimeout;
+	private final int connectionTimeout;
 
-	public KafkaFrontierStore(TaskContext context, Properties properties) {
+	public KafkaFrontierStore(TaskContext context, Properties properties, int partitions, int replicationFactor, int sessionTimeout, int connectionTimeout) {
 		super(context);
 		this.properties = properties;
+		this.partitions = partitions;
+		this.replicationFactor = replicationFactor;
+		this.sessionTimeout = sessionTimeout;
+		this.connectionTimeout = connectionTimeout;
 	}
 
 	@Override
 	public KafkaQueue<URI> create(String name) {
-		return new KafkaQueue<>(name, URI.class, properties);
+		String topicName = "topic_" + context.getSpiderId() + "_" + name;
+		return new KafkaQueue<>(topicName, URI.class, properties, partitions, replicationFactor, sessionTimeout, connectionTimeout);
 	}
 
 	@Slf4j
@@ -129,12 +152,20 @@ public class KafkaFrontierStore extends FrontierStore {
 		private final ConsumerIterator<byte[], byte[]> stream;
 		private final ObjectMapper mapper = new ObjectMapper();
 
-		public KafkaQueue(String name, Class<T> clazz, Properties properties) {
+		public KafkaQueue(String name, Class<T> clazz, Properties properties, int partitions, int replicationFactor, int sessionTimeout, int connectionTimeout) {
 			super();
 			this.name = name;
 			this.clazz = clazz;
 
 			properties.put("json.class", clazz);
+
+			// Check if topic already exists
+			ZkClient zkClient = new ZkClient(properties.getProperty("zookeeper.connect"), sessionTimeout, connectionTimeout, ZKStringSerializer$.MODULE$);
+			if (!AdminUtils.topicExists(zkClient, name)) {
+				log.warn("Kafka topic '{}' doesn't exists, creating it", name);
+				AdminUtils.createTopic(zkClient, name, partitions, replicationFactor, properties);
+			}
+			log.debug("Kafka topic '{}' found with configuration: {}", name, AdminUtils.fetchTopicMetadataFromZk(name, zkClient).toString());
 
 			this.producer = new KafkaProducer<>(properties);
 			// consumer = new KafkaConsumer<>(properties);
