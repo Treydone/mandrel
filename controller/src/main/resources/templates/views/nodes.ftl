@@ -29,6 +29,7 @@
 	                    <tbody><tr>
 	                      <th>URI</th>
 	                      <th>Type</th>
+	                      <th>Version</th>
 	                      <th>Hostname</th>
 	                      <th>FQDN</th>
 	                      <th>Status</th>
@@ -41,6 +42,7 @@
 							<tr>
 		                      <td><a href="/nodes/${node.id}">${node.id}</a></td>
 		                      <td>${node.type!}</td>
+		                      <td>${node.version}</td>
 		                      <td>${node.infos.hostname}</td>
 		                      <td>${node.infos.fqdn}</td>
 		                      <td><span class="label label-success">OK</span></td>

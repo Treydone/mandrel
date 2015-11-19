@@ -19,6 +19,7 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.cluster.node.Node;
+import io.mandrel.common.settings.InfoSettings;
 import io.mandrel.endpoints.contracts.NodeContract;
 import io.mandrel.monitor.Infos;
 import io.mandrel.monitor.SigarService;
@@ -44,12 +45,14 @@ public class NodeResource implements NodeContract {
 	private SigarService sigarService;
 	@Autowired
 	private DiscoveryClient discoveryClient;
+	@Autowired
+	private InfoSettings settings;
 
 	@ApiOperation(value = "Return the current node", response = Node.class)
 	public Node dhis(URI target) {
 		try {
 			Infos infos = sigarService.infos();
-			return new Node().setInfos(infos).setUri(discoveryClient.getLocalServiceInstance().getUri());
+			return new Node().setInfos(infos).setUri(discoveryClient.getLocalServiceInstance().getUri()).setVersion(settings.getVersion());
 		} catch (Exception e) {
 			log.warn("Can not set the infos for the endpoint", e);
 			throw Throwables.propagate(e);

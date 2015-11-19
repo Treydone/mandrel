@@ -37,6 +37,7 @@ public class Node implements Serializable {
 
 	private URI uri;
 	private Infos infos;
+	private String version;
 	private String type;
 
 	@JsonProperty("_id")
