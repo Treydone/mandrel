@@ -36,10 +36,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@Slf4j
 @Data
 @Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
@@ -79,6 +81,16 @@ public class FixedPrioritizedFrontier extends Frontier {
 			// Create queue in store
 				store().create("queue-" + idx);
 			});
+	}
+
+	public void destroy() {
+		IntStream.range(0, priorities.size()).forEach(idx -> {
+			try {
+				store().destroy("queue-" + idx);
+			} catch (Exception e) {
+				log.warn("Unable to destory queue", e);
+			}
+		});
 	}
 
 	public FixedPrioritizedFrontier(TaskContext context) {

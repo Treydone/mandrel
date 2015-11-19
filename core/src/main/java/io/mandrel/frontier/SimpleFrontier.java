@@ -30,7 +30,9 @@ import java.util.Set;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class SimpleFrontier extends Frontier {
@@ -63,6 +65,14 @@ public class SimpleFrontier extends Frontier {
 
 	public void init() {
 		queue = store().create(DEFAULT_QUEUE);
+	}
+
+	public void destroy() {
+		try {
+			store().destroy(DEFAULT_QUEUE);
+		} catch (Exception e) {
+			log.warn("Unable to destory queue", e);
+		}
 	}
 
 	@Override

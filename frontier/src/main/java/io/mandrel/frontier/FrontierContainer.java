@@ -29,9 +29,11 @@ import io.mandrel.metrics.Accumulators;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 
+@Slf4j
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true, fluent = true)
@@ -67,7 +69,11 @@ public class FrontierContainer extends AbstractContainer {
 	@Override
 	public void start() {
 
+		log.debug("Starting the frontier");
+		frontier.init();
+
 		// Init sources
+		log.debug("Initializing the sources");
 		spider.getSources().forEach(s -> {
 			Source source = s.build(context);
 			if (!source.singleton() && source.check()) {
@@ -87,7 +93,18 @@ public class FrontierContainer extends AbstractContainer {
 
 	@Override
 	public void kill() {
-		accumulators.destroy(spider.getId());
+
+		try {
+			frontier.destroy();
+		} catch (Exception e) {
+			log.warn("Can not destroy the frontier");
+		}
+
+		try {
+			accumulators.destroy(spider.getId());
+		} catch (Exception e) {
+			log.warn("Can not destroy the accumulators");
+		}
 	}
 
 	@Override

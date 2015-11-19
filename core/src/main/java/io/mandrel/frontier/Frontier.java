@@ -67,7 +67,6 @@ public abstract class Frontier extends TaskContextAware implements Checkable {
 
 		public FRONTIER build(FRONTIER frontier, TaskContext context) {
 			frontier.store(store.build(context)).politeness(politeness).revisit(revisit.build(context));
-			frontier.init();
 			return frontier;
 		}
 	}
@@ -77,8 +76,13 @@ public abstract class Frontier extends TaskContextAware implements Checkable {
 	protected FrontierStore store;
 
 	public abstract void init();
+
+	public abstract void destroy();
+
 	public abstract URI pool();
+
 	public abstract void schedule(URI uri);
+
 	public abstract void schedule(Set<URI> uris);
 
 }

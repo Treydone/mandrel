@@ -18,6 +18,7 @@
  */
 package io.mandrel.endpoints.rest;
 
+import io.mandrel.common.NotFoundException;
 import io.mandrel.common.client.Clients;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Statuses;
@@ -25,7 +26,6 @@ import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
 import io.mandrel.endpoints.contracts.FrontierContract;
-import io.mandrel.frontier.Frontier;
 import io.mandrel.frontier.FrontierContainer;
 import io.mandrel.frontier.FrontierContainers;
 import io.mandrel.metrics.Accumulators;
@@ -35,8 +35,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +54,8 @@ public class FrontierResource implements FrontierContract {
 	@Autowired
 	private DiscoveryClient discoveryClient;
 
+	private Supplier<? extends NotFoundException> frontierNotFound = () -> new NotFoundException("Frontier not found");
+
 	@Override
 	public void create(@RequestBody Spider spider, URI target) {
 		FrontierContainer container = new FrontierContainer(spider, accumulators, clients, discoveryClient);
@@ -62,43 +64,37 @@ public class FrontierResource implements FrontierContract {
 
 	@Override
 	public void start(Long id, URI target) {
-		FrontierContainers.get(id).ifPresent(c -> c.start());
+		FrontierContainers.get(id).orElseThrow(frontierNotFound).start();
 	}
 
 	@Override
 	public void pause(Long id, URI target) {
-		FrontierContainers.get(id).ifPresent(c -> c.pause());
+		FrontierContainers.get(id).orElseThrow(frontierNotFound).pause();
 	}
 
 	@Override
 	public void kill(Long id, URI target) {
-		FrontierContainers.get(id).ifPresent(c -> c.kill());
-	}
-
-	@Override
-	public Optional<Frontier> id(Long id, URI target) {
-		return FrontierContainers.get(id).map(c -> c.frontier());
+		FrontierContainers.get(id).orElseThrow(frontierNotFound).kill();
 	}
 
 	@Override
 	public URI next(Long id, URI target) {
-		URI pool = FrontierContainers.get(id).map(f -> f.frontier().pool()).orElse(null);
-		return pool;
+		return FrontierContainers.get(id).map(f -> f.frontier().pool()).orElseThrow(frontierNotFound);
 	}
 
 	@Override
 	public void schedule(Long id, URI uri, URI target) {
-		FrontierContainers.get(id).ifPresent(f -> f.frontier().schedule(uri));
+		FrontierContainers.get(id).orElseThrow(frontierNotFound).frontier().schedule(uri);
 	}
 
 	@Override
 	public void schedule(Long id, Set<URI> uris, URI target) {
-		FrontierContainers.get(id).ifPresent(f -> f.frontier().schedule(uris));
+		FrontierContainers.get(id).orElseThrow(frontierNotFound).frontier().schedule(uris);
 	}
 
 	@Override
 	public void delete(Long id, URI uri, URI target) {
-		FrontierContainers.get(id).ifPresent(f -> f.frontier().schedule(uri));
+		FrontierContainers.get(id).orElseThrow(frontierNotFound).frontier().schedule(uri);
 	}
 
 	@Override

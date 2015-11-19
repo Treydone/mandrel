@@ -57,6 +57,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@Slf4j
 public class KafkaFrontierStore extends FrontierStore {
 
 	@Data
@@ -122,22 +123,43 @@ public class KafkaFrontierStore extends FrontierStore {
 	private final Properties properties;
 	private final int partitions;
 	private final int replicationFactor;
-	private final int sessionTimeout;
-	private final int connectionTimeout;
+	private final ZkClient zkClient;
 
 	public KafkaFrontierStore(TaskContext context, Properties properties, int partitions, int replicationFactor, int sessionTimeout, int connectionTimeout) {
 		super(context);
 		this.properties = properties;
 		this.partitions = partitions;
 		this.replicationFactor = replicationFactor;
-		this.sessionTimeout = sessionTimeout;
-		this.connectionTimeout = connectionTimeout;
+		zkClient = new ZkClient(properties.getProperty("zookeeper.connect"), sessionTimeout, connectionTimeout, ZKStringSerializer$.MODULE$);
+	}
+
+	private String getTopicName(String name) {
+		return "topic_" + context.getSpiderId() + "_" + name;
+	}
+
+	@Override
+	public void destroy(String name) {
+		String topicName = getTopicName(name);
+
+		// Check if topic exists
+		if (AdminUtils.topicExists(zkClient, topicName)) {
+			log.warn("Deleting kafka topic '{}'", topicName);
+			AdminUtils.deleteTopic(zkClient, topicName);
+		}
 	}
 
 	@Override
 	public KafkaQueue<URI> create(String name) {
-		String topicName = "topic_" + context.getSpiderId() + "_" + name;
-		return new KafkaQueue<>(topicName, URI.class, properties, partitions, replicationFactor, sessionTimeout, connectionTimeout);
+		String topicName = getTopicName(name);
+
+		// Check if topic already exists
+		if (!AdminUtils.topicExists(zkClient, topicName)) {
+			log.warn("Kafka topic '{}' doesn't exists, creating it", topicName);
+			AdminUtils.createTopic(zkClient, topicName, partitions, replicationFactor, new Properties());
+		}
+		log.debug("Kafka topic '{}' found with configuration: {}", topicName, AdminUtils.fetchTopicMetadataFromZk(topicName, zkClient).toString());
+
+		return new KafkaQueue<>(topicName, URI.class, properties);
 	}
 
 	@Slf4j
@@ -152,20 +174,12 @@ public class KafkaFrontierStore extends FrontierStore {
 		private final ConsumerIterator<byte[], byte[]> stream;
 		private final ObjectMapper mapper = new ObjectMapper();
 
-		public KafkaQueue(String name, Class<T> clazz, Properties properties, int partitions, int replicationFactor, int sessionTimeout, int connectionTimeout) {
+		public KafkaQueue(String name, Class<T> clazz, Properties properties) {
 			super();
 			this.name = name;
 			this.clazz = clazz;
 
 			properties.put("json.class", clazz);
-
-			// Check if topic already exists
-			ZkClient zkClient = new ZkClient(properties.getProperty("zookeeper.connect"), sessionTimeout, connectionTimeout, ZKStringSerializer$.MODULE$);
-			if (!AdminUtils.topicExists(zkClient, name)) {
-				log.warn("Kafka topic '{}' doesn't exists, creating it", name);
-				AdminUtils.createTopic(zkClient, name, partitions, replicationFactor, properties);
-			}
-			log.debug("Kafka topic '{}' found with configuration: {}", name, AdminUtils.fetchTopicMetadataFromZk(name, zkClient).toString());
 
 			this.producer = new KafkaProducer<>(properties);
 			// consumer = new KafkaConsumer<>(properties);
