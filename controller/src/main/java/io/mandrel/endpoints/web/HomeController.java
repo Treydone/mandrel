@@ -19,7 +19,7 @@
 package io.mandrel.endpoints.web;
 
 import io.mandrel.cluster.node.NodeService;
-import io.mandrel.controller.ControllerService;
+import io.mandrel.controller.SpiderService;
 import io.mandrel.messaging.StompService;
 import io.mandrel.metrics.MetricsRepository;
 import io.mandrel.timeline.Event;
@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class HomeController {
 
-	private final ControllerService spiderService;
+	private final SpiderService spiderService;
 
 	private final NodeService nodeService;
 

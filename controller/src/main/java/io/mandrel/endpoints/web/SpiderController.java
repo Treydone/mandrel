@@ -19,7 +19,7 @@
 package io.mandrel.endpoints.web;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.controller.ControllerService;
+import io.mandrel.controller.SpiderService;
 import io.mandrel.metrics.MetricsRepository;
 
 import java.util.stream.Collectors;
@@ -44,7 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class SpiderController {
 
-	private final ControllerService spiderService;
+	private final SpiderService spiderService;
 
 	private final MetricsRepository metricsRepository;
 
@@ -71,6 +71,13 @@ public class SpiderController {
 		return "redirect:/spiders/{id}";
 	}
 
+	@RequestMapping(value = "/{id}/fork")
+	public String fork(@PathVariable Long id, Model model) throws BindException {
+		long newId = spiderService.fork(id);
+		model.addAttribute("newId", newId);
+		return "redirect:/spiders/{newId}";
+	}
+
 	@RequestMapping(value = "/{id}/pause")
 	public String pause(@PathVariable Long id) {
 		spiderService.pause(id);
@@ -86,6 +93,12 @@ public class SpiderController {
 	@RequestMapping(value = "/{id}/delete")
 	public String delete(@PathVariable Long id) {
 		spiderService.delete(id);
+		return "redirect:/spiders/{id}";
+	}
+
+	@RequestMapping(value = "/{id}/reinject")
+	public String reinject(@PathVariable Long id) {
+		spiderService.reinject(id);
 		return "redirect:/spiders/{id}";
 	}
 

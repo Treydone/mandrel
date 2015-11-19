@@ -66,7 +66,7 @@ public class Loop implements Runnable {
 
 	private final ExtractorService extractorService;
 	private final Spider spider;
-	private final Clients client;
+	private final Clients clients;
 	private final DiscoveryClient discoveryClient;
 
 	private final SpiderAccumulator spiderAccumulator;
@@ -91,136 +91,145 @@ public class Loop implements Runnable {
 
 		while (true) {
 
-			if (!run.get()) {
-				log.trace("Waiting...");
-				try {
-					TimeUnit.MILLISECONDS.sleep(2000);
-				} catch (InterruptedException e) {
-					// Don't care
-					log.trace("", e);
-				}
-				continue;
-			}
-
-			URI uri = null;
-
-			// Take on elements
-			List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.FRONTIER);
-			if (!CollectionUtils.isEmpty(instances)) {
-				URI frontier = instances.get(0).getUri();
-				uri = client.frontierClient().next(spider.getId(), frontier);
-			} else {
-				log.warn("Can not find any frontier");
-				try {
-					TimeUnit.MILLISECONDS.sleep(10000);
-				} catch (InterruptedException e) {
-					// Don't care
-					log.trace("", e);
-				}
-			}
-
-			if (uri != null) {
-
-				//
-				StopWatch watch = new StopWatch();
-				watch.start();
-
-				//
-				Optional<Requester<? extends Strategy>> requester = Requesters.of(spider.getId(), uri.getScheme());
-				if (requester.isPresent()) {
-					Requester<? extends Strategy> r = requester.get();
+			try {
+				if (!run.get()) {
+					log.trace("Waiting...");
 					try {
-						Blob blob = r.getBlocking(uri);
+						TimeUnit.MILLISECONDS.sleep(2000);
+					} catch (InterruptedException e) {
+						// Don't care
+						log.trace("", e);
+					}
+					continue;
+				}
 
-						watch.stop();
+				URI uri = null;
 
-						log.trace("> Start parsing data for {}", uri);
+				// Take on elements
+				List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.FRONTIER);
+				if (!CollectionUtils.isEmpty(instances)) {
+					URI frontier = instances.get(0).getUri();
+					uri = clients.frontierClient().next(spider.getId(), frontier);
+				} else {
+					log.warn("Can not find any frontier");
+					try {
+						TimeUnit.MILLISECONDS.sleep(10000);
+					} catch (InterruptedException e) {
+						// Don't care
+						log.trace("", e);
+					}
+				}
 
-						blob.metadata().fetchMetadata().timeToFetch(watch.getTotalTimeMillis());
+				if (uri != null) {
 
-						spiderAccumulator.incNbPages();
-						globalAccumulator.incNbPages();
+					//
+					StopWatch watch = new StopWatch();
+					watch.start();
 
-						spiderAccumulator.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
-						globalAccumulator.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
+					//
+					Optional<Requester<? extends Strategy>> requester = Requesters.of(spider.getId(), uri.getScheme());
+					if (requester.isPresent()) {
+						Requester<? extends Strategy> r = requester.get();
+						try {
+							Blob blob = r.getBlocking(uri);
 
-						spiderAccumulator.incPageForHost(blob.metadata().uri().getHost());
-						globalAccumulator.incPageForHost(blob.metadata().uri().getHost());
+							watch.stop();
 
-						spiderAccumulator.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
-						spiderAccumulator.incTotalSize(blob.metadata().size());
-						globalAccumulator.incTotalSize(blob.metadata().size());
+							log.trace("> Start parsing data for {}", uri);
 
-						Map<String, Instance<?>> cachedSelectors = new HashMap<>();
-						if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
-							log.trace(">  - Extracting documents for {}...", uri);
-							spider.getExtractors().getPages().forEach(ex -> {
-								List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, blob, ex);
+							blob.metadata().fetchMetadata().timeToFetch(watch.getTotalTimeMillis());
 
-								if (documents != null) {
-									spiderAccumulator.incDocumentForExtractor(ex.getName(), documents.size());
-								}
-							});
-							log.trace(">  - Extracting documents for {} done!", uri);
+							updateMetrics(watch, blob);
+
+							Map<String, Instance<?>> cachedSelectors = new HashMap<>();
+							if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
+								log.trace(">  - Extracting documents for {}...", uri);
+								spider.getExtractors().getPages().forEach(ex -> {
+									List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, blob, ex);
+
+									if (documents != null) {
+										spiderAccumulator.incDocumentForExtractor(ex.getName(), documents.size());
+									}
+								});
+								log.trace(">  - Extracting documents for {} done!", uri);
+							}
+
+							if (spider.getExtractors().getOutlinks() != null) {
+								log.trace(">  - Extracting outlinks for {}...", uri);
+								final URI theURI = uri;
+								spider.getExtractors()
+										.getOutlinks()
+										.forEach(
+												ol -> {
+													Set<Link> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, theURI, cachedSelectors,
+															blob, ol).getRight();
+													blob.metadata().fetchMetadata().outlinks(allFilteredOutlinks);
+													add(spider.getId(), allFilteredOutlinks.stream().map(l -> l.uri()).collect(Collectors.toSet()));
+												});
+								log.trace(">  - Extracting outlinks done for {}!", uri);
+							}
+
+							BlobStores.get(spider.getId()).ifPresent(b -> b.putBlob(blob.metadata().uri(), blob));
+
+							log.trace(">  - Storing metadata for {}...", uri);
+							MetadataStores.get(spider.getId()).addMetadata(blob.metadata().uri(), blob.metadata().fetchMetadata());
+							log.trace(">  - Storing metadata for {} done!", uri);
+
+							log.trace("> End parsing data for {}", uri);
+						} catch (Exception t) {
+							// Well...
+							if (t instanceof ConnectTimeoutException) {
+								spiderAccumulator.incConnectTimeout();
+								add(spider.getId(), uri);
+							} else if (t instanceof ReadTimeoutException) {
+								spiderAccumulator.incReadTimeout();
+								add(spider.getId(), uri);
+							} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException
+									|| t instanceof java.util.concurrent.TimeoutException) {
+								spiderAccumulator.incConnectException();
+								add(spider.getId(), uri);
+							}
+
 						}
-
-						if (spider.getExtractors().getOutlinks() != null) {
-							log.trace(">  - Extracting outlinks for {}...", uri);
-							final URI theURI = uri;
-							spider.getExtractors()
-									.getOutlinks()
-									.forEach(
-											ol -> {
-												Set<Link> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, theURI, cachedSelectors,
-														blob, ol).getRight();
-												blob.metadata().fetchMetadata().outlinks(allFilteredOutlinks);
-												add(spider.getId(), allFilteredOutlinks.stream().map(l -> l.uri()).collect(Collectors.toSet()));
-											});
-							log.trace(">  - Extracting outlinks done for {}!", uri);
-						}
-
-						BlobStores.get(spider.getId()).ifPresent(b -> b.putBlob(blob.metadata().uri(), blob));
-
-						log.trace(">  - Storing metadata for {}...", uri);
-						MetadataStores.get(spider.getId()).addMetadata(blob.metadata().uri(), blob.metadata().fetchMetadata());
-						log.trace(">  - Storing metadata for {} done!", uri);
-
-						log.trace("> End parsing data for {}", uri);
-					} catch (Exception t) {
-						// Well...
-						if (t instanceof ConnectTimeoutException) {
-							spiderAccumulator.incConnectTimeout();
-							add(spider.getId(), uri);
-						} else if (t instanceof ReadTimeoutException) {
-							spiderAccumulator.incReadTimeout();
-							add(spider.getId(), uri);
-						} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException
-								|| t instanceof java.util.concurrent.TimeoutException) {
-							spiderAccumulator.incConnectException();
-							add(spider.getId(), uri);
-						}
-
+					} else {
+						// TODO Unknown protocol
+						log.debug("Unknown protocol, can not find requester for '{}'", uri.getScheme());
 					}
 				} else {
-					// TODO Unknown protocol
+					log.trace("Frontier returned null URI, waiting");
+					try {
+						TimeUnit.MILLISECONDS.sleep(10000);
+					} catch (InterruptedException e) {
+						// Don't care
+						log.trace("", e);
+					}
 				}
-			} else {
-				log.trace("Frontier returned null URI, waiting");
-				try {
-					TimeUnit.MILLISECONDS.sleep(10000);
-				} catch (InterruptedException e) {
-					// Don't care
-					log.trace("", e);
-				}
+			} catch (Exception e) {
+				log.warn("Got a problem...", e);
 			}
 		}
 	}
 
+	public void updateMetrics(StopWatch watch, Blob blob) {
+		spiderAccumulator.incNbPages();
+		globalAccumulator.incNbPages();
+
+		spiderAccumulator.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
+		globalAccumulator.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
+
+		spiderAccumulator.incPageForHost(blob.metadata().uri().getHost());
+		globalAccumulator.incPageForHost(blob.metadata().uri().getHost());
+
+		spiderAccumulator.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
+		spiderAccumulator.incTotalSize(blob.metadata().size());
+		globalAccumulator.incTotalSize(blob.metadata().size());
+	}
+
 	public void add(long spiderId, Set<URI> uris) {
-		client.frontierClient().schedule(spiderId, uris, discoveryClient.getInstances(ServiceIds.FRONTIER).get(0).getUri());
+		clients.frontierClient().schedule(spiderId, uris, discoveryClient.getInstances(ServiceIds.FRONTIER).get(0).getUri());
 	}
 
 	public void add(long spiderId, URI uri) {
-		client.frontierClient().schedule(spiderId, uri, discoveryClient.getInstances(ServiceIds.FRONTIER).get(0).getUri());
+		clients.frontierClient().schedule(spiderId, uri, discoveryClient.getInstances(ServiceIds.FRONTIER).get(0).getUri());
 	}
 }

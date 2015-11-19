@@ -59,8 +59,8 @@ public class WorkerContainer extends AbstractContainer {
 	private ExecutorService executor;
 	private List<Loop> loops;
 
-	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Spider spider, Clients client, DiscoveryClient discoveryClient) {
-		super(accumulators, spider, client, discoveryClient);
+	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Spider spider, Clients clients, DiscoveryClient discoveryClient) {
+		super(accumulators, spider, clients, discoveryClient);
 		this.extractorService = extractorService;
 		init();
 	}
@@ -80,7 +80,7 @@ public class WorkerContainer extends AbstractContainer {
 		loops = new ArrayList<>(parallel);
 		IntStream.range(0, parallel).forEach(
 				idx -> {
-					Loop loop = new Loop(extractorService, spider, null, discoveryClient, accumulators.spiderAccumulator(spider.getId()), accumulators
+					Loop loop = new Loop(extractorService, spider, clients, discoveryClient, accumulators.spiderAccumulator(spider.getId()), accumulators
 							.globalAccumulator());
 					loops.add(loop);
 					executor.submit(loop);

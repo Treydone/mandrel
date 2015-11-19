@@ -21,7 +21,7 @@ package io.mandrel.data.export;
 import io.mandrel.blob.BlobStores;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
-import io.mandrel.controller.ControllerService;
+import io.mandrel.controller.SpiderService;
 import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.document.DocumentStores;
 
@@ -42,7 +42,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ExporterService {
 
-	private final ControllerService spiderService;
+	private final SpiderService spiderService;
 
 	public void export(Long id, String extractorName, Exporter exporter, Writer writer) {
 		Spider spider = spiderService.get(id);

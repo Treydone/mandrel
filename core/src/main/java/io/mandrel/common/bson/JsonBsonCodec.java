@@ -15,7 +15,6 @@ public abstract class JsonBsonCodec {
 	public static Document toBson(ObjectMapper mapper, Object value) {
 		String json = mapper.writeValueAsString(value);
 		json = json.replaceAll("\\.", "\\+\\+");
-		System.err.println(json);
 		return Document.parse(json);
 	}
 

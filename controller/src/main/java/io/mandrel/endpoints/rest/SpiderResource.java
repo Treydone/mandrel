@@ -19,7 +19,7 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.controller.ControllerService;
+import io.mandrel.controller.SpiderService;
 import io.mandrel.data.analysis.Analysis;
 import io.mandrel.data.analysis.AnalysisService;
 import io.mandrel.metrics.MetricsRepository;
@@ -52,7 +52,7 @@ public class SpiderResource {
 
 	private final AnalysisService analysisService;
 
-	private final ControllerService spiderService;
+	private final SpiderService spiderService;
 
 	private final MetricsRepository metricsRepository;
 

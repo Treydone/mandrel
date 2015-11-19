@@ -35,7 +35,7 @@ public abstract class AbstractContainer implements Container {
 
 	protected final Accumulators accumulators;
 	protected final Spider spider;
-	protected final Clients client;
+	protected final Clients clients;
 	protected final DiscoveryClient discoveryClient;
 
 	protected final AtomicReference<Status> current = new AtomicReference<>(Status.CREATED);

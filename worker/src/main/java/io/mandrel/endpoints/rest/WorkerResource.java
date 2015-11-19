@@ -37,11 +37,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 public class WorkerResource implements WorkerContract {
 
@@ -82,7 +85,6 @@ public class WorkerResource implements WorkerContract {
 				.collect(Collectors.toList());
 	}
 
-
 	@Override
 	public SyncResponse sync(@RequestBody SyncRequest sync, URI target) {
 		Collection<? extends io.mandrel.common.container.Container> containers = WorkerContainers.list();
@@ -98,14 +100,17 @@ public class WorkerResource implements WorkerContract {
 		containers.forEach(c -> {
 			existingSpiders.add(c.spider().getId());
 			if (!ids.containsKey(c.spider().getId())) {
+				log.debug("Killing spider {}", c.spider().getId());
 				kill(c.spider().getId(), null);
 				deleted.add(c.spider().getId());
 			} else if (ids.get(c.spider().getId()).getVersion() != c.spider().getVersion()) {
+				log.debug("Updating spider {}", c.spider().getId());
 				kill(c.spider().getId(), null);
 				create(ids.get(c.spider().getId()), null);
 				updated.add(c.spider().getId());
 
 				if (Statuses.STARTED.equals(ids.get(c.spider().getId()).getStatus())) {
+					log.debug("Starting spider {}", c.spider().getId());
 					start(c.spider().getId(), null);
 				}
 			}
@@ -113,9 +118,11 @@ public class WorkerResource implements WorkerContract {
 
 		ids.forEach((id, spider) -> {
 			if (!existingSpiders.contains(id)) {
+				log.debug("Creating spider {}", id);
 				create(spider, null);
 
 				if (Statuses.STARTED.equals(spider.getStatus())) {
+					log.debug("Starting spider {}", id);
 					start(spider.getId(), null);
 				}
 				created.add(spider.getId());

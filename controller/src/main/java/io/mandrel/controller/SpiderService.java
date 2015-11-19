@@ -20,15 +20,18 @@ package io.mandrel.controller;
 
 import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.instance.StateService;
+import io.mandrel.common.MandrelException;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.client.Clients;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Statuses;
+import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.SkipAncorFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
 import io.mandrel.data.source.FixedSource.FixedSourceDefinition;
+import io.mandrel.data.source.Source;
 import io.mandrel.data.validation.Validators;
 import io.mandrel.metrics.Accumulators;
 import io.mandrel.metrics.MetricsRepository;
@@ -50,6 +53,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.kohsuke.randname.RandomNameGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -58,7 +62,7 @@ import org.springframework.validation.BindingResult;
 
 @Component
 @Slf4j
-public class ControllerService {
+public class SpiderService {
 
 	@Autowired
 	private SpiderRepository controllerRepository;
@@ -100,9 +104,9 @@ public class ControllerService {
 						log.warn("Can not sync due to", e);
 					}
 				});
-				discoveryClient.getInstances(ServiceIds.FRONTIER).forEach(worker -> {
+				discoveryClient.getInstances(ServiceIds.FRONTIER).forEach(frontier -> {
 					try {
-						clients.frontierClient().sync(sync, worker.getUri());
+						clients.frontierClient().sync(sync, frontier.getUri());
 					} catch (Exception e) {
 						log.warn("Can not sync due to", e);
 					}
@@ -152,6 +156,37 @@ public class ControllerService {
 		return add(spider);
 	}
 
+	public long fork(long id) throws BindException {
+		Spider spider = get(id);
+		spider.setId(0);
+		spider.setName(generator.next());
+
+		cleanDates(spider);
+
+		BindingResult errors = Validators.validate(spider);
+
+		if (errors.hasErrors()) {
+			errors.getAllErrors().stream().forEach(oe -> log.info(oe.toString()));
+			throw new BindException(errors);
+		}
+
+		spider.setStatus(Statuses.CREATED);
+		spider.setCreated(LocalDateTime.now());
+
+		spider = controllerRepository.add(spider);
+
+		return spider.getId();
+	}
+
+	public void cleanDates(Spider spider) {
+		spider.setCreated(null);
+		spider.setDeleted(null);
+		spider.setEnded(null);
+		spider.setKilled(null);
+		spider.setPaused(null);
+		spider.setStarted(null);
+	}
+
 	public Spider add(Spider spider) throws BindException {
 		BindingResult errors = Validators.validate(spider);
 
@@ -182,6 +217,11 @@ public class ControllerService {
 		return controllerRepository.listActive();
 	}
 
+	public void reinject(long spiderId) {
+		Spider spider = get(spiderId);
+		injectSingletonSources(spider);
+	}
+
 	public void start(long spiderId) {
 		Spider spider = get(spiderId);
 
@@ -190,15 +230,44 @@ public class ControllerService {
 		}
 
 		if (Statuses.KILLED.equals(spider.getStatus())) {
-			throw new RuntimeException("Spider cancelled!");
+			throw new MandrelException("Spider cancelled!");
+		}
+
+		// Can not start a spider if there no frontier started
+		if (discoveryClient.getInstances(ServiceIds.FRONTIER).size() < 1) {
+			throw new MandrelException("Can not start spider, you need a least a frontier instance!");
+		}
+
+		if (Statuses.CREATED.equals(spider.getStatus())) {
+			injectSingletonSources(spider);
 		}
 
 		controllerRepository.updateStatus(spiderId, Statuses.STARTED);
 		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_STARTED)
 				.setTime(LocalDateTime.now()));
 
-		// TODO Deploy singleton sources on a random frontier
+	}
 
+	public void injectSingletonSources(Spider spider) {
+		// Deploy singleton sources on a random frontier
+		TaskContext context = new TaskContext();
+		context.setDefinition(spider);
+
+		spider.getSources().forEach(s -> {
+			Source source = s.build(context);
+
+			if (source.singleton() && source.check()) {
+				ServiceInstance frontier = discoveryClient.getInstances(ServiceIds.FRONTIER).get(0);
+
+				source.register(uri -> {
+					try {
+						clients.frontierClient().schedule(spider.getId(), uri, frontier.getUri());
+					} catch (Exception e) {
+						log.warn("Can not sync due to", e);
+					}
+				});
+			}
+		});
 	}
 
 	public void pause(long spiderId) {
