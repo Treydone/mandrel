@@ -204,7 +204,13 @@ public class Loop implements Runnable {
 					}
 				}
 			} catch (Exception e) {
-				log.warn("Got a problem...", e);
+				log.warn("Got a problem, waiting 2 sec...", e);
+				try {
+					TimeUnit.MILLISECONDS.sleep(2000);
+				} catch (InterruptedException ie) {
+					// Don't care
+					log.trace("", ie);
+				}
 			}
 		}
 	}
