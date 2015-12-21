@@ -22,7 +22,7 @@ import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.Link;
 import io.mandrel.data.filters.link.BooleanLinkFilters;
 import io.mandrel.data.filters.link.LinkFilter;
-import io.mandrel.frontier.store.Queue;
+import io.mandrel.frontier.store.FetchRequest;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -76,17 +76,18 @@ public class FixedPrioritizedFrontier extends Frontier {
 		}
 
 		IntStream.range(0, priorities.size()).forEach(idx -> {
-			priorities.get(idx).level(idx);
+			Priority priority = priorities.get(idx);
+			priority.level(idx);
 
 			// Create queue in store
-				store().create("queue-" + idx);
+				store().create(getQueue(priority));
 			});
 	}
 
 	public void destroy() {
-		IntStream.range(0, priorities.size()).forEach(idx -> {
+		priorities.stream().forEach(priority -> {
 			try {
-				store().destroy("queue-" + idx);
+				store().destroy(getQueue(priority));
 			} catch (Exception e) {
 				log.warn("Unable to destory queue", e);
 			}
@@ -98,29 +99,38 @@ public class FixedPrioritizedFrontier extends Frontier {
 	}
 
 	@Override
-	public URI pool() {
-		for (Priority p : priorities) {
-			URI uri = create(p).pool();
+	public void pool(PoolCallback<URI> poolCallback) {
+		pool(0, poolCallback);
+	}
+
+	public void pool(int i, PoolCallback<URI> poolCallback) {
+		Priority priority = priorities.get(i);
+
+		PoolCallback<URI> chidlPoolCallback = (uri) -> {
 			if (uri != null) {
-				// duplicateUrlEliminator().markAsPending(uri);
-				return uri;
+				poolCallback.on(uri);
+			} else {
+				int index = i;
+				index++;
+
+				if (index < priorities.size() - 1) {
+					pool(index, poolCallback);
+				} else {
+					poolCallback.on(null);
+				}
 			}
-		}
-		return null;
+		};
+		store.pool(FetchRequest.of(getQueue(priority), chidlPoolCallback));
 	}
 
 	@Override
 	public void schedule(URI uri) {
-		priorities.stream().filter(p -> p.filter().isValid(new Link().uri(uri))).findFirst().ifPresent(p -> create(p));
+		priorities.stream().filter(p -> p.filter().isValid(new Link().uri(uri))).findFirst().ifPresent(p -> store.schedule(getQueue(p), uri));
 	}
 
 	@Override
 	public void schedule(Set<URI> uris) {
 		uris.forEach(uri -> schedule(uri));
-	}
-
-	private Queue<URI> create(Priority p) {
-		return store().create("queue-" + p.level());
 	}
 
 	@Data
@@ -150,4 +160,7 @@ public class FixedPrioritizedFrontier extends Frontier {
 		return true;
 	}
 
+	private String getQueue(Priority priority) {
+		return "queue-" + priority.level();
+	}
 }

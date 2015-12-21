@@ -1,9 +1,9 @@
 package io.mandrel.frontier.store.impl;
 
-import java.net.URI;
-
-import io.mandrel.frontier.store.Queue;
+import io.mandrel.frontier.store.FetchRequest;
 import io.mandrel.frontier.store.impl.KafkaFrontierStore.KafkaFrontierStoreDefinition;
+
+import java.net.URI;
 
 import org.junit.Test;
 
@@ -15,10 +15,12 @@ public class KafkaFrontierStoreTest {
 		KafkaFrontierStoreDefinition definition = new KafkaFrontierStoreDefinition();
 		KafkaFrontierStore store = definition.build(null);
 
-		Queue<URI> queue = store.create("queue");
-		queue.schedule(URI.create("test://test"));
+		store.create("queue");
+		store.schedule("queue", URI.create("test://test"));
 		Thread.sleep(500);
 
-		queue.pool();
+		store.pool(FetchRequest.of("queue", (uri) -> {
+			System.err.println(uri);
+		}));
 	}
 }

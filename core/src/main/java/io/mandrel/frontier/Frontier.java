@@ -79,7 +79,7 @@ public abstract class Frontier extends TaskContextAware implements Checkable {
 
 	public abstract void destroy();
 
-	public abstract URI pool();
+	public abstract void pool(PoolCallback<URI> poolCallback);
 
 	public abstract void schedule(URI uri);
 

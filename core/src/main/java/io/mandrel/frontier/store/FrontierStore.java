@@ -24,13 +24,15 @@ import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.service.TaskContextAware;
 import io.mandrel.monitor.health.Checkable;
 
+import java.io.Closeable;
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Set;
 
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = false)
-public abstract class FrontierStore extends TaskContextAware implements Checkable {
+public abstract class FrontierStore extends TaskContextAware implements Checkable, Closeable {
 
 	public FrontierStore(TaskContext context) {
 		super(context);
@@ -41,8 +43,13 @@ public abstract class FrontierStore extends TaskContextAware implements Checkabl
 		private static final long serialVersionUID = -8064877296016844646L;
 	}
 
-	public abstract Queue<URI> create(String name);
+	public abstract void create(String name);
 
 	public abstract void destroy(String name);
 
+	public abstract void pool(FetchRequest request);
+
+	public abstract void schedule(String name, URI item);
+
+	public abstract void schedule(String name, Set<URI> items);
 }

@@ -21,7 +21,7 @@ package io.mandrel.frontier;
 import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
-import io.mandrel.frontier.store.Queue;
+import io.mandrel.frontier.store.FetchRequest;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -57,14 +57,12 @@ public class SimpleFrontier extends Frontier {
 		}
 	}
 
-	private Queue<URI> queue;
-
 	public SimpleFrontier(TaskContext context) {
 		super(context);
 	}
 
 	public void init() {
-		queue = store().create(DEFAULT_QUEUE);
+		store().create(DEFAULT_QUEUE);
 	}
 
 	public void destroy() {
@@ -76,18 +74,18 @@ public class SimpleFrontier extends Frontier {
 	}
 
 	@Override
-	public URI pool() {
-		return queue.pool();
+	public void pool(PoolCallback<URI> poolCallback) {
+		store.pool(FetchRequest.of(DEFAULT_QUEUE, poolCallback));
 	}
 
 	@Override
 	public void schedule(URI uri) {
-		queue.schedule(uri);
+		store.schedule(DEFAULT_QUEUE, uri);
 	}
 
 	@Override
 	public void schedule(Set<URI> uris) {
-		queue.schedule(uris);
+		store.schedule(DEFAULT_QUEUE, uris);
 	}
 
 	@Override

@@ -18,25 +18,30 @@
  */
 package io.mandrel.frontier.store.impl;
 
-import io.mandrel.common.kafka.JsonDeserializer;
+import io.mandrel.common.kafka.JsonDecoder;
 import io.mandrel.common.kafka.JsonSerializer;
 import io.mandrel.common.service.TaskContext;
+import io.mandrel.frontier.store.FetchRequest;
 import io.mandrel.frontier.store.FrontierStore;
-import io.mandrel.frontier.store.Queue;
 
-import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import kafka.admin.AdminUtils;
-import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
+import kafka.serializer.StringDecoder;
 import kafka.utils.ZKStringSerializer$;
+import kafka.utils.ZkUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -48,14 +53,13 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 
 @Slf4j
 public class KafkaFrontierStore extends FrontierStore {
@@ -88,11 +92,14 @@ public class KafkaFrontierStore extends FrontierStore {
 
 			properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
 			properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
-			properties.put(ConsumerConfig.SESSION_TIMEOUT_MS, "30000");
+			// properties.put(ConsumerConfig.SESSION_TIMEOUT_MS, "30000");
 			properties.put(ConsumerConfig.GROUP_ID_CONFIG, "mandrel");
-			properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-			properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
-			properties.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY, "range");
+			// properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+			// StringDeserializer.class.getName());
+			// properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+			// JsonDeserializer.class.getName());
+			// properties.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY,
+			// "range");
 
 			properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 			properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName());
@@ -120,17 +127,50 @@ public class KafkaFrontierStore extends FrontierStore {
 		}
 	}
 
-	private final Properties properties;
 	private final int partitions;
 	private final int replicationFactor;
 	private final ZkClient zkClient;
+	private final ZkUtils zkUtils;
+
+	private final Producer<String, URI> producer;
+	private final ConsumerConnector consumer;
+	private final ExecutorService executor;
+	private final List<Dequeuer> workers;
+	private final AtomicInteger nextWorker;
+	private final int nbWorker;
 
 	public KafkaFrontierStore(TaskContext context, Properties properties, int partitions, int replicationFactor, int sessionTimeout, int connectionTimeout) {
 		super(context);
-		this.properties = properties;
 		this.partitions = partitions;
 		this.replicationFactor = replicationFactor;
-		zkClient = new ZkClient(properties.getProperty("zookeeper.connect"), sessionTimeout, connectionTimeout, ZKStringSerializer$.MODULE$);
+		this.zkClient = new ZkClient(properties.getProperty("zookeeper.connect"), sessionTimeout, connectionTimeout, ZKStringSerializer$.MODULE$);
+		this.zkUtils = ZkUtils.apply(zkClient, false);
+		this.producer = new KafkaProducer<>(properties);
+
+		consumer = kafka.consumer.Consumer.createJavaConsumerConnector(new kafka.consumer.ConsumerConfig(properties));
+
+		nbWorker = Runtime.getRuntime().availableProcessors();
+
+		executor = Executors.newFixedThreadPool(nbWorker);
+		workers = Lists.newArrayListWithCapacity(nbWorker);
+		IntStream.range(0, nbWorker).forEach(i -> workers.add(new Dequeuer()));
+
+		workers.stream().forEach(worker -> executor.submit(worker));
+		nextWorker = new AtomicInteger(0);
+	}
+
+	public void pool(FetchRequest request) {
+		int workerId = nextWorker.getAndIncrement() % workers.size();
+		Dequeuer worker = workers.get(workerId);
+		worker.fetch(request);
+	}
+
+	public void schedule(String name, URI item) {
+		producer.send(new ProducerRecord<String, URI>(name, item));
+	}
+
+	public void schedule(String name, Set<URI> items) {
+		items.stream().map(item -> new ProducerRecord<String, URI>(name, item)).forEach(producer::send);
 	}
 
 	private String getTopicName(String name) {
@@ -140,99 +180,55 @@ public class KafkaFrontierStore extends FrontierStore {
 	@Override
 	public void destroy(String name) {
 		String topicName = getTopicName(name);
-
 		// Check if topic exists
-		if (AdminUtils.topicExists(zkClient, topicName)) {
+		if (AdminUtils.topicExists(zkUtils, topicName)) {
 			log.warn("Deleting kafka topic '{}'", topicName);
-			AdminUtils.deleteTopic(zkClient, topicName);
+			AdminUtils.deleteTopic(zkUtils, topicName);
 		}
+
+		// Delete consumer on each worker
+		workers.stream().forEach(worker -> worker.unsubscribe(name));
 	}
 
 	@Override
-	public KafkaQueue<URI> create(String name) {
+	public void create(String name) {
 		String topicName = getTopicName(name);
 
 		// Check if topic already exists
-		if (!AdminUtils.topicExists(zkClient, topicName)) {
+		if (!AdminUtils.topicExists(zkUtils, topicName)) {
 			log.warn("Kafka topic '{}' doesn't exists, creating it", topicName);
-			AdminUtils.createTopic(zkClient, topicName, partitions, replicationFactor, new Properties());
+			AdminUtils.createTopic(zkUtils, topicName, partitions, replicationFactor, new Properties());
 		}
-		log.debug("Kafka topic '{}' found with configuration: {}", topicName, AdminUtils.fetchTopicMetadataFromZk(topicName, zkClient).toString());
+		log.debug("Kafka topic '{}' found with configuration: {}", topicName, AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).toString());
 
-		return new KafkaQueue<>(topicName, URI.class, properties);
+		// Prepare consumers
+		Map<String, List<KafkaStream<String, URI>>> consumerMap = consumer.createMessageStreams(Collections.singletonMap(name, nbWorker), new StringDecoder(
+				null), new JsonDecoder<URI>(URI.class));
+
+		// Add the consumer to each worker
+		IntStream.range(0, nbWorker).forEach(i -> workers.get(i).subscribe(name, consumerMap.get(name).get(i).iterator()));
 	}
 
-	@Slf4j
-	public static class KafkaQueue<T> implements Queue<T> {
-
-		private final String name;
-		private final Class<T> clazz;
-		private final Producer<String, T> producer;
-		// private final Consumer<String, URI> consumer;
-
-		// TODO TO BE REMOVED
-		private final ConsumerIterator<byte[], byte[]> stream;
-		private final ObjectMapper mapper = new ObjectMapper();
-
-		public KafkaQueue(String name, Class<T> clazz, Properties properties) {
-			super();
-			this.name = name;
-			this.clazz = clazz;
-
-			properties.put("json.class", clazz);
-
-			this.producer = new KafkaProducer<>(properties);
-			// consumer = new KafkaConsumer<>(properties);
-
-			// TODO TO BE REMOVED
-			ConsumerConnector connector = kafka.consumer.Consumer.createJavaConsumerConnector(new kafka.consumer.ConsumerConfig(properties));
-			Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
-			topicCountMap.put(name, new Integer(1));
-			Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = connector.createMessageStreams(topicCountMap);
-			this.stream = consumerMap.get(name).get(0).iterator();
+	public void close() {
+		try {
+			if (consumer != null)
+				consumer.shutdown();
+		} catch (Exception e) {
+			log.info("", e);
 		}
-
-		@Override
-		public T pool() {
-			// ConsumerRecords<String, URI> records =
-			// consumer.poll(3000).get(name);
-			// for (ConsumerRecord<Integer, String> record : records) {
-			// System.out.println("Received message: (" + record.key() + ", " +
-			// record.value() + ") at offset " + record.offset());
-			// }
-
-			if (stream.hasNext()) {
-				try {
-					return mapper.readValue(stream.next().message(), clazz);
-				} catch (Exception e) {
-					log.info("Can not parse message:", e);
-				}
-			}
-			return null;
-		}
-
-		@Override
-		public void schedule(T item) {
-			producer.send(new ProducerRecord<String, T>(name, item));
-		}
-
-		@Override
-		public void schedule(Set<T> items) {
-			items.stream().map(item -> new ProducerRecord<String, T>(name, item)).forEach(producer::send);
-		}
-
-		@Override
-		public void close() throws IOException {
-			// try {
-			// consumer.close();
-			// } catch (Exception e) {
-			// log.info("", e);
-			// }
-			try {
+		try {
+			if (producer != null)
 				producer.close();
-			} catch (Exception e) {
-				log.info("", e);
+		} catch (Exception e) {
+			log.info("", e);
+		}
+
+		try {
+			if (!executor.awaitTermination(5000, TimeUnit.MILLISECONDS)) {
+				log.info("Timed out waiting for consumer threads to shut down, exiting uncleanly");
 			}
+		} catch (InterruptedException e) {
+			log.info("Interrupted during shutdown, exiting uncleanly");
 		}
 	}
 

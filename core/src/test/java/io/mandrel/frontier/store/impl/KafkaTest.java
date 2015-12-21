@@ -3,11 +3,12 @@ package io.mandrel.frontier.store.impl;
 import java.util.Properties;
 
 import kafka.admin.AdminUtils;
+import kafka.utils.ZKStringSerializer$;
+import kafka.utils.ZkUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.junit.Test;
-import kafka.utils.ZKStringSerializer$;
 
 @Slf4j
 public class KafkaTest {
@@ -19,14 +20,15 @@ public class KafkaTest {
 
 		ZkClient zkClient = new ZkClient("localhost:2181", 10000, 10000, ZKStringSerializer$.MODULE$);
 
-//		AdminUtils.deleteTopic(zkClient, topicName);
+		ZkUtils zkUtils = ZkUtils.apply(zkClient, false);
 
-		if (!AdminUtils.topicExists(zkClient, topicName)) {
+		// AdminUtils.deleteTopic(zkClient, topicName);
+
+		if (!AdminUtils.topicExists(zkUtils, topicName)) {
 			log.warn("Kafka topic '{}' doesn't exists, creating it", topicName);
-			AdminUtils.createTopic(zkClient, topicName, 1, 1, new Properties());
+			AdminUtils.createTopic(zkUtils, topicName, 1, 1, new Properties());
 		}
 
-		System.err.println(AdminUtils.fetchTopicConfig(zkClient, topicName));
-		System.err.println(AdminUtils.fetchTopicMetadataFromZk(topicName, zkClient));
+		System.err.println(AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils));
 	}
 }
