@@ -20,6 +20,7 @@ package io.mandrel.blob;
 
 import io.mandrel.common.lifecycle.Initializable;
 import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.service.TaskContextAware;
@@ -27,7 +28,6 @@ import io.mandrel.monitor.health.Checkable;
 
 import java.io.Closeable;
 import java.io.Serializable;
-import java.net.URI;
 import java.util.Collection;
 
 public abstract class BlobStore extends TaskContextAware implements Checkable, Initializable, Closeable {
@@ -40,9 +40,9 @@ public abstract class BlobStore extends TaskContextAware implements Checkable, I
 
 	}
 
-	public abstract URI putBlob(URI uri, Blob blob);
+	public abstract Uri putBlob(Uri uri, Blob blob);
 
-	public abstract Blob getBlob(URI uri);
+	public abstract Blob getBlob(Uri uri);
 
 	public abstract void deleteAll();
 

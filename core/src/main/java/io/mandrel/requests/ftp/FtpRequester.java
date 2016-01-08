@@ -22,10 +22,10 @@ import io.mandrel.blob.Blob;
 import io.mandrel.common.data.FtpStrategy;
 import io.mandrel.common.data.FtpStrategy.FtpStrategyDefinition;
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.requests.Requester;
 
-import java.net.URI;
 import java.util.Set;
 
 import lombok.Data;
@@ -76,12 +76,12 @@ public class FtpRequester extends Requester<FtpStrategy> {
 	}
 
 	@Override
-	public Blob getBlocking(URI uri, Spider spider) throws Exception {
+	public Blob getBlocking(Uri uri, Spider spider) throws Exception {
 		return null;
 	}
 
 	@Override
-	public Blob getBlocking(URI uri) throws Exception {
+	public Blob getBlocking(Uri uri) throws Exception {
 		return null;
 	}
 

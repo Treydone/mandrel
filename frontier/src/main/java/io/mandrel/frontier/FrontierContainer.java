@@ -18,11 +18,11 @@
  */
 package io.mandrel.frontier;
 
-import io.mandrel.common.client.Clients;
 import io.mandrel.common.container.AbstractContainer;
 import io.mandrel.common.container.Status;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
+import io.mandrel.common.thrift.Clients;
 import io.mandrel.data.source.Source;
 import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.Accumulators;
@@ -30,8 +30,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 
 @Slf4j
 @Data
@@ -42,8 +40,8 @@ public class FrontierContainer extends AbstractContainer {
 	private TaskContext context = new TaskContext();
 	private Frontier frontier;
 
-	public FrontierContainer(Spider spider, Accumulators accumulators, Clients clients, DiscoveryClient discoveryClient) {
-		super(accumulators, spider, clients, discoveryClient);
+	public FrontierContainer(Spider spider, Accumulators accumulators, Clients clients) {
+		super(accumulators, spider, clients);
 		init();
 	}
 
@@ -105,6 +103,8 @@ public class FrontierContainer extends AbstractContainer {
 		} catch (Exception e) {
 			log.warn("Can not destroy the accumulators");
 		}
+
+		current.set(Status.KILLED);
 	}
 
 	@Override

@@ -18,6 +18,7 @@
  */
 package io.mandrel.frontier;
 
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.Link;
 import io.mandrel.data.filters.link.BooleanLinkFilters;
@@ -25,7 +26,6 @@ import io.mandrel.data.filters.link.LinkFilter;
 import io.mandrel.frontier.store.FetchRequest;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -99,14 +99,14 @@ public class FixedPrioritizedFrontier extends Frontier {
 	}
 
 	@Override
-	public void pool(PoolCallback<URI> poolCallback) {
+	public void pool(PoolCallback<Uri> poolCallback) {
 		pool(0, poolCallback);
 	}
 
-	public void pool(int i, PoolCallback<URI> poolCallback) {
+	public void pool(int i, PoolCallback<Uri> poolCallback) {
 		Priority priority = priorities.get(i);
 
-		PoolCallback<URI> chidlPoolCallback = (uri) -> {
+		PoolCallback<Uri> chidlPoolCallback = (uri) -> {
 			if (uri != null) {
 				poolCallback.on(uri);
 			} else {
@@ -124,12 +124,12 @@ public class FixedPrioritizedFrontier extends Frontier {
 	}
 
 	@Override
-	public void schedule(URI uri) {
+	public void schedule(Uri uri) {
 		priorities.stream().filter(p -> p.filter().isValid(new Link().uri(uri))).findFirst().ifPresent(p -> store.schedule(getQueue(p), uri));
 	}
 
 	@Override
-	public void schedule(Set<URI> uris) {
+	public void schedule(Set<Uri> uris) {
 		uris.forEach(uri -> schedule(uri));
 	}
 

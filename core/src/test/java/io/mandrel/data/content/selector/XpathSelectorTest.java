@@ -19,10 +19,10 @@
 package io.mandrel.data.content.selector;
 
 import io.mandrel.blob.BlobMetadata;
+import io.mandrel.common.net.Uri;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.io.Payloads;
 
-import java.net.URI;
 import java.util.List;
 
 import org.assertj.core.api.Assertions;
@@ -38,7 +38,7 @@ public class XpathSelectorTest {
 		XpathSelector selector = new XpathSelector();
 
 		byte[] data = "<a href='/test'>épatant</a>".getBytes();
-		Instance<XElement> instance = selector.init(new BlobMetadata().uri(URI.create("http://localhost")), Payloads.newByteArrayPayload(data), false);
+		Instance<XElement> instance = selector.init(new BlobMetadata().uri(Uri.create("http://localhost")), Payloads.newByteArrayPayload(data), false);
 
 		List<String> results = instance.select("//a/@href", DataConverter.BODY);
 		Assertions.assertThat(results).containsExactly("/test");

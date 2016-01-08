@@ -18,9 +18,9 @@
  */
 package io.mandrel.data.source;
 
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 
-import java.net.URI;
 import java.util.List;
 
 import lombok.Data;
@@ -55,7 +55,7 @@ public class FixedSource extends Source {
 
 	public void register(EntryListener listener) {
 		for (String seed : urls) {
-			listener.onItem(URI.create(seed));
+			listener.onItem(Uri.create(seed));
 		}
 	}
 

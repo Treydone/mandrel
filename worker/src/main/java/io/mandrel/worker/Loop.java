@@ -20,10 +20,10 @@ package io.mandrel.worker;
 
 import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobStores;
-import io.mandrel.cluster.discovery.ServiceIds;
-import io.mandrel.common.client.Clients;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Strategy;
+import io.mandrel.common.net.Uri;
+import io.mandrel.common.thrift.Clients;
 import io.mandrel.data.Link;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
@@ -35,7 +35,6 @@ import io.mandrel.requests.Requester;
 import io.mandrel.requests.Requesters;
 
 import java.net.ConnectException;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,10 +51,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.jboss.netty.handler.timeout.ReadTimeoutException;
 import org.jboss.netty.handler.timeout.WriteTimeoutException;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StopWatch;
+
+import com.google.common.util.concurrent.ListenableFuture;
 
 /**
  * Weeeeeeeeeeeeeeeeehhh!!
@@ -67,7 +65,6 @@ public class Loop implements Runnable {
 	private final ExtractorService extractorService;
 	private final Spider spider;
 	private final Clients clients;
-	private final DiscoveryClient discoveryClient;
 
 	private final SpiderAccumulator spiderAccumulator;
 	private final GlobalAccumulator globalAccumulator;
@@ -103,22 +100,11 @@ public class Loop implements Runnable {
 					continue;
 				}
 
-				URI uri = null;
-
 				// Take on elements
-				List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.FRONTIER);
-				if (!CollectionUtils.isEmpty(instances)) {
-					URI frontier = instances.get(0).getUri();
-					uri = clients.frontierClient().next(spider.getId(), frontier);
-				} else {
-					log.warn("Can not find any frontier");
-					try {
-						TimeUnit.MILLISECONDS.sleep(10000);
-					} catch (InterruptedException e) {
-						// Don't care
-						log.trace("", e);
-					}
-				}
+				ListenableFuture<Uri> result = clients.onRandomFrontier().map(frontier -> frontier.next(spider.getId()));
+
+				// TODO -> You can do better things than this...
+				Uri uri = result.get(10000, TimeUnit.MILLISECONDS);
 
 				if (uri != null) {
 
@@ -156,12 +142,12 @@ public class Loop implements Runnable {
 
 							if (spider.getExtractors().getOutlinks() != null) {
 								log.trace(">  - Extracting outlinks for {}...", uri);
-								final URI theURI = uri;
+								final Uri theUri = uri;
 								spider.getExtractors()
 										.getOutlinks()
 										.forEach(
 												ol -> {
-													Set<Link> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, theURI, cachedSelectors,
+													Set<Link> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, theUri, cachedSelectors,
 															blob, ol).getRight();
 													blob.metadata().fetchMetadata().outlinks(allFilteredOutlinks);
 													add(spider.getId(), allFilteredOutlinks.stream().map(l -> l.uri()).collect(Collectors.toSet()));
@@ -195,7 +181,7 @@ public class Loop implements Runnable {
 						log.debug("Unknown protocol, can not find requester for '{}'", uri.getScheme());
 					}
 				} else {
-					log.trace("Frontier returned null URI, waiting");
+					log.trace("Frontier returned null Uri, waiting");
 					try {
 						TimeUnit.MILLISECONDS.sleep(10000);
 					} catch (InterruptedException e) {
@@ -230,11 +216,11 @@ public class Loop implements Runnable {
 		globalAccumulator.incTotalSize(blob.metadata().size());
 	}
 
-	public void add(long spiderId, Set<URI> uris) {
-		clients.frontierClient().schedule(spiderId, uris, discoveryClient.getInstances(ServiceIds.FRONTIER).get(0).getUri());
+	public void add(long spiderId, Set<Uri> uris) {
+		clients.onRandomFrontier().with(frontier -> frontier.mschedule(spiderId, uris));
 	}
 
-	public void add(long spiderId, URI uri) {
-		clients.frontierClient().schedule(spiderId, uri, discoveryClient.getInstances(ServiceIds.FRONTIER).get(0).getUri());
+	public void add(long spiderId, Uri uri) {
+		clients.onRandomFrontier().with(frontier -> frontier.schedule(spiderId, uri));
 	}
 }

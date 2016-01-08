@@ -19,13 +19,13 @@
 package io.mandrel.data.source;
 
 import io.mandrel.blob.Blob;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.common.robots.RobotsTxtUtils;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.http.ApacheHttpRequester;
 
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +107,7 @@ public class RobotsTxtSource extends Source {
 
 		Blob blob;
 		try {
-			blob = requester.getBlocking(new URI(sitemapUrl));
+			blob = requester.getBlocking(Uri.create(sitemapUrl));
 		} catch (Exception e) {
 			log.warn("Can not get the sitemap {}", new Object[] { sitemapUrl }, e);
 			throw Throwables.propagate(e);
@@ -125,7 +125,7 @@ public class RobotsTxtSource extends Source {
 					index.getSitemaps().forEach(s -> getSitemapsForUrl(s.getUrl().toString(), listener, requester, newDepth));
 				}
 			} else {
-				listener.onItem(sitemap.getUrl().toURI());
+				listener.onItem(Uri.create(sitemap.getUrl().toURI()));
 			}
 		} catch (Exception e) {
 			log.debug("Dude?", e);

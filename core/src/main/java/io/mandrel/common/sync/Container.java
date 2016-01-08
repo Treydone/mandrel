@@ -9,8 +9,6 @@ import lombok.experimental.Accessors;
 public class Container {
 
 	private long spiderId;
-
 	private long version;
-
 	private Status status;
 }

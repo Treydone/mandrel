@@ -18,10 +18,8 @@
  */
 package io.mandrel.data.filters.link;
 
+import io.mandrel.common.net.Uri;
 import io.mandrel.data.Link;
-
-import java.net.URI;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -36,7 +34,7 @@ public class SkipAncorFilter extends LinkFilter {
 	private static final long serialVersionUID = -5195589618123470396L;
 
 	public boolean isValid(Link link) {
-		URI linkUri = link.uri();
+		Uri linkUri = link.uri();
 		return link != null && linkUri != null && StringUtils.isNotBlank(linkUri.toString())
 				&& (!linkUri.toString().contains("#") || linkUri.toString().contains("#/"));
 	}

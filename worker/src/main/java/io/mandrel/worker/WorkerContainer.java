@@ -20,11 +20,11 @@ package io.mandrel.worker;
 
 import io.mandrel.blob.BlobStore;
 import io.mandrel.blob.BlobStores;
-import io.mandrel.common.client.Clients;
 import io.mandrel.common.container.AbstractContainer;
 import io.mandrel.common.container.Status;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
+import io.mandrel.common.thrift.Clients;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.document.DocumentStores;
@@ -46,7 +46,6 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 
 @Slf4j
 @Data
@@ -59,8 +58,8 @@ public class WorkerContainer extends AbstractContainer {
 	private ExecutorService executor;
 	private List<Loop> loops;
 
-	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Spider spider, Clients clients, DiscoveryClient discoveryClient) {
-		super(accumulators, spider, clients, discoveryClient);
+	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Spider spider, Clients clients) {
+		super(accumulators, spider, clients);
 		this.extractorService = extractorService;
 		init();
 	}
@@ -78,13 +77,11 @@ public class WorkerContainer extends AbstractContainer {
 
 		// Create loop
 		loops = new ArrayList<>(parallel);
-		IntStream.range(0, parallel).forEach(
-				idx -> {
-					Loop loop = new Loop(extractorService, spider, clients, discoveryClient, accumulators.spiderAccumulator(spider.getId()), accumulators
-							.globalAccumulator());
-					loops.add(loop);
-					executor.submit(loop);
-				});
+		IntStream.range(0, parallel).forEach(idx -> {
+			Loop loop = new Loop(extractorService, spider, clients, accumulators.spiderAccumulator(spider.getId()), accumulators.globalAccumulator());
+			loops.add(loop);
+			executor.submit(loop);
+		});
 
 		// Create context
 		TaskContext context = new TaskContext();

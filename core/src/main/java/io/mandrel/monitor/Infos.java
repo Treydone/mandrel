@@ -29,11 +29,14 @@ import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.facebook.swift.codec.ThriftStruct;
+
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
+@ThriftStruct
 public class Infos implements Serializable {
 	private static final long serialVersionUID = 3436344116385574896L;
 
@@ -50,6 +53,7 @@ public class Infos implements Serializable {
 	private JvmInfo jvmInfo = JvmInfo.jvmInfo();
 
 	@Data
+	@ThriftStruct
 	public static class Cpu implements Serializable {
 		private static final long serialVersionUID = 8512684069342496081L;
 
@@ -59,6 +63,7 @@ public class Infos implements Serializable {
 	}
 
 	@Data
+	@ThriftStruct
 	public static class Mem implements Serializable {
 		private static final long serialVersionUID = -8797648466105477814L;
 
@@ -68,6 +73,7 @@ public class Infos implements Serializable {
 	}
 
 	@Data
+	@ThriftStruct
 	public static class Swap implements Serializable {
 		private static final long serialVersionUID = 1409517375142998802L;
 
@@ -77,6 +83,7 @@ public class Infos implements Serializable {
 	}
 
 	@Data
+	@ThriftStruct
 	public static class Interface implements Serializable {
 		private static final long serialVersionUID = 49989037162348232L;
 
@@ -86,6 +93,7 @@ public class Infos implements Serializable {
 	}
 
 	@Data
+	@ThriftStruct
 	public static class Limits implements Serializable {
 		private static final long serialVersionUID = 7797483638794413832L;
 
@@ -98,6 +106,7 @@ public class Infos implements Serializable {
 	}
 
 	@Data
+	@ThriftStruct
 	public static class Limit implements Serializable {
 		private static final long serialVersionUID = -7149858217513420363L;
 
@@ -106,6 +115,7 @@ public class Infos implements Serializable {
 	}
 
 	@Data
+	@ThriftStruct
 	public static class JvmInfo implements Serializable {
 		private static final long serialVersionUID = -6863013530457150304L;
 
@@ -256,6 +266,7 @@ public class Infos implements Serializable {
 		}
 
 		@Data
+		@ThriftStruct
 		public static class JvmMemory implements Serializable {
 			private static final long serialVersionUID = 3934246727825595616L;
 

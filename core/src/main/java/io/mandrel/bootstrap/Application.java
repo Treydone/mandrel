@@ -18,12 +18,9 @@
  */
 package io.mandrel.bootstrap;
 
-import io.mandrel.common.NotFoundException;
 import io.mandrel.common.settings.InfoSettings;
-import io.mandrel.endpoints.rest.ApiOriginFilter;
 import io.mandrel.monitor.SigarService;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,32 +29,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.system.ApplicationPidFileWriter;
 import org.springframework.boot.actuate.system.EmbeddedServerPortFileWriter;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
-import org.springframework.boot.context.embedded.ErrorPage;
-import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
 
 @Slf4j
 public abstract class Application extends SpringBootServletInitializer {
 
 	private ConfigurableApplicationContext context;
-
-	@Bean
-	public FilterRegistrationBean originFilter() {
-		FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
-		filterRegistrationBean.setFilter(new ApiOriginFilter());
-		filterRegistrationBean.setUrlPatterns(Arrays.asList("/*"));
-		return filterRegistrationBean;
-	}
-
-	@Bean
-	public EmbeddedServletContainerCustomizer containerCustomizer() {
-		return container -> {
-			container.addErrorPages(new ErrorPage(NotFoundException.class, "/404"), new ErrorPage("/error"));
-		};
-	}
 
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {

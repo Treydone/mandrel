@@ -18,10 +18,19 @@
  */
 package io.mandrel.bootstrap;
 
+import io.mandrel.common.NotFoundException;
+import io.mandrel.endpoints.rest.ApiOriginFilter;
+
+import java.util.Arrays;
+
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.ErrorMvcAutoConfiguration;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
+import org.springframework.boot.context.embedded.ErrorPage;
+import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
@@ -30,6 +39,21 @@ import org.springframework.context.annotation.FilterType;
 @ComponentScan(basePackages = "io.mandrel", excludeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = {}) })
 @EnableDiscoveryClient
 public class Controller extends Application {
+
+	@Bean
+	public FilterRegistrationBean originFilter() {
+		FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
+		filterRegistrationBean.setFilter(new ApiOriginFilter());
+		filterRegistrationBean.setUrlPatterns(Arrays.asList("/*"));
+		return filterRegistrationBean;
+	}
+
+	@Bean
+	public EmbeddedServletContainerCustomizer containerCustomizer() {
+		return container -> {
+			container.addErrorPages(new ErrorPage(NotFoundException.class, "/404"), new ErrorPage("/error"));
+		};
+	}
 
 	public static void main(String[] args) {
 		System.setProperty("spring.config.location", "classpath:/version.yml,classpath:/controller.yml");

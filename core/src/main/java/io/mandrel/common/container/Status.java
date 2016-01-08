@@ -19,5 +19,5 @@
 package io.mandrel.common.container;
 
 public enum Status {
-	CREATED, INITIATED, STARTED, PAUSED
+	CREATED, INITIATED, STARTED, PAUSED, KILLED
 }

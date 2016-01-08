@@ -19,12 +19,12 @@
 package io.mandrel.data.content.selector;
 
 import io.mandrel.blob.BlobMetadata;
+import io.mandrel.common.net.Uri;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.io.Payloads;
 import io.mandrel.metadata.FetchMetadata;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
@@ -39,7 +39,7 @@ public class JsonSelectorTest {
 		JsonSelector selector = new JsonSelector();
 
 		byte[] data = "{\"category\": \"reference\"}".getBytes();
-		FetchMetadata fetchMetadata = new FetchMetadata().uri(new URI("http://localhost"));
+		FetchMetadata fetchMetadata = new FetchMetadata().uri(Uri.create("http://localhost"));
 		Instance<String> instance = selector.init(new BlobMetadata().fetchMetadata(fetchMetadata), Payloads.newByteArrayPayload(data), false);
 
 		List<String> results = instance.select("$.category", DataConverter.DEFAULT);

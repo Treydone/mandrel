@@ -16,24 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.timeline;
+package io.mandrel.common;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
+public class ControllerNotFoundException extends MandrelException {
 
-@Data
-@EqualsAndHashCode(callSuper = false)
-@Accessors(chain = true)
-public class NodeEvent extends Event {
+	private static final long serialVersionUID = 2505067367451885390L;
 
-	private static final long serialVersionUID = -4972913518366097298L;
-
-	private NodeEventType type;
-
-	private String nodeId;
-
-	public enum NodeEventType {
-		NODE_STARTED, NODE_STOPPED
+	public ControllerNotFoundException(String message) {
+		super(message);
 	}
 }

@@ -19,14 +19,14 @@
 package io.mandrel.data.content.selector;
 
 import io.mandrel.blob.BlobMetadata;
+import io.mandrel.common.net.Uri;
 
-import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
-public class FullUrlSelector extends UrlSelector<String> {
+public class FullUriSelector extends UriSelector<String> {
 
-	public Instance<String> init(BlobMetadata data, URI uri) {
+	public Instance<String> init(BlobMetadata data, Uri uri) {
 		return new Instance<String>() {
 			@Override
 			public <T> List<T> select(String value, DataConverter<String, T> converter) {
@@ -37,6 +37,6 @@ public class FullUrlSelector extends UrlSelector<String> {
 
 	@Override
 	public String name() {
-		return "full_url";
+		return "full_uri";
 	}
 }

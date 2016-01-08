@@ -18,8 +18,9 @@
  */
 package io.mandrel.data;
 
+import io.mandrel.common.net.Uri;
+
 import java.io.Serializable;
-import java.net.URI;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -30,7 +31,7 @@ public class Link implements Serializable {
 
 	private static final long serialVersionUID = -7302907794790398632L;
 
-	private URI uri;
+	private Uri uri;
 	private String text;
 	private String title;
 	private String rel;

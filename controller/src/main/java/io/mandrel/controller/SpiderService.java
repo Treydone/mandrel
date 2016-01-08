@@ -22,11 +22,11 @@ import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.MandrelException;
 import io.mandrel.common.NotFoundException;
-import io.mandrel.common.client.Clients;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Statuses;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.sync.SyncRequest;
+import io.mandrel.common.thrift.Clients;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.SkipAncorFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
@@ -35,8 +35,8 @@ import io.mandrel.data.source.Source;
 import io.mandrel.data.validation.Validators;
 import io.mandrel.metrics.Accumulators;
 import io.mandrel.metrics.MetricsRepository;
-import io.mandrel.timeline.SpiderEvent;
-import io.mandrel.timeline.SpiderEvent.SpiderEventType;
+import io.mandrel.timeline.Event;
+import io.mandrel.timeline.Event.SpiderInfo.SpiderEventType;
 import io.mandrel.timeline.TimelineService;
 
 import java.net.URI;
@@ -60,6 +60,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Throwables;
+import com.google.common.net.HostAndPort;
+
 @Component
 @Slf4j
 public class SpiderService {
@@ -78,6 +82,8 @@ public class SpiderService {
 	private Accumulators accumulators;
 	@Autowired
 	private MetricsRepository metricsRepository;
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	private RandomNameGenerator generator = new RandomNameGenerator();
 
@@ -94,19 +100,25 @@ public class SpiderService {
 			// Load the existing spiders from the database
 			List<Spider> spiders = controllerRepository.listActive().collect(Collectors.toList());
 			SyncRequest sync = new SyncRequest();
-			sync.setSpiders(spiders);
+			sync.setDefinitions(spiders.stream().map(spider -> {
+				try {
+					return objectMapper.writeValueAsBytes(spider);
+				} catch (Exception e) {
+					throw Throwables.propagate(e);
+				}
+			}).collect(Collectors.toList()));
 
 			if (CollectionUtils.isNotEmpty(spiders)) {
-				discoveryClient.getInstances(ServiceIds.WORKER).forEach(worker -> {
+				discoveryClient.getInstances(ServiceIds.WORKER).forEach(instance -> {
 					try {
-						clients.workerClient().sync(sync, worker.getUri());
+						clients.onWorker(HostAndPort.fromParts(instance.getHost(), instance.getPort())).with(worker -> worker.sync(sync));
 					} catch (Exception e) {
 						log.warn("Can not sync due to", e);
 					}
 				});
-				discoveryClient.getInstances(ServiceIds.FRONTIER).forEach(frontier -> {
+				discoveryClient.getInstances(ServiceIds.FRONTIER).forEach(instance -> {
 					try {
-						clients.frontierClient().sync(sync, frontier.getUri());
+						clients.onFrontier(HostAndPort.fromParts(instance.getHost(), instance.getPort())).with(frontier -> frontier.sync(sync));
 					} catch (Exception e) {
 						log.warn("Can not sync due to", e);
 					}
@@ -125,10 +137,15 @@ public class SpiderService {
 			throw new BindException(errors);
 		}
 
-		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_STARTED)
-				.setTime(LocalDateTime.now()));
+		updateTimeline(spider, SpiderEventType.SPIDER_STARTED);
 
 		return controllerRepository.update(spider);
+	}
+
+	public void updateTimeline(Spider spider, SpiderEventType status) {
+		Event event = Event.forSpider();
+		event.getSpider().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(status);
+		timelineService.add(event);
 	}
 
 	/**
@@ -199,8 +216,7 @@ public class SpiderService {
 		spider.setCreated(LocalDateTime.now());
 		spider = controllerRepository.add(spider);
 
-		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_CREATED)
-				.setTime(LocalDateTime.now()));
+		updateTimeline(spider, SpiderEventType.SPIDER_CREATED);
 
 		return spider;
 	}
@@ -243,8 +259,8 @@ public class SpiderService {
 		}
 
 		controllerRepository.updateStatus(spiderId, Statuses.STARTED);
-		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_STARTED)
-				.setTime(LocalDateTime.now()));
+
+		updateTimeline(spider, SpiderEventType.SPIDER_CREATED);
 
 	}
 
@@ -253,23 +269,25 @@ public class SpiderService {
 		TaskContext context = new TaskContext();
 		context.setDefinition(spider);
 
-		spider.getSources().forEach(s -> {
-			Source source = s.build(context);
+		spider.getSources().forEach(
+				s -> {
+					Source source = s.build(context);
 
-			if (source.singleton() && source.check()) {
-				log.debug("Injecting source '{}' ({})", s.name(), s.toString());
-				ServiceInstance frontier = discoveryClient.getInstances(ServiceIds.FRONTIER).get(0);
+					if (source.singleton() && source.check()) {
+						log.debug("Injecting source '{}' ({})", s.name(), s.toString());
+						ServiceInstance instance = discoveryClient.getInstances(ServiceIds.FRONTIER).get(0);
 
-				source.register(uri -> {
-					try {
-						log.trace("Adding uri '{}'", uri);
-						clients.frontierClient().schedule(spider.getId(), uri, frontier.getUri());
-					} catch (Exception e) {
-						log.warn("Can not sync due to", e);
+						source.register(uri -> {
+							try {
+								log.trace("Adding uri '{}'", uri);
+								clients.onFrontier(HostAndPort.fromParts(instance.getHost(), instance.getPort())).with(
+										frontier -> frontier.schedule(spider.getId(), uri));
+							} catch (Exception e) {
+								log.warn("Can not sync due to", e);
+							}
+						});
 					}
 				});
-			}
-		});
 	}
 
 	public void pause(long spiderId) {
@@ -277,8 +295,8 @@ public class SpiderService {
 
 		// Update status
 		controllerRepository.updateStatus(spiderId, Statuses.PAUSED);
-		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_PAUSED)
-				.setTime(LocalDateTime.now()));
+
+		updateTimeline(spider, SpiderEventType.SPIDER_PAUSED);
 
 	}
 
@@ -287,9 +305,8 @@ public class SpiderService {
 
 		// Update status
 		controllerRepository.updateStatus(spiderId, Statuses.KILLED);
-		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_KILLED)
-				.setTime(LocalDateTime.now()));
 
+		updateTimeline(spider, SpiderEventType.SPIDER_KILLED);
 	}
 
 	public void delete(long spiderId) {
@@ -297,8 +314,8 @@ public class SpiderService {
 
 		// Update status
 		controllerRepository.updateStatus(spiderId, Statuses.DELETED);
-		timelineService.add(new SpiderEvent().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(SpiderEventType.SPIDER_DELETED)
-				.setTime(LocalDateTime.now()));
+
+		updateTimeline(spider, SpiderEventType.SPIDER_DELETED);
 
 		metricsRepository.delete(spiderId);
 

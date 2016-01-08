@@ -18,7 +18,8 @@
  */
 package io.mandrel.cluster.node;
 
-import java.net.URI;
+import io.mandrel.common.net.Uri;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +30,7 @@ public interface NodeRepository {
 
 	Optional<Node> get(String id);
 
-	Collection<Node> findAll(Collection<URI> uris);
+	Collection<Node> findAll(Collection<Uri> uris);
 
 	void update(List<Node> nodes);
 

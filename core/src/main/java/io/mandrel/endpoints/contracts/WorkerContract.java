@@ -18,40 +18,35 @@
  */
 package io.mandrel.endpoints.contracts;
 
-import io.mandrel.common.data.Spider;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
-import io.mandrel.endpoints.rest.Apis;
 
-import java.net.URI;
 import java.util.List;
 
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import com.facebook.swift.codec.ThriftField;
+import com.facebook.swift.service.ThriftMethod;
+import com.facebook.swift.service.ThriftService;
 
-@RequestMapping(value = Apis.PREFIX + "/workers", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-public interface WorkerContract {
+@ThriftService
+public interface WorkerContract extends Contract, AutoCloseable {
 
-	@RequestMapping(value = "/sync", method = RequestMethod.POST)
-	public SyncResponse sync(@RequestBody SyncRequest sync, @RequestHeader("target") URI target);
+	@ThriftMethod
+	SyncResponse sync(@ThriftField(value = 1, name = "sync") SyncRequest sync);
 
-	@RequestMapping(value = "/active", method = RequestMethod.GET)
-	public List<Container> listContainers(@RequestHeader("target") URI target);
+	@ThriftMethod
+	List<Container> listRunningContainers();
 
-	@RequestMapping(value = "/create", method = RequestMethod.POST)
-	public void create(@RequestBody Spider spider, @RequestHeader("target") URI target);
+	@ThriftMethod
+	void create(@ThriftField(value = 1, name = "definition") byte[] definition);
 
-	@RequestMapping(value = "/{id}/start", method = RequestMethod.GET)
-	public void start(@PathVariable("id") Long id, @RequestHeader("target") URI target);
+	@ThriftMethod
+	void start(@ThriftField(value = 1, name = "id") Long id);
 
-	@RequestMapping(value = "/{id}/pause", method = RequestMethod.GET)
-	public void pause(@PathVariable("id") Long id, @RequestHeader("target") URI target);
+	@ThriftMethod
+	void pause(@ThriftField(value = 1, name = "id") Long id);
 
-	@RequestMapping(value = "/{id}/kill", method = RequestMethod.GET)
-	public void kill(@PathVariable("id") Long id, @RequestHeader("target") URI target);
+	@ThriftMethod
+	void kill(@ThriftField(value = 1, name = "id") Long id);
+
 }

@@ -18,11 +18,11 @@
  */
 package io.mandrel.blob;
 
+import io.mandrel.common.net.Uri;
 import io.mandrel.io.ContentMetadata;
 import io.mandrel.metadata.FetchMetadata;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.Date;
 
 import javax.annotation.Nullable;
@@ -39,7 +39,7 @@ public class BlobMetadata implements Serializable {
 	/**
 	 * URI used to access this resource
 	 */
-	private URI uri;
+	private Uri uri;
 
 	/**
 	 * Name of this resource. Names are dictated by the user. For files, this

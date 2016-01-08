@@ -24,13 +24,13 @@ import io.mandrel.common.data.Strategy;
 import io.mandrel.common.data.Strategy.StrategyDefinition;
 import io.mandrel.common.lifecycle.Initializable;
 import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.service.TaskContextAware;
 import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.Set;
 
 import lombok.Data;
@@ -66,9 +66,9 @@ public abstract class Requester<STRATEGY extends Strategy> extends TaskContextAw
 
 	private STRATEGY strategy;
 
-	public abstract Blob getBlocking(URI uri, Spider spider) throws Exception;
+	public abstract Blob getBlocking(Uri uri, Spider spider) throws Exception;
 
-	public abstract Blob getBlocking(URI uri) throws Exception;
+	public abstract Blob getBlocking(Uri uri) throws Exception;
 
 	public abstract Set<String> getProtocols();
 }

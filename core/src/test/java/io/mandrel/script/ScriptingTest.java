@@ -21,8 +21,7 @@ package io.mandrel.script;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import io.mandrel.blob.BlobMetadata;
-
-import java.net.URI;
+import io.mandrel.common.net.Uri;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -37,7 +36,7 @@ public class ScriptingTest {
 	public void groovy() throws Exception {
 
 		// Arrange
-		BlobMetadata metadata = new BlobMetadata().uri(URI.create("http://localhost"));
+		BlobMetadata metadata = new BlobMetadata().uri(Uri.create("http://localhost"));
 
 		ScriptEngine engine = scriptingService.getEngineByName("groovy");
 		ScriptContext bindings = scriptingService.getBindings(metadata, null);

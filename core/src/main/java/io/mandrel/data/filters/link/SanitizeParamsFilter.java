@@ -18,9 +18,9 @@
  */
 package io.mandrel.data.filters.link;
 
+import io.mandrel.common.net.Uri;
 import io.mandrel.data.Link;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -48,7 +48,7 @@ public class SanitizeParamsFilter extends LinkFilter {
 	private final static Pattern PARAMS = Pattern.compile("=");
 
 	public boolean isValid(Link link) {
-		URI linkUri = link.uri();
+		Uri linkUri = link.uri();
 		if (linkUri != null && StringUtils.isNotBlank(linkUri.toString())) {
 			String uri = linkUri.toString();
 			int pos = uri.indexOf('?');
@@ -85,15 +85,15 @@ public class SanitizeParamsFilter extends LinkFilter {
 							builder.deleteCharAt(builder.length() - 1);
 						}
 						if (builder.length() > 0) {
-							link.uri(URI.create(uriWithoutParams + "?" + builder.toString()));
+							link.uri(Uri.create(uriWithoutParams + "?" + builder.toString()));
 						} else {
-							link.uri(URI.create(uriWithoutParams));
+							link.uri(Uri.create(uriWithoutParams));
 						}
 					} else {
-						link.uri(URI.create(uriWithoutParams));
+						link.uri(Uri.create(uriWithoutParams));
 					}
 				} else {
-					link.uri(URI.create(uriWithoutParams));
+					link.uri(Uri.create(uriWithoutParams));
 				}
 			}
 		}

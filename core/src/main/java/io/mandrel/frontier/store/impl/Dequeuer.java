@@ -1,8 +1,8 @@
 package io.mandrel.frontier.store.impl;
 
+import io.mandrel.common.net.Uri;
 import io.mandrel.frontier.store.FetchRequest;
 
-import java.net.URI;
 import java.util.Map;
 import java.util.Queue;
 
@@ -14,7 +14,7 @@ import com.google.common.collect.Queues;
 public class Dequeuer implements Runnable {
 
 	private Queue<FetchRequest> queue = Queues.newArrayDeque();
-	private Map<String, ConsumerIterator<String, URI>> topics;
+	private Map<String, ConsumerIterator<String, Uri>> topics;
 
 	public void fetch(FetchRequest request) {
 		queue.add(request);
@@ -24,7 +24,7 @@ public class Dequeuer implements Runnable {
 		topics.remove(name);
 	}
 
-	public void subscribe(String name, ConsumerIterator<String, URI> topic) {
+	public void subscribe(String name, ConsumerIterator<String, Uri> topic) {
 		topics.putIfAbsent(name, topic);
 	}
 
@@ -35,10 +35,10 @@ public class Dequeuer implements Runnable {
 				FetchRequest request = queue.poll();
 
 				if (request != null) {
-					ConsumerIterator<String, URI> stream = topics.get(request.getTopic());
+					ConsumerIterator<String, Uri> stream = topics.get(request.getTopic());
 
 					if (stream.hasNext()) {
-						MessageAndMetadata<String, URI> message = stream.peek();
+						MessageAndMetadata<String, Uri> message = stream.peek();
 
 						if (request.getCallback() != null) {
 							request.getCallback().on(message.message());

@@ -2,7 +2,7 @@ io.mandrel.data.content.selector.JsonSelector
 io.mandrel.data.content.selector.XpathSelector
 io.mandrel.data.content.selector.TikaSelector
 io.mandrel.data.content.selector.StaticSelector
-io.mandrel.data.content.selector.SimpleUrlSelector
-io.mandrel.data.content.selector.FullUrlSelector
+io.mandrel.data.content.selector.SimpleUriSelector
+io.mandrel.data.content.selector.FullUriSelector
 io.mandrel.data.content.selector.SimpleHeaderSelector
 io.mandrel.data.content.selector.SimpleCookieSelector

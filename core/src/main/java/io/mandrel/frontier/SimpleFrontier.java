@@ -19,12 +19,12 @@
 package io.mandrel.frontier;
 
 import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.frontier.store.FetchRequest;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.Set;
 
 import lombok.Data;
@@ -74,17 +74,17 @@ public class SimpleFrontier extends Frontier {
 	}
 
 	@Override
-	public void pool(PoolCallback<URI> poolCallback) {
+	public void pool(PoolCallback<Uri> poolCallback) {
 		store.pool(FetchRequest.of(DEFAULT_QUEUE, poolCallback));
 	}
 
 	@Override
-	public void schedule(URI uri) {
+	public void schedule(Uri uri) {
 		store.schedule(DEFAULT_QUEUE, uri);
 	}
 
 	@Override
-	public void schedule(Set<URI> uris) {
+	public void schedule(Set<Uri> uris) {
 		store.schedule(DEFAULT_QUEUE, uris);
 	}
 

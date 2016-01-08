@@ -18,21 +18,15 @@
  */
 package io.mandrel.endpoints.contracts;
 
-import java.net.URI;
-
 import io.mandrel.cluster.node.Node;
-import io.mandrel.endpoints.rest.Apis;
 
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import com.facebook.swift.service.ThriftMethod;
+import com.facebook.swift.service.ThriftService;
 
-@RequestMapping(value = Apis.PREFIX + "/node", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-public interface NodeContract {
+@ThriftService
+public interface NodeContract extends Contract, AutoCloseable {
 
-	@RequestMapping(method = RequestMethod.GET)
-	@ResponseBody
-	public Node dhis(@RequestHeader("target") URI target);
+	@ThriftMethod
+	Node dhis();
+
 }

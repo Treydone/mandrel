@@ -20,6 +20,7 @@ package io.mandrel.data.analysis;
 
 import io.mandrel.blob.Blob;
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.common.robots.RobotsTxtUtils;
 import io.mandrel.data.Link;
@@ -28,7 +29,6 @@ import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.document.Document;
 import io.mandrel.requests.Requesters;
 
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,7 +66,7 @@ public class AnalysisService {
 	public Analysis analyze(Spider spider, String source) {
 		Blob blob;
 		try {
-			URI uri = URI.create(source);
+			Uri uri = Uri.create(source);
 			blob = Requesters.of(uri.getScheme()).get().getBlocking(uri, spider);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
@@ -83,7 +83,7 @@ public class AnalysisService {
 			HttpAnalysis temp = new HttpAnalysis();
 
 			// Robots.txt
-			URI pageURL = blob.metadata().uri();
+			Uri pageURL = blob.metadata().uri();
 			String robotsTxtUrl = pageURL.getScheme() + "://" + pageURL.getHost() + ":" + pageURL.getPort() + "/robots.txt";
 			ExtendedRobotRules robotRules = RobotsTxtUtils.getRobotRules(robotsTxtUrl);
 			temp.robotRules(robotRules);
@@ -135,7 +135,7 @@ public class AnalysisService {
 
 		SiteMapParser siteMapParser = new SiteMapParser();
 		try {
-			URI uri = URI.create(sitemapUrl);
+			Uri uri = Uri.create(sitemapUrl);
 			Blob blob = Requesters.of(uri.getScheme()).get().getBlocking(uri);
 			String contentType = blob.metadata().contentMetadata().contentType() != null ? blob.metadata().contentMetadata().contentType() : "text/xml";
 

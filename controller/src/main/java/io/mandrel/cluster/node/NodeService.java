@@ -21,8 +21,9 @@ package io.mandrel.cluster.node;
 import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.NotFoundException;
-import io.mandrel.common.client.Clients;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.sync.Container;
+import io.mandrel.common.thrift.Clients;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -69,7 +70,7 @@ public class NodeService {
 		return nodes(instances.stream().map(si -> si.getUri()).collect(Collectors.toList()));
 	}
 
-	public Optional<Node> node(URI uri) {
+	public Optional<Node> node(Uri uri) {
 		return nodeRepository.get(Node.idOf(uri));
 	}
 
@@ -88,7 +89,7 @@ public class NodeService {
 		return nodeRepository.get(id).orElseThrow(() -> new NotFoundException("Unknown node"));
 	}
 
-	public Map<URI, Node> nodes(Collection<URI> uris) {
+	public Map<Uri, Node> nodes(Collection<Uri> uris) {
 		return Lists.newArrayList(nodeRepository.findAll(uris)).stream().collect(Collectors.toMap(node -> node.getUri(), node -> node));
 	}
 

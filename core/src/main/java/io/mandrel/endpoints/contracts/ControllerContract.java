@@ -18,24 +18,28 @@
  */
 package io.mandrel.endpoints.contracts;
 
-import io.mandrel.endpoints.rest.Apis;
+import io.mandrel.cluster.node.Node;
+import io.mandrel.common.sync.Container;
 import io.mandrel.timeline.Event;
 
-import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import com.facebook.swift.service.ThriftMethod;
+import com.facebook.swift.service.ThriftService;
 
-@RequestMapping(value = Apis.PREFIX, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-public interface AdminContract {
+@ThriftService
+public interface ControllerContract extends Contract, AutoCloseable {
 
-	@RequestMapping(value = "/events", method = RequestMethod.POST)
-	void addEvent(@RequestBody Event event, @RequestHeader("target") URI target);
+	@ThriftMethod
+	List<Container> listActiveContainers();
 
-	@RequestMapping(value = "/metrics", method = RequestMethod.POST)
-	void updateMetrics(@RequestBody Map<String, Long> accumulators, @RequestHeader("target") URI uri);
+	@ThriftMethod
+	void addEvent(Event event);
+
+	@ThriftMethod
+	void updateMetrics(Map<String, Long> accumulators);
+
+	@ThriftMethod
+	void updateNode(Node node);
 }

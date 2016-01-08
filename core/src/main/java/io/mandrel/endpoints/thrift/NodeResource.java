@@ -16,29 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.endpoints.rest;
+package io.mandrel.endpoints.thrift;
 
 import io.mandrel.cluster.node.Node;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.settings.InfoSettings;
 import io.mandrel.endpoints.contracts.NodeContract;
 import io.mandrel.monitor.Infos;
 import io.mandrel.monitor.SigarService;
-
-import java.net.URI;
-
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Throwables;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
 
 @Slf4j
-@RestController
-@Api("/node")
 public class NodeResource implements NodeContract {
 
 	@Autowired
@@ -48,11 +41,10 @@ public class NodeResource implements NodeContract {
 	@Autowired
 	private InfoSettings settings;
 
-	@ApiOperation(value = "Return the current node", response = Node.class)
-	public Node dhis(URI target) {
+	public Node dhis() {
 		try {
 			Infos infos = sigarService.infos();
-			return new Node().setInfos(infos).setUri(discoveryClient.getLocalServiceInstance().getUri()).setVersion(settings.getVersion());
+			return new Node().setInfos(infos).setUri(Uri.create(discoveryClient.getLocalServiceInstance().getUri())).setVersion(settings.getVersion());
 		} catch (Exception e) {
 			log.warn("Can not set the infos for the endpoint", e);
 			throw Throwables.propagate(e);

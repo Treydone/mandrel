@@ -22,5 +22,5 @@ import java.io.Serializable;
 
 public enum SourceType implements Serializable {
 
-	EMPTY, BODY, HEADERS, URL, COOKIE
+	EMPTY, BODY, HEADERS, URI, COOKIE
 }

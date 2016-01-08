@@ -18,10 +18,11 @@
  */
 package io.mandrel.data.source;
 
+import io.mandrel.common.net.Uri;
+
 import java.io.Serializable;
-import java.net.URI;
 
 public interface EntryListener extends Serializable {
 
-	void onItem(URI item);
+	void onItem(Uri item);
 }

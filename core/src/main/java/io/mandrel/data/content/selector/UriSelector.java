@@ -19,16 +19,15 @@
 package io.mandrel.data.content.selector;
 
 import io.mandrel.blob.BlobMetadata;
+import io.mandrel.common.net.Uri;
 import io.mandrel.data.content.SourceType;
 
-import java.net.URI;
+public abstract class UriSelector<X> implements Selector<X> {
 
-public abstract class UrlSelector<X> implements Selector<X> {
-
-	public abstract Instance<X> init(BlobMetadata data, URI uri);
+	public abstract Instance<X> init(BlobMetadata data, Uri uri);
 
 	@Override
 	public final SourceType getSource() {
-		return SourceType.URL;
+		return SourceType.URI;
 	}
 }

@@ -22,6 +22,7 @@ import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobMetadata;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.loader.NamedProviders;
+import io.mandrel.common.net.Uri;
 import io.mandrel.data.Link;
 import io.mandrel.data.content.Extractor;
 import io.mandrel.data.content.FieldExtractor;
@@ -37,15 +38,13 @@ import io.mandrel.data.content.selector.EmptySelector;
 import io.mandrel.data.content.selector.HeaderSelector;
 import io.mandrel.data.content.selector.Selector;
 import io.mandrel.data.content.selector.Selector.Instance;
-import io.mandrel.data.content.selector.UrlSelector;
+import io.mandrel.data.content.selector.UriSelector;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStores;
 import io.mandrel.io.Payloads;
 import io.mandrel.metadata.MetadataStores;
 import io.mandrel.script.ScriptingService;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -85,7 +84,7 @@ public class ExtractorService {
 		this.scriptingService = scriptingService;
 	}
 
-	public Pair<Set<Link>, Set<Link>> extractAndFilterOutlinks(Spider spider, URI uri, Map<String, Instance<?>> cachedSelectors, Blob blob, OutlinkExtractor ol) {
+	public Pair<Set<Link>, Set<Link>> extractAndFilterOutlinks(Spider spider, Uri uri, Map<String, Instance<?>> cachedSelectors, Blob blob, OutlinkExtractor ol) {
 		// Find outlinks in page
 		Set<Link> outlinks = extractOutlinks(cachedSelectors, blob, ol);
 		log.trace("Finding outlinks for url {}: {}", uri, outlinks);
@@ -102,7 +101,7 @@ public class ExtractorService {
 
 		Set<Link> allFilteredOutlinks = null;
 		if (filteredOutlinks != null) {
-			Set<URI> res = MetadataStores.get(spider.getId()).deduplicate(filteredOutlinks.stream().map(l -> l.uri()).collect(Collectors.toList()));
+			Set<Uri> res = MetadataStores.get(spider.getId()).deduplicate(filteredOutlinks.stream().map(l -> l.uri()).collect(Collectors.toList()));
 			allFilteredOutlinks = filteredOutlinks.stream().filter(f -> res.contains(f.uri())).collect(Collectors.toSet());
 		}
 
@@ -117,11 +116,7 @@ public class ExtractorService {
 				Link link = new Link();
 
 				String uri = element.getElement().absUrl("href");
-				try {
-					link.uri(StringUtils.isNotBlank(uri) ? new URI(uri) : null);
-				} catch (URISyntaxException e) {
-					throw Throwables.propagate(e);
-				}
+				link.uri(StringUtils.isNotBlank(uri) ? Uri.create(uri) : null);
 
 				String rel = element.getElement().attr("rel");
 				link.rel(StringUtils.isNotBlank(rel) ? rel : null);
@@ -251,8 +246,8 @@ public class ExtractorService {
 					instance = ((BodySelector<T>) selector).init(blob.metadata(), blob.payload(), false);
 				} else if (SourceType.HEADERS.equals(fieldExtractor.getSource())) {
 					instance = ((HeaderSelector<T>) selector).init(blob.metadata().fetchMetadata());
-				} else if (SourceType.URL.equals(fieldExtractor.getSource())) {
-					instance = ((UrlSelector<T>) selector).init(blob.metadata(), blob.metadata().uri());
+				} else if (SourceType.URI.equals(fieldExtractor.getSource())) {
+					instance = ((UriSelector<T>) selector).init(blob.metadata(), blob.metadata().uri());
 				} else if (SourceType.COOKIE.equals(fieldExtractor.getSource())) {
 					instance = ((CookieSelector<T>) selector).init(blob.metadata().fetchMetadata());
 				} else if (SourceType.EMPTY.equals(fieldExtractor.getSource())) {

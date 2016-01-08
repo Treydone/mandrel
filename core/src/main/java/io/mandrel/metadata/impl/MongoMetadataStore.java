@@ -18,12 +18,12 @@
  */
 package io.mandrel.metadata.impl;
 
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.metadata.MetadataStore;
 
 import java.io.IOException;
-import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Set;
@@ -92,7 +92,7 @@ public class MongoMetadataStore extends MetadataStore {
 
 	@Override
 	@SneakyThrows(IOException.class)
-	public void addMetadata(URI uri, FetchMetadata metadata) {
+	public void addMetadata(Uri uri, FetchMetadata metadata) {
 		String json = mapper.writeValueAsString(metadata);
 		org.bson.Document document = org.bson.Document.parse(json);
 		// TODO HASH?
@@ -101,16 +101,16 @@ public class MongoMetadataStore extends MetadataStore {
 	}
 
 	@Override
-	public Set<URI> deduplicate(Collection<URI> uris) {
-		Set<URI> temp = Sets.newHashSet(uris);
+	public Set<Uri> deduplicate(Collection<Uri> uris) {
+		Set<Uri> temp = Sets.newHashSet(uris);
 		temp.removeAll(Sets.newHashSet(collection.find(Filters.in("_id", uris)).projection(Projections.include("_id"))
-				.map(doc -> URI.create(doc.getString("_id"))).iterator()));
+				.map(doc -> Uri.create(doc.getString("_id"))).iterator()));
 		return temp;
 	}
 
 	@Override
 	@SneakyThrows(IOException.class)
-	public FetchMetadata getMetadata(URI uri) {
+	public FetchMetadata getMetadata(Uri uri) {
 		Document doc = collection.find(Filters.eq("_id", uri)).first();
 		FetchMetadata fetchMetadata = mapper.readValue(doc.toJson(), FetchMetadata.class);
 		return fetchMetadata;

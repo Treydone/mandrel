@@ -20,6 +20,7 @@ package io.mandrel.metadata;
 
 import io.mandrel.common.lifecycle.Initializable;
 import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.service.TaskContextAware;
@@ -27,7 +28,6 @@ import io.mandrel.monitor.health.Checkable;
 
 import java.io.Closeable;
 import java.io.Serializable;
-import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
 
@@ -41,11 +41,11 @@ public abstract class MetadataStore extends TaskContextAware implements Checkabl
 
 	}
 
-	public abstract Set<URI> deduplicate(Collection<URI> uris);
+	public abstract Set<Uri> deduplicate(Collection<Uri> uris);
 
-	public abstract void addMetadata(URI uri, FetchMetadata metadata);
+	public abstract void addMetadata(Uri uri, FetchMetadata metadata);
 
-	public abstract FetchMetadata getMetadata(URI uri);
+	public abstract FetchMetadata getMetadata(Uri uri);
 
 	public abstract void deleteAll();
 }

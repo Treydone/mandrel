@@ -18,22 +18,17 @@
  */
 package io.mandrel.metrics;
 
-import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.instance.StateService;
-import io.mandrel.common.client.Clients;
+import io.mandrel.common.thrift.Clients;
 
-import java.net.URI;
-import java.util.List;
 import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import com.google.common.collect.Maps;
 
@@ -53,22 +48,16 @@ public class MetricsSyncer {
 	@Scheduled(fixedRate = 5000)
 	public void sync() {
 		if (stateService.isStarted()) {
-			List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.CONTROLLER);
-			if (!CollectionUtils.isEmpty(instances)) {
-				URI uri = instances.get(0).getUri();
 
-				Map<String, Long> total = Maps.newHashMap();
-				total.putAll(accumulators.globalAccumulator().tick());
-				total.putAll(accumulators.nodeAccumulator().tick());
-				accumulators.spiderAccumulators().forEach((spiderId, acc) -> total.putAll(acc.tick()));
+			Map<String, Long> total = Maps.newHashMap();
+			total.putAll(accumulators.globalAccumulator().tick());
+			total.putAll(accumulators.nodeAccumulator().tick());
+			accumulators.spiderAccumulators().forEach((spiderId, acc) -> total.putAll(acc.tick()));
 
-				try {
-					clients.controllerClient().updateMetrics(total, uri);
-				} catch (Exception e) {
-					log.debug("Can not update metrics due to", e);
-				}
-			} else {
-				log.warn("Can not find any controller");
+			try {
+				clients.onRandomController().with(controller -> controller.updateMetrics(total));
+			} catch (Exception e) {
+				log.debug("Can not update metrics due to", e);
 			}
 		}
 	}

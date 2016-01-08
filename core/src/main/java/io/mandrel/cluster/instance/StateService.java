@@ -1,27 +1,21 @@
 package io.mandrel.cluster.instance;
 
-import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.node.Node;
-import io.mandrel.common.client.Clients;
-import io.mandrel.timeline.NodeEvent;
-import io.mandrel.timeline.NodeEvent.NodeEventType;
+import io.mandrel.common.net.Uri;
+import io.mandrel.common.thrift.Clients;
+import io.mandrel.timeline.Event;
+import io.mandrel.timeline.Event.NodeInfo.NodeEventType;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PreDestroy;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 public class StateService implements ApplicationListener<ContextStartedEvent> {
 
@@ -33,20 +27,12 @@ public class StateService implements ApplicationListener<ContextStartedEvent> {
 	private final AtomicBoolean started = new AtomicBoolean();
 
 	@Override
-	public void onApplicationEvent(ContextStartedEvent event) {
+	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
 		started.set(true);
-		Optional<ServiceInstance> controller = discoveryClient.getInstances(ServiceIds.CONTROLLER).stream().findFirst();
-		if (controller.isPresent()) {
-			try {
-				clients.controllerClient().addEvent(
-						new NodeEvent().setNodeId(Node.idOf(discoveryClient.getLocalServiceInstance().getUri())).setType(NodeEventType.NODE_STARTED)
-								.setTime(LocalDateTime.now()), controller.get().getUri());
-			} catch (Exception e) {
-				log.info("Can not send starting event", e);
-			}
-		} else {
-			log.warn("No controller found");
-		}
+
+		Event event = Event.forNode();
+		event.getNode().setNodeId(Node.idOf(Uri.create(discoveryClient.getLocalServiceInstance().getUri()))).setType(NodeEventType.NODE_STARTED);
+		send(event);
 	}
 
 	public boolean isStarted() {
@@ -55,13 +41,14 @@ public class StateService implements ApplicationListener<ContextStartedEvent> {
 
 	@PreDestroy
 	public void destroy() {
-		Optional<ServiceInstance> controller = discoveryClient.getInstances(ServiceIds.CONTROLLER).stream().findFirst();
-		if (controller.isPresent()) {
-			clients.controllerClient().addEvent(
-					new NodeEvent().setNodeId(Node.idOf(discoveryClient.getLocalServiceInstance().getUri())).setType(NodeEventType.NODE_STOPPED)
-							.setTime(LocalDateTime.now()), controller.get().getUri());
-		} else {
-			log.warn("No controller found");
-		}
+		Event event = Event.forNode();
+		event.getNode().setNodeId(Node.idOf(Uri.create(discoveryClient.getLocalServiceInstance().getUri()))).setType(NodeEventType.NODE_STOPPED);
+		send(event);
+
+		started.set(false);
+	}
+
+	public void send(Event event) {
+		clients.onRandomController().with(service -> service.addEvent(event));
 	}
 }

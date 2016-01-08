@@ -21,11 +21,11 @@ package io.mandrel.blob.impl;
 import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobMetadata;
 import io.mandrel.blob.BlobStore;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.io.Payloads;
 
 import java.io.IOException;
-import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -129,7 +129,7 @@ public class MongoBlobStore extends BlobStore {
 	}
 
 	@Override
-	public URI putBlob(URI uri, Blob blob) {
+	public Uri putBlob(Uri uri, Blob blob) {
 		GridFSUploadOptions options = new GridFSUploadOptions();
 
 		Document document;
@@ -148,11 +148,11 @@ public class MongoBlobStore extends BlobStore {
 		}
 		file.close();
 
-		return URI.create("mongodb://" + databaseName + "/" + bucket.getBucketName() + "/" + file.getFileId().toString());
+		return Uri.create("mongodb://" + databaseName + "/" + bucket.getBucketName() + "/" + file.getFileId().toString());
 	}
 
 	@Override
-	public Blob getBlob(URI uri) {
+	public Blob getBlob(Uri uri) {
 		String id = Iterators.getLast(Splitter.on('/').split(uri.getPath()).iterator());
 		GridFSDownloadStream stream = bucket.openDownloadStream(new ObjectId(id));
 		return fromFile.apply(stream);

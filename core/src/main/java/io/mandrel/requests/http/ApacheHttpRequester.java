@@ -23,6 +23,7 @@ import io.mandrel.blob.BlobMetadata;
 import io.mandrel.common.data.HttpStrategy;
 import io.mandrel.common.data.HttpStrategy.HttpStrategyDefinition;
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.proxy.ProxyServer;
@@ -30,7 +31,6 @@ import io.mandrel.requests.proxy.ProxyServer;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
@@ -266,7 +266,7 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 		client.start();
 	}
 
-	// public void get(URI uri, Spider spider, SuccessCallback successCallback,
+	// public void get(Uri uri, Spider spider, SuccessCallback successCallback,
 	// FailureCallback failureCallback) {
 	// if (uri != null) {
 	// log.debug("Requesting {}...", uri);
@@ -340,22 +340,22 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 
 	// TODO use RxNetty with CompletableFuture
 	@Deprecated
-	public Blob getBlocking(URI uri, Spider spider) throws Exception {
+	public Blob getBlocking(Uri uri, Spider spider) throws Exception {
 		HttpUriRequest request = prepareRequest(uri, spider);
 		HttpResponse response = client.execute(request, null).get(5000, TimeUnit.MILLISECONDS);
 		return extractWebPage(uri, response, null);
 	}
 
 	@Deprecated
-	public Blob getBlocking(URI uri) throws Exception {
-		HttpResponse response = client.execute(new HttpGet(uri), null).get(5000, TimeUnit.MILLISECONDS);
+	public Blob getBlocking(Uri uri) throws Exception {
+		HttpResponse response = client.execute(new HttpGet(uri.toURI()), null).get(5000, TimeUnit.MILLISECONDS);
 		return extractWebPage(uri, response, null);
 	}
 
-	public HttpUriRequest prepareRequest(URI uri, Spider spider) {
+	public HttpUriRequest prepareRequest(Uri uri, Spider spider) {
 		Builder builder = RequestConfig.copy(defaultRequestConfig);
 
-		HttpGet request = new HttpGet(uri);
+		HttpGet request = new HttpGet(uri.toURI());
 
 		// Add headers, cookies and ohter stuff
 		if (strategy().headers() != null) {
@@ -394,7 +394,7 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 		return request;
 	}
 
-	public Blob extractWebPage(URI uri, HttpResponse result, HttpContext localContext) throws MalformedURLException, IOException {
+	public Blob extractWebPage(Uri uri, HttpResponse result, HttpContext localContext) throws MalformedURLException, IOException {
 		Map<String, List<String>> headers = new HashMap<String, List<String>>();
 		if (result.getAllHeaders() != null) {
 			for (Header header : result.getAllHeaders()) {

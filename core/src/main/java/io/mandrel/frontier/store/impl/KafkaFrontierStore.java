@@ -20,11 +20,11 @@ package io.mandrel.frontier.store.impl;
 
 import io.mandrel.common.kafka.JsonDecoder;
 import io.mandrel.common.kafka.JsonSerializer;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.frontier.store.FetchRequest;
 import io.mandrel.frontier.store.FrontierStore;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -132,7 +132,7 @@ public class KafkaFrontierStore extends FrontierStore {
 	private final ZkClient zkClient;
 	private final ZkUtils zkUtils;
 
-	private final Producer<String, URI> producer;
+	private final Producer<String, Uri> producer;
 	private final ConsumerConnector consumer;
 	private final ExecutorService executor;
 	private final List<Dequeuer> workers;
@@ -165,12 +165,12 @@ public class KafkaFrontierStore extends FrontierStore {
 		worker.fetch(request);
 	}
 
-	public void schedule(String name, URI item) {
-		producer.send(new ProducerRecord<String, URI>(name, item));
+	public void schedule(String name, Uri item) {
+		producer.send(new ProducerRecord<String, Uri>(name, item));
 	}
 
-	public void schedule(String name, Set<URI> items) {
-		items.stream().map(item -> new ProducerRecord<String, URI>(name, item)).forEach(producer::send);
+	public void schedule(String name, Set<Uri> items) {
+		items.stream().map(item -> new ProducerRecord<String, Uri>(name, item)).forEach(producer::send);
 	}
 
 	private String getTopicName(String name) {
@@ -202,8 +202,8 @@ public class KafkaFrontierStore extends FrontierStore {
 		log.debug("Kafka topic '{}' found with configuration: {}", topicName, AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).toString());
 
 		// Prepare consumers
-		Map<String, List<KafkaStream<String, URI>>> consumerMap = consumer.createMessageStreams(Collections.singletonMap(name, nbWorker), new StringDecoder(
-				null), new JsonDecoder<URI>(URI.class));
+		Map<String, List<KafkaStream<String, Uri>>> consumerMap = consumer.createMessageStreams(Collections.singletonMap(name, nbWorker), new StringDecoder(
+				null), new JsonDecoder<Uri>(Uri.class));
 
 		// Add the consumer to each worker
 		IntStream.range(0, nbWorker).forEach(i -> workers.get(i).subscribe(name, consumerMap.get(name).get(i).iterator()));

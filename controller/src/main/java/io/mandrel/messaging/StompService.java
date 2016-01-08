@@ -18,7 +18,6 @@
  */
 package io.mandrel.messaging;
 
-import freemarker.template.Template;
 import io.mandrel.timeline.Event;
 
 import java.util.Collections;
@@ -32,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
+
+import freemarker.template.Template;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Inject))

@@ -19,6 +19,7 @@
 package io.mandrel.frontier.store;
 
 import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.service.TaskContextAware;
@@ -26,7 +27,6 @@ import io.mandrel.monitor.health.Checkable;
 
 import java.io.Closeable;
 import java.io.Serializable;
-import java.net.URI;
 import java.util.Set;
 
 import lombok.EqualsAndHashCode;
@@ -49,7 +49,7 @@ public abstract class FrontierStore extends TaskContextAware implements Checkabl
 
 	public abstract void pool(FetchRequest request);
 
-	public abstract void schedule(String name, URI item);
+	public abstract void schedule(String name, Uri item);
 
-	public abstract void schedule(String name, Set<URI> items);
+	public abstract void schedule(String name, Set<Uri> items);
 }

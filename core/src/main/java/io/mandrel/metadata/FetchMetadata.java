@@ -42,6 +42,7 @@ import static io.mandrel.requests.FetchStatusCodes.S_TOO_MANY_LINK_HOPS;
 import static io.mandrel.requests.FetchStatusCodes.S_TOO_MANY_RETRIES;
 import static io.mandrel.requests.FetchStatusCodes.S_UNATTEMPTED;
 import static io.mandrel.requests.FetchStatusCodes.S_UNFETCHABLE_URI;
+import io.mandrel.common.net.Uri;
 import io.mandrel.data.Link;
 
 import java.io.Serializable;
@@ -60,7 +61,7 @@ public class FetchMetadata implements Serializable {
 
 	private static final long serialVersionUID = 4900693151305950280L;
 
-	private URI uri;
+	private Uri uri;
 
 	private int statusCode;
 	private String statusText;
