@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.ErrorMvcAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
@@ -35,5 +36,10 @@ public class Frontier extends Application {
 	public static void main(String[] args) {
 		System.setProperty("spring.config.location", "classpath:/version.yml,classpath:/frontier.yml");
 		new Frontier().start(args);
+	}
+
+	@Override
+	public void configure(SpringApplicationBuilder builder) {
+		builder.web(false);
 	}
 }

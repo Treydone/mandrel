@@ -22,7 +22,6 @@ import io.mandrel.cluster.node.Node;
 import io.mandrel.cluster.node.NodeService;
 import io.mandrel.common.net.Uri;
 
-import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
@@ -49,7 +48,7 @@ public class NodesResource {
 
 	@RequestMapping(method = RequestMethod.GET)
 	@ApiOperation(value = "List all the nodes", response = Node.class, responseContainer = "Map")
-	public Map<URI, Node> all() {
+	public Map<Uri, Node> all() {
 		return nodeService.nodes();
 	}
 

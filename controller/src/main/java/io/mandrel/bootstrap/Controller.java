@@ -23,9 +23,11 @@ import io.mandrel.endpoints.rest.ApiOriginFilter;
 
 import java.util.Arrays;
 
+import org.springframework.boot.actuate.system.EmbeddedServerPortFileWriter;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.ErrorMvcAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.context.embedded.ErrorPage;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
@@ -58,5 +60,10 @@ public class Controller extends Application {
 	public static void main(String[] args) {
 		System.setProperty("spring.config.location", "classpath:/version.yml,classpath:/controller.yml");
 		new Controller().start(args);
+	}
+
+	@Override
+	public void configure(SpringApplicationBuilder builder) {
+		builder.listeners(new EmbeddedServerPortFileWriter()).web(true);
 	}
 }

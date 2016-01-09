@@ -24,8 +24,9 @@ import io.mandrel.common.NotFoundException;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.thrift.Clients;
+import io.mandrel.common.thrift.Pooled;
+import io.mandrel.endpoints.contracts.NodeContract;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
+import com.google.common.net.HostAndPort;
 
 @Component
 public class NodeService {
@@ -59,15 +61,17 @@ public class NodeService {
 			List<ServiceInstance> instances = allInstances();
 
 			List<Node> nodes = instances.stream().map(i -> {
-				return clients.nodeClient().dhis(i.getUri()).setType(i.getServiceId());
+				Pooled<NodeContract> pooled = clients.onNode(HostAndPort.fromParts(i.getHost(), i.getPort()));
+				Node map = pooled.map(client -> client.dhis().setType(i.getServiceId()));
+				return map;
 			}).collect(Collectors.toList());
 			nodeRepository.update(nodes);
 		}
 	}
 
-	public Map<URI, Node> nodes() {
+	public Map<Uri, Node> nodes() {
 		List<ServiceInstance> instances = allInstances();
-		return nodes(instances.stream().map(si -> si.getUri()).collect(Collectors.toList()));
+		return nodes(instances.stream().map(si -> Uri.create(si.getUri())).collect(Collectors.toList()));
 	}
 
 	public Optional<Node> node(Uri uri) {
@@ -76,12 +80,16 @@ public class NodeService {
 
 	public List<Container> containers(String id) {
 		return nodeRepository.get(id).map(node -> {
+			Uri uri = Node.uriOf(id);
+			HostAndPort hostAndPort = HostAndPort.fromParts(uri.getHost(), uri.getPort());
+
+			List<Container> results = null;
 			if (node.getType().equals("worker")) {
-				return clients.workerClient().listContainers(Node.uriOf(id));
+				results = clients.onWorker(hostAndPort).map(client -> client.listRunningContainers());
 			} else if (node.getType().equals("frontier")) {
-				return clients.frontierClient().listContainers(Node.uriOf(id));
+				results = clients.onFrontier(hostAndPort).map(client -> client.listRunningContainers());
 			}
-			return null;
+			return results;
 		}).orElse(new ArrayList<>());
 	}
 

@@ -348,26 +348,8 @@
 
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-commons</artifactId>
+			<artifactId>spring-cloud-starter</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-feign</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>feign-hystrix</artifactId>
-					<groupId>com.netflix.feign</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-cloud-starter-ribbon</artifactId>
-					<groupId>org.springframework.cloud</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>org.springframework.cloud</groupId> -->
-		<!-- <artifactId>spring-cloud-starter-ribbon</artifactId> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

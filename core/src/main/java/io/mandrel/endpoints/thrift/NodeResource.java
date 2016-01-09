@@ -50,4 +50,9 @@ public class NodeResource implements NodeContract {
 			throw Throwables.propagate(e);
 		}
 	}
+
+	@Override
+	public void close() throws Exception {
+
+	}
 }

@@ -27,20 +27,15 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.boot.actuate.system.ApplicationPidFileWriter;
-import org.springframework.boot.actuate.system.EmbeddedServerPortFileWriter;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 
 @Slf4j
-public abstract class Application extends SpringBootServletInitializer {
+public abstract class Application {
 
 	private ConfigurableApplicationContext context;
 
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(Application.class);
-	}
+	public abstract void configure(SpringApplicationBuilder builder);
 
 	public void start(String[] args) {
 
@@ -50,8 +45,9 @@ public abstract class Application extends SpringBootServletInitializer {
 		// Print some useful infos about the classpath and others things
 		// new JHades().overlappingJarsReport();
 
-		context = new SpringApplicationBuilder(getClass()).properties(properties).listeners(new ApplicationPidFileWriter(), new EmbeddedServerPortFileWriter())
-				.run(args);
+		SpringApplicationBuilder builder = new SpringApplicationBuilder(getClass()).properties(properties).listeners(new ApplicationPidFileWriter());
+		configure(builder);
+		context = builder.run(args);
 		context.start();
 
 		InfoSettings settings = context.getBean(InfoSettings.class);

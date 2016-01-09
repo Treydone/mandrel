@@ -22,6 +22,7 @@ import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.common.ControllerNotFoundException;
 import io.mandrel.endpoints.contracts.ControllerContract;
 import io.mandrel.endpoints.contracts.FrontierContract;
+import io.mandrel.endpoints.contracts.NodeContract;
 import io.mandrel.endpoints.contracts.WorkerContract;
 
 import java.util.Optional;
@@ -44,6 +45,7 @@ public class Clients {
 	private KeyedClientPool<FrontierContract> frontiers;
 	private KeyedClientPool<ControllerContract> controllers;
 	private KeyedClientPool<WorkerContract> workers;
+	private KeyedClientPool<NodeContract> nodes;
 
 	@Autowired
 	private DiscoveryClient discoveryClient;
@@ -64,6 +66,9 @@ public class Clients {
 		// Deflater.BEST_SPEED
 				null, clientManager);
 		workers = new KeyedClientPool<>(WorkerContract.class, poolConfig, 9090,
+		// Deflater.BEST_SPEED
+				null, clientManager);
+		nodes = new KeyedClientPool<>(NodeContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED
 				null, clientManager);
 	}
@@ -106,5 +111,9 @@ public class Clients {
 
 	public Pooled<WorkerContract> onWorker(HostAndPort hostAndPort) {
 		return workers.get(hostAndPort);
+	}
+
+	public Pooled<NodeContract> onNode(HostAndPort hostAndPort) {
+		return nodes.get(hostAndPort);
 	}
 }
