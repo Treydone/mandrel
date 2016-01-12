@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,6 +58,7 @@ import com.mongodb.client.model.Sorts;
 public class MongoTimelineRepository implements TimelineRepository {
 
 	private final MongoClient mongoClient;
+	private final MongoProperties properties;
 	private final ObjectMapper mapper;
 
 	private MongoCollection<Document> timeline;
@@ -67,7 +69,7 @@ public class MongoTimelineRepository implements TimelineRepository {
 
 	@PostConstruct
 	public void init() {
-		MongoDatabase database = mongoClient.getDatabase("mandrel");
+		MongoDatabase database = mongoClient.getDatabase(properties.getMongoClientDatabase());
 
 		if (Lists.newArrayList(database.listCollectionNames()).contains(collectionName)) {
 			log.debug("'{}' collection already exists...", collectionName);

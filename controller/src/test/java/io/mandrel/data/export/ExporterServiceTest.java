@@ -23,9 +23,9 @@ import io.mandrel.blob.BlobStore;
 import io.mandrel.blob.BlobStore.Callback;
 import io.mandrel.blob.BlobStores;
 import io.mandrel.common.data.Spider;
-import io.mandrel.controller.SpiderService;
 import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.document.Document;
+import io.mandrel.spider.SpiderService;
 
 import java.io.Writer;
 import java.util.ArrayList;

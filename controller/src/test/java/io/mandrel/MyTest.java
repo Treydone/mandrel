@@ -2,7 +2,7 @@ package io.mandrel;
 
 import java.util.stream.Collectors;
 
-import io.mandrel.controller.impl.MongoSpiderRepository;
+import io.mandrel.spider.impl.MongoSpiderRepository;
 
 import org.junit.Test;
 

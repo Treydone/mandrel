@@ -38,6 +38,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.assertj.core.util.Iterables;
 import org.bson.Document;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,6 +55,7 @@ import com.mongodb.client.model.UpdateOptions;
 public class MongoMetricsRepository implements MetricsRepository {
 
 	private final MongoClient mongoClient;
+	private final MongoProperties properties;
 	private final ObjectMapper mapper;
 	private final Splitter splitter = Splitter.on('.').limit(1).trimResults();
 
@@ -61,7 +63,7 @@ public class MongoMetricsRepository implements MetricsRepository {
 
 	@PostConstruct
 	public void init() {
-		counters = mongoClient.getDatabase("mandrel").getCollection("counters");
+		counters = mongoClient.getDatabase(properties.getMongoClientDatabase()).getCollection("counters");
 	}
 
 	public void sync(Map<String, Long> accumulators) {

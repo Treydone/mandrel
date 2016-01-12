@@ -21,9 +21,9 @@ package io.mandrel.data.export;
 import io.mandrel.blob.BlobStores;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
-import io.mandrel.controller.SpiderService;
 import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.document.DocumentStores;
+import io.mandrel.spider.SpiderService;
 
 import java.io.BufferedWriter;
 import java.io.Writer;

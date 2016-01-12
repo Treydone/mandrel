@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.controller;
+package io.mandrel.spider;
 
 import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.instance.StateService;
@@ -69,7 +69,7 @@ import com.google.common.net.HostAndPort;
 public class SpiderService {
 
 	@Autowired
-	private SpiderRepository controllerRepository;
+	private SpiderRepository spiderRepository;
 	@Autowired
 	private TimelineService timelineService;
 	@Autowired
@@ -98,7 +98,7 @@ public class SpiderService {
 			// TODO HOW TO in case of multiple controller
 			log.debug("Syncing the nodes from the controller...");
 			// Load the existing spiders from the database
-			List<Spider> spiders = controllerRepository.listActive().collect(Collectors.toList());
+			List<Spider> spiders = spiderRepository.listActive().collect(Collectors.toList());
 			SyncRequest sync = new SyncRequest();
 			sync.setDefinitions(spiders.stream().map(spider -> {
 				try {
@@ -139,7 +139,7 @@ public class SpiderService {
 
 		updateTimeline(spider, SpiderEventType.SPIDER_STARTED);
 
-		return controllerRepository.update(spider);
+		return spiderRepository.update(spider);
 	}
 
 	public void updateTimeline(Spider spider, SpiderEventType status) {
@@ -190,7 +190,7 @@ public class SpiderService {
 		spider.setStatus(Statuses.CREATED);
 		spider.setCreated(LocalDateTime.now());
 
-		spider = controllerRepository.add(spider);
+		spider = spiderRepository.add(spider);
 
 		return spider.getId();
 	}
@@ -214,7 +214,7 @@ public class SpiderService {
 
 		spider.setStatus(Statuses.CREATED);
 		spider.setCreated(LocalDateTime.now());
-		spider = controllerRepository.add(spider);
+		spider = spiderRepository.add(spider);
 
 		updateTimeline(spider, SpiderEventType.SPIDER_CREATED);
 
@@ -222,15 +222,15 @@ public class SpiderService {
 	}
 
 	public Spider get(long id) {
-		return controllerRepository.get(id).orElseThrow(() -> new NotFoundException("Spider not found"));
+		return spiderRepository.get(id).orElseThrow(() -> new NotFoundException("Spider not found"));
 	}
 
 	public Stream<Spider> list() {
-		return controllerRepository.list();
+		return spiderRepository.list();
 	}
 
 	public Stream<Spider> listActive() {
-		return controllerRepository.listActive();
+		return spiderRepository.listActive();
 	}
 
 	public void reinject(long spiderId) {
@@ -258,7 +258,7 @@ public class SpiderService {
 			injectSingletonSources(spider);
 		}
 
-		controllerRepository.updateStatus(spiderId, Statuses.STARTED);
+		spiderRepository.updateStatus(spiderId, Statuses.STARTED);
 
 		updateTimeline(spider, SpiderEventType.SPIDER_CREATED);
 
@@ -294,7 +294,7 @@ public class SpiderService {
 		Spider spider = get(spiderId);
 
 		// Update status
-		controllerRepository.updateStatus(spiderId, Statuses.PAUSED);
+		spiderRepository.updateStatus(spiderId, Statuses.PAUSED);
 
 		updateTimeline(spider, SpiderEventType.SPIDER_PAUSED);
 
@@ -304,7 +304,7 @@ public class SpiderService {
 		Spider spider = get(spiderId);
 
 		// Update status
-		controllerRepository.updateStatus(spiderId, Statuses.KILLED);
+		spiderRepository.updateStatus(spiderId, Statuses.KILLED);
 
 		updateTimeline(spider, SpiderEventType.SPIDER_KILLED);
 	}
@@ -313,7 +313,7 @@ public class SpiderService {
 		Spider spider = get(spiderId);
 
 		// Update status
-		controllerRepository.updateStatus(spiderId, Statuses.DELETED);
+		spiderRepository.updateStatus(spiderId, Statuses.DELETED);
 
 		updateTimeline(spider, SpiderEventType.SPIDER_DELETED);
 

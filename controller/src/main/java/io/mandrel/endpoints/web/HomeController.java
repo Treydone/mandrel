@@ -19,9 +19,9 @@
 package io.mandrel.endpoints.web;
 
 import io.mandrel.cluster.node.NodeService;
-import io.mandrel.controller.SpiderService;
 import io.mandrel.messaging.StompService;
 import io.mandrel.metrics.MetricsRepository;
+import io.mandrel.spider.SpiderService;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.TimelineService;
 

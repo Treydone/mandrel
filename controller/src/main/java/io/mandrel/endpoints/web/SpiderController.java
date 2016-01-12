@@ -19,8 +19,8 @@
 package io.mandrel.endpoints.web;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.controller.SpiderService;
 import io.mandrel.metrics.MetricsRepository;
+import io.mandrel.spider.SpiderService;
 
 import java.util.stream.Collectors;
 

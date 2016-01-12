@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.controller.impl;
+package io.mandrel.spider.impl;
 
 import io.mandrel.cluster.idgenerator.IdGenerator;
 import io.mandrel.cluster.idgenerator.MongoIdGenerator;
 import io.mandrel.common.bson.JsonBsonCodec;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Statuses;
-import io.mandrel.controller.SpiderRepository;
+import io.mandrel.spider.SpiderRepository;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -38,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.bson.Document;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,13 +53,14 @@ public class MongoSpiderRepository implements SpiderRepository {
 
 	private final IdGenerator idGenerator = new MongoIdGenerator();
 	private final MongoClient client;
+	private final MongoProperties properties;
 	private final ObjectMapper mapper;
 
 	private MongoCollection<Document> collection;
 
 	@PostConstruct
 	public void init() {
-		collection = client.getDatabase("mandrel").getCollection("spiders");
+		collection = client.getDatabase(properties.getMongoClientDatabase()).getCollection("spiders");
 	}
 
 	public Spider add(Spider spider) {

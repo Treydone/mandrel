@@ -20,40 +20,7 @@ logging:
     level:
         org.springframework.web: INFO
         io.mandrel: DEBUG
-        org.apache.cxf: WARN
-        org.apache.cxf.interceptor.LoggingInInterceptor: DEBUG
-        org.apache.cxf.interceptor.LoggingOutInterceptor: DEBUG
-
-
-network:
-    interfaces:
-        - 127.0.0.1
-    group:
-        name: default
-        password: null
-    reuse_address: true
-    ssl:
-        enabled: false
-        type: basic
-        props:
-            key_store:
-            key_store_password:
-            key_manager_algorithm: trust_manager_algorithm
-            protocol:
-    discovery:
-        unicast:
-            enabled: true
-            members:
-                - 10.20.30.40
-            required_member: null
-            connection_timeout: 5
-        multicast:
-            enabled: false
-            group: 224.2.2.4
-            port: 54328
-            ttl: 3
-            address: 
-    ec2:
-        enabled: false
-        access_key:
-        secret_key: 
+thrift:
+    server:
+        port: 8888
+        idleConnectionTimeout: 6s

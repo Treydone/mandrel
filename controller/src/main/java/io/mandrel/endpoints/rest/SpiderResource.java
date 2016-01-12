@@ -19,11 +19,11 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.controller.SpiderService;
 import io.mandrel.data.analysis.Analysis;
 import io.mandrel.data.analysis.AnalysisService;
 import io.mandrel.metrics.MetricsRepository;
 import io.mandrel.metrics.SpiderMetrics;
+import io.mandrel.spider.SpiderService;
 
 import java.util.List;
 import java.util.stream.Collectors;

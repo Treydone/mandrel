@@ -20,13 +20,13 @@ package io.mandrel.endpoints.web;
 
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
-import io.mandrel.controller.SpiderService;
 import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.document.DocumentStores;
 import io.mandrel.endpoints.PageRequest;
 import io.mandrel.endpoints.PageResponse;
+import io.mandrel.spider.SpiderService;
 
 import java.util.Collection;
 import java.util.Collections;

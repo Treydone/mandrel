@@ -36,6 +36,7 @@ import lombok.SneakyThrows;
 
 import org.bson.Document;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,13 +54,14 @@ import com.mongodb.client.model.UpdateOptions;
 public class MongoNodeRepository implements NodeRepository {
 
 	private final MongoClient client;
+	private final MongoProperties properties;
 	private final ObjectMapper mapper;
 
 	private MongoCollection<Document> collection;
 
 	@PostConstruct
 	public void init() {
-		collection = client.getDatabase("mandrel").getCollection("nodes");
+		collection = client.getDatabase(properties.getMongoClientDatabase()).getCollection("nodes");
 	}
 
 	@Override

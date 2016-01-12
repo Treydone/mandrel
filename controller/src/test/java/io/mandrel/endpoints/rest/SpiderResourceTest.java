@@ -19,7 +19,7 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.controller.SpiderService;
+import io.mandrel.spider.SpiderService;
 
 import java.util.Arrays;
 import java.util.List;
