@@ -18,6 +18,7 @@
  */
 package io.mandrel.endpoints.contracts;
 
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
@@ -64,4 +65,7 @@ public interface FrontierContract extends Contract, AutoCloseable {
 	@ThriftMethod
 	void mschedule(@ThriftField(value = 1, name = "id") Long id, @ThriftField(value = 2, name = "uris") Set<Uri> uris);
 
+	public default String getServiceName() {
+		return ServiceIds.frontier();
+	}
 }

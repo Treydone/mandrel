@@ -31,7 +31,6 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.context.embedded.ErrorPage;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
@@ -39,7 +38,6 @@ import org.springframework.context.annotation.FilterType;
 
 @SpringBootApplication(exclude = { ErrorMvcAutoConfiguration.class, JacksonAutoConfiguration.class })
 @ComponentScan(basePackages = "io.mandrel", excludeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = {}) })
-@EnableDiscoveryClient
 public class Controller extends Application {
 
 	@Bean

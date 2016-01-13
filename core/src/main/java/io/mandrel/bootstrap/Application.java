@@ -26,7 +26,6 @@ import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.boot.actuate.system.ApplicationPidFileWriter;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -45,7 +44,9 @@ public abstract class Application {
 		// Print some useful infos about the classpath and others things
 		// new JHades().overlappingJarsReport();
 
-		SpringApplicationBuilder builder = new SpringApplicationBuilder(getClass()).properties(properties).listeners(new ApplicationPidFileWriter());
+		SpringApplicationBuilder builder = new SpringApplicationBuilder(getClass()).properties(properties)
+//				.listeners(new ApplicationPidFileWriter())
+				;
 		configure(builder);
 		context = builder.run(args);
 		context.start();

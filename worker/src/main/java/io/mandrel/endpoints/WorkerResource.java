@@ -41,13 +41,13 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Component;
 import org.weakref.jmx.internal.guava.base.Throwables;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
-@RestController
+@Component
 public class WorkerResource implements WorkerContract {
 
 	@Autowired

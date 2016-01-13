@@ -18,7 +18,9 @@
  */
 package io.mandrel.common.thrift;
 
+import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.discovery.ServiceIds;
+import io.mandrel.cluster.discovery.ServiceInstance;
 import io.mandrel.common.ControllerNotFoundException;
 import io.mandrel.endpoints.contracts.ControllerContract;
 import io.mandrel.endpoints.contracts.FrontierContract;
@@ -31,8 +33,6 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 
 import com.facebook.swift.service.ThriftClientManager;
@@ -78,7 +78,7 @@ public class Clients {
 	}
 
 	public Pooled<FrontierContract> onRandomFrontier() {
-		Optional<ServiceInstance> opController = discoveryClient.getInstances(ServiceIds.FRONTIER).stream().findFirst();
+		Optional<ServiceInstance> opController = discoveryClient.getInstances(ServiceIds.frontier()).stream().findFirst();
 		if (opController.isPresent()) {
 			try {
 				ServiceInstance instance = opController.get();
@@ -96,7 +96,7 @@ public class Clients {
 	}
 
 	public Pooled<ControllerContract> onRandomController() {
-		Optional<ServiceInstance> opController = discoveryClient.getInstances(ServiceIds.CONTROLLER).stream().findFirst();
+		Optional<ServiceInstance> opController = discoveryClient.getInstances(ServiceIds.controller()).stream().findFirst();
 		if (opController.isPresent()) {
 			try {
 				ServiceInstance instance = opController.get();

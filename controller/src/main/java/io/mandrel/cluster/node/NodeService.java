@@ -18,7 +18,9 @@
  */
 package io.mandrel.cluster.node;
 
+import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.discovery.ServiceIds;
+import io.mandrel.cluster.discovery.ServiceInstance;
 import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.net.Uri;
@@ -35,8 +37,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -58,20 +58,21 @@ public class NodeService {
 	@Scheduled(fixedRate = 5000)
 	public void sync() {
 		if (stateService.isStarted()) {
-			List<ServiceInstance> instances = allInstances();
+			List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.node());
 
 			List<Node> nodes = instances.stream().map(i -> {
 				Pooled<NodeContract> pooled = clients.onNode(HostAndPort.fromParts(i.getHost(), i.getPort()));
-				Node map = pooled.map(client -> client.dhis().setType(i.getServiceId()));
-				return map;
+				Node node = pooled.map(client -> client.dhis());
+				node.setType(i.getName());
+				return node;
 			}).collect(Collectors.toList());
 			nodeRepository.update(nodes);
 		}
 	}
 
 	public Map<Uri, Node> nodes() {
-		List<ServiceInstance> instances = allInstances();
-		return nodes(instances.stream().map(si -> Uri.create(si.getUri())).collect(Collectors.toList()));
+		List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.node());
+		return nodes(instances.stream().map(si -> Uri.internal(si.getHost(), si.getPort())).collect(Collectors.toList()));
 	}
 
 	public Optional<Node> node(Uri uri) {
@@ -100,13 +101,4 @@ public class NodeService {
 	public Map<Uri, Node> nodes(Collection<Uri> uris) {
 		return Lists.newArrayList(nodeRepository.findAll(uris)).stream().collect(Collectors.toMap(node -> node.getUri(), node -> node));
 	}
-
-	private List<ServiceInstance> allInstances() {
-		List<ServiceInstance> instances = new ArrayList<>();
-		instances.addAll(discoveryClient.getInstances(ServiceIds.CONTROLLER));
-		instances.addAll(discoveryClient.getInstances(ServiceIds.FRONTIER));
-		instances.addAll(discoveryClient.getInstances(ServiceIds.WORKER));
-		return instances;
-	}
-
 }

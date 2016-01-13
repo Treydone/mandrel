@@ -18,10 +18,10 @@
  */
 package io.mandrel.command;
 
-import java.util.List;
+import io.mandrel.cluster.discovery.DiscoveryClient;
+import io.mandrel.cluster.discovery.ServiceInstance;
 
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
+import java.util.List;
 
 public class Runner {
 

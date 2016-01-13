@@ -15,7 +15,7 @@ public class MyTest {
 
 		MongoClient mongo = new MongoClient();
 
-		MongoSpiderRepository repository = new MongoSpiderRepository(mongo, null);
+		MongoSpiderRepository repository = new MongoSpiderRepository(mongo, null, null);
 		repository.init();
 
 		repository.list().collect(Collectors.toList());

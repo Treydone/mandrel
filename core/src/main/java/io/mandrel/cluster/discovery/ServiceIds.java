@@ -18,11 +18,26 @@
  */
 package io.mandrel.cluster.discovery;
 
-public interface ServiceIds {
+public abstract class ServiceIds {
 
-	String FRONTIER = "frontier";
+	private final static String FRONTIER = "frontier";
+	private final static String WORKER = "worker";
+	private final static String CONTROLLER = "controller";
+	private final static String NODE = "node";
 
-	String WORKER = "worker";
+	public static String frontier() {
+		return FRONTIER;
+	}
 
-	String CONTROLLER = "controller";
+	public static String worker() {
+		return WORKER;
+	}
+
+	public static String controller() {
+		return CONTROLLER;
+	}
+
+	public static String node() {
+		return NODE;
+	}
 }

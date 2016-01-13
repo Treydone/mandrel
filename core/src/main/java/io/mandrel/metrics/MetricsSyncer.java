@@ -18,6 +18,7 @@
  */
 package io.mandrel.metrics;
 
+import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.thrift.Clients;
 
@@ -26,7 +27,6 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

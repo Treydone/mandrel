@@ -4,21 +4,20 @@ spring:
     name: controller
     admin:
       enabled: false
-  cloud:
-    zookeeper:
-      enabled: true
-      connectString: localhost:2181
-      discovery:
-        enabled: true
-        root: /mandrel
-        instanceHost: localhost
   data:
     mongodb:
       host: localhost
       port: 27017
   jmx:
     enabled: false
-          
+
+discovery:
+  zookeeper:
+    enabled: true
+    connectString: localhost:2181
+    root: /mandrel
+    instanceHost: localhost
+              
 server:
   port: 8080
   undertow:

@@ -18,6 +18,7 @@
  */
 package io.mandrel.endpoints.contracts;
 
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
@@ -49,4 +50,7 @@ public interface WorkerContract extends Contract, AutoCloseable {
 	@ThriftMethod
 	void kill(@ThriftField(value = 1, name = "id") Long id);
 
+	public default String getServiceName() {
+		return ServiceIds.worker();
+	}
 }

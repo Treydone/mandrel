@@ -18,6 +18,7 @@
  */
 package io.mandrel.endpoints.contracts;
 
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.node.Node;
 import io.mandrel.common.sync.Container;
 import io.mandrel.timeline.Event;
@@ -42,4 +43,8 @@ public interface ControllerContract extends Contract, AutoCloseable {
 
 	@ThriftMethod
 	void updateNode(Node node);
+
+	public default String getServiceName() {
+		return ServiceIds.controller();
+	}
 }

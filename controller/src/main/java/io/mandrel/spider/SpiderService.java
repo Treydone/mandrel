@@ -18,7 +18,9 @@
  */
 package io.mandrel.spider;
 
+import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.discovery.ServiceIds;
+import io.mandrel.cluster.discovery.ServiceInstance;
 import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.MandrelException;
 import io.mandrel.common.NotFoundException;
@@ -53,8 +55,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.kohsuke.randname.RandomNameGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindException;
@@ -109,14 +109,14 @@ public class SpiderService {
 			}).collect(Collectors.toList()));
 
 			if (CollectionUtils.isNotEmpty(spiders)) {
-				discoveryClient.getInstances(ServiceIds.WORKER).forEach(instance -> {
+				discoveryClient.getInstances(ServiceIds.worker()).forEach(instance -> {
 					try {
 						clients.onWorker(HostAndPort.fromParts(instance.getHost(), instance.getPort())).with(worker -> worker.sync(sync));
 					} catch (Exception e) {
 						log.warn("Can not sync due to", e);
 					}
 				});
-				discoveryClient.getInstances(ServiceIds.FRONTIER).forEach(instance -> {
+				discoveryClient.getInstances(ServiceIds.frontier()).forEach(instance -> {
 					try {
 						clients.onFrontier(HostAndPort.fromParts(instance.getHost(), instance.getPort())).with(frontier -> frontier.sync(sync));
 					} catch (Exception e) {
@@ -250,7 +250,7 @@ public class SpiderService {
 		}
 
 		// Can not start a spider if there no frontier started
-		if (discoveryClient.getInstances(ServiceIds.FRONTIER).size() < 1) {
+		if (discoveryClient.getInstances(ServiceIds.frontier()).size() < 1) {
 			throw new MandrelException("Can not start spider, you need a least a frontier instance!");
 		}
 
@@ -275,7 +275,7 @@ public class SpiderService {
 
 					if (source.singleton() && source.check()) {
 						log.debug("Injecting source '{}' ({})", s.name(), s.toString());
-						ServiceInstance instance = discoveryClient.getInstances(ServiceIds.FRONTIER).get(0);
+						ServiceInstance instance = discoveryClient.getInstances(ServiceIds.frontier()).get(0);
 
 						source.register(uri -> {
 							try {

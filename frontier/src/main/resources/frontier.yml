@@ -4,17 +4,16 @@ spring:
     name: frontier
     admin:
       enabled: false    
-  cloud:
-    zookeeper:
-      enabled: true
-      connectString: localhost:2181
-      discovery:
-        enabled: true
-        root: /mandrel
-        instanceHost: localhost
   jmx:
     enabled: false
-                        
+
+discovery:
+  zookeeper:
+    enabled: true
+    connectString: localhost:2181
+    root: /mandrel
+    instanceHost: localhost
+                            
 server:
   port: 8090
   undertow:

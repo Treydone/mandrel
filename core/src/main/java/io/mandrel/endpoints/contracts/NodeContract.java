@@ -18,6 +18,7 @@
  */
 package io.mandrel.endpoints.contracts;
 
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.node.Node;
 
 import com.facebook.swift.service.ThriftMethod;
@@ -29,4 +30,7 @@ public interface NodeContract extends Contract, AutoCloseable {
 	@ThriftMethod
 	Node dhis();
 
+	public default String getServiceName() {
+		return ServiceIds.node();
+	}
 }

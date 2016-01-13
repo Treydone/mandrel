@@ -18,6 +18,7 @@
  */
 package io.mandrel.endpoints.thrift;
 
+import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.node.Node;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.settings.InfoSettings;
@@ -27,11 +28,12 @@ import io.mandrel.monitor.SigarService;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.stereotype.Component;
 
 import com.google.common.base.Throwables;
 
 @Slf4j
+@Component
 public class NodeResource implements NodeContract {
 
 	@Autowired

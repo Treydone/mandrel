@@ -1,12 +1,21 @@
 package io.mandrel.common.net;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import lombok.Data;
 
 @Data
 public class Uri {
+
+	private static final String INTERNAL_SCHEME = "mandrel";
+
+	public static String internalScheme() {
+		return INTERNAL_SCHEME;
+	}
+
+	public static Uri internal(String host, int port) {
+		return new Uri(internalScheme(), null, host, port, null, null);
+	}
 
 	public static Uri create(String originalUri) {
 		return create(null, originalUri);
