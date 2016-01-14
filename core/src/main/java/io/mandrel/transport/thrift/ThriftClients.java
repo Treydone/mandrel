@@ -94,7 +94,7 @@ public class ThriftClients implements Clients {
 		if (opController.isPresent()) {
 			try {
 				ServiceInstance instance = opController.get();
-				return frontiers.get(HostAndPort.fromParts(instance.getHost(), instance.getPort()));
+				return frontiers.get(instance.getHostAndPort());
 			} catch (Exception e) {
 				throw Throwables.propagate(e);
 			}
@@ -112,7 +112,7 @@ public class ThriftClients implements Clients {
 		if (opController.isPresent()) {
 			try {
 				ServiceInstance instance = opController.get();
-				return controllers.get(HostAndPort.fromParts(instance.getHost(), instance.getPort()));
+				return controllers.get(instance.getHostAndPort());
 			} catch (Exception e) {
 				throw Throwables.propagate(e);
 			}

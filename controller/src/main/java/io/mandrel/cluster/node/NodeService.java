@@ -61,7 +61,7 @@ public class NodeService {
 			List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.node());
 
 			List<Node> nodes = instances.stream().map(i -> {
-				Pooled<NodeContract> pooled = clients.onNode(HostAndPort.fromParts(i.getHost(), i.getPort()));
+				Pooled<NodeContract> pooled = clients.onNode(i.getHostAndPort());
 				Node node = pooled.map(client -> client.dhis());
 				return node;
 			}).collect(Collectors.toList());
@@ -84,13 +84,15 @@ public class NodeService {
 			HostAndPort hostAndPort = HostAndPort.fromParts(uri.getHost(), uri.getPort());
 
 			List<Container> results = null;
-//			if (node.getType().equals("worker")) {
-//				results = clients.onWorker(hostAndPort).map(client -> client.listRunningContainers());
-//			} else if (node.getType().equals("frontier")) {
-//				results = clients.onFrontier(hostAndPort).map(client -> client.listRunningContainers());
-//			}
-			return results;
-		}).orElse(new ArrayList<>());
+			// if (node.getType().equals("worker")) {
+			// results = clients.onWorker(hostAndPort).map(client ->
+			// client.listRunningContainers());
+			// } else if (node.getType().equals("frontier")) {
+			// results = clients.onFrontier(hostAndPort).map(client ->
+			// client.listRunningContainers());
+			// }
+				return results;
+			}).orElse(new ArrayList<>());
 	}
 
 	public Node node(String id) {

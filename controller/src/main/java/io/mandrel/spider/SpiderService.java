@@ -28,6 +28,7 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Statuses;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.sync.SyncRequest;
+import io.mandrel.common.sync.SyncResponse;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.SkipAncorFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
@@ -62,7 +63,6 @@ import org.springframework.validation.BindingResult;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
-import com.google.common.net.HostAndPort;
 
 @Component
 @Slf4j
@@ -95,7 +95,10 @@ public class SpiderService {
 	@Scheduled(fixedRate = 10000)
 	public void sync() {
 		if (stateService.isStarted()) {
+
 			// TODO HOW TO in case of multiple controller
+			// -> Acquiring distributed lock
+
 			log.debug("Syncing the nodes from the controller...");
 			// Load the existing spiders from the database
 			List<Spider> spiders = spiderRepository.listActive().collect(Collectors.toList());
@@ -109,20 +112,35 @@ public class SpiderService {
 			}).collect(Collectors.toList()));
 
 			if (CollectionUtils.isNotEmpty(spiders)) {
-				discoveryClient.getInstances(ServiceIds.worker()).forEach(instance -> {
-					try {
-						clients.onWorker(HostAndPort.fromParts(instance.getHost(), instance.getPort())).with(worker -> worker.sync(sync));
-					} catch (Exception e) {
-						log.warn("Can not sync due to", e);
-					}
-				});
-				discoveryClient.getInstances(ServiceIds.frontier()).forEach(instance -> {
-					try {
-						clients.onFrontier(HostAndPort.fromParts(instance.getHost(), instance.getPort())).with(frontier -> frontier.sync(sync));
-					} catch (Exception e) {
-						log.warn("Can not sync due to", e);
-					}
-				});
+				// Sync first the frontiers
+				discoveryClient.getInstances(ServiceIds.frontier()).forEach(
+						instance -> {
+							try {
+								SyncResponse response = clients.onFrontier(instance.getHostAndPort()).map(frontier -> frontier.sync(sync));
+
+								if (response.anyAction()) {
+									log.debug("On frontier {}:{}, after sync: {} created, {} updated, {} deleted", instance.getHost(), instance.getPort(),
+											response.getCreated(), response.getUpdated(), response.getDeleted());
+								}
+							} catch (Exception e) {
+								log.warn("Can not sync due to", e);
+							}
+						});
+
+				// And then the workers
+				discoveryClient.getInstances(ServiceIds.worker()).forEach(
+						instance -> {
+							try {
+								SyncResponse response = clients.onWorker(instance.getHostAndPort()).map(worker -> worker.sync(sync));
+
+								if (response.anyAction()) {
+									log.debug("On worker {}:{}, after sync: {} created, {} updated, {} deleted", instance.getHost(), instance.getPort(),
+											response.getCreated(), response.getUpdated(), response.getDeleted());
+								}
+							} catch (Exception e) {
+								log.warn("Can not sync due to", e);
+							}
+						});
 			} else {
 				log.debug("Nothing to sync...");
 			}
@@ -269,25 +287,23 @@ public class SpiderService {
 		TaskContext context = new TaskContext();
 		context.setDefinition(spider);
 
-		spider.getSources().forEach(
-				s -> {
-					Source source = s.build(context);
+		spider.getSources().forEach(s -> {
+			Source source = s.build(context);
 
-					if (source.singleton() && source.check()) {
-						log.debug("Injecting source '{}' ({})", s.name(), s.toString());
-						ServiceInstance instance = discoveryClient.getInstances(ServiceIds.frontier()).get(0);
+			if (source.singleton() && source.check()) {
+				log.debug("Injecting source '{}' ({})", s.name(), s.toString());
+				ServiceInstance instance = discoveryClient.getInstances(ServiceIds.frontier()).get(0);
 
-						source.register(uri -> {
-							try {
-								log.trace("Adding uri '{}'", uri);
-								clients.onFrontier(HostAndPort.fromParts(instance.getHost(), instance.getPort())).with(
-										frontier -> frontier.schedule(spider.getId(), uri));
-							} catch (Exception e) {
-								log.warn("Can not sync due to", e);
-							}
-						});
+				source.register(uri -> {
+					try {
+						log.trace("Adding uri '{}'", uri);
+						clients.onFrontier(instance.getHostAndPort()).with(frontier -> frontier.schedule(spider.getId(), uri));
+					} catch (Exception e) {
+						log.warn("Can not sync due to", e);
 					}
 				});
+			}
+		});
 	}
 
 	public void pause(long spiderId) {
