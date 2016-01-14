@@ -20,10 +20,8 @@ package io.mandrel.endpoints.contracts;
 
 import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.node.Node;
-import io.mandrel.common.sync.Container;
 import io.mandrel.timeline.Event;
 
-import java.util.List;
 import java.util.Map;
 
 import com.facebook.swift.service.ThriftMethod;
@@ -31,9 +29,6 @@ import com.facebook.swift.service.ThriftService;
 
 @ThriftService
 public interface ControllerContract extends Contract, AutoCloseable {
-
-	@ThriftMethod
-	List<Container> listActiveContainers();
 
 	@ThriftMethod
 	void addEvent(Event event);

@@ -21,21 +21,32 @@ package io.mandrel.timeline;
 import java.time.LocalDateTime;
 
 import lombok.Data;
-import lombok.experimental.Accessors;
+import lombok.Getter;
+import lombok.Setter;
 
+import com.facebook.swift.codec.ThriftField;
 import com.facebook.swift.codec.ThriftStruct;
 
-@Data
-@Accessors(chain = true)
 @ThriftStruct
 public class Event {
 
+	@Getter(onMethod = @__(@ThriftField(1)))
+	@Setter(onMethod = @__(@ThriftField))
 	private LocalDateTime time;
-	private String title;
+	@Getter(onMethod = @__(@ThriftField(2)))
+	@Setter(onMethod = @__(@ThriftField))
 	private String text;
-
+	@Getter(onMethod = @__(@ThriftField(3)))
+	@Setter(onMethod = @__(@ThriftField))
+	private String title;
+	@Getter(onMethod = @__(@ThriftField(4)))
+	@Setter(onMethod = @__(@ThriftField))
 	private EventType type;
+	@Getter(onMethod = @__(@ThriftField(5)))
+	@Setter(onMethod = @__(@ThriftField))
 	private SpiderInfo spider;
+	@Getter(onMethod = @__(@ThriftField(6)))
+	@Setter(onMethod = @__(@ThriftField))
 	private NodeInfo node;
 
 	public enum EventType {
@@ -43,20 +54,33 @@ public class Event {
 	}
 
 	public static Event forSpider() {
-		return new Event().setTime(LocalDateTime.now()).setType(EventType.SPIDER).setSpider(new SpiderInfo());
+		Event event = new Event();
+		event.setTime(LocalDateTime.now());
+		event.setType(EventType.SPIDER);
+		event.setSpider(new SpiderInfo());
+		return event;
 	}
 
 	public static Event forNode() {
-		return new Event().setTime(LocalDateTime.now()).setType(EventType.NODE).setNode(new NodeInfo());
+		Event event = new Event();
+		event.setTime(LocalDateTime.now());
+		event.setType(EventType.NODE);
+		event.setNode(new NodeInfo());
+		return event;
 	}
 
 	@Data
-	@Accessors(chain = true)
 	@ThriftStruct
 	public static class SpiderInfo {
 
+		@Getter(onMethod = @__(@ThriftField(1)))
+		@Setter(onMethod = @__(@ThriftField))
 		private SpiderEventType type;
+		@Getter(onMethod = @__(@ThriftField(2)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long spiderId;
+		@Getter(onMethod = @__(@ThriftField(3)))
+		@Setter(onMethod = @__(@ThriftField))
 		private String spiderName;
 
 		public enum SpiderEventType {
@@ -66,11 +90,14 @@ public class Event {
 	}
 
 	@Data
-	@Accessors(chain = true)
 	@ThriftStruct
 	public static class NodeInfo {
 
+		@Getter(onMethod = @__(@ThriftField(1)))
+		@Setter(onMethod = @__(@ThriftField))
 		private NodeEventType type;
+		@Getter(onMethod = @__(@ThriftField(2)))
+		@Setter(onMethod = @__(@ThriftField))
 		private String nodeId;
 
 		public enum NodeEventType {

@@ -63,7 +63,11 @@ public class HomeController {
 
 	@RequestMapping("/publish")
 	public String push(@RequestParam String title, @RequestParam String text) {
-		stompService.publish(new Event().setText(text).setTitle(title).setTime(LocalDateTime.now()));
+		Event event = new Event();
+		event.setText(text);
+		event.setTitle(title);
+		event.setTime(LocalDateTime.now());
+		stompService.publish(event);
 		return "redirect:/";
 	}
 }

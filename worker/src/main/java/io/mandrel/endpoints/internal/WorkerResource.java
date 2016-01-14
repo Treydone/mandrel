@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.endpoints;
+package io.mandrel.endpoints.internal;
 
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
@@ -24,10 +24,10 @@ import io.mandrel.common.data.Statuses;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
-import io.mandrel.common.thrift.Clients;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.endpoints.contracts.WorkerContract;
 import io.mandrel.metrics.Accumulators;
+import io.mandrel.transport.Clients;
 import io.mandrel.worker.WorkerContainer;
 import io.mandrel.worker.WorkerContainers;
 

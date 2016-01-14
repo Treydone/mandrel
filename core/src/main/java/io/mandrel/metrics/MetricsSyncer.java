@@ -20,12 +20,13 @@ package io.mandrel.metrics;
 
 import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.instance.StateService;
-import io.mandrel.common.thrift.Clients;
+import io.mandrel.transport.Clients;
 
 import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -54,10 +55,12 @@ public class MetricsSyncer {
 			total.putAll(accumulators.nodeAccumulator().tick());
 			accumulators.spiderAccumulators().forEach((spiderId, acc) -> total.putAll(acc.tick()));
 
-			try {
-				clients.onRandomController().with(controller -> controller.updateMetrics(total));
-			} catch (Exception e) {
-				log.debug("Can not update metrics due to", e);
+			if (MapUtils.isNotEmpty(total)) {
+				try {
+					clients.onRandomController().with(controller -> controller.updateMetrics(total));
+				} catch (Exception e) {
+					log.debug("Can not update metrics due to", e);
+				}
 			}
 		}
 	}

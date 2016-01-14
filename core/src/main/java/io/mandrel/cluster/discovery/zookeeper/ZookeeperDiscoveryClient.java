@@ -2,6 +2,7 @@ package io.mandrel.cluster.discovery.zookeeper;
 
 import static org.springframework.util.ReflectionUtils.rethrowRuntimeException;
 import io.mandrel.cluster.discovery.DiscoveryClient;
+import io.mandrel.cluster.discovery.DiscoveryProperties;
 import io.mandrel.cluster.discovery.ServiceInstance;
 
 import java.io.IOException;
@@ -30,6 +31,8 @@ public class ZookeeperDiscoveryClient implements DiscoveryClient {
 	private ServiceDiscovery<ZookeeperInstance> serviceDiscovery;
 
 	@Autowired
+	private DiscoveryProperties discoveryProperties;
+	@Autowired
 	private ZookeeperDiscoveryProperties zookeeperDiscoveryProperties;
 
 	@Autowired
@@ -37,19 +40,24 @@ public class ZookeeperDiscoveryClient implements DiscoveryClient {
 
 	@Override
 	@SneakyThrows
-	public void register(ServiceInstance instance) {
+	public ServiceInstance register(ServiceInstance instance) {
 		org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> service = createService(instance);
 		serviceDiscovery.registerService(service);
+		return create(service);
 	}
 
 	public org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> createService(ServiceInstance instance) throws Exception {
-		String host = instance.getHost() == null ? (zookeeperDiscoveryProperties.getInstanceHost() == null ? getIpAddress() : zookeeperDiscoveryProperties
-				.getInstanceHost()) : instance.getHost();
+		String host = getInstanceHost();
 
 		org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> service = org.apache.curator.x.discovery.ServiceInstance
 				.<ZookeeperInstance> builder().name(instance.getName()).payload(new ZookeeperInstance(context.getId())).port(instance.getPort()).address(host)
 				.uriSpec(new UriSpec(zookeeperDiscoveryProperties.getUriSpec())).build();
 		return service;
+	}
+
+	public String getInstanceHost() {
+		String host = discoveryProperties.getInstanceHost() == null ? getIpAddress() : discoveryProperties.getInstanceHost();
+		return host;
 	}
 
 	@Override
@@ -67,10 +75,14 @@ public class ZookeeperDiscoveryClient implements DiscoveryClient {
 		List<ServiceInstance> instances = new ArrayList<>(zkInstances.size());
 
 		for (org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> instance : zkInstances) {
-			instances.add(ServiceInstance.builder().host(instance.getAddress()).port(instance.getPort()).name(instance.getName()).build());
+			instances.add(create(instance));
 		}
 
 		return instances;
+	}
+
+	public ServiceInstance create(org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> instance) {
+		return ServiceInstance.builder().host(instance.getAddress()).port(instance.getPort()).name(instance.getName()).build();
 	}
 
 	@Override

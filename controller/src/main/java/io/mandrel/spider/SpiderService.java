@@ -28,7 +28,6 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Statuses;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.sync.SyncRequest;
-import io.mandrel.common.thrift.Clients;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.SkipAncorFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
@@ -40,6 +39,7 @@ import io.mandrel.metrics.MetricsRepository;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.Event.SpiderInfo.SpiderEventType;
 import io.mandrel.timeline.TimelineService;
+import io.mandrel.transport.Clients;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -144,7 +144,9 @@ public class SpiderService {
 
 	public void updateTimeline(Spider spider, SpiderEventType status) {
 		Event event = Event.forSpider();
-		event.getSpider().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(status);
+		event.getSpider().setSpiderId(spider.getId());
+		event.getSpider().setSpiderName(spider.getName());
+		event.getSpider().setType(status);
 		timelineService.add(event);
 	}
 

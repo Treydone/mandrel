@@ -8,21 +8,16 @@ spring:
     enabled: false
 
 discovery:
+  instanceHost: localhost
   zookeeper:
     enabled: true
     connectString: localhost:2181
     root: /mandrel
-    instanceHost: localhost
-                            
-server:
-  port: 8090
-  undertow:
-    buffer-size: 16000
-    buffers-per-region: 20
-    direct-buffers: true
-    io-threads: 4
-    worker-threads: 32
 
+transport:
+  port: 8092
+  bindAddress: localhost
+                                
 logging:
   console:
     enabled: true

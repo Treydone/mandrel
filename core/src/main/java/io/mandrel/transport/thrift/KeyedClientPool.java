@@ -16,9 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.common.thrift;
+package io.mandrel.transport.thrift;
 
 import io.mandrel.endpoints.contracts.Contract;
+import io.mandrel.transport.Pooled;
 
 import java.util.zip.Deflater;
 
@@ -30,7 +31,7 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
-import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TZlibTransport;
@@ -116,9 +117,9 @@ public class KeyedClientPool<T extends Contract & AutoCloseable> implements Auto
 
 	public static final TDuplexProtocolFactory protocolFactory(Integer deflat) {
 		return new TDuplexProtocolFactory() {
-			private final TProtocolFactory protocolFactory =
-			// new TBinaryProtocol.Factory();
-			new TCompactProtocol.Factory(1024);
+			private final TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
+
+			// new TCompactProtocol.Factory(1024);
 
 			@Override
 			public TProtocolPair getProtocolPair(TTransportPair transportPair) {

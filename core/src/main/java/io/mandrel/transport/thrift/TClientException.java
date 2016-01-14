@@ -1,4 +1,4 @@
-package io.mandrel.common.thrift;
+package io.mandrel.transport.thrift;
 
 public class TClientException extends RuntimeException {
 

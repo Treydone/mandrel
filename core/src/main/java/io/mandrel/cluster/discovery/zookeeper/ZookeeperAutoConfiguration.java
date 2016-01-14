@@ -44,11 +44,8 @@ public class ZookeeperAutoConfiguration {
 	@Autowired(required = false)
 	private EnsembleProvider ensembleProvider;
 
-	@Bean
-	@ConditionalOnMissingBean
-	public ZookeeperDiscoveryProperties zookeeperProperties() {
-		return new ZookeeperDiscoveryProperties();
-	}
+	@Autowired
+	private ZookeeperDiscoveryProperties zookeeperProperties;
 
 	@Bean
 	public InstanceSerializer<ZookeeperInstance> instanceSerializer() {
@@ -63,7 +60,7 @@ public class ZookeeperAutoConfiguration {
 		if (ensembleProvider != null) {
 			builder.ensembleProvider(ensembleProvider);
 		}
-		CuratorFramework curator = builder.retryPolicy(retryPolicy).connectString(zookeeperProperties().getConnectString()).build();
+		CuratorFramework curator = builder.retryPolicy(retryPolicy).connectString(zookeeperProperties.getConnectString()).build();
 		curator.start();
 
 		log.trace("blocking until connected to zookeeper for " + properties.getBlockUntilConnectedWait() + properties.getBlockUntilConnectedUnit());
@@ -85,7 +82,6 @@ public class ZookeeperAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public RetryPolicy exponentialBackoffRetry() {
-		return new ExponentialBackoffRetry(zookeeperProperties().getBaseSleepTimeMs(), zookeeperProperties().getMaxRetries(), zookeeperProperties()
-				.getMaxSleepMs());
+		return new ExponentialBackoffRetry(zookeeperProperties.getBaseSleepTimeMs(), zookeeperProperties.getMaxRetries(), zookeeperProperties.getMaxSleepMs());
 	}
 }

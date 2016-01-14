@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.endpoints;
+package io.mandrel.endpoints.internal;
 
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
@@ -25,11 +25,11 @@ import io.mandrel.common.net.Uri;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
-import io.mandrel.common.thrift.Clients;
 import io.mandrel.endpoints.contracts.FrontierContract;
 import io.mandrel.frontier.FrontierContainer;
 import io.mandrel.frontier.FrontierContainers;
 import io.mandrel.metrics.Accumulators;
+import io.mandrel.transport.Clients;
 
 import java.util.ArrayList;
 import java.util.Collection;

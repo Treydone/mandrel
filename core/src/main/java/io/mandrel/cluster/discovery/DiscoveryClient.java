@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface DiscoveryClient {
 
-	void register(ServiceInstance instance);
+	ServiceInstance register(ServiceInstance instance);
 
 	void unregister(ServiceInstance instance);
 
@@ -12,4 +12,5 @@ public interface DiscoveryClient {
 
 	List<String> getServices();
 
+	String getInstanceHost();
 }

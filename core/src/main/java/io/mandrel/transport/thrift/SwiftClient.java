@@ -1,3 +1,4 @@
+package io.mandrel.transport.thrift;
 //package io.mandrel.common.thrift;
 //
 //import io.mandrel.endpoints.contractsv2.FrontierContract;

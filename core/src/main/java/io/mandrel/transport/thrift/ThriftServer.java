@@ -1,4 +1,4 @@
-package io.mandrel.common.thrift;
+package io.mandrel.transport.thrift;
 
 import static com.facebook.nifty.core.ShutdownUtil.shutdownChannelFactory;
 import static com.facebook.nifty.core.ShutdownUtil.shutdownExecutor;

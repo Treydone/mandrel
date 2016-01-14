@@ -1,13 +1,13 @@
 package io.mandrel.requests.proxy;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import io.mandrel.common.net.Uri;
 
 import java.net.URI;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.util.UriComponentsBuilder;
 
 public final class AuthenticatorUtils {
 
@@ -30,8 +30,7 @@ public final class AuthenticatorUtils {
 
 	public static String computeRealmURI(URI uri, boolean useAbsoluteURI, boolean omitQuery) {
 		if (useAbsoluteURI) {
-			return omitQuery && StringUtils.isNotEmpty(uri.getQuery()) ? UriComponentsBuilder.fromUri(uri).query(null).build().toUri().toString() : uri
-					.toString();
+			return omitQuery && StringUtils.isNotEmpty(uri.getQuery()) ? Uri.create(uri).setQuery(null).toString() : uri.toString();
 		} else {
 			String path = StringUtils.isNotEmpty(uri.getPath()) ? uri.getPath() : "/";
 			return omitQuery || !StringUtils.isNotEmpty(uri.getQuery()) ? path : path + "?" + uri.getQuery();

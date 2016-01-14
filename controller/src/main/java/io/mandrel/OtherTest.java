@@ -21,11 +21,14 @@ package io.mandrel;
 import io.mandrel.common.bson.JsonBsonCodec;
 import io.mandrel.common.data.HttpStrategy.HttpStrategyDefinition;
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.net.Uri;
 import io.mandrel.common.schema.SchemaGenerator;
 import io.mandrel.config.BindConfiguration;
 import io.mandrel.data.filters.link.LinkFilter;
 import io.mandrel.requests.ftp.FtpRequester.FtpRequesterDefinition;
 import io.mandrel.requests.http.ApacheHttpRequester.ApacheHttpRequesterDefinition;
+import io.mandrel.timeline.Event;
+import io.mandrel.timeline.Event.SpiderInfo.SpiderEventType;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -33,16 +36,29 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import lombok.SneakyThrows;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.thrift.protocol.TJSONProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TIOStreamTransport;
 import org.bson.Document;
 import org.junit.Test;
 
+import com.facebook.swift.codec.ThriftCodec;
+import com.facebook.swift.codec.ThriftCodecManager;
+import com.facebook.swift.codec.internal.coercion.FromThrift;
+import com.facebook.swift.codec.internal.coercion.ToThrift;
+import com.facebook.swift.codec.internal.compiler.CompilerThriftCodecFactory;
+import com.facebook.swift.codec.metadata.ThriftCatalog;
+import com.facebook.swift.codec.metadata.ThriftType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -71,6 +87,69 @@ public class OtherTest {
 
 	}
 
+	public static class Dummy {
+
+		@ToThrift
+		public static long toThrift(LocalDateTime value) {
+			return value.toInstant(ZoneOffset.UTC).toEpochMilli();
+		}
+
+		@FromThrift
+		public static LocalDateTime fromThrift(long value) {
+			return LocalDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneOffset.UTC);
+		}
+
+	}
+
+	@Test
+	@SneakyThrows
+	public void dummy() {
+		Event event = Event.forSpider();
+		event.setText("pouet");
+		event.getSpider().setSpiderId(1);
+		event.getSpider().setSpiderName("tesss");
+		event.getSpider().setType(SpiderEventType.SPIDER_CREATED);
+
+		ObjectMapper mapper = new ObjectMapper();
+		BindConfiguration.configure(mapper);
+
+		String res = mapper.writeValueAsString(event);
+		System.err.println(res);
+
+		// ThriftCodec<LocalDateTime> codec = new ThriftCodec<LocalDateTime>() {
+		// @Override
+		// public void write(LocalDateTime value, TProtocol protocol) throws
+		// Exception {
+		// protocol.writeI64(value.toInstant(ZoneOffset.UTC).toEpochMilli());
+		// }
+		//
+		// @Override
+		// public LocalDateTime read(TProtocol protocol) throws Exception {
+		// return
+		// LocalDateTime.ofInstant(Instant.ofEpochMilli(protocol.readI64()),
+		// ZoneOffset.UTC);
+		// }
+		//
+		// @Override
+		// public ThriftType getType() {
+		// return ThriftType.I64;
+		// }
+		// };
+
+		ThriftCatalog catalog = new ThriftCatalog();
+
+		catalog.addDefaultCoercions(Dummy.class);
+		ThriftCodecManager manager = new ThriftCodecManager(new CompilerThriftCodecFactory(ThriftCodecManager.class.getClassLoader()), catalog,
+				Collections.emptySet());
+		TIOStreamTransport trans = new TIOStreamTransport(System.err);
+		TJSONProtocol protocol = new TJSONProtocol(trans);
+
+		manager.write(Event.class, event, protocol);
+		manager.write(Uri.class, new Uri("scheme", "userInfo", "host", 0, "path", "query"), protocol);
+
+		trans.flush();
+	}
+
 	@Test
 	@SneakyThrows
 	public void whut2() throws JsonProcessingException {
@@ -88,7 +167,7 @@ public class OtherTest {
 		// System.err.println(System.currentTimeMillis());
 		MongoClient mongo = new MongoClient();
 		MongoCollection<Document> collection = mongo.getDatabase("mandrel").getCollection("test");
-//		collection.insertOne(doc);
+		// collection.insertOne(doc);
 
 		Spider result = collection.find().map(el -> {
 			try {

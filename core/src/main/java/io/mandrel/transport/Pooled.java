@@ -1,4 +1,6 @@
-package io.mandrel.common.thrift;
+package io.mandrel.transport;
+
+import io.mandrel.transport.thrift.TClientException;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -7,9 +9,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
-import org.weakref.jmx.internal.guava.base.Throwables;
 
 import com.facebook.swift.service.RuntimeTException;
+import com.google.common.base.Throwables;
 import com.google.common.net.HostAndPort;
 
 @RequiredArgsConstructor(staticName = "of")

@@ -21,100 +21,154 @@ package io.mandrel.monitor;
 import io.mandrel.common.unit.ByteSizeValue;
 
 import java.io.Serializable;
-import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.facebook.swift.codec.ThriftStruct;
+import java.util.stream.Collectors;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
-@Data
+import com.facebook.swift.codec.ThriftField;
+import com.facebook.swift.codec.ThriftStruct;
+
 @Accessors(chain = true)
 @ThriftStruct
 public class Infos implements Serializable {
 	private static final long serialVersionUID = 3436344116385574896L;
 
+	@Getter(onMethod = @__(@ThriftField(1)))
+	@Setter(onMethod = @__(@ThriftField))
 	private long pid;
+	@Getter(onMethod = @__(@ThriftField(2)))
+	@Setter(onMethod = @__(@ThriftField))
 	private String fqdn;
+	@Getter(onMethod = @__(@ThriftField(3)))
+	@Setter(onMethod = @__(@ThriftField))
 	private String hostname;
+	@Getter(onMethod = @__(@ThriftField(4)))
+	@Setter(onMethod = @__(@ThriftField))
 	private double uptime;
 
+	@Getter(onMethod = @__(@ThriftField(10)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Cpu cpu = new Cpu();
+	@Getter(onMethod = @__(@ThriftField(11)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Mem mem = new Mem();
+	@Getter(onMethod = @__(@ThriftField(12)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Swap swap = new Swap();
+	@Getter(onMethod = @__(@ThriftField(13)))
+	@Setter(onMethod = @__(@ThriftField))
 	private List<Interface> interfaces = new ArrayList<>(2);
+	@Getter(onMethod = @__(@ThriftField(14)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Limits limits = new Limits();
+	@Getter(onMethod = @__(@ThriftField(15)))
+	@Setter(onMethod = @__(@ThriftField))
 	private JvmInfo jvmInfo = JvmInfo.jvmInfo();
 
-	@Data
 	@ThriftStruct
 	public static class Cpu implements Serializable {
 		private static final long serialVersionUID = 8512684069342496081L;
 
+		@Getter(onMethod = @__(@ThriftField(1)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long sys;
+		@Getter(onMethod = @__(@ThriftField(2)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long total;
+		@Getter(onMethod = @__(@ThriftField(3)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long user;
 	}
 
-	@Data
 	@ThriftStruct
 	public static class Mem implements Serializable {
 		private static final long serialVersionUID = -8797648466105477814L;
 
+		@Getter(onMethod = @__(@ThriftField(1)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long total;
+		@Getter(onMethod = @__(@ThriftField(2)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long used;
+		@Getter(onMethod = @__(@ThriftField(3)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long free;
 	}
 
-	@Data
 	@ThriftStruct
 	public static class Swap implements Serializable {
 		private static final long serialVersionUID = 1409517375142998802L;
 
+		@Getter(onMethod = @__(@ThriftField(1)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long total;
+		@Getter(onMethod = @__(@ThriftField(2)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long used;
+		@Getter(onMethod = @__(@ThriftField(3)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long free;
 	}
 
-	@Data
 	@ThriftStruct
 	public static class Interface implements Serializable {
 		private static final long serialVersionUID = 49989037162348232L;
 
+		@Getter(onMethod = @__(@ThriftField(1)))
+		@Setter(onMethod = @__(@ThriftField))
 		private String name;
+		@Getter(onMethod = @__(@ThriftField(2)))
+		@Setter(onMethod = @__(@ThriftField))
 		private String type;
+		@Getter(onMethod = @__(@ThriftField(3)))
+		@Setter(onMethod = @__(@ThriftField))
 		private String address;
 	}
 
-	@Data
 	@ThriftStruct
 	public static class Limits implements Serializable {
 		private static final long serialVersionUID = 7797483638794413832L;
 
+		@Getter(onMethod = @__(@ThriftField(1)))
+		@Setter(onMethod = @__(@ThriftField))
 		private Limit openfiles = new Limit();
+		@Getter(onMethod = @__(@ThriftField(2)))
+		@Setter(onMethod = @__(@ThriftField))
 		private Limit cpu = new Limit();
+		@Getter(onMethod = @__(@ThriftField(3)))
+		@Setter(onMethod = @__(@ThriftField))
 		private Limit mem = new Limit();
+		@Getter(onMethod = @__(@ThriftField(4)))
+		@Setter(onMethod = @__(@ThriftField))
 		private Limit data = new Limit();
+		@Getter(onMethod = @__(@ThriftField(5)))
+		@Setter(onMethod = @__(@ThriftField))
 		private Limit core = new Limit();
+		@Getter(onMethod = @__(@ThriftField(6)))
+		@Setter(onMethod = @__(@ThriftField))
 		private Limit filesize = new Limit();
 	}
 
-	@Data
 	@ThriftStruct
 	public static class Limit implements Serializable {
 		private static final long serialVersionUID = -7149858217513420363L;
 
+		@Getter(onMethod = @__(@ThriftField(1)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long current;
+		@Getter(onMethod = @__(@ThriftField(2)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long max;
 	}
 
-	@Data
 	@ThriftStruct
 	public static class JvmInfo implements Serializable {
 		private static final long serialVersionUID = -6863013530457150304L;
@@ -152,24 +206,14 @@ public class Infos implements Serializable {
 			} catch (Throwable t) {
 				// ignore
 			}
-			info.inputArguments = runtimeMXBean.getInputArguments().toArray(new String[runtimeMXBean.getInputArguments().size()]);
+			info.inputArguments = runtimeMXBean.getInputArguments();
 			// info.bootClassPath = runtimeMXBean.getBootClassPath();
 			// info.classPath = runtimeMXBean.getClassPath();
 			// info.systemProperties = runtimeMXBean.getSystemProperties();
 
-			List<GarbageCollectorMXBean> gcMxBeans = ManagementFactory.getGarbageCollectorMXBeans();
-			info.gcCollectors = new String[gcMxBeans.size()];
-			for (int i = 0; i < gcMxBeans.size(); i++) {
-				GarbageCollectorMXBean gcMxBean = gcMxBeans.get(i);
-				info.gcCollectors[i] = gcMxBean.getName();
-			}
-
-			List<MemoryPoolMXBean> memoryPoolMXBeans = ManagementFactory.getMemoryPoolMXBeans();
-			info.memoryPools = new String[memoryPoolMXBeans.size()];
-			for (int i = 0; i < memoryPoolMXBeans.size(); i++) {
-				MemoryPoolMXBean memoryPoolMXBean = memoryPoolMXBeans.get(i);
-				info.memoryPools[i] = memoryPoolMXBean.getName();
-			}
+			info.gcCollectors = ManagementFactory.getGarbageCollectorMXBeans().stream().map(gcMxBean -> gcMxBean.getName()).collect(Collectors.toList());
+			info.memoryPools = ManagementFactory.getMemoryPoolMXBeans().stream().map(memoryPoolMXBean -> memoryPoolMXBean.getName())
+					.collect(Collectors.toList());
 
 			INSTANCE = info;
 		}
@@ -178,18 +222,34 @@ public class Infos implements Serializable {
 			return INSTANCE;
 		}
 
+		@Getter(onMethod = @__(@ThriftField(1)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long pid = -1;
 
+		@Getter(onMethod = @__(@ThriftField(2)))
+		@Setter(onMethod = @__(@ThriftField))
 		private String version = "";
+		@Getter(onMethod = @__(@ThriftField(3)))
+		@Setter(onMethod = @__(@ThriftField))
 		private String vmName = "";
+		@Getter(onMethod = @__(@ThriftField(4)))
+		@Setter(onMethod = @__(@ThriftField))
 		private String vmVersion = "";
+		@Getter(onMethod = @__(@ThriftField(5)))
+		@Setter(onMethod = @__(@ThriftField))
 		private String vmVendor = "";
 
+		@Getter(onMethod = @__(@ThriftField(6)))
+		@Setter(onMethod = @__(@ThriftField))
 		private long startTime = -1;
 
+		@Getter(onMethod = @__(@ThriftField(7)))
+		@Setter(onMethod = @__(@ThriftField))
 		private JvmMemory mem;
 
-		private String[] inputArguments;
+		@Getter(onMethod = @__(@ThriftField(8)))
+		@Setter(onMethod = @__(@ThriftField))
+		private List<String> inputArguments;
 
 		// private String bootClassPath;
 
@@ -197,10 +257,14 @@ public class Infos implements Serializable {
 
 		// private Map<String, String> systemProperties;
 
-		private String[] gcCollectors = new String[0];
-		private String[] memoryPools = new String[0];
+		@Getter(onMethod = @__(@ThriftField(9)))
+		@Setter(onMethod = @__(@ThriftField))
+		private List<String> gcCollectors;
+		@Getter(onMethod = @__(@ThriftField(10)))
+		@Setter(onMethod = @__(@ThriftField))
+		private List<String> memoryPools;
 
-		private JvmInfo() {
+		public JvmInfo() {
 		}
 
 		public int getVersionAsInteger() {
@@ -270,10 +334,20 @@ public class Infos implements Serializable {
 		public static class JvmMemory implements Serializable {
 			private static final long serialVersionUID = 3934246727825595616L;
 
+			@Getter(onMethod = @__(@ThriftField(1)))
+			@Setter(onMethod = @__(@ThriftField))
 			private ByteSizeValue heapInit = new ByteSizeValue(0);
+			@Getter(onMethod = @__(@ThriftField(2)))
+			@Setter(onMethod = @__(@ThriftField))
 			private ByteSizeValue heapMax = new ByteSizeValue(0);
+			@Getter(onMethod = @__(@ThriftField(3)))
+			@Setter(onMethod = @__(@ThriftField))
 			private ByteSizeValue nonHeapInit = new ByteSizeValue(0);
+			@Getter(onMethod = @__(@ThriftField(4)))
+			@Setter(onMethod = @__(@ThriftField))
 			private ByteSizeValue nonHeapMax = new ByteSizeValue(0);
+			@Getter(onMethod = @__(@ThriftField(5)))
+			@Setter(onMethod = @__(@ThriftField))
 			private ByteSizeValue directMemoryMax = new ByteSizeValue(0);
 		}
 	}

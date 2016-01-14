@@ -4,6 +4,8 @@ import static org.junit.Assert.assertNotNull;
 import io.airlift.units.Duration;
 import io.mandrel.common.settings.InfoSettings;
 import io.mandrel.common.thrift.ConfigurationTest.TheConfiguration;
+import io.mandrel.transport.thrift.ThriftServerConfiguration;
+import io.mandrel.transport.thrift.ThriftTransportProperties;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.assertj.core.api.Assertions;
@@ -21,13 +23,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class ConfigurationTest {
 
 	@Autowired
-	private ThriftServerProperties properties;
+	private ThriftTransportProperties properties;
 
 	@Autowired
 	private InfoSettings settings;
 
 	@Configuration
-	@EnableConfigurationProperties({ ThriftServerProperties.class, InfoSettings.class })
+	@EnableConfigurationProperties({ ThriftTransportProperties.class, InfoSettings.class })
 	@Import(ThriftServerConfiguration.class)
 	public static class TheConfiguration {
 

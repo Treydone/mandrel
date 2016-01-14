@@ -27,6 +27,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Locale;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import com.facebook.swift.codec.ThriftField;
+import com.facebook.swift.codec.ThriftStruct;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -39,13 +44,21 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonDeserialize(using = ByteSizeValueDeserializer.class)
 @JsonSerialize(using = ByteSizeValueSerializer.class)
+@ThriftStruct
 public class ByteSizeValue implements Serializable {
 
 	private static final long serialVersionUID = 2684458824218492593L;
 
+	@Getter(onMethod = @__(@ThriftField(1)))
+	@Setter(onMethod = @__(@ThriftField))
 	private long size;
-
+	@Getter(onMethod = @__(@ThriftField(2)))
+	@Setter(onMethod = @__(@ThriftField))
 	private ByteSizeUnit sizeUnit;
+
+	@Deprecated
+	public ByteSizeValue() {
+	}
 
 	public ByteSizeValue(long bytes) {
 		this(bytes, ByteSizeUnit.BYTES);

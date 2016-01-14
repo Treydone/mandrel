@@ -19,8 +19,8 @@
 package io.mandrel.common.container;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.common.thrift.Clients;
 import io.mandrel.metrics.Accumulators;
+import io.mandrel.transport.Clients;
 
 import java.util.concurrent.atomic.AtomicReference;
 

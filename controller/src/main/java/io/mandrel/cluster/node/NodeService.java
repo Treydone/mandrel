@@ -25,9 +25,9 @@ import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.sync.Container;
-import io.mandrel.common.thrift.Clients;
-import io.mandrel.common.thrift.Pooled;
 import io.mandrel.endpoints.contracts.NodeContract;
+import io.mandrel.transport.Clients;
+import io.mandrel.transport.Pooled;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,7 +63,6 @@ public class NodeService {
 			List<Node> nodes = instances.stream().map(i -> {
 				Pooled<NodeContract> pooled = clients.onNode(HostAndPort.fromParts(i.getHost(), i.getPort()));
 				Node node = pooled.map(client -> client.dhis());
-				node.setType(i.getName());
 				return node;
 			}).collect(Collectors.toList());
 			nodeRepository.update(nodes);
@@ -85,11 +84,11 @@ public class NodeService {
 			HostAndPort hostAndPort = HostAndPort.fromParts(uri.getHost(), uri.getPort());
 
 			List<Container> results = null;
-			if (node.getType().equals("worker")) {
-				results = clients.onWorker(hostAndPort).map(client -> client.listRunningContainers());
-			} else if (node.getType().equals("frontier")) {
-				results = clients.onFrontier(hostAndPort).map(client -> client.listRunningContainers());
-			}
+//			if (node.getType().equals("worker")) {
+//				results = clients.onWorker(hostAndPort).map(client -> client.listRunningContainers());
+//			} else if (node.getType().equals("frontier")) {
+//				results = clients.onFrontier(hostAndPort).map(client -> client.listRunningContainers());
+//			}
 			return results;
 		}).orElse(new ArrayList<>());
 	}

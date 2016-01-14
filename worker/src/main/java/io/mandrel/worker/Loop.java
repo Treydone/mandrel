@@ -23,7 +23,6 @@ import io.mandrel.blob.BlobStores;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.Strategy;
 import io.mandrel.common.net.Uri;
-import io.mandrel.common.thrift.Clients;
 import io.mandrel.data.Link;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
@@ -33,6 +32,7 @@ import io.mandrel.metrics.GlobalAccumulator;
 import io.mandrel.metrics.SpiderAccumulator;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.Requesters;
+import io.mandrel.transport.Clients;
 
 import java.net.ConnectException;
 import java.util.HashMap;

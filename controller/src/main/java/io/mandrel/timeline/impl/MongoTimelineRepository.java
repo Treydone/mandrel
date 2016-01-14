@@ -113,7 +113,7 @@ public class MongoTimelineRepository implements TimelineRepository {
 	public void pool(Listener listener) {
 
 		LocalDateTime date = LocalDateTime.now();
-		Bson query = new Document();
+		Bson query = Filters.gt("time", date);
 
 		try {
 			while (true) {

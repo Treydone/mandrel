@@ -16,16 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.endpoints;
+package io.mandrel.endpoints.web;
 
+import io.mandrel.document.Document;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
-@Data
-@Accessors(chain = true)
-public class PageRequest {
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-	private int draw;
-	private int start;
-	private int length;
+@Data
+@EqualsAndHashCode(callSuper = false)
+@Accessors(chain = true)
+public class Item extends Document {
+
+	private static final long serialVersionUID = 6406152284787009438L;
+
+	@JsonProperty("DT_RowId")
+	private String rowId;
+
+	@JsonProperty("DT_RowClass")
+	private String rowClass;
+
+	public static Item of(Document data) {
+		Item item = new Item();
+		item.putAll(data);
+		return item;
+	}
 }

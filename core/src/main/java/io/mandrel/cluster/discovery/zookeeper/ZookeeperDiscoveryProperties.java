@@ -7,7 +7,9 @@ import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
+@Component
 @ConfigurationProperties("discovery.zookeeper")
 @Data
 public class ZookeeperDiscoveryProperties {
@@ -17,8 +19,6 @@ public class ZookeeperDiscoveryProperties {
 	private String root = "/mandrel";
 
 	private String uriSpec = "{scheme}://{address}:{port}";
-
-	private String instanceHost;
 
 	@NotNull
 	private String connectString = "localhost:2181";

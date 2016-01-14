@@ -16,31 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.endpoints;
+package io.mandrel.transport;
 
-import io.mandrel.document.Document;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
+import io.mandrel.endpoints.contracts.ControllerContract;
+import io.mandrel.endpoints.contracts.FrontierContract;
+import io.mandrel.endpoints.contracts.NodeContract;
+import io.mandrel.endpoints.contracts.WorkerContract;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.net.HostAndPort;
 
-@Data
-@EqualsAndHashCode(callSuper = false)
-@Accessors(chain = true)
-public class Item extends Document {
+public interface Clients {
 
-	private static final long serialVersionUID = 6406152284787009438L;
+	Pooled<FrontierContract> onFrontier(HostAndPort hostAndPort);
 
-	@JsonProperty("DT_RowId")
-	private String rowId;
+	Pooled<FrontierContract> onRandomFrontier();
 
-	@JsonProperty("DT_RowClass")
-	private String rowClass;
+	Pooled<ControllerContract> onController(HostAndPort hostAndPort);
 
-	public static Item of(Document data) {
-		Item item = new Item();
-		item.putAll(data);
-		return item;
-	}
+	Pooled<ControllerContract> onRandomController();
+
+	Pooled<WorkerContract> onWorker(HostAndPort hostAndPort);
+
+	Pooled<NodeContract> onNode(HostAndPort hostAndPort);
 }

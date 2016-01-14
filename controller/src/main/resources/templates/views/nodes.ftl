@@ -28,7 +28,7 @@
 	                  <table class="table table-hover">
 	                    <tbody><tr>
 	                      <th>URI</th>
-	                      <th>Type</th>
+	                      <th>Services</th>
 	                      <th>Version</th>
 	                      <th>Hostname</th>
 	                      <th>FQDN</th>
@@ -41,7 +41,7 @@
 							<#assign node = nodes?values[key_index]>
 							<tr>
 		                      <td><a href="/nodes/${node.id}">${node.id}</a></td>
-		                      <td>${node.type!}</td>
+		                      <td>TODO...</td>
 		                      <td>${node.version}</td>
 		                      <td>${node.infos.hostname}</td>
 		                      <td>${node.infos.fqdn}</td>

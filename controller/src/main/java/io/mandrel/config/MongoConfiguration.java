@@ -18,29 +18,39 @@
  */
 package io.mandrel.config;
 
+import io.mandrel.common.bson.LocalDateTimeCodec;
+
+import java.net.UnknownHostException;
+
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.mongo.MongoProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoClientOptions.Builder;
+import com.mongodb.MongoClientURI;
 
 @Configuration
 @ConditionalOnProperty(value = "engine.mongodb.enabled", matchIfMissing = true)
 public class MongoConfiguration {
 
-	// @Autowired
-	// private MongoProperties properties;
+	@Autowired
+	private MongoProperties properties;
 
-	// @Bean
-	// public MongoClientOptions options() {
-	// CodecRegistry codecRegistry =
-	// CodecRegistries.fromRegistries(MongoClient.getDefaultCodecRegistry(),
-	// CodecRegistries.fromCodecs(new URICodec()
-	// // , new LocalDateTimeCodec()
-	// ));
-	// return MongoClientOptions.builder().codecRegistry(codecRegistry).build();
-	// }
+	@Bean
+	public Builder options() {
+		CodecRegistry codecRegistry = CodecRegistries.fromRegistries(MongoClient.getDefaultCodecRegistry(),
+				CodecRegistries.fromCodecs(new LocalDateTimeCodec()));
+		return MongoClientOptions.builder().codecRegistry(codecRegistry);
+	}
 
-	// @Bean
-	// public MongoClient mongo() throws UnknownHostException {
-	// return new MongoClient(new ServerAddress(properties.getHost(),
-	// properties.getPort()), options());
-	// }
+	@Bean
+	public MongoClient mongo() throws UnknownHostException {
+		return new MongoClient(new MongoClientURI(properties.getUri(), options()));
+	}
 }

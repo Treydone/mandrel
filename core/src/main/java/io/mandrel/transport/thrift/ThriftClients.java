@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.common.thrift;
+package io.mandrel.transport.thrift;
 
 import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.discovery.ServiceIds;
@@ -26,21 +26,29 @@ import io.mandrel.endpoints.contracts.ControllerContract;
 import io.mandrel.endpoints.contracts.FrontierContract;
 import io.mandrel.endpoints.contracts.NodeContract;
 import io.mandrel.endpoints.contracts.WorkerContract;
+import io.mandrel.transport.Clients;
+import io.mandrel.transport.Pooled;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import com.facebook.swift.codec.ThriftCodecManager;
+import com.facebook.swift.codec.internal.compiler.CompilerThriftCodecFactory;
+import com.facebook.swift.codec.metadata.ThriftCatalog;
 import com.facebook.swift.service.ThriftClientManager;
 import com.google.common.base.Throwables;
 import com.google.common.net.HostAndPort;
 
 @Component
-public class Clients {
+@ConditionalOnProperty(value = "transport.thrift.enabled", matchIfMissing = true)
+public class ThriftClients implements Clients {
 
 	private KeyedClientPool<FrontierContract> frontiers;
 	private KeyedClientPool<ControllerContract> controllers;
@@ -57,7 +65,11 @@ public class Clients {
 		poolConfig.setMaxTotalPerKey(20);
 		poolConfig.setMinIdlePerKey(1);
 
-		ThriftClientManager clientManager = new ThriftClientManager();
+		ThriftCatalog catalog = new ThriftCatalog();
+		catalog.addDefaultCoercions(MandrelCoercions.class);
+		ThriftCodecManager codecManager = new ThriftCodecManager(new CompilerThriftCodecFactory(ThriftCodecManager.class.getClassLoader()), catalog,
+				Collections.emptySet());
+		ThriftClientManager clientManager = new ThriftClientManager(codecManager);
 
 		frontiers = new KeyedClientPool<>(FrontierContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED

@@ -2,9 +2,16 @@ package io.mandrel.common.net;
 
 import java.net.URI;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
-@Data
+import com.facebook.swift.codec.ThriftField;
+import com.facebook.swift.codec.ThriftStruct;
+import com.google.common.annotations.VisibleForTesting;
+
+@Accessors(chain = true)
+@ThriftStruct
 public class Uri {
 
 	private static final String INTERNAL_SCHEME = "mandrel";
@@ -38,11 +45,28 @@ public class Uri {
 				parser.query);
 	}
 
+	@VisibleForTesting
+	public Uri() {
+
+	}
+
+	@Getter(onMethod = @__(@ThriftField(1)))
+	@Setter(onMethod = @__(@ThriftField))
 	private String scheme;
+	@Getter(onMethod = @__(@ThriftField(2)))
+	@Setter(onMethod = @__(@ThriftField))
 	private String query;
+	@Getter(onMethod = @__(@ThriftField(3)))
+	@Setter(onMethod = @__(@ThriftField))
 	private String userInfo;
+	@Getter(onMethod = @__(@ThriftField(4)))
+	@Setter(onMethod = @__(@ThriftField))
 	private String host;
+	@Getter(onMethod = @__(@ThriftField(5)))
+	@Setter(onMethod = @__(@ThriftField))
 	private int port;
+	@Getter(onMethod = @__(@ThriftField(6)))
+	@Setter(onMethod = @__(@ThriftField))
 	private String path;
 
 	public Uri(String scheme,//

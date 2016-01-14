@@ -80,11 +80,11 @@
           </div><!-- /.box -->
         </div><!-- ./col -->
         <div class="col-md-6">
-          <#if node.type != "controller">
+          <#--<#if node.type != "controller">
           <div class="box">
             <div class="box-header">
               <h3 class="box-title">Containers</h3>
-            </div><!-- /.box-header -->
+            </div>
             <div class="box-body table-responsive no-padding">
               <table class="table table-hover">
                 <tbody><tr>
@@ -100,9 +100,9 @@
                     </tr>
 			    </#list>
               </tbody></table>
-            </div><!-- /.box-body -->
+            </div>
           </div>
-          </#if>
+          </#if>-->
         </div><!-- ./col -->
       </div>
 		                    

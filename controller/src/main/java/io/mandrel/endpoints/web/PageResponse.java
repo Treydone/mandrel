@@ -16,11 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.monitor;
+package io.mandrel.endpoints.web;
+
+import io.mandrel.document.Document;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
-public class Errors {
+@Accessors(chain = true)
+public class PageResponse {
 
+	private int draw;
+	private long recordsTotal;
+	private long recordsFiltered;
+
+	private List<Item> data;
+
+	public static <U extends Collection<Document>> PageResponse of(U items) {
+		return new PageResponse().setData(items.stream().map(Item::of).collect(Collectors.toList()));
+	}
 }

@@ -35,11 +35,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.assertj.core.util.Iterables;
 import org.bson.Document;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.stereotype.Component;
+import org.weakref.jmx.internal.guava.collect.Lists;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
@@ -73,7 +73,7 @@ public class MongoMetricsRepository implements MetricsRepository {
 		List<ReplaceOneModel<Document>> requests = byKey.entrySet().stream().map(e -> {
 			Document updates = new Document();
 			Iterable<String> results = splitter.split(e.getKey());
-			String[] elts = Iterables.toArray(results);
+			String[] elts = (String[]) Lists.newArrayList(results).toArray();
 			e.getValue().stream().forEach(i -> updates.append(elts[1], i.getValue()));
 			return Pair.of(elts[0], new Document("$inc", updates));
 		}).map(pair -> new ReplaceOneModel<Document>(Filters.eq("_id", pair.getLeft()), pair.getRight(), new UpdateOptions().upsert(true)))

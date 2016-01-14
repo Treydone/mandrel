@@ -24,7 +24,6 @@ import io.mandrel.common.container.AbstractContainer;
 import io.mandrel.common.container.Status;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
-import io.mandrel.common.thrift.Clients;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.document.DocumentStores;
@@ -33,6 +32,7 @@ import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.Accumulators;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.Requesters;
+import io.mandrel.transport.Clients;
 
 import java.util.ArrayList;
 import java.util.List;
