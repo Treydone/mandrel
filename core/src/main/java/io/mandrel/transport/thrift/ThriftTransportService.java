@@ -57,7 +57,6 @@ public class ThriftTransportService implements TransportService {
 
 	@PostConstruct
 	public void init() {
-
 		ThriftCatalog catalog = new ThriftCatalog();
 		catalog.addDefaultCoercions(MandrelCoercions.class);
 		ThriftCodecManager codecManager = new ThriftCodecManager(new CompilerThriftCodecFactory(ThriftCodecManager.class.getClassLoader()), catalog,
@@ -79,16 +78,17 @@ public class ThriftTransportService implements TransportService {
 		});
 
 		Event event = Event.forNode();
-		event.getNode().setNodeId(Node.idOf(Uri.internal(discoveryClient.getInstanceHost(), globalProperties.getPort())));
-		event.getNode().setType(NodeEventType.NODE_STARTED);
+		event.getNode().setNodeId(Node.idOf(Uri.internal(discoveryClient.getInstanceHost(), globalProperties.getPort()))).setType(NodeEventType.NODE_STARTED);
 		send(event);
 	}
 
 	@PreDestroy
 	public void destroy() {
 
+		log.debug("Shutting down thrift transport");
+
 		resources.forEach(resource -> {
-			log.debug("Registering service {}", resource.getServiceName());
+			log.debug("Unregistering service {}", resource.getServiceName());
 			ServiceInstance instance = ServiceInstance.builder().port(globalProperties.getPort()).name(resource.getServiceName()).build();
 			discoveryClient.unregister(instance);
 		});
@@ -96,8 +96,7 @@ public class ThriftTransportService implements TransportService {
 		server.close();
 
 		Event event = Event.forNode();
-		event.getNode().setNodeId(Node.idOf(Uri.internal(discoveryClient.getInstanceHost(), globalProperties.getPort())));
-		event.getNode().setType(NodeEventType.NODE_STOPPED);
+		event.getNode().setNodeId(Node.idOf(Uri.internal(discoveryClient.getInstanceHost(), globalProperties.getPort()))).setType(NodeEventType.NODE_STOPPED);
 		send(event);
 	}
 

@@ -23,10 +23,12 @@ import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import com.facebook.swift.codec.ThriftField;
 import com.facebook.swift.codec.ThriftStruct;
 
+@Accessors(chain = true)
 @ThriftStruct
 public class Event {
 

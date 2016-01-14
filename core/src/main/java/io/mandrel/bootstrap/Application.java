@@ -44,9 +44,7 @@ public abstract class Application {
 		// Print some useful infos about the classpath and others things
 		// new JHades().overlappingJarsReport();
 
-		SpringApplicationBuilder builder = new SpringApplicationBuilder(getClass()).properties(properties)
-//				.listeners(new ApplicationPidFileWriter())
-				;
+		SpringApplicationBuilder builder = new SpringApplicationBuilder(getClass()).properties(properties).registerShutdownHook(true);
 		configure(builder);
 		context = builder.run(args);
 		context.start();
@@ -59,7 +57,6 @@ public abstract class Application {
 			log.warn("Max openfiles limit is too low (open: {}, max: {})", sigar.infos().getLimits().getOpenfiles().getCurrent(), sigar.infos().getLimits()
 					.getOpenfiles().getMax());
 		}
-
 	}
 
 	public void stop() {

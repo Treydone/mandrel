@@ -144,9 +144,7 @@ public class SpiderService {
 
 	public void updateTimeline(Spider spider, SpiderEventType status) {
 		Event event = Event.forSpider();
-		event.getSpider().setSpiderId(spider.getId());
-		event.getSpider().setSpiderName(spider.getName());
-		event.getSpider().setType(status);
+		event.getSpider().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(status);
 		timelineService.add(event);
 	}
 
