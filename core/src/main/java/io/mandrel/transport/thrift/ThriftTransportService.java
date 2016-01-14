@@ -1,9 +1,25 @@
+/*
+ * Licensed to Mandrel under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Mandrel licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package io.mandrel.transport.thrift;
 
 import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.discovery.ServiceInstance;
-import io.mandrel.cluster.node.Node;
-import io.mandrel.common.net.Uri;
 import io.mandrel.endpoints.contracts.Contract;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.Event.NodeInfo.NodeEventType;
@@ -78,7 +94,7 @@ public class ThriftTransportService implements TransportService {
 		});
 
 		Event event = Event.forNode();
-		event.getNode().setNodeId(Node.idOf(Uri.internal(discoveryClient.getInstanceHost(), globalProperties.getPort()))).setType(NodeEventType.NODE_STARTED);
+		event.getNode().setNodeId(discoveryClient.getInstanceId()).setType(NodeEventType.NODE_STARTED);
 		send(event);
 	}
 
@@ -89,14 +105,13 @@ public class ThriftTransportService implements TransportService {
 
 		resources.forEach(resource -> {
 			log.debug("Unregistering service {}", resource.getServiceName());
-			ServiceInstance instance = ServiceInstance.builder().port(globalProperties.getPort()).name(resource.getServiceName()).build();
-			discoveryClient.unregister(instance);
+			discoveryClient.unregister(resource.getServiceName());
 		});
 
 		server.close();
 
 		Event event = Event.forNode();
-		event.getNode().setNodeId(Node.idOf(Uri.internal(discoveryClient.getInstanceHost(), globalProperties.getPort()))).setType(NodeEventType.NODE_STOPPED);
+		event.getNode().setNodeId(discoveryClient.getInstanceId()).setType(NodeEventType.NODE_STOPPED);
 		send(event);
 	}
 

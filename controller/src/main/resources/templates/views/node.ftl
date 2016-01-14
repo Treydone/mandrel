@@ -13,7 +13,7 @@
           <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
             <li><a href="/nodes"><i class="fa fa-laptop"></i> Nodes</a></li>
-            <li class="active">${node.uri}</li>
+            <li class="active">${node.id}</li>
           </ol>
 </#macro>
 
@@ -67,7 +67,7 @@
             </div><!-- /.box-header -->
             <div class="box-body">
 	            <ul>
-			      <li><a href="/nodes/${node.id}">${node.uri}</a></li>
+			      <li><a href="/nodes/${node.id}">${node.id}</a></li>
 			      <li>${node.infos.hostname}</li>
 			      <li>${node.infos.fqdn}</li>
 			      <li><span class="label label-success">OK</span></li>
@@ -80,7 +80,6 @@
           </div><!-- /.box -->
         </div><!-- ./col -->
         <div class="col-md-6">
-          <#--<#if node.type != "controller">
           <div class="box">
             <div class="box-header">
               <h3 class="box-title">Containers</h3>
@@ -91,18 +90,22 @@
                   <th>Spider</th>
                   <th>Version</th>
                   <th>Status</th>
+                  <th>Type</th>
                 </tr>
-                <#list containers as container> 
-					<tr>
+			    <tr>
+                <#list containersByType?keys as key> 
+					<#assign containers = containersByType?values[key_index]>
+                	<#list containers as container> 
                       <td><a href="/spiders/${container.spiderId?c}">${container.spiderId?c}</a></td>
                       <td>${container.version?c}</td>
                       <td>${container.status}</td>
-                    </tr>
+                      <td>${key}</td>
+                    </#list>
 			    </#list>
+                </tr>
               </tbody></table>
             </div>
           </div>
-          </#if>-->
         </div><!-- ./col -->
       </div>
 		                    

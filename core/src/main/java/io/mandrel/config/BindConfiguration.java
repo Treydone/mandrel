@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.std.CustomLongDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.hppc.HppcModule;
 
 @Configuration
@@ -66,7 +67,7 @@ public class BindConfiguration {
 		// new AfterburnerModule(),
 		// new Jdk8Module(),
 		// new JavaTimeModule(),
-				new HppcModule());
+				new HppcModule(), new GuavaModule());
 
 		SimpleModule module = new SimpleModule();
 		module.addDeserializer(Long.class, CustomLongDeserializer.wrapperInstance);

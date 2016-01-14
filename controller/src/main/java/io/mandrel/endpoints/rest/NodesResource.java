@@ -20,10 +20,8 @@ package io.mandrel.endpoints.rest;
 
 import io.mandrel.cluster.node.Node;
 import io.mandrel.cluster.node.NodeService;
-import io.mandrel.common.net.Uri;
 
 import java.util.Map;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -48,13 +46,13 @@ public class NodesResource {
 
 	@RequestMapping(method = RequestMethod.GET)
 	@ApiOperation(value = "List all the nodes", response = Node.class, responseContainer = "Map")
-	public Map<Uri, Node> all() {
+	public Map<String, Node> all() {
 		return nodeService.nodes();
 	}
 
 	@RequestMapping(params = "uri", method = RequestMethod.GET)
 	@ApiOperation(value = "Find a node by its id", response = Node.class)
-	public Optional<Node> id(@RequestParam Uri uri) {
-		return nodeService.node(uri);
+	public Node id(@RequestParam String id) {
+		return nodeService.node(id);
 	}
 }

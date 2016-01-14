@@ -18,6 +18,7 @@
  */
 package io.mandrel.config;
 
+import io.mandrel.common.bson.HostAndPortCodec;
 import io.mandrel.common.bson.LocalDateTimeCodec;
 
 import java.net.UnknownHostException;
@@ -45,7 +46,7 @@ public class MongoConfiguration {
 	@Bean
 	public Builder options() {
 		CodecRegistry codecRegistry = CodecRegistries.fromRegistries(MongoClient.getDefaultCodecRegistry(),
-				CodecRegistries.fromCodecs(new LocalDateTimeCodec()));
+				CodecRegistries.fromCodecs(new LocalDateTimeCodec(), new HostAndPortCodec()));
 		return MongoClientOptions.builder().codecRegistry(codecRegistry);
 	}
 

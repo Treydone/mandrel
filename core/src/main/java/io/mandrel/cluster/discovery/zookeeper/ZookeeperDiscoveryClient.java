@@ -1,3 +1,21 @@
+/*
+ * Licensed to Mandrel under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Mandrel licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package io.mandrel.cluster.discovery.zookeeper;
 
 import static org.springframework.util.ReflectionUtils.rethrowRuntimeException;
@@ -13,10 +31,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.UUID;
 
 import lombok.SneakyThrows;
 
 import org.apache.curator.x.discovery.ServiceDiscovery;
+import org.apache.curator.x.discovery.ServiceInstanceBuilder;
 import org.apache.curator.x.discovery.UriSpec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -29,42 +49,56 @@ public class ZookeeperDiscoveryClient implements DiscoveryClient {
 
 	@Autowired
 	private ServiceDiscovery<ZookeeperInstance> serviceDiscovery;
-
 	@Autowired
 	private DiscoveryProperties discoveryProperties;
 	@Autowired
 	private ZookeeperDiscoveryProperties zookeeperDiscoveryProperties;
-
 	@Autowired
 	private ApplicationContext context;
+
+	private final static String ID = UUID.randomUUID().toString();
 
 	@Override
 	@SneakyThrows
 	public ServiceInstance register(ServiceInstance instance) {
-		org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> service = createService(instance);
+		org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> service = createService(instance).id(ID).build();
 		serviceDiscovery.registerService(service);
 		return create(service);
 	}
 
-	public org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> createService(ServiceInstance instance) throws Exception {
+	protected ServiceInstanceBuilder<ZookeeperInstance> createService(ServiceInstance instance) throws Exception {
 		String host = getInstanceHost();
 
-		org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> service = org.apache.curator.x.discovery.ServiceInstance
-				.<ZookeeperInstance> builder().name(instance.getName()).payload(new ZookeeperInstance(context.getId())).port(instance.getPort()).address(host)
-				.uriSpec(new UriSpec(zookeeperDiscoveryProperties.getUriSpec())).build();
+		ServiceInstanceBuilder<ZookeeperInstance> service = org.apache.curator.x.discovery.ServiceInstance.<ZookeeperInstance> builder()
+				.name(instance.getName()).payload(new ZookeeperInstance(context.getId())).port(instance.getPort()).address(host)
+				.uriSpec(new UriSpec(zookeeperDiscoveryProperties.getUriSpec()));
 		return service;
 	}
 
+	@Override
 	public String getInstanceHost() {
 		String host = discoveryProperties.getInstanceHost() == null ? getIpAddress() : discoveryProperties.getInstanceHost();
 		return host;
 	}
 
 	@Override
+	public String getInstanceId() {
+		return ID;
+	}
+
+	@Override
 	@SneakyThrows
-	public void unregister(ServiceInstance instance) {
-		org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> service = createService(instance);
+	public void unregister(String serviceId) {
+		org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> service = org.apache.curator.x.discovery.ServiceInstance
+				.<ZookeeperInstance> builder().name(serviceId).id(ID).build();
 		serviceDiscovery.unregisterService(service);
+	}
+
+	@Override
+	@SneakyThrows
+	public ServiceInstance getLocalInstance(String serviceId) {
+		org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> zkInstance = serviceDiscovery.queryForInstance(serviceId, ID);
+		return create(zkInstance);
 	}
 
 	@Override
@@ -81,8 +115,18 @@ public class ZookeeperDiscoveryClient implements DiscoveryClient {
 		return instances;
 	}
 
-	public ServiceInstance create(org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> instance) {
-		return ServiceInstance.builder().host(instance.getAddress()).port(instance.getPort()).name(instance.getName()).build();
+	@Override
+	@SneakyThrows
+	public ServiceInstance getInstance(String id, String serviceId) {
+		org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> zkInstance = serviceDiscovery.queryForInstance(serviceId, id);
+		return create(zkInstance);
+	}
+
+	protected ServiceInstance create(org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> instance) {
+		if (instance != null) {
+			return ServiceInstance.builder().host(instance.getAddress()).port(instance.getPort()).name(instance.getName()).id(instance.getId()).build();
+		}
+		return null;
 	}
 
 	@Override

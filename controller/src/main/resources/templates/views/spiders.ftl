@@ -72,6 +72,15 @@
                   </div>
                 </div><!-- /.box-body -->
                 </#if>
+                <#if spiders?size gt 0>
+                <div class="box-body">
+                  <div class="callout callout-success">
+                    <h4>Add spider!</h4>
+                    <p>Create a new spider.</p>
+                    <a href="/spiders/add"><button type="button" class="btn btn-outline"><i class="fa fa-plus"></i> Add new!</button></a>
+                  </div>
+                </div><!-- /.box-body -->
+                </#if>
               </div>
 		</div>
 	</div>

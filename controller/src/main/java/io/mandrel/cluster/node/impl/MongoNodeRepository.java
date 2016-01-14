@@ -20,7 +20,6 @@ package io.mandrel.cluster.node.impl;
 
 import io.mandrel.cluster.node.Node;
 import io.mandrel.cluster.node.NodeRepository;
-import io.mandrel.common.net.Uri;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -83,8 +82,8 @@ public class MongoNodeRepository implements NodeRepository {
 	}
 
 	@Override
-	public Collection<Node> findAll(Collection<Uri> uris) {
-		return Lists.newArrayList(collection.find(Filters.in("_id", uris.stream().map(Node::idOf).collect(Collectors.toList()))).map(doc -> {
+	public Collection<Node> findAll(Collection<String> ids) {
+		return Lists.newArrayList(collection.find(Filters.in("_id", ids)).map(doc -> {
 			try {
 				return mapper.readValue(doc.toJson(), Node.class);
 			} catch (Exception e) {
@@ -99,7 +98,7 @@ public class MongoNodeRepository implements NodeRepository {
 				.stream()
 				.map(node -> {
 					try {
-						return new ReplaceOneModel<Document>(new Document("_id", Node.idOf(node.getUri())), Document.parse(mapper.writeValueAsString(node)),
+						return new ReplaceOneModel<Document>(new Document("_id", node.getId()), Document.parse(mapper.writeValueAsString(node)),
 								new UpdateOptions().upsert(true));
 					} catch (Exception e) {
 						throw Throwables.propagate(e);

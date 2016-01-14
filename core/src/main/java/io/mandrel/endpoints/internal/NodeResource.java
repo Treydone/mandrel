@@ -18,14 +18,11 @@
  */
 package io.mandrel.endpoints.internal;
 
-import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.node.Node;
-import io.mandrel.common.net.Uri;
 import io.mandrel.common.settings.InfoSettings;
 import io.mandrel.endpoints.contracts.NodeContract;
 import io.mandrel.monitor.Infos;
 import io.mandrel.monitor.SigarService;
-import io.mandrel.transport.TransportProperties;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,16 +37,12 @@ public class NodeResource implements NodeContract {
 	@Autowired
 	private SigarService sigarService;
 	@Autowired
-	private DiscoveryClient discoveryClient;
-	@Autowired
-	private TransportProperties properties;
-	@Autowired
 	private InfoSettings settings;
 
 	public Node dhis() {
 		try {
 			Infos infos = sigarService.infos();
-			return new Node().setInfos(infos).setUri(Uri.internal(discoveryClient.getInstanceHost(), properties.getPort())).setVersion(settings.getVersion());
+			return new Node().setInfos(infos).setVersion(settings.getVersion());
 		} catch (Exception e) {
 			log.warn("Can not set the infos for the endpoint", e);
 			throw Throwables.propagate(e);
