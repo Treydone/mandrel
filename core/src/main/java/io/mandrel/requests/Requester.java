@@ -66,9 +66,9 @@ public abstract class Requester<STRATEGY extends Strategy> extends TaskContextAw
 
 	private STRATEGY strategy;
 
-	public abstract Blob getBlocking(Uri uri, Spider spider) throws Exception;
+	public abstract Blob get(Uri uri, Spider spider) throws Exception;
 
-	public abstract Blob getBlocking(Uri uri) throws Exception;
+	public abstract Blob get(Uri uri) throws Exception;
 
 	public abstract Set<String> getProtocols();
 }

@@ -117,7 +117,7 @@ public class Loop implements Runnable {
 					if (requester.isPresent()) {
 						Requester<? extends Strategy> r = requester.get();
 						try {
-							Blob blob = r.getBlocking(uri);
+							Blob blob = r.get(uri);
 
 							watch.stop();
 

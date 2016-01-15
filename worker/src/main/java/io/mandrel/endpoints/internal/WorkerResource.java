@@ -24,6 +24,7 @@ import io.mandrel.common.data.Statuses;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
+import io.mandrel.data.analysis.AnalysisService;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.endpoints.contracts.WorkerContract;
 import io.mandrel.metrics.Accumulators;
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,13 +53,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class WorkerResource implements WorkerContract {
 
 	@Autowired
-	private ExtractorService extractorService;
-	@Autowired
-	private Accumulators accumulators;
-	@Autowired
 	private Clients clients;
 	@Autowired
 	private ObjectMapper objectMapper;
+	@Autowired
+	private AnalysisService analysisService;
+	@Autowired
+	private ExtractorService extractorService;
+	@Autowired
+	private Accumulators accumulators;
 
 	private Supplier<? extends NotFoundException> workerNotFound = () -> new NotFoundException("Worker not found");
 
@@ -152,7 +156,15 @@ public class WorkerResource implements WorkerContract {
 	}
 
 	@Override
+	@SneakyThrows
+	public byte[] analyse(Long id, String source) {
+		Spider spider = WorkerContainers.get(id).orElseThrow(workerNotFound).spider();
+		return objectMapper.writeValueAsBytes(analysisService.analyze(spider, source));
+	}
+
+	@Override
 	public void close() throws Exception {
 
 	}
+
 }

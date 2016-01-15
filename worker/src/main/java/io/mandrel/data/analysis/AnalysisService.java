@@ -67,7 +67,7 @@ public class AnalysisService {
 		Blob blob;
 		try {
 			Uri uri = Uri.create(source);
-			blob = Requesters.of(uri.getScheme()).get().getBlocking(uri, spider);
+			blob = Requesters.of(uri.getScheme()).get().get(uri, spider);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
@@ -136,7 +136,7 @@ public class AnalysisService {
 		SiteMapParser siteMapParser = new SiteMapParser();
 		try {
 			Uri uri = Uri.create(sitemapUrl);
-			Blob blob = Requesters.of(uri.getScheme()).get().getBlocking(uri);
+			Blob blob = Requesters.of(uri.getScheme()).get().get(uri);
 			String contentType = blob.metadata().contentMetadata().contentType() != null ? blob.metadata().contentMetadata().contentType() : "text/xml";
 
 			AbstractSiteMap sitemap = siteMapParser.parseSiteMap(contentType, IOUtils.toByteArray(blob.payload().openStream()), new URL(sitemapUrl));

@@ -22,6 +22,8 @@ import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.discovery.ServiceInstance;
 import io.mandrel.common.ControllerNotFoundException;
+import io.mandrel.common.FrontierNotFoundException;
+import io.mandrel.common.WorkerNotFoundException;
 import io.mandrel.endpoints.contracts.ControllerContract;
 import io.mandrel.endpoints.contracts.FrontierContract;
 import io.mandrel.endpoints.contracts.NodeContract;
@@ -99,7 +101,7 @@ public class ThriftClients implements Clients {
 				throw Throwables.propagate(e);
 			}
 		} else {
-			throw new ControllerNotFoundException("No frontier found");
+			throw new FrontierNotFoundException("No frontier found");
 		}
 	}
 
@@ -117,12 +119,26 @@ public class ThriftClients implements Clients {
 				throw Throwables.propagate(e);
 			}
 		} else {
-			throw new ControllerNotFoundException("No controller found");
+			throw new WorkerNotFoundException("No worker found");
 		}
 	}
 
 	public Pooled<WorkerContract> onWorker(HostAndPort hostAndPort) {
 		return workers.get(hostAndPort);
+	}
+
+	public Pooled<WorkerContract> onRandomWorker() {
+		Optional<ServiceInstance> opController = discoveryClient.getInstances(ServiceIds.worker()).stream().findFirst();
+		if (opController.isPresent()) {
+			try {
+				ServiceInstance instance = opController.get();
+				return workers.get(instance.getHostAndPort());
+			} catch (Exception e) {
+				throw Throwables.propagate(e);
+			}
+		} else {
+			throw new ControllerNotFoundException("No controller found");
+		}
 	}
 
 	public Pooled<NodeContract> onNode(HostAndPort hostAndPort) {

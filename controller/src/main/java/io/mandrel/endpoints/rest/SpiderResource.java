@@ -19,11 +19,10 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.data.analysis.Analysis;
-import io.mandrel.data.analysis.AnalysisService;
 import io.mandrel.metrics.MetricsRepository;
 import io.mandrel.metrics.SpiderMetrics;
 import io.mandrel.spider.SpiderService;
+import io.mandrel.transport.Clients;
 
 import java.util.List;
 
@@ -52,10 +51,8 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class SpiderResource {
 
-	private final AnalysisService analysisService;
-
+	private final Clients clients;
 	private final SpiderService spiderService;
-
 	private final MetricsRepository metricsRepository;
 
 	@ApiOperation(value = "List all the spiders", response = Spider.class, responseContainer = "List")
@@ -96,9 +93,8 @@ public class SpiderResource {
 
 	@ApiOperation(value = "Analyze a source against a spider")
 	@RequestMapping(value = "/{id}/analyze", method = RequestMethod.GET)
-	public Analysis analyze(@PathVariable Long id, @RequestParam String source) {
-		Spider spider = spiderService.get(id);
-		return analysisService.analyze(spider, source);
+	public byte[] analyze(@PathVariable Long id, @RequestParam String source) {
+		return clients.onRandomWorker().map(w -> w.analyse(id, source));
 	}
 
 	@ApiOperation(value = "Pause a spider")

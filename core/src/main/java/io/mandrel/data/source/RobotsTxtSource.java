@@ -80,7 +80,7 @@ public class RobotsTxtSource extends Source {
 	public void register(EntryListener listener) {
 
 		// TODO to be injected?
-		Requester requester = new ApacheHttpRequester();
+		Requester<?> requester = new ApacheHttpRequester();
 
 		// Robots.txt
 		ExtendedRobotRules robotRules;
@@ -100,14 +100,14 @@ public class RobotsTxtSource extends Source {
 		}
 	}
 
-	public List<AbstractSiteMap> getSitemapsForUrl(String sitemapUrl, EntryListener listener, Requester requester, int depth) {
+	public List<AbstractSiteMap> getSitemapsForUrl(String sitemapUrl, EntryListener listener, Requester<?> requester, int depth) {
 		List<AbstractSiteMap> sitemaps = new ArrayList<>();
 
 		SiteMapParser siteMapParser = new SiteMapParser();
 
 		Blob blob;
 		try {
-			blob = requester.getBlocking(Uri.create(sitemapUrl));
+			blob = requester.get(Uri.create(sitemapUrl));
 		} catch (Exception e) {
 			log.warn("Can not get the sitemap {}", new Object[] { sitemapUrl }, e);
 			throw Throwables.propagate(e);

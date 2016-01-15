@@ -76,12 +76,12 @@ public class FtpRequester extends Requester<FtpStrategy> {
 	}
 
 	@Override
-	public Blob getBlocking(Uri uri, Spider spider) throws Exception {
+	public Blob get(Uri uri, Spider spider) throws Exception {
 		return null;
 	}
 
 	@Override
-	public Blob getBlocking(Uri uri) throws Exception {
+	public Blob get(Uri uri) throws Exception {
 		return null;
 	}
 

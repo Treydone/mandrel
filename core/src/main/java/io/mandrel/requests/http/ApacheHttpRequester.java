@@ -340,14 +340,14 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 
 	// TODO use RxNetty with CompletableFuture
 	@Deprecated
-	public Blob getBlocking(Uri uri, Spider spider) throws Exception {
+	public Blob get(Uri uri, Spider spider) throws Exception {
 		HttpUriRequest request = prepareRequest(uri, spider);
 		HttpResponse response = client.execute(request, null).get(5000, TimeUnit.MILLISECONDS);
 		return extractWebPage(uri, response, null);
 	}
 
 	@Deprecated
-	public Blob getBlocking(Uri uri) throws Exception {
+	public Blob get(Uri uri) throws Exception {
 		HttpResponse response = client.execute(new HttpGet(uri.toURI()), null).get(5000, TimeUnit.MILLISECONDS);
 		return extractWebPage(uri, response, null);
 	}

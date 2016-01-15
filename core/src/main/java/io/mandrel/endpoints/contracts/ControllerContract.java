@@ -19,7 +19,6 @@
 package io.mandrel.endpoints.contracts;
 
 import io.mandrel.cluster.discovery.ServiceIds;
-import io.mandrel.cluster.node.Node;
 import io.mandrel.timeline.Event;
 
 import java.util.Map;
@@ -35,9 +34,6 @@ public interface ControllerContract extends Contract, AutoCloseable {
 
 	@ThriftMethod
 	void updateMetrics(Map<String, Long> accumulators);
-
-	@ThriftMethod
-	void updateNode(Node node);
 
 	public default String getServiceName() {
 		return ServiceIds.controller();

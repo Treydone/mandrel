@@ -50,6 +50,9 @@ public interface WorkerContract extends Contract, AutoCloseable {
 	@ThriftMethod
 	void kill(@ThriftField(value = 1, name = "id") Long id);
 
+	@ThriftMethod
+	byte[] analyse(@ThriftField(value = 1, name = "id") Long id, @ThriftField(value = 2, name = "source") String source);
+
 	public default String getServiceName() {
 		return ServiceIds.worker();
 	}
