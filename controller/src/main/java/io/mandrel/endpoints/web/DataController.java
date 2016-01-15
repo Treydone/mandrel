@@ -28,12 +28,13 @@ import io.mandrel.spider.SpiderService;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,8 +49,8 @@ public class DataController {
 	private final SpiderService spiderService;
 
 	@RequestMapping("/data")
-	public String data(Model model) {
-		model.addAttribute("spiders", spiderService.list().collect(Collectors.toList()));
+	public String data(Model model, @PageableDefault(page = 0, size = 20) Pageable pageable) {
+		model.addAttribute("spiders", spiderService.page(pageable));
 		return "views/data";
 	}
 

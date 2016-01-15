@@ -47,7 +47,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
@@ -56,6 +55,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.kohsuke.randname.RandomNameGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindException;
@@ -101,7 +102,7 @@ public class SpiderService {
 
 			log.debug("Syncing the nodes from the controller...");
 			// Load the existing spiders from the database
-			List<Spider> spiders = spiderRepository.listActive().collect(Collectors.toList());
+			List<Spider> spiders = spiderRepository.listActive();
 			SyncRequest sync = new SyncRequest();
 			sync.setDefinitions(spiders.stream().map(spider -> {
 				try {
@@ -243,12 +244,16 @@ public class SpiderService {
 		return spiderRepository.get(id).orElseThrow(() -> new NotFoundException("Spider not found"));
 	}
 
-	public Stream<Spider> list() {
-		return spiderRepository.list();
+	public Page<Spider> page(Pageable pageable) {
+		return spiderRepository.page(pageable);
 	}
 
-	public Stream<Spider> listActive() {
+	public List<Spider> listActive() {
 		return spiderRepository.listActive();
+	}
+	
+	public List<Spider> listLastActive(int limit) {
+		return spiderRepository.listLastActive(limit);
 	}
 
 	public void reinject(long spiderId) {

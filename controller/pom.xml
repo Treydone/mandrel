@@ -133,6 +133,19 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-guava</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.skyscreamer</groupId>
+			<artifactId>jsonassert</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.codehaus.janino</groupId>
 			<artifactId>janino</artifactId>
 		</dependency>
@@ -185,7 +198,7 @@
 				<groupId>com.mycila</groupId>
 				<artifactId>license-maven-plugin</artifactId>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-eclipse-plugin</artifactId>

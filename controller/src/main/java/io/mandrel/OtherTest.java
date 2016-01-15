@@ -47,18 +47,15 @@ import lombok.SneakyThrows;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.thrift.protocol.TJSONProtocol;
-import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TIOStreamTransport;
 import org.bson.Document;
 import org.junit.Test;
 
-import com.facebook.swift.codec.ThriftCodec;
 import com.facebook.swift.codec.ThriftCodecManager;
 import com.facebook.swift.codec.internal.coercion.FromThrift;
 import com.facebook.swift.codec.internal.coercion.ToThrift;
 import com.facebook.swift.codec.internal.compiler.CompilerThriftCodecFactory;
 import com.facebook.swift.codec.metadata.ThriftCatalog;
-import com.facebook.swift.codec.metadata.ThriftType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.core.JsonProcessingException;

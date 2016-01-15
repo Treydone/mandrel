@@ -22,8 +22,8 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.spider.SpiderService;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +31,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -48,20 +52,27 @@ public class SpiderResourceTest {
 
 	@Before
 	public void setUp() throws Exception {
-		mockMvc = MockMvcBuilders.standaloneSetup(new SpiderResource(null, spiderService, null)).addFilter(new ApiOriginFilter(), "/*").build();
+		mockMvc = MockMvcBuilders.standaloneSetup(new SpiderResource(null, spiderService, null))
+				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver()).addFilter(new ApiOriginFilter(), "/*").build();
 	}
 
 	@Test
 	public void all_empty() throws Exception {
 
 		// Arrange
-		Mockito.when(spiderService.list()).thenReturn(Stream.of());
+		Pageable pageable = new PageRequest(0, 20);
+		Mockito.when(spiderService.page(pageable)).thenReturn(new PageImpl<>(Collections.emptyList()));
 
 		// Actions
-		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/spiders").accept(MediaType.APPLICATION_JSON));
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(Apis.PREFIX + "/spiders").accept(MediaType.APPLICATION_JSON));
 
 		// Asserts
-		result.andExpect(MockMvcResultMatchers.content().json("[]"));
+		result.andDo(res -> {
+			System.err.println(res.getResponse().getContentAsString());
+		});
+		result.andExpect(MockMvcResultMatchers
+				.content()
+				.json("{\"content\":[],\"last\":true,\"totalPages\":1,\"totalElements\":0,\"sort\":null,\"first\":true,\"numberOfElements\":0,\"size\":0,\"number\":0}"));
 
 	}
 
@@ -69,13 +80,19 @@ public class SpiderResourceTest {
 	public void all_one_spider() throws Exception {
 
 		// Arrange
-		Mockito.when(spiderService.list()).thenReturn(Stream.of(new Spider().setName("generated")));
+		Pageable pageable = new PageRequest(0, 20);
+		Mockito.when(spiderService.page(pageable)).thenReturn(new PageImpl<>(Collections.singletonList(new Spider().setName("generated")), pageable, 1));
 
 		// Actions
-		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/spiders").accept(MediaType.APPLICATION_JSON));
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(Apis.PREFIX + "/spiders").accept(MediaType.APPLICATION_JSON));
 
 		// Asserts
-		result.andExpect(MockMvcResultMatchers.content().json("[{\"name\":\"generated\"}]"));
+		result.andDo(res -> {
+			System.err.println(res.getResponse().getContentAsString());
+		});
+		result.andExpect(MockMvcResultMatchers
+				.content()
+				.json("{\"content\":[{\"name\":\"generated\"}],\"last\":true,\"totalPages\":1,\"totalElements\":1,\"sort\":null,\"first\":true,\"numberOfElements\":1,\"size\":20,\"number\":0}"));
 
 	}
 
@@ -88,7 +105,7 @@ public class SpiderResourceTest {
 		Mockito.when(spiderService.add(urls)).thenReturn(spider);
 
 		// Actions
-		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/spiders").param("urls", urls.toArray(new String[] {}))
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(Apis.PREFIX + "/spiders").param("urls", urls.toArray(new String[] {}))
 				.accept(MediaType.APPLICATION_JSON));
 
 		// Asserts
@@ -106,8 +123,8 @@ public class SpiderResourceTest {
 		Mockito.when(spiderService.add(spider)).thenReturn(spider);
 
 		// Actions
-		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/spiders").content("{\"name\":\"test\"}").contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON));
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(Apis.PREFIX + "/spiders").content("{\"name\":\"test\"}")
+				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON));
 
 		// Asserts
 		Mockito.verify(spiderService).add(spider);
@@ -124,8 +141,8 @@ public class SpiderResourceTest {
 		Mockito.when(spiderService.update(spider)).thenReturn(spider);
 
 		// Actions
-		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put("/spiders/0").content("{\"name\":\"test\"}").contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON));
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(Apis.PREFIX + "/spiders/0").content("{\"name\":\"test\"}")
+				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON));
 
 		// Asserts
 		Mockito.verify(spiderService).update(spider);

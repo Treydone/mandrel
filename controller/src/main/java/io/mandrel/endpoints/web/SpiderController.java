@@ -22,12 +22,12 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.metrics.MetricsRepository;
 import io.mandrel.spider.SpiderService;
 
-import java.util.stream.Collectors;
-
 import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindException;
@@ -51,8 +51,8 @@ public class SpiderController {
 	private final ObjectMapper mapper;
 
 	@RequestMapping
-	public String spiders(Model model) {
-		model.addAttribute("spiders", spiderService.list().collect(Collectors.toList()));
+	public String spiders(Model model, @PageableDefault(page = 0, size = 20) Pageable pageable) {
+		model.addAttribute("spiders", spiderService.page(pageable));
 		return "views/spiders";
 	}
 

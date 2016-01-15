@@ -20,8 +20,11 @@ package io.mandrel.spider;
 
 import io.mandrel.common.data.Spider;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface SpiderRepository {
 
@@ -35,8 +38,11 @@ public interface SpiderRepository {
 
 	Optional<Spider> get(long id);
 
-	Stream<Spider> list();
+	List<Spider> listActive();
 
-	Stream<Spider> listActive();
+	List<Spider> listLastActive(int limit);
+	
+	Page<Spider> page(Pageable pageable);
+
 
 }

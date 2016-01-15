@@ -27,9 +27,8 @@ import io.mandrel.spider.SpiderRepository;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -37,14 +36,20 @@ import javax.inject.Inject;
 import lombok.RequiredArgsConstructor;
 
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
@@ -89,13 +94,23 @@ public class MongoSpiderRepository implements SpiderRepository {
 		return doc == null ? Optional.empty() : Optional.of(JsonBsonCodec.fromBson(mapper, doc, Spider.class));
 	}
 
-	public Stream<Spider> list() {
-		return StreamSupport.stream(collection.find().map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)).spliterator(), false);
+	public List<Spider> listActive() {
+		Bson filter = Filters.or(Filters.eq("status", Statuses.STARTED), Filters.eq("status", Statuses.PAUSED));
+		List<Spider> content = Lists.newArrayList(collection.find(filter).map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)).iterator());
+		return content;
 	}
 
-	public Stream<Spider> listActive() {
-		return StreamSupport.stream(
-				collection.find(Filters.or(Filters.eq("status", Statuses.STARTED), Filters.eq("status", Statuses.PAUSED)))
-						.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)).spliterator(), false);
+	public List<Spider> listLastActive(int size) {
+		Bson filter = Filters.or(Filters.eq("status", Statuses.STARTED), Filters.eq("status", Statuses.PAUSED));
+		List<Spider> content = Lists.newArrayList(collection.find(filter).sort(Sorts.descending("created")).limit(size)
+				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)).iterator());
+		return content;
+	}
+
+	@Override
+	public Page<Spider> page(Pageable pageable) {
+		List<Spider> content = Lists.newArrayList(collection.find().limit(pageable.getPageSize()).skip(pageable.getOffset())
+				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)).iterator());
+		return new PageImpl<>(content, pageable, collection.count());
 	}
 }

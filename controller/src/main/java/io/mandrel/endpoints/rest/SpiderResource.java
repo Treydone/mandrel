@@ -26,12 +26,14 @@ import io.mandrel.metrics.SpiderMetrics;
 import io.mandrel.spider.SpiderService;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,8 +60,8 @@ public class SpiderResource {
 
 	@ApiOperation(value = "List all the spiders", response = Spider.class, responseContainer = "List")
 	@RequestMapping(method = RequestMethod.GET)
-	public List<Spider> all() {
-		return spiderService.list().collect(Collectors.toList());
+	public Page<Spider> all(@PageableDefault(page = 0, size = 20) Pageable pageable) {
+		return spiderService.page(pageable);
 	}
 
 	@ApiOperation(value = "Add a spider")
