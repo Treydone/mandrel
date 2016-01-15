@@ -32,7 +32,7 @@
                       <th>Status</th>
                       <th>Reason</th>
                     </tr>
-                    <#list spiders as spider>
+                    <#list spiders.content as spider>
                 		<tr>
 	                      <td><a href="/spiders/${spider.id?c}">${spider.id?c}</a></td>
 	                      <td><a href="/spiders/${spider.id?c}">${spider.name}</a></td>
@@ -63,7 +63,7 @@
 				    </#list>
                   </tbody></table>
                 </div>
-                <#if spiders?size < 1>
+                <#if spiders.totalElements < 1>
                 <div class="box-body">
                   <div class="callout callout-success">
                     <h4>There is not running spider!</h4>
@@ -72,7 +72,7 @@
                   </div>
                 </div><!-- /.box-body -->
                 </#if>
-                <#if spiders?size gt 0>
+                <#if spiders.totalElements gt 0>
                 <div class="box-body">
                   <div class="callout callout-success">
                     <h4>Add spider!</h4>

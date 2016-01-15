@@ -79,9 +79,10 @@ public class NodeService {
 
 			Map<String, List<Container>> results = Maps.newHashMap();
 			if (discoveryClient.getInstance(id, ServiceIds.worker()) != null) {
-				results.put(ServiceIds.worker(), clients.onWorker(hostAndPort).map(client -> client.listRunningContainers()));
-			} else if (discoveryClient.getInstance(id, ServiceIds.frontier()) != null) {
-				results.put(ServiceIds.frontier(), clients.onFrontier(hostAndPort).map(client -> client.listRunningContainers()));
+				results.put(ServiceIds.worker(), clients.onWorker(hostAndPort).map(client -> client.listRunningWorkerContainers()));
+			}
+			if (discoveryClient.getInstance(id, ServiceIds.frontier()) != null) {
+				results.put(ServiceIds.frontier(), clients.onFrontier(hostAndPort).map(client -> client.listRunningFrontierContainers()));
 			}
 			return results;
 		}).orElse(Maps.newHashMap());

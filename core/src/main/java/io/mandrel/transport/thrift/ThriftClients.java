@@ -38,9 +38,12 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import com.facebook.nifty.client.NettyClientConfig;
+import com.facebook.nifty.client.NiftyClient;
 import com.facebook.swift.codec.ThriftCodecManager;
 import com.facebook.swift.codec.internal.compiler.CompilerThriftCodecFactory;
 import com.facebook.swift.codec.metadata.ThriftCatalog;
@@ -60,6 +63,9 @@ public class ThriftClients implements Clients {
 	@Autowired
 	private DiscoveryClient discoveryClient;
 
+	@Value("${standalone:false}")
+	private boolean local;
+
 	@PostConstruct
 	public void init() {
 
@@ -71,7 +77,8 @@ public class ThriftClients implements Clients {
 		catalog.addDefaultCoercions(MandrelCoercions.class);
 		ThriftCodecManager codecManager = new ThriftCodecManager(new CompilerThriftCodecFactory(ThriftCodecManager.class.getClassLoader()), catalog,
 				Collections.emptySet());
-		ThriftClientManager clientManager = new ThriftClientManager(codecManager);
+		ThriftClientManager clientManager = new ThriftClientManager(codecManager, new NiftyClient(NettyClientConfig.newBuilder().build(), local),
+				Collections.emptySet());
 
 		frontiers = new KeyedClientPool<>(FrontierContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED

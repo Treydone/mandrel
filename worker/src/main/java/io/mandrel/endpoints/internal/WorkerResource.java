@@ -66,7 +66,7 @@ public class WorkerResource implements WorkerContract {
 	private Supplier<? extends NotFoundException> workerNotFound = () -> new NotFoundException("Worker not found");
 
 	@Override
-	public void create(byte[] definition) {
+	public void createWorkerContainer(byte[] definition) {
 		Spider spider;
 		try {
 			spider = objectMapper.readValue(definition, Spider.class);
@@ -82,29 +82,29 @@ public class WorkerResource implements WorkerContract {
 	}
 
 	@Override
-	public void start(Long id) {
+	public void startWorkerContainer(Long id) {
 		WorkerContainers.get(id).orElseThrow(workerNotFound).start();
 	}
 
 	@Override
-	public void pause(Long id) {
+	public void pauseWorkerContainer(Long id) {
 		WorkerContainers.get(id).orElseThrow(workerNotFound).pause();
 	}
 
 	@Override
-	public void kill(Long id) {
+	public void killWorkerContainer(Long id) {
 		WorkerContainers.get(id).orElseThrow(workerNotFound).kill();
 	}
 
 	@Override
-	public List<Container> listRunningContainers() {
+	public List<Container> listRunningWorkerContainers() {
 		return WorkerContainers.list().stream()
 				.map(f -> new Container().setSpiderId(f.spider().getId()).setVersion(f.spider().getVersion()).setStatus(f.status()))
 				.collect(Collectors.toList());
 	}
 
 	@Override
-	public SyncResponse sync(SyncRequest sync) {
+	public SyncResponse syncWorkers(SyncRequest sync) {
 		Collection<? extends io.mandrel.common.container.Container> containers = WorkerContainers.list();
 		Map<Long, Spider> ids = sync.getDefinitions().stream().map(def -> {
 			try {
@@ -125,17 +125,17 @@ public class WorkerResource implements WorkerContract {
 			existingSpiders.add(c.spider().getId());
 			if (!ids.containsKey(c.spider().getId())) {
 				log.debug("Killing spider {}", c.spider().getId());
-				kill(c.spider().getId());
+				killWorkerContainer(c.spider().getId());
 				deleted.add(c.spider().getId());
 			} else if (ids.get(c.spider().getId()).getVersion() != c.spider().getVersion()) {
 				log.debug("Updating spider {}", c.spider().getId());
-				kill(c.spider().getId());
+				killWorkerContainer(c.spider().getId());
 				create(ids.get(c.spider().getId()));
 				updated.add(c.spider().getId());
 
 				if (Statuses.STARTED.equals(ids.get(c.spider().getId()).getStatus())) {
 					log.debug("Starting spider {}", c.spider().getId());
-					start(c.spider().getId());
+					startWorkerContainer(c.spider().getId());
 				}
 			}
 		});
@@ -147,7 +147,7 @@ public class WorkerResource implements WorkerContract {
 
 				if (Statuses.STARTED.equals(spider.getStatus())) {
 					log.debug("Starting spider {}", id);
-					start(spider.getId());
+					startWorkerContainer(spider.getId());
 				}
 				created.add(spider.getId());
 			}

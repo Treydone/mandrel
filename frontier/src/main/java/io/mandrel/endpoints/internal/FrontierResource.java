@@ -60,7 +60,7 @@ public class FrontierResource implements FrontierContract {
 	private Supplier<? extends NotFoundException> frontierNotFound = () -> new NotFoundException("Frontier not found");
 
 	@Override
-	public void create(byte[] definition) {
+	public void createFrontierContainer(byte[] definition) {
 		Spider spider;
 		try {
 			spider = objectMapper.readValue(definition, Spider.class);
@@ -76,17 +76,17 @@ public class FrontierResource implements FrontierContract {
 	}
 
 	@Override
-	public void start(Long id) {
+	public void startFrontierContainer(Long id) {
 		FrontierContainers.get(id).orElseThrow(frontierNotFound).start();
 	}
 
 	@Override
-	public void pause(Long id) {
+	public void pauseFrontierContainer(Long id) {
 		FrontierContainers.get(id).orElseThrow(frontierNotFound).pause();
 	}
 
 	@Override
-	public void kill(Long id) {
+	public void killFrontierContainer(Long id) {
 		FrontierContainers.get(id).orElseThrow(frontierNotFound).kill();
 	}
 
@@ -106,7 +106,7 @@ public class FrontierResource implements FrontierContract {
 	}
 
 	@Override
-	public List<Container> listRunningContainers() {
+	public List<Container> listRunningFrontierContainers() {
 		return FrontierContainers.list().stream()
 				.map(f -> new Container().setSpiderId(f.spider().getId()).setVersion(f.spider().getVersion()).setStatus(f.status()))
 				.collect(Collectors.toList());
@@ -118,7 +118,7 @@ public class FrontierResource implements FrontierContract {
 	}
 
 	@Override
-	public SyncResponse sync(SyncRequest sync) {
+	public SyncResponse syncFrontiers(SyncRequest sync) {
 		Collection<? extends io.mandrel.common.container.Container> containers = FrontierContainers.list();
 		Map<Long, Spider> ids = sync.getDefinitions().stream().map(def -> {
 			try {
@@ -137,15 +137,15 @@ public class FrontierResource implements FrontierContract {
 		containers.forEach(c -> {
 			existingSpiders.add(c.spider().getId());
 			if (!ids.containsKey(c.spider().getId())) {
-				kill(c.spider().getId());
+				killFrontierContainer(c.spider().getId());
 				deleted.add(c.spider().getId());
 			} else if (ids.get(c.spider().getId()).getVersion() != c.spider().getVersion()) {
-				kill(c.spider().getId());
+				killFrontierContainer(c.spider().getId());
 				create(ids.get(c.spider().getId()));
 				updated.add(c.spider().getId());
 
 				if (Statuses.STARTED.equals(ids.get(c.spider().getId()).getStatus())) {
-					start(c.spider().getId());
+					startFrontierContainer(c.spider().getId());
 				}
 			}
 		});
@@ -155,7 +155,7 @@ public class FrontierResource implements FrontierContract {
 				create(spider);
 
 				if (Statuses.STARTED.equals(spider.getStatus())) {
-					start(spider.getId());
+					startFrontierContainer(spider.getId());
 				}
 				created.add(spider.getId());
 			}

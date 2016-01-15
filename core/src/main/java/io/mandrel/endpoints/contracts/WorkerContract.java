@@ -33,22 +33,22 @@ import com.facebook.swift.service.ThriftService;
 public interface WorkerContract extends Contract, AutoCloseable {
 
 	@ThriftMethod
-	SyncResponse sync(@ThriftField(value = 1, name = "sync") SyncRequest sync);
+	SyncResponse syncWorkers(@ThriftField(value = 1, name = "sync") SyncRequest sync);
 
 	@ThriftMethod
-	List<Container> listRunningContainers();
+	List<Container> listRunningWorkerContainers();
 
 	@ThriftMethod
-	void create(@ThriftField(value = 1, name = "definition") byte[] definition);
+	void createWorkerContainer(@ThriftField(value = 1, name = "definition") byte[] definition);
 
 	@ThriftMethod
-	void start(@ThriftField(value = 1, name = "id") Long id);
+	void startWorkerContainer(@ThriftField(value = 1, name = "id") Long id);
 
 	@ThriftMethod
-	void pause(@ThriftField(value = 1, name = "id") Long id);
+	void pauseWorkerContainer(@ThriftField(value = 1, name = "id") Long id);
 
 	@ThriftMethod
-	void kill(@ThriftField(value = 1, name = "id") Long id);
+	void killWorkerContainer(@ThriftField(value = 1, name = "id") Long id);
 
 	@ThriftMethod
 	byte[] analyse(@ThriftField(value = 1, name = "id") Long id, @ThriftField(value = 2, name = "source") String source);

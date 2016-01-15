@@ -33,6 +33,7 @@
 		<module>frontier</module>
 		<module>worker</module>
 		<module>controller</module>
+		<module>standalone</module>
 		<module>assembly</module>
 	</modules>
 

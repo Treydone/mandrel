@@ -96,21 +96,21 @@ public class MongoSpiderRepository implements SpiderRepository {
 
 	public List<Spider> listActive() {
 		Bson filter = Filters.or(Filters.eq("status", Statuses.STARTED), Filters.eq("status", Statuses.PAUSED));
-		List<Spider> content = Lists.newArrayList(collection.find(filter).map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)).iterator());
+		List<Spider> content = Lists.newArrayList(collection.find(filter).map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)));
 		return content;
 	}
 
 	public List<Spider> listLastActive(int size) {
 		Bson filter = Filters.or(Filters.eq("status", Statuses.STARTED), Filters.eq("status", Statuses.PAUSED));
 		List<Spider> content = Lists.newArrayList(collection.find(filter).sort(Sorts.descending("created")).limit(size)
-				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)).iterator());
+				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)));
 		return content;
 	}
 
 	@Override
 	public Page<Spider> page(Pageable pageable) {
 		List<Spider> content = Lists.newArrayList(collection.find().limit(pageable.getPageSize()).skip(pageable.getOffset())
-				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)).iterator());
+				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)));
 		return new PageImpl<>(content, pageable, collection.count());
 	}
 }

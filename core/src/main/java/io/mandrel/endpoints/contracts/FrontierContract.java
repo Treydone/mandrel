@@ -36,22 +36,22 @@ import com.google.common.util.concurrent.ListenableFuture;
 public interface FrontierContract extends Contract, AutoCloseable {
 
 	@ThriftMethod
-	SyncResponse sync(@ThriftField(value = 1, name = "sync") SyncRequest sync);
+	SyncResponse syncFrontiers(@ThriftField(value = 1, name = "sync") SyncRequest sync);
 
 	@ThriftMethod
-	List<Container> listRunningContainers();
+	List<Container> listRunningFrontierContainers();
 
 	@ThriftMethod
-	void create(@ThriftField(value = 1, name = "definition") byte[] definition);
+	void createFrontierContainer(@ThriftField(value = 1, name = "definition") byte[] definition);
 
 	@ThriftMethod
-	void start(@ThriftField(value = 1, name = "id") Long id);
+	void startFrontierContainer(@ThriftField(value = 1, name = "id") Long id);
 
 	@ThriftMethod
-	void pause(@ThriftField(value = 1, name = "id") Long id);
+	void pauseFrontierContainer(@ThriftField(value = 1, name = "id") Long id);
 
 	@ThriftMethod
-	void kill(@ThriftField(value = 1, name = "id") Long id);
+	void killFrontierContainer(@ThriftField(value = 1, name = "id") Long id);
 
 	@ThriftMethod
 	ListenableFuture<Uri> next(@ThriftField(value = 1, name = "id") Long id);

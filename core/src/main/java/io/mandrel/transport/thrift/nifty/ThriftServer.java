@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.transport.thrift;
+package io.mandrel.transport.thrift.nifty;
 
 import static com.facebook.nifty.core.ShutdownUtil.shutdownChannelFactory;
 import static com.facebook.nifty.core.ShutdownUtil.shutdownExecutor;
@@ -35,6 +35,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.transport.TTransport;
@@ -52,7 +54,6 @@ import com.facebook.nifty.codec.DefaultThriftFrameCodecFactory;
 import com.facebook.nifty.codec.ThriftFrameCodecFactory;
 import com.facebook.nifty.core.NettyServerConfig;
 import com.facebook.nifty.core.NettyServerConfigBuilder;
-import com.facebook.nifty.core.NettyServerTransport;
 import com.facebook.nifty.core.NiftyNoOpSecurityFactory;
 import com.facebook.nifty.core.NiftySecurityFactory;
 import com.facebook.nifty.core.NiftyTimer;
@@ -67,6 +68,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 
+@Slf4j
 public class ThriftServer implements Closeable {
 
 	public static final ImmutableMap<String, TDuplexProtocolFactory> DEFAULT_PROTOCOL_FACTORIES = ImmutableMap.of("binary",
@@ -136,6 +138,7 @@ public class ThriftServer implements Closeable {
 
 		workerExecutor = config.getOrBuildWorkerExecutor(availableWorkerExecutors);
 		if (local) {
+			log.warn("Using local server");
 			configuredPort = 0;
 			ioThreads = 0;
 			ioExecutor = null;
@@ -170,22 +173,7 @@ public class ThriftServer implements Closeable {
 
 		NettyServerConfig nettyServerConfig = nettyServerConfigBuilder.build();
 
-		transport = new NettyServerTransport(thriftServerDef, nettyServerConfig, allChannels);
-	}
-
-	/**
-	 * A ThriftServer constructor that takes raw Netty configuration parameters
-	 */
-	public ThriftServer(NettyServerConfig nettyServerConfig, ThriftServerDef thriftServerDef) {
-		configuredPort = thriftServerDef.getServerPort();
-		workerExecutor = thriftServerDef.getExecutor();
-		acceptorExecutor = nettyServerConfig.getBossExecutor();
-		acceptorThreads = nettyServerConfig.getBossThreadCount();
-		ioExecutor = nettyServerConfig.getWorkerExecutor();
-		ioThreads = nettyServerConfig.getWorkerThreadCount();
-		serverChannelFactory = new NioServerSocketChannelFactory(new NioServerBossPool(acceptorExecutor, acceptorThreads, ThreadNameDeterminer.CURRENT),
-				new NioWorkerPool(ioExecutor, ioThreads, ThreadNameDeterminer.CURRENT));
-		transport = new NettyServerTransport(thriftServerDef, nettyServerConfig, allChannels);
+		transport = new NettyServerTransport(thriftServerDef, nettyServerConfig, allChannels, local);
 	}
 
 	@Managed

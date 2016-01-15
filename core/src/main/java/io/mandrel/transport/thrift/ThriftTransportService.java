@@ -26,9 +26,8 @@ import io.mandrel.timeline.Event.NodeInfo.NodeEventType;
 import io.mandrel.transport.Clients;
 import io.mandrel.transport.TransportProperties;
 import io.mandrel.transport.TransportService;
+import io.mandrel.transport.thrift.nifty.ThriftServer;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -47,7 +46,8 @@ import com.facebook.swift.codec.ThriftCodecManager;
 import com.facebook.swift.codec.internal.compiler.CompilerThriftCodecFactory;
 import com.facebook.swift.codec.metadata.ThriftCatalog;
 import com.facebook.swift.service.ThriftServiceProcessor;
-import com.facebook.swift.service.ThriftServiceStatsHandler;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 @Component
 @Slf4j
@@ -76,9 +76,11 @@ public class ThriftTransportService implements TransportService {
 		ThriftCatalog catalog = new ThriftCatalog();
 		catalog.addDefaultCoercions(MandrelCoercions.class);
 		ThriftCodecManager codecManager = new ThriftCodecManager(new CompilerThriftCodecFactory(ThriftCodecManager.class.getClassLoader()), catalog,
-				Collections.emptySet());
+				ImmutableSet.of());
 
-		NiftyProcessor processor = new ThriftServiceProcessor(codecManager, Arrays.asList(new ThriftServiceStatsHandler()), resources);
+		NiftyProcessor processor = new ThriftServiceProcessor(codecManager,
+		// Arrays.asList(new ThriftServiceStatsHandler())
+				ImmutableList.of(), resources);
 
 		properties.setPort(globalProperties.getPort());
 		properties.setBindAddress(globalProperties.getBindAddress());

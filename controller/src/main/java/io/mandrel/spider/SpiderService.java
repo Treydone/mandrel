@@ -117,7 +117,7 @@ public class SpiderService {
 				discoveryClient.getInstances(ServiceIds.frontier()).forEach(
 						instance -> {
 							try {
-								SyncResponse response = clients.onFrontier(instance.getHostAndPort()).map(frontier -> frontier.sync(sync));
+								SyncResponse response = clients.onFrontier(instance.getHostAndPort()).map(frontier -> frontier.syncFrontiers(sync));
 
 								if (response.anyAction()) {
 									log.debug("On frontier {}:{}, after sync: {} created, {} updated, {} deleted", instance.getHost(), instance.getPort(),
@@ -132,7 +132,7 @@ public class SpiderService {
 				discoveryClient.getInstances(ServiceIds.worker()).forEach(
 						instance -> {
 							try {
-								SyncResponse response = clients.onWorker(instance.getHostAndPort()).map(worker -> worker.sync(sync));
+								SyncResponse response = clients.onWorker(instance.getHostAndPort()).map(worker -> worker.syncWorkers(sync));
 
 								if (response.anyAction()) {
 									log.debug("On worker {}:{}, after sync: {} created, {} updated, {} deleted", instance.getHost(), instance.getPort(),

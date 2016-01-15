@@ -92,17 +92,17 @@
                   <th>Status</th>
                   <th>Type</th>
                 </tr>
-			    <tr>
                 <#list containersByType?keys as key> 
 					<#assign containers = containersByType?values[key_index]>
                 	<#list containers as container> 
+			         <tr>
                       <td><a href="/spiders/${container.spiderId?c}">${container.spiderId?c}</a></td>
                       <td>${container.version?c}</td>
                       <td>${container.status}</td>
                       <td>${key}</td>
+                     </tr>
                     </#list>
 			    </#list>
-                </tr>
               </tbody></table>
             </div>
           </div>

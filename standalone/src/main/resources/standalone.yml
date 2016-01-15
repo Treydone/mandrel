@@ -1,0 +1,47 @@
+spring:
+  pidfile: standalone.pid
+  application:
+    name: standalone
+    admin:
+      enabled: false
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/mandrel
+  jmx:
+    enabled: false
+
+#discovery:
+#  instanceHost: localhost
+#  zookeeper:
+#    enabled: true
+#    connectString: localhost:2181
+#    root: /mandrel
+
+discovery:
+  local:
+    enabled: true
+  zookeeper:
+    enabled: false
+
+#standalone: true
+
+transport:
+  port: 8090
+  bindAddress: localhost
+                                
+logging:
+  console:
+    enabled: true
+    level: WARN
+  level:
+    org.springframework: INFO
+    io.mandrel: DEBUG
+    
+management:
+  context-path: /admin
+
+endpoints:
+  shutdown:
+    enabled: true
+  health:
+    time-to-live: 5000
