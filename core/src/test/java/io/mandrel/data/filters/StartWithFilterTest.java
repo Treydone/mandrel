@@ -36,16 +36,16 @@ public class StartWithFilterTest {
 
 	@Test
 	public void link_start_with_exact() {
-		Assertions.assertThat(filter.isValid(new Link().uri(Uri.create("http://localhost/1")))).isTrue();
+		Assertions.assertThat(filter.isValid(new Link().setUri(Uri.create("http://localhost/1")))).isTrue();
 	}
 
 	@Test
 	public void link_start_with_partially() {
-		Assertions.assertThat(filter.isValid(new Link().uri(Uri.create("http://localhost/1/other")))).isTrue();
+		Assertions.assertThat(filter.isValid(new Link().setUri(Uri.create("http://localhost/1/other")))).isTrue();
 	}
 
 	@Test
 	public void link_not_start_with() {
-		Assertions.assertThat(filter.isValid(new Link().uri(Uri.create("http://test/1")))).isFalse();
+		Assertions.assertThat(filter.isValid(new Link().setUri(Uri.create("http://test/1")))).isFalse();
 	}
 }

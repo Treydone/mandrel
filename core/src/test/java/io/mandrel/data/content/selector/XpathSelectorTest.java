@@ -38,7 +38,7 @@ public class XpathSelectorTest {
 		XpathSelector selector = new XpathSelector();
 
 		byte[] data = "<a href='/test'>épatant</a>".getBytes();
-		Instance<XElement> instance = selector.init(new BlobMetadata().uri(Uri.create("http://localhost")), Payloads.newByteArrayPayload(data), false);
+		Instance<XElement> instance = selector.init(new BlobMetadata().setUri(Uri.create("http://localhost")), Payloads.newByteArrayPayload(data), false);
 
 		List<String> results = instance.select("//a/@href", DataConverter.BODY);
 		Assertions.assertThat(results).containsExactly("/test");

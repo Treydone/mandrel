@@ -126,7 +126,7 @@ public class Loop implements Runnable {
 
 							log.trace("> Start parsing data for {}", uri);
 
-							blob.metadata().fetchMetadata().timeToFetch(watch.getTotalTimeMillis());
+							blob.getMetadata().getFetchMetadata().setTimeToFetch(watch.getTotalTimeMillis());
 
 							updateMetrics(watch, blob);
 
@@ -152,16 +152,16 @@ public class Loop implements Runnable {
 												ol -> {
 													Set<Link> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, theUri, cachedSelectors,
 															blob, ol).getRight();
-													blob.metadata().fetchMetadata().outlinks(allFilteredOutlinks);
-													add(spider.getId(), allFilteredOutlinks.stream().map(l -> l.uri()).collect(Collectors.toSet()));
+													blob.getMetadata().getFetchMetadata().setOutlinks(allFilteredOutlinks);
+													add(spider.getId(), allFilteredOutlinks.stream().map(l -> l.getUri()).collect(Collectors.toSet()));
 												});
 								log.trace(">  - Extracting outlinks done for {}!", uri);
 							}
 
-							BlobStores.get(spider.getId()).ifPresent(b -> b.putBlob(blob.metadata().uri(), blob));
+							BlobStores.get(spider.getId()).ifPresent(b -> b.putBlob(blob.getMetadata().getUri(), blob));
 
 							log.trace(">  - Storing metadata for {}...", uri);
-							MetadataStores.get(spider.getId()).addMetadata(blob.metadata().uri(), blob.metadata().fetchMetadata());
+							MetadataStores.get(spider.getId()).addMetadata(blob.getMetadata().getUri(), blob.getMetadata().getFetchMetadata());
 							log.trace(">  - Storing metadata for {} done!", uri);
 
 							log.trace("> End parsing data for {}", uri);
@@ -222,17 +222,17 @@ public class Loop implements Runnable {
 		spiderAccumulator.incNbPages();
 		globalAccumulator.incNbPages();
 
-		spiderAccumulator.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
-		globalAccumulator.incPageForStatus(blob.metadata().fetchMetadata().statusCode());
+		spiderAccumulator.incPageForStatus(blob.getMetadata().getFetchMetadata().getStatusCode());
+		globalAccumulator.incPageForStatus(blob.getMetadata().getFetchMetadata().getStatusCode());
 
-		spiderAccumulator.incPageForHost(blob.metadata().uri().getHost());
-		globalAccumulator.incPageForHost(blob.metadata().uri().getHost());
+		spiderAccumulator.incPageForHost(blob.getMetadata().getUri().getHost());
+		globalAccumulator.incPageForHost(blob.getMetadata().getUri().getHost());
 
 		spiderAccumulator.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
 
-		if (blob.metadata().size() != null) {
-			spiderAccumulator.incTotalSize(blob.metadata().size());
-			globalAccumulator.incTotalSize(blob.metadata().size());
+		if (blob.getMetadata().getSize() != null) {
+			spiderAccumulator.incTotalSize(blob.getMetadata().getSize());
+			globalAccumulator.incTotalSize(blob.getMetadata().getSize());
 		}
 	}
 

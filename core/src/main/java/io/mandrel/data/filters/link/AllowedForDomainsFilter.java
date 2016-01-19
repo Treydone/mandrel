@@ -38,8 +38,8 @@ public class AllowedForDomainsFilter extends LinkFilter {
 	private List<String> domains;
 
 	public boolean isValid(Link link) {
-		if (CollectionUtils.isNotEmpty(domains) && link != null && link.uri() != null) {
-			return domains.stream().anyMatch(d -> link.uri().getHost().contains(d));
+		if (CollectionUtils.isNotEmpty(domains) && link != null && link.getUri() != null) {
+			return domains.stream().anyMatch(d -> link.getUri().getHost().contains(d));
 		}
 		return false;
 	}

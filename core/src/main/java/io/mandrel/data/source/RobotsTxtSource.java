@@ -114,9 +114,10 @@ public class RobotsTxtSource extends Source {
 		}
 
 		try {
-			String contentType = blob.metadata().contentMetadata().contentType() != null ? blob.metadata().contentMetadata().contentType() : "text/xml";
+			String contentType = blob.getMetadata().getContentMetadata().contentType() != null ? blob.getMetadata().getContentMetadata().contentType()
+					: "text/xml";
 
-			AbstractSiteMap sitemap = siteMapParser.parseSiteMap(contentType, IOUtils.toByteArray(blob.payload().openStream()), new URL(sitemapUrl));
+			AbstractSiteMap sitemap = siteMapParser.parseSiteMap(contentType, IOUtils.toByteArray(blob.getPayload().openStream()), new URL(sitemapUrl));
 
 			if (sitemap.isIndex()) {
 				SiteMapIndex index = (SiteMapIndex) sitemap;

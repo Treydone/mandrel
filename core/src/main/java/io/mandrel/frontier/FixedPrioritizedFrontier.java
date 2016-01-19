@@ -125,7 +125,7 @@ public class FixedPrioritizedFrontier extends Frontier {
 
 	@Override
 	public void schedule(Uri uri) {
-		priorities.stream().filter(p -> p.filter().isValid(new Link().uri(uri))).findFirst().ifPresent(p -> store.schedule(getQueue(p), uri));
+		priorities.stream().filter(p -> p.filter().isValid(new Link().setUri(uri))).findFirst().ifPresent(p -> store.schedule(getQueue(p), uri));
 	}
 
 	@Override

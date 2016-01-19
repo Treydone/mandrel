@@ -26,7 +26,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 @Data
-@Accessors(chain = true, fluent = true)
+@Accessors(chain = true)
 public class Link implements Serializable {
 
 	private static final long serialVersionUID = -7302907794790398632L;

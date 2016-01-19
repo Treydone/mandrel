@@ -39,8 +39,8 @@ public class JsonSelectorTest {
 		JsonSelector selector = new JsonSelector();
 
 		byte[] data = "{\"category\": \"reference\"}".getBytes();
-		FetchMetadata fetchMetadata = new FetchMetadata().uri(Uri.create("http://localhost"));
-		Instance<String> instance = selector.init(new BlobMetadata().fetchMetadata(fetchMetadata), Payloads.newByteArrayPayload(data), false);
+		FetchMetadata fetchMetadata = new FetchMetadata().setUri(Uri.create("http://localhost"));
+		Instance<String> instance = selector.init(new BlobMetadata().setFetchMetadata(fetchMetadata), Payloads.newByteArrayPayload(data), false);
 
 		List<String> results = instance.select("$.category", DataConverter.DEFAULT);
 		Assertions.assertThat(results).containsExactly("reference");

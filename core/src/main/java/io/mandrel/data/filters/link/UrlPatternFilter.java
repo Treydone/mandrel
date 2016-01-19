@@ -44,10 +44,10 @@ public class UrlPatternFilter extends LinkFilter {
 	private boolean invert = false;
 
 	public boolean isValid(Link link) {
-		if (link == null || link.uri() == null) {
+		if (link == null || link.getUri() == null) {
 			return false;
 		}
-		boolean match = compiledPattern.matcher(link.uri().toString()).matches();
+		boolean match = compiledPattern.matcher(link.getUri().toString()).matches();
 		return invert ? !match : match;
 	}
 

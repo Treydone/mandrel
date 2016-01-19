@@ -31,14 +31,14 @@ import lombok.experimental.Accessors;
 import com.google.common.io.ByteSource;
 
 @Data
-@Accessors(fluent = true, chain = true)
+@Accessors(chain = true)
 public class Blob {
 
 	private Payload payload;
 
 	private final BlobMetadata metadata;
 
-	public Blob payload(Payload data) {
+	public Blob setPayload(Payload data) {
 		if (this.payload != null)
 			payload.release();
 		this.payload = checkNotNull(data, "data");
@@ -46,22 +46,22 @@ public class Blob {
 	}
 
 	public Blob payload(InputStream data) {
-		return payload(newPayload(checkNotNull(data, "data")));
+		return setPayload(newPayload(checkNotNull(data, "data")));
 	}
 
 	public Blob payload(byte[] data) {
-		return payload(newPayload(checkNotNull(data, "data")));
+		return setPayload(newPayload(checkNotNull(data, "data")));
 	}
 
 	public Blob payload(String data) {
-		return payload(newPayload(checkNotNull(data, "data")));
+		return setPayload(newPayload(checkNotNull(data, "data")));
 	}
 
 	public Blob payload(File data) {
-		return payload(newPayload(checkNotNull(data, "data")));
+		return setPayload(newPayload(checkNotNull(data, "data")));
 	}
 
 	public Blob payload(ByteSource data) {
-		return payload(newPayload(checkNotNull(data, "data")));
+		return setPayload(newPayload(checkNotNull(data, "data")));
 	}
 }

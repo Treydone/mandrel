@@ -414,10 +414,10 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 		}
 
 		HttpFetchMetadata metadata = new HttpFetchMetadata().headers(headers).cookies(cookies);
-		metadata.uri(uri).statusCode(result.getStatusLine() != null ? result.getStatusLine().getStatusCode() : 0)
-				.statusText(result.getStatusLine() != null ? result.getStatusLine().getReasonPhrase() : null);
+		metadata.setUri(uri).setStatusCode(result.getStatusLine() != null ? result.getStatusLine().getStatusCode() : 0)
+				.setStatusText(result.getStatusLine() != null ? result.getStatusLine().getReasonPhrase() : null);
 
-		Blob blob = new Blob(new BlobMetadata().uri(uri).fetchMetadata(metadata)).payload(result.getEntity().getContent());
+		Blob blob = new Blob(new BlobMetadata().setUri(uri).setFetchMetadata(metadata)).payload(result.getEntity().getContent());
 		return blob;
 	}
 

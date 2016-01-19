@@ -48,7 +48,7 @@ public class SanitizeParamsFilter extends LinkFilter {
 	private final static Pattern PARAMS = Pattern.compile("=");
 
 	public boolean isValid(Link link) {
-		Uri linkUri = link.uri();
+		Uri linkUri = link.getUri();
 		if (linkUri != null && StringUtils.isNotBlank(linkUri.toString())) {
 			String uri = linkUri.toString();
 			int pos = uri.indexOf('?');
@@ -85,15 +85,15 @@ public class SanitizeParamsFilter extends LinkFilter {
 							builder.deleteCharAt(builder.length() - 1);
 						}
 						if (builder.length() > 0) {
-							link.uri(Uri.create(uriWithoutParams + "?" + builder.toString()));
+							link.setUri(Uri.create(uriWithoutParams + "?" + builder.toString()));
 						} else {
-							link.uri(Uri.create(uriWithoutParams));
+							link.setUri(Uri.create(uriWithoutParams));
 						}
 					} else {
-						link.uri(Uri.create(uriWithoutParams));
+						link.setUri(Uri.create(uriWithoutParams));
 					}
 				} else {
-					link.uri(Uri.create(uriWithoutParams));
+					link.setUri(Uri.create(uriWithoutParams));
 				}
 			}
 		}

@@ -92,7 +92,7 @@ public class ExtractorService {
 		// Filter outlinks
 		Set<Link> filteredOutlinks = null;
 		if (outlinks != null) {
-			Stream<Link> stream = outlinks.stream().filter(l -> l != null && l.uri() != null);
+			Stream<Link> stream = outlinks.stream().filter(l -> l != null && l.getUri() != null);
 			if (spider.getFilters() != null && CollectionUtils.isNotEmpty(spider.getFilters().getLinks())) {
 				stream = stream.filter(link -> spider.getFilters().getLinks().stream().allMatch(f -> f.isValid(link)));
 			}
@@ -101,8 +101,8 @@ public class ExtractorService {
 
 		Set<Link> allFilteredOutlinks = null;
 		if (filteredOutlinks != null) {
-			Set<Uri> res = MetadataStores.get(spider.getId()).deduplicate(filteredOutlinks.stream().map(l -> l.uri()).collect(Collectors.toList()));
-			allFilteredOutlinks = filteredOutlinks.stream().filter(f -> res.contains(f.uri())).collect(Collectors.toSet());
+			Set<Uri> res = MetadataStores.get(spider.getId()).deduplicate(filteredOutlinks.stream().map(l -> l.getUri()).collect(Collectors.toList()));
+			allFilteredOutlinks = filteredOutlinks.stream().filter(f -> res.contains(f.getUri())).collect(Collectors.toSet());
 		}
 
 		log.trace("And filtering {}", allFilteredOutlinks);
@@ -116,22 +116,22 @@ public class ExtractorService {
 				Link link = new Link();
 
 				String uri = element.getElement().absUrl("href");
-				link.uri(StringUtils.isNotBlank(uri) ? Uri.create(uri) : null);
+				link.setUri(StringUtils.isNotBlank(uri) ? Uri.create(uri) : null);
 
 				String rel = element.getElement().attr("rel");
-				link.rel(StringUtils.isNotBlank(rel) ? rel : null);
+				link.setRel(StringUtils.isNotBlank(rel) ? rel : null);
 
 				String title = element.getElement().attr("title");
-				link.title(StringUtils.isNotBlank(title) ? title : null);
+				link.setTitle(StringUtils.isNotBlank(title) ? title : null);
 
 				String text = element.getElement().ownText();
-				link.text(StringUtils.isNotBlank(text) ? text : null);
+				link.setText(StringUtils.isNotBlank(text) ? text : null);
 				return link;
 			}
 		});
 
 		if (outlinks != null && !outlinks.isEmpty()) {
-			outlinks = (List<Link>) format(blob.metadata(), extractor, outlinks);
+			outlinks = (List<Link>) format(blob.getMetadata(), extractor, outlinks);
 		}
 
 		return new HashSet<>(outlinks);
@@ -157,7 +157,7 @@ public class ExtractorService {
 		List<Document> documents = null;
 
 		if (extractor.getFilters() == null && extractor.getFilters().getLinks() == null || extractor.getFilters().getLinks() != null
-				&& extractor.getFilters().getLinks().stream().allMatch(f -> f.isValid(new Link().uri(blob.metadata().uri())))) {
+				&& extractor.getFilters().getLinks().stream().allMatch(f -> f.isValid(new Link().setUri(blob.getMetadata().getUri())))) {
 
 			if (extractor.getMultiple() != null) {
 
@@ -183,7 +183,7 @@ public class ExtractorService {
 							results = extract(cachedSelectors, blob, null, field.getExtractor(), converter);
 						}
 
-						fillDocument(blob.metadata(), document, field, results);
+						fillDocument(blob.getMetadata(), document, field, results);
 					}
 
 					return document;
@@ -200,7 +200,7 @@ public class ExtractorService {
 					DataConverter<?, String> converter = isBody ? DataConverter.BODY : DataConverter.DEFAULT;
 					List<? extends Object> results = extract(cachedSelectors, blob, null, field.getExtractor(), converter);
 
-					fillDocument(blob.metadata(), document, field, results);
+					fillDocument(blob.getMetadata(), document, field, results);
 				}
 
 				documents = Arrays.asList(document);
@@ -233,7 +233,7 @@ public class ExtractorService {
 		Instance<T> instance;
 		if (segment != null) {
 			Selector<T> selector = getSelector(fieldExtractor);
-			instance = ((BodySelector<T>) selector).init(blob.metadata(), Payloads.newByteArrayPayload(segment), true);
+			instance = ((BodySelector<T>) selector).init(blob.getMetadata(), Payloads.newByteArrayPayload(segment), true);
 		} else {
 			// Reuse the previous instance selector for this web page
 			String cacheKey = fieldExtractor.getType() + "-" + fieldExtractor.getSource().toString().toLowerCase(Locale.ROOT);
@@ -243,13 +243,13 @@ public class ExtractorService {
 				Selector<T> selector = getSelector(fieldExtractor);
 
 				if (SourceType.BODY.equals(fieldExtractor.getSource())) {
-					instance = ((BodySelector<T>) selector).init(blob.metadata(), blob.payload(), false);
+					instance = ((BodySelector<T>) selector).init(blob.getMetadata(), blob.getPayload(), false);
 				} else if (SourceType.HEADERS.equals(fieldExtractor.getSource())) {
-					instance = ((HeaderSelector<T>) selector).init(blob.metadata().fetchMetadata());
+					instance = ((HeaderSelector<T>) selector).init(blob.getMetadata().getFetchMetadata());
 				} else if (SourceType.URI.equals(fieldExtractor.getSource())) {
-					instance = ((UriSelector<T>) selector).init(blob.metadata(), blob.metadata().uri());
+					instance = ((UriSelector<T>) selector).init(blob.getMetadata(), blob.getMetadata().getUri());
 				} else if (SourceType.COOKIE.equals(fieldExtractor.getSource())) {
-					instance = ((CookieSelector<T>) selector).init(blob.metadata().fetchMetadata());
+					instance = ((CookieSelector<T>) selector).init(blob.getMetadata().getFetchMetadata());
 				} else if (SourceType.EMPTY.equals(fieldExtractor.getSource())) {
 					instance = ((EmptySelector<T>) selector).init(blob);
 				}

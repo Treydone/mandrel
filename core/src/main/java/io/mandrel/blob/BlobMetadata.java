@@ -31,7 +31,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 @Data
-@Accessors(fluent = true, chain = true)
+@Accessors(chain = true)
 public class BlobMetadata implements Serializable {
 
 	private static final long serialVersionUID = -4923932605977633603L;

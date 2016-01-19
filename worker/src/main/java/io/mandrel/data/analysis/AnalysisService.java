@@ -79,11 +79,11 @@ public class AnalysisService {
 
 	protected Analysis buildReport(Spider spider, Blob blob) {
 		Analysis report;
-		if (blob.metadata().uri().getScheme().startsWith("http")) {
+		if (blob.getMetadata().getUri().getScheme().startsWith("http")) {
 			HttpAnalysis temp = new HttpAnalysis();
 
 			// Robots.txt
-			Uri pageURL = blob.metadata().uri();
+			Uri pageURL = blob.getMetadata().getUri();
 			String robotsTxtUrl = pageURL.getScheme() + "://" + pageURL.getHost() + ":" + pageURL.getPort() + "/robots.txt";
 			ExtendedRobotRules robotRules = RobotsTxtUtils.getRobotRules(robotsTxtUrl);
 			temp.robotRules(robotRules);
@@ -117,7 +117,7 @@ public class AnalysisService {
 			// Link extraction
 			if (spider.getExtractors().getOutlinks() != null) {
 				Map<String, Pair<Set<Link>, Set<Link>>> outlinksByExtractor = spider.getExtractors().getOutlinks().stream().map(ol -> {
-					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(spider, blob.metadata().uri(), cachedSelectors, blob, ol));
+					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(spider, blob.getMetadata().getUri(), cachedSelectors, blob, ol));
 				}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
 
 				report.outlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getLeft()));
@@ -126,7 +126,7 @@ public class AnalysisService {
 
 		}
 
-		report.metadata(blob.metadata());
+		report.metadata(blob.getMetadata());
 		return report;
 	}
 
@@ -137,9 +137,10 @@ public class AnalysisService {
 		try {
 			Uri uri = Uri.create(sitemapUrl);
 			Blob blob = Requesters.of(uri.getScheme()).get().get(uri);
-			String contentType = blob.metadata().contentMetadata().contentType() != null ? blob.metadata().contentMetadata().contentType() : "text/xml";
+			String contentType = blob.getMetadata().getContentMetadata().contentType() != null ? blob.getMetadata().getContentMetadata().contentType()
+					: "text/xml";
 
-			AbstractSiteMap sitemap = siteMapParser.parseSiteMap(contentType, IOUtils.toByteArray(blob.payload().openStream()), new URL(sitemapUrl));
+			AbstractSiteMap sitemap = siteMapParser.parseSiteMap(contentType, IOUtils.toByteArray(blob.getPayload().openStream()), new URL(sitemapUrl));
 
 			if (sitemap.isIndex()) {
 				sitemaps.addAll(((SiteMapIndex) sitemap).getSitemaps());

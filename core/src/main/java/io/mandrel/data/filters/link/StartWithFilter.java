@@ -33,7 +33,7 @@ public class StartWithFilter extends LinkFilter {
 	private String value;
 
 	public boolean isValid(Link link) {
-		return link != null && link.uri() != null && link.uri().toString().startsWith(getValue());
+		return link != null && link.getUri() != null && link.getUri().toString().startsWith(getValue());
 	}
 
 	@Override

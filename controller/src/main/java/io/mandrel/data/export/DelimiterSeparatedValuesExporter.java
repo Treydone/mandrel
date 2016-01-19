@@ -164,12 +164,12 @@ public class DelimiterSeparatedValuesExporter implements Exporter {
 		List<Object> buffer = new ArrayList<>(6);
 
 		blobs.forEach(page -> {
-			buffer.add(page.metadata().uri());
-			buffer.add(page.metadata().fetchMetadata().statusCode());
-			buffer.add(page.metadata().fetchMetadata().statusText());
-			buffer.add(page.metadata().fetchMetadata().lastCrawlDate());
-			buffer.add(page.metadata().fetchMetadata().outlinks());
-			buffer.add(page.metadata().fetchMetadata().timeToFetch());
+			buffer.add(page.getMetadata().getUri());
+			buffer.add(page.getMetadata().getFetchMetadata().getStatusCode());
+			buffer.add(page.getMetadata().getFetchMetadata().getStatusText());
+			buffer.add(page.getMetadata().getFetchMetadata().getLastCrawlDate());
+			buffer.add(page.getMetadata().getFetchMetadata().getOutlinks());
+			buffer.add(page.getMetadata().getFetchMetadata().getTimeToFetch());
 
 			try {
 				csvWriter.write(buffer);

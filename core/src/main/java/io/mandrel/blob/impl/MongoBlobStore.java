@@ -21,6 +21,7 @@ package io.mandrel.blob.impl;
 import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobMetadata;
 import io.mandrel.blob.BlobStore;
+import io.mandrel.common.bson.JsonBsonCodec;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.io.Payloads;
@@ -42,7 +43,6 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
@@ -109,13 +109,8 @@ public class MongoBlobStore extends BlobStore {
 
 	private Function<? super GridFSDownloadStream, ? extends Blob> fromFile = stream -> {
 		Document document = stream.getGridFSFile().getMetadata();
-		BlobMetadata metadata;
-		try {
-			metadata = getMapper().readValue(document.toJson(), BlobMetadata.class);
-		} catch (Exception e) {
-			throw Throwables.propagate(e);
-		}
-		return new Blob(metadata).payload(Payloads.newPayload(stream));
+		BlobMetadata metadata = JsonBsonCodec.fromBson(getMapper(), document, BlobMetadata.class);
+		return new Blob(metadata).setPayload(Payloads.newPayload(stream));
 	};
 
 	@Override
@@ -132,17 +127,12 @@ public class MongoBlobStore extends BlobStore {
 	public Uri putBlob(Uri uri, Blob blob) {
 		GridFSUploadOptions options = new GridFSUploadOptions();
 
-		Document document;
-		try {
-			document = Document.parse(mapper.writeValueAsString(blob.metadata()));
-		} catch (JsonProcessingException e) {
-			throw Throwables.propagate(e);
-		}
+		Document document = JsonBsonCodec.toBson(mapper, blob.getMetadata());
 		options.metadata(document);
 
 		GridFSUploadStream file = bucket.openUploadStream(uri.toString(), options);
 		try {
-			IOUtils.copy(blob.payload().openStream(), file);
+			IOUtils.copy(blob.getPayload().openStream(), file);
 		} catch (IOException e) {
 			throw Throwables.propagate(e);
 		}

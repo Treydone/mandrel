@@ -46,7 +46,6 @@ import io.mandrel.common.net.Uri;
 import io.mandrel.data.Link;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -56,7 +55,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @NoArgsConstructor
-@Accessors(chain = true, fluent = true)
+@Accessors(chain = true)
 public class FetchMetadata implements Serializable {
 
 	private static final long serialVersionUID = 4900693151305950280L;
@@ -69,8 +68,6 @@ public class FetchMetadata implements Serializable {
 	private long timeToFetch;
 	private Set<Link> outlinks;
 	private int iteration;
-
-	private URI blob;
 
 	public static String fetchStatusCodesToString(int code) {
 		switch (code) {

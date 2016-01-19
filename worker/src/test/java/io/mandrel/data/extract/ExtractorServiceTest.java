@@ -66,7 +66,7 @@ public class ExtractorServiceTest {
 	public void no_matching_pattern() throws MalformedURLException {
 
 		// Arrange
-		Blob blob = new Blob(new BlobMetadata().uri(Uri.create("http://localhost")));
+		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost")));
 		MetadataExtractor extractor = new MetadataExtractor();
 
 		// Actions
@@ -79,7 +79,7 @@ public class ExtractorServiceTest {
 	public void no_field() throws MalformedURLException {
 
 		// Arrange
-		Blob blob = new Blob(new BlobMetadata().uri(Uri.create("http://localhost")));
+		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost")));
 		MetadataExtractor extractor = new MetadataExtractor();
 
 		// Actions
@@ -92,7 +92,7 @@ public class ExtractorServiceTest {
 	public void no_DocumentStore() throws MalformedURLException {
 
 		// Arrange
-		Blob blob = new Blob(new BlobMetadata().uri(Uri.create("http://localhost")));
+		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost")));
 		MetadataExtractor extractor = new MetadataExtractor();
 
 		FieldExtractor field = new FieldExtractor();
@@ -109,7 +109,7 @@ public class ExtractorServiceTest {
 	public void no_field_extractor() throws MalformedURLException {
 
 		// Arrange
-		Blob blob = new Blob(new BlobMetadata().uri(Uri.create("http://localhost")));
+		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost")));
 		MetadataExtractor extractor = new MetadataExtractor();
 
 		DocumentStores.add(0, extractor.getName(), documentStore);
@@ -127,7 +127,7 @@ public class ExtractorServiceTest {
 	public void no_field_extractor_type() throws MalformedURLException {
 
 		// Arrange
-		Blob blob = new Blob(new BlobMetadata().uri(Uri.create("http://localhost")));
+		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost")));
 		MetadataExtractor extractor = new MetadataExtractor();
 
 		DocumentStores.add(0, extractor.getName(), documentStore);
@@ -148,7 +148,7 @@ public class ExtractorServiceTest {
 	public void no_field_extractor_value() throws MalformedURLException {
 
 		// Arrange
-		Blob blob = new Blob(new BlobMetadata().uri(Uri.create("http://localhost")));
+		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost")));
 		MetadataExtractor extractor = new MetadataExtractor();
 
 		DocumentStores.add(0, extractor.getName(), documentStore);
@@ -171,7 +171,7 @@ public class ExtractorServiceTest {
 		// Arrange
 		byte[] stream = "<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes();
 
-		Blob blob = new Blob(new BlobMetadata().uri(Uri.create("http://localhost"))).payload(Payloads.newByteArrayPayload(stream));
+		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost"))).setPayload(Payloads.newByteArrayPayload(stream));
 		MetadataExtractor extractor = new MetadataExtractor();
 
 		DocumentStores.add(0, extractor.getName(), documentStore);
@@ -199,7 +199,7 @@ public class ExtractorServiceTest {
 		// Arrange
 		byte[] stream = "<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes();
 
-		Blob blob = new Blob(new BlobMetadata().uri(Uri.create("http://localhost"))).payload(Payloads.newByteArrayPayload(stream));
+		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost"))).setPayload(Payloads.newByteArrayPayload(stream));
 		MetadataExtractor extractor = new MetadataExtractor();
 
 		DocumentStores.add(0, extractor.getName(), documentStore);
@@ -239,7 +239,7 @@ public class ExtractorServiceTest {
 		byte[] stream = "<html><body><test><o>value1</o><t>key1</t></test><test><o>value2</o><t>key2</t></test><test><o>value3</o></test></body></html>"
 				.getBytes();
 
-		Blob blob = new Blob(new BlobMetadata().uri(Uri.create("http://localhost"))).payload(Payloads.newByteArrayPayload(stream));
+		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost"))).setPayload(Payloads.newByteArrayPayload(stream));
 		MetadataExtractor extractor = new MetadataExtractor();
 		DocumentStores.add(0, extractor.getName(), documentStore);
 
@@ -292,14 +292,14 @@ public class ExtractorServiceTest {
 		// Arrange
 		byte[] stream = "<html><body><a href='http://test.com/pouet'>Absolute</a><a href='/pouet'>Relative</a></body></html>".getBytes();
 
-		Blob blob = new Blob(new BlobMetadata().uri(Uri.create("http://localhost"))).payload(Payloads.newByteArrayPayload(stream));
+		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost"))).setPayload(Payloads.newByteArrayPayload(stream));
 		OutlinkExtractor extractor = new OutlinkExtractor("_default");
 
 		// Actions
 		Set<Link> links = extractorService.extractOutlinks(new HashMap<>(), blob, extractor);
 
 		// Asserts
-		Assertions.assertThat(links).containsExactly(new Link().text("Relative").uri(Uri.create("http://localhost/pouet")),
-				new Link().text("Absolute").uri(Uri.create("http://test.com/pouet")));
+		Assertions.assertThat(links).containsExactly(new Link().setText("Relative").setUri(Uri.create("http://localhost/pouet")),
+				new Link().setText("Absolute").setUri(Uri.create("http://test.com/pouet")));
 	}
 }

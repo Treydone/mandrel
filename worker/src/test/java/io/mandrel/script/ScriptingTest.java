@@ -36,7 +36,7 @@ public class ScriptingTest {
 	public void groovy() throws Exception {
 
 		// Arrange
-		BlobMetadata metadata = new BlobMetadata().uri(Uri.create("http://localhost"));
+		BlobMetadata metadata = new BlobMetadata().setUri(Uri.create("http://localhost"));
 
 		ScriptEngine engine = scriptingService.getEngineByName("groovy");
 		ScriptContext bindings = scriptingService.getBindings(metadata, null);

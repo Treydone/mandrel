@@ -40,28 +40,28 @@ public class UrlPatternFitlerTest {
 
 	@Test
 	public void static_link_simple() {
-		Assertions.assertThat(_static.isValid(new Link().uri(Uri.create("http://localhost/1")))).isTrue();
+		Assertions.assertThat(_static.isValid(new Link().setUri(Uri.create("http://localhost/1")))).isTrue();
 	}
 
 	@Test
 	public void static_link_static() {
-		Assertions.assertThat(_static.isValid(new Link().uri(Uri.create("http://localhost/1.jpg")))).isFalse();
+		Assertions.assertThat(_static.isValid(new Link().setUri(Uri.create("http://localhost/1.jpg")))).isFalse();
 	}
 
 	@Test
 	public void custom_link() {
-		Assertions.assertThat(_custom.isValid(new Link().uri(Uri.create("http://localhost/1.jpg")))).isFalse();
-		Assertions.assertThat(_custom.isValid(new Link().uri(Uri.create("http://localhost/users/1.jpg")))).isFalse();
-		Assertions.assertThat(_custom.isValid(new Link().uri(Uri.create("http://localhost/users/13455")))).isFalse();
-		Assertions.assertThat(_custom.isValid(new Link().uri(Uri.create("http://localhost/users/others/others")))).isFalse();
-		Assertions.assertThat(_custom.isValid(new Link().uri(Uri.create("http://localhost/users/1.html")))).isTrue();
-		Assertions.assertThat(_custom.isValid(new Link().uri(Uri.create("http://localhost/users/1.html?test")))).isFalse();
+		Assertions.assertThat(_custom.isValid(new Link().setUri(Uri.create("http://localhost/1.jpg")))).isFalse();
+		Assertions.assertThat(_custom.isValid(new Link().setUri(Uri.create("http://localhost/users/1.jpg")))).isFalse();
+		Assertions.assertThat(_custom.isValid(new Link().setUri(Uri.create("http://localhost/users/13455")))).isFalse();
+		Assertions.assertThat(_custom.isValid(new Link().setUri(Uri.create("http://localhost/users/others/others")))).isFalse();
+		Assertions.assertThat(_custom.isValid(new Link().setUri(Uri.create("http://localhost/users/1.html")))).isTrue();
+		Assertions.assertThat(_custom.isValid(new Link().setUri(Uri.create("http://localhost/users/1.html?test")))).isFalse();
 
-		Assertions.assertThat(_custom2.isValid(new Link().uri(Uri.create("http://localhost/1.jpg")))).isFalse();
-		Assertions.assertThat(_custom2.isValid(new Link().uri(Uri.create("http://localhost/users/1.jpg")))).isFalse();
-		Assertions.assertThat(_custom2.isValid(new Link().uri(Uri.create("http://localhost/users/13455")))).isFalse();
-		Assertions.assertThat(_custom2.isValid(new Link().uri(Uri.create("http://localhost/users/others/others")))).isFalse();
-		Assertions.assertThat(_custom2.isValid(new Link().uri(Uri.create("http://localhost/users/1.html")))).isTrue();
-		Assertions.assertThat(_custom2.isValid(new Link().uri(Uri.create("http://localhost/users/1.html?test")))).isTrue();
+		Assertions.assertThat(_custom2.isValid(new Link().setUri(Uri.create("http://localhost/1.jpg")))).isFalse();
+		Assertions.assertThat(_custom2.isValid(new Link().setUri(Uri.create("http://localhost/users/1.jpg")))).isFalse();
+		Assertions.assertThat(_custom2.isValid(new Link().setUri(Uri.create("http://localhost/users/13455")))).isFalse();
+		Assertions.assertThat(_custom2.isValid(new Link().setUri(Uri.create("http://localhost/users/others/others")))).isFalse();
+		Assertions.assertThat(_custom2.isValid(new Link().setUri(Uri.create("http://localhost/users/1.html")))).isTrue();
+		Assertions.assertThat(_custom2.isValid(new Link().setUri(Uri.create("http://localhost/users/1.html?test")))).isTrue();
 	}
 }
