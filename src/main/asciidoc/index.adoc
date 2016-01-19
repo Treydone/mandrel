@@ -9,9 +9,9 @@ If you find errors or omissions in this document, please don't hesitate to submi
 New contributors are always welcome!
 ====
 
-Mandrel is a distributed Crawler engine built for the cloud. Features include:
+Mandrel is a distributed mining engine built for the cloud. Features include:
 
-* Distributed and Highly Available Crawler Engine.
+* Distributed and Highly Available mining Engine.
 * Powerful and customizable
 * HTTP RESTful API
 * Open Source under the Apache License, version 2 ("ALv2")
@@ -20,11 +20,46 @@ Mandrel is a distributed Crawler engine built for the cloud. Features include:
 
 == What is Mandrel?
 
+Mandrel is designed as a whole product, with the idea of bringing a complete mining engine solution that runs out of the box.
+
 === The Big Picture
+Mandrel is designed for performance and scalability. Event if it has been tested on small and on medium-sized cluster (~30 nodes), Mandrel can scale on cloud-sized cluster without any effort.
+
+Mandrel is NOT:
+
+- a search engine (but you can use Elasticsearch or Solr -or whatever you want- as output)
+- a NoSQL database
+- a SDK
+
+=== What for?
+Mandrel can be used to build various mining jobs:
+
+- Web crawlers: make the web your in-house database by turning web pages into data
+- SEO analytics: test web pages and links for valid syntax and structure, find broken links and 404 pages
+- Monitor sites to see when their structure or contents change
+- Build a special-purpose search index, intranet/extranet indexation...
+- Maintain mirror sites for popular Web sites
+- Search for copyright infringements: find duplicate of content
 
 === Compared to...
 
-= Quick Starts
+==== Nutch
+Heavy batchs, recrawling seems complicated
+
+==== Heristrix
+Powerful job definition
+No GUI
+
+=== Internals
+Mandrel uses Zookeeper, Thrift, Netty, Undertow and Spring. It can be connected to:
+
+- Mongo
+- Kafka
+- Cassandra
+- Hbase + HDFS
+- "Insert your favorite database here"
+
+= Quick Start
 
 == Getting Started
 
@@ -34,6 +69,9 @@ TIP: A useful tip
 === System Requirements
 Mandrel works on Linux, Mac and Windows. All you need is Java 8.
 
+
+= Setup
+
 == Installation
 
 === From the sources
@@ -42,6 +80,8 @@ Mandrel uses Maven for its build system. Simply run:
 
 [source]
 mvn clean package -DskipTests
+cd standalone
+mvn spring:boot run -DskipTests
 
 === Install with +yum+
 
@@ -69,8 +109,245 @@ To install Mandrel on Debian Sid or Ubuntu Saucy or greater:
 
  $ sudo apt-get install mandrel
 
+== Configuration
 
-== REST API
+=== Common
+
+==== Discovery
+
+[source]
+discovery:
+  instanceHost: localhost
+  zookeeper:
+    enabled: true
+    connectString: localhost:2181
+    root: /mandrel
+
+[[discovery.instanceHost]]
+*`discovery.instanceHost`*::
++
+.Description
+The address what will be registered in the discovery.
++
+.Default
+`localhost`
+
+[[discovery.zookeeper.connectString]]
+*`discovery.zookeeper.connectString`*::
++
+.Description
+Comma separated list of servers in the ZooKeeper ensemble.
+    For example, "host1.mydomain.com,host2.mydomain.com,host3.mydomain.com".
+    By default this is set to localhost for local and pseudo-distributed modes
+    of operation. For a fully-distributed setup, this should be set to a full
+    list of ZooKeeper ensemble servers.
++
+.Default
+`localhost:2181`
+
+[[discovery.zookeeper.root]]
+*`discovery.zookeeper.root`*::
++
+.Description
+The root path in Zookeeper where the services will be registered.
++
+.Default
+`/mandrel`
+
+==== Transport
+
+[source]
+transport:
+  bindAddress: localhost
+  port: 8090
+
+==== Logging
+
+[source]
+logging:
+  console:
+    enabled: true
+    level: WARN
+  level:
+    org.springframework: INFO
+    io.mandrel: DEBUG
+    io.mandrel.messaging: DEBUG
+
+=== controller.yml
+
+[source]
+server:
+  port: 8080
+  undertow:
+    buffer-size: 16000
+    buffers-per-region: 20
+    direct-buffers: true
+    io-threads: 4
+    worker-threads: 32
+
+
+[[server.port]]
+*`server.port`*::
++
+.Description
+The port used for all HTTP incoming traffic.
++
+.Default
+`8080`
+
+=== frontier.yml
+
+=== worker.yml
+
+=== standalone.yml
+
+[source]
+spring:
+  pidfile: standalone.pid
+  application:
+    name: standalone
+    admin:
+      enabled: false
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/mandrel
+  jmx:
+    enabled: false
+discovery:
+  local:
+    enabled: true
+  zookeeper:
+    enabled: false
+
+== Running modes
+
+=== Standalone - Single-JVM
+
+[source]
+discovery:
+  local:
+    enabled: true
+  zookeeper:
+    enabled: false
+
+ $ mandrel-standalone start
+
+ $ mandrel-standalone stop
+
+=== Standalone - Pseudo-distributed
+
+[source]
+discovery:
+  zookeeper:
+    enabled: true
+
+ $ mandrel-standalone start
+
+ $ mandrel-standalone stop
+
+=== Distributed
+
+[source]
+$ mandrel-controller start
+$ mandrel-frontier start
+$ mandrel-worker start
+
+[source]
+$ mandrel-worker start
+$ mandrel-frontier start
+$ mandrel-controller stop
+
+
+= Architecture
+
+== Overview
+
+== Components
+
+=== Controller
+
+=== Frontier
+
+The goal of the frontier is to know which URI to process next, and when. The frontier decides the logic and policies to follow when a crawler is visiting sources like websites: what pages should be crawled next, priorities and ordering, how often pages are revisited, etc.
+It keeps the state of the crawl. This includes, but is not limited to:
+
+- What URIs have been discovered
+- What URIs are being processed (fetched)
+- What URIs have been processed
+
+The frontier garanties the respect of the politeness like the bandwidth limits or the number of pages to be crawled.
+
+The frontier is set of various background tasks:
+
+- Priorizer: from a set of URIs, schedule the priority of the URIs and push them in the internal queues
+- Revister: revist a page, when and how
+
+==== Revisit policies
+
+- Freshness: This is a binary measure that indicates whether the local copy is accurate or not.
+- Age: This is a measure that indicates how outdated the local copy is.
+- Uniform policy: This involves re-visiting all pages in the collection with the same frequency, regardless of their rates of change.
+- Proportional policy: This involves re-visiting more often the pages that change more frequently. The visiting frequency is directly proportional to the (estimated) change frequency.
+
+==== Politeness
+
+- Parallel connections
+- Max pages per second
+- Max bytes per second/bandwidth
+
+=== Worker
+
+- Pick out a uri from the frontier
+- Fetch the content
+- Store raw results in blobstore
+- Find links in the content
+- Store metadata in metadatastore
+- If extraction needed, parse the content and store the results in documentstore
+- Push some infos back to the frontier
+
+== Scalabilty
+
+= Using Mandrel
+
+== Web UI
+
+== API REST
+
+=== API Conventions
+
+=== Endpoints
+
+==== Spiders
+
+[[spiders]]
+*`/spiders`*::
++
+.Description
+List all the spider
+
+[[spiders_id]]
+*`/spiders/{id}`*::
++
+.Description
+Return a spider
+
+[[spiders_start]]
+*`/spiders/{id}/start`*::
++
+.Description
+Start
+
+[[spiders_stop]]
+*`/spiders/{id}/stop`*::
++
+.Description
+Stop
+
+==== Data
+
+==== Cluster
+
+== Spider definition
 
 === Filtering
 
@@ -344,9 +621,34 @@ Each spider can be configured with a specified HTTP client in order to configure
  }
 }
 
-== Production considerations
+
+== Security
+
+== Production considerations & performance tuning
 
 NOTE: Section pending
+
+By default, Mandrel is started in a standalone mode. In this mode, the 3 main components are started in the same JVM. Altought this may be useful for testing purposes, the standalone mode does not allow you to scale your deployment.
+
+For production, we recommand you to deploy at least one controller, one frontier and one worker, each in separate JVM on a dedicated serveur.
+
+=== General Guidelines
+
+=== Operating System
+
+==== 64-bit
+Use a 64-bit platform (and 64-bit JVM).
+
+==== Swapping
+Watch out for swapping. Set swappiness to 0.
+
+=== Network
+
+=== Java
+
+=== ZooKeeper
+
+=== Case studies
 
 == Troubleshooting
 
@@ -362,7 +664,7 @@ NOTE: Section pending
 
 This software is licensed under the Apache License, version 2 ("ALv2"), quoted below.
 
-Copyright 2009-2015 Mandrel
+Copyright 2009-2016 Mandrel
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy of
