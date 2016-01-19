@@ -16,15 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.transport.thrift;
+package io.mandrel.common.bson;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import io.mandrel.common.net.Uri;
 
-import com.facebook.swift.service.ThriftServerConfig;
+import org.bson.BsonReader;
+import org.bson.BsonWriter;
+import org.bson.codecs.Codec;
+import org.bson.codecs.DecoderContext;
+import org.bson.codecs.EncoderContext;
 
-@Component
-@ConfigurationProperties(prefix = "transport.thrift")
-public class ThriftTransportProperties extends ThriftServerConfig {
+public class UriCodec implements Codec<Uri> {
 
+	@Override
+	public void encode(final BsonWriter writer, final Uri value, final EncoderContext encoderContext) {
+		writer.writeString(value.toString());
+	}
+
+	@Override
+	public Uri decode(final BsonReader reader, final DecoderContext decoderContext) {
+		return Uri.create(reader.readString());
+	}
+
+	@Override
+	public Class<Uri> getEncoderClass() {
+		return Uri.class;
+	}
 }

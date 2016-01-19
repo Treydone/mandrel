@@ -77,8 +77,10 @@ public class ThriftClients implements Clients {
 		catalog.addDefaultCoercions(MandrelCoercions.class);
 		ThriftCodecManager codecManager = new ThriftCodecManager(new CompilerThriftCodecFactory(ThriftCodecManager.class.getClassLoader()), catalog,
 				Collections.emptySet());
-		ThriftClientManager clientManager = new ThriftClientManager(codecManager, new NiftyClient(NettyClientConfig.newBuilder().build(), local),
-				Collections.emptySet());
+
+		NettyClientConfig config = NettyClientConfig.newBuilder().build();
+		NiftyClient niftyClient = new NiftyClient(config, local);
+		ThriftClientManager clientManager = new ThriftClientManager(codecManager, niftyClient, Collections.emptySet());
 
 		frontiers = new KeyedClientPool<>(FrontierContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED

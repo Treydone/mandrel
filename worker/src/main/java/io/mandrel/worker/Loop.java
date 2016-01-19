@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -104,9 +105,11 @@ public class Loop implements Runnable {
 				ListenableFuture<Uri> result = clients.onRandomFrontier().map(frontier -> frontier.next(spider.getId()));
 
 				// TODO -> You can do better things than this...
-				Uri uri = result.get(10000, TimeUnit.MILLISECONDS);
+				Uri uri = result.get(20000, TimeUnit.MILLISECONDS);
 
 				if (uri != null) {
+
+					log.debug("> Getting uri {}", uri);
 
 					//
 					StopWatch watch = new StopWatch();
@@ -163,7 +166,7 @@ public class Loop implements Runnable {
 
 							log.trace("> End parsing data for {}", uri);
 						} catch (Exception t) {
-							// Well...
+							// TODO create and use internal exception instead...
 							if (t instanceof ConnectTimeoutException) {
 								spiderAccumulator.incConnectTimeout();
 								add(spider.getId(), uri);
@@ -174,6 +177,8 @@ public class Loop implements Runnable {
 									|| t instanceof java.util.concurrent.TimeoutException) {
 								spiderAccumulator.incConnectException();
 								add(spider.getId(), uri);
+							} else {
+								log.debug("Error while looping", t);
 							}
 						}
 					} else {
@@ -190,12 +195,24 @@ public class Loop implements Runnable {
 					}
 				}
 			} catch (Exception e) {
-				log.warn("Got a problem, waiting 2 sec...", e);
-				try {
-					TimeUnit.MILLISECONDS.sleep(2000);
-				} catch (InterruptedException ie) {
-					// Don't care
-					log.trace("", ie);
+				// TODO This is ugly, but don't have the choice... Hope that a
+				// new thrift client will throw a good TimeoutException
+				if (e instanceof ExecutionException && e.getMessage().contains("Task timed out while executing.")) {
+					log.debug("Time out when getting uri from frontier, waiting 20 sec", e.getMessage());
+					try {
+						TimeUnit.MILLISECONDS.sleep(20000);
+					} catch (InterruptedException ie) {
+						// Don't care
+						log.trace("", ie);
+					}
+				} else {
+					log.warn("Got a problem, waiting 2 sec...", e);
+					try {
+						TimeUnit.MILLISECONDS.sleep(2000);
+					} catch (InterruptedException ie) {
+						// Don't care
+						log.trace("", ie);
+					}
 				}
 			}
 		}
@@ -212,8 +229,11 @@ public class Loop implements Runnable {
 		globalAccumulator.incPageForHost(blob.metadata().uri().getHost());
 
 		spiderAccumulator.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
-		spiderAccumulator.incTotalSize(blob.metadata().size());
-		globalAccumulator.incTotalSize(blob.metadata().size());
+
+		if (blob.metadata().size() != null) {
+			spiderAccumulator.incTotalSize(blob.metadata().size());
+			globalAccumulator.incTotalSize(blob.metadata().size());
+		}
 	}
 
 	public void add(long spiderId, Set<Uri> uris) {

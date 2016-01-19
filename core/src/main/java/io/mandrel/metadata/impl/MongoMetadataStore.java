@@ -18,6 +18,8 @@
  */
 package io.mandrel.metadata.impl;
 
+import io.mandrel.common.bson.JsonBsonCodec;
+import io.mandrel.common.bson.UriCodec;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.metadata.FetchMetadata;
@@ -30,10 +32,11 @@ import java.util.Set;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 
 import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,8 +71,8 @@ public class MongoMetadataStore extends MetadataStore {
 
 		@Override
 		public MetadataStore build(TaskContext context) {
-			MongoClientOptions.Builder options = MongoClientOptions.builder();
-			// TODO options.description("");
+			CodecRegistry codecRegistry = CodecRegistries.fromRegistries(MongoClient.getDefaultCodecRegistry(), CodecRegistries.fromCodecs(new UriCodec()));
+			MongoClientOptions.Builder options = MongoClientOptions.builder().codecRegistry(codecRegistry);
 			MongoClientURI uri = new MongoClientURI(this.uri, options);
 			return new MongoMetadataStore(context, new MongoClient(uri), database, MessageFormat.format(collection, context.getSpiderId()));
 		}
@@ -91,11 +94,8 @@ public class MongoMetadataStore extends MetadataStore {
 	}
 
 	@Override
-	@SneakyThrows(IOException.class)
 	public void addMetadata(Uri uri, FetchMetadata metadata) {
-		String json = mapper.writeValueAsString(metadata);
-		org.bson.Document document = org.bson.Document.parse(json);
-		// TODO HASH?
+		org.bson.Document document = JsonBsonCodec.toBson(mapper, metadata);
 		document.append("_id", uri);
 		collection.insertOne(document);
 	}
@@ -103,17 +103,15 @@ public class MongoMetadataStore extends MetadataStore {
 	@Override
 	public Set<Uri> deduplicate(Collection<Uri> uris) {
 		Set<Uri> temp = Sets.newHashSet(uris);
-		temp.removeAll(Sets.newHashSet(collection.find(Filters.in("_id", uris)).projection(Projections.include("_id"))
-				.map(doc -> Uri.create(doc.getString("_id"))).iterator()));
+		temp.removeAll(Sets.newHashSet(collection.find(Filters.in("_id", uris)).projection(Projections.include("_id")).map(doc -> doc.get("_id", Uri.class))
+				.iterator()));
 		return temp;
 	}
 
 	@Override
-	@SneakyThrows(IOException.class)
 	public FetchMetadata getMetadata(Uri uri) {
 		Document doc = collection.find(Filters.eq("_id", uri)).first();
-		FetchMetadata fetchMetadata = mapper.readValue(doc.toJson(), FetchMetadata.class);
-		return fetchMetadata;
+		return JsonBsonCodec.fromBson(mapper, doc, FetchMetadata.class);
 	}
 
 	@Override

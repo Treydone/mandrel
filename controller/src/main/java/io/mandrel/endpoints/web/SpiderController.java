@@ -22,9 +22,12 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.metrics.MetricsRepository;
 import io.mandrel.spider.SpiderService;
 
+import java.io.IOException;
+
 import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -32,9 +35,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,12 +45,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RequestMapping(value = "/spiders")
 @Controller
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
+@Slf4j
 public class SpiderController {
 
 	private final SpiderService spiderService;
-
 	private final MetricsRepository metricsRepository;
-
 	private final ObjectMapper mapper;
 
 	@RequestMapping
@@ -108,10 +110,18 @@ public class SpiderController {
 	}
 
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
-	public String create(Model model, @RequestBody Spider spider) {
+	public String create(Model model, @RequestParam String definition) {
+		Spider spider;
+		try {
+			spider = mapper.readValue(definition, Spider.class);
+		} catch (IOException e) {
+			log.debug("Spider definition is invalid", e);
+			return "redirect:/spiders";
+		}
 		try {
 			spiderService.add(spider);
 		} catch (BindException e) {
+			log.debug("Can not add spider", e);
 			return "views/spider_add";
 		}
 		return "redirect:/spiders";

@@ -59,7 +59,7 @@ public class MetricsSyncer {
 				try {
 					clients.onRandomController().with(controller -> controller.updateMetrics(total));
 				} catch (Exception e) {
-					log.debug("Can not update metrics due to", e);
+					log.info("Can not update metrics {} due to", total, e);
 				}
 			}
 		}

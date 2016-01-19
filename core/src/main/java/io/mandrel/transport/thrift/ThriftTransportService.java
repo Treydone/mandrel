@@ -84,6 +84,8 @@ public class ThriftTransportService implements TransportService {
 
 		properties.setPort(globalProperties.getPort());
 		properties.setBindAddress(globalProperties.getBindAddress());
+		properties.setWorkerThreads(40);
+		// properties.setTaskExpirationTimeout(Duration.valueOf("30s"));
 
 		server = new ThriftServer(processor, properties, new NiftyTimer("thrift"), ThriftServer.DEFAULT_FRAME_CODEC_FACTORIES,
 				ThriftServer.DEFAULT_PROTOCOL_FACTORIES, ThriftServer.DEFAULT_WORKER_EXECUTORS, ThriftServer.DEFAULT_SECURITY_FACTORY, local);

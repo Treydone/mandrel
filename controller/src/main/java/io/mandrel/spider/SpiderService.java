@@ -99,52 +99,51 @@ public class SpiderService {
 
 			// TODO HOW TO in case of multiple controller
 			// -> Acquiring distributed lock
-
 			log.debug("Syncing the nodes from the controller...");
+
+			SyncRequest sync = new SyncRequest();
+
 			// Load the existing spiders from the database
 			List<Spider> spiders = spiderRepository.listActive();
-			SyncRequest sync = new SyncRequest();
-			sync.setDefinitions(spiders.stream().map(spider -> {
-				try {
-					return objectMapper.writeValueAsBytes(spider);
-				} catch (Exception e) {
-					throw Throwables.propagate(e);
-				}
-			}).collect(Collectors.toList()));
-
 			if (CollectionUtils.isNotEmpty(spiders)) {
-				// Sync first the frontiers
-				discoveryClient.getInstances(ServiceIds.frontier()).forEach(
-						instance -> {
-							try {
-								SyncResponse response = clients.onFrontier(instance.getHostAndPort()).map(frontier -> frontier.syncFrontiers(sync));
-
-								if (response.anyAction()) {
-									log.debug("On frontier {}:{}, after sync: {} created, {} updated, {} deleted", instance.getHost(), instance.getPort(),
-											response.getCreated(), response.getUpdated(), response.getDeleted());
-								}
-							} catch (Exception e) {
-								log.warn("Can not sync due to", e);
-							}
-						});
-
-				// And then the workers
-				discoveryClient.getInstances(ServiceIds.worker()).forEach(
-						instance -> {
-							try {
-								SyncResponse response = clients.onWorker(instance.getHostAndPort()).map(worker -> worker.syncWorkers(sync));
-
-								if (response.anyAction()) {
-									log.debug("On worker {}:{}, after sync: {} created, {} updated, {} deleted", instance.getHost(), instance.getPort(),
-											response.getCreated(), response.getUpdated(), response.getDeleted());
-								}
-							} catch (Exception e) {
-								log.warn("Can not sync due to", e);
-							}
-						});
-			} else {
-				log.debug("Nothing to sync...");
+				sync.setDefinitions(spiders.stream().map(spider -> {
+					try {
+						return objectMapper.writeValueAsBytes(spider);
+					} catch (Exception e) {
+						throw Throwables.propagate(e);
+					}
+				}).collect(Collectors.toList()));
 			}
+
+			// Sync first the frontiers
+			discoveryClient.getInstances(ServiceIds.frontier()).forEach(
+					instance -> {
+						try {
+							SyncResponse response = clients.onFrontier(instance.getHostAndPort()).map(frontier -> frontier.syncFrontiers(sync));
+
+							if (response.anyAction()) {
+								log.debug("On frontier {}:{}, after sync: {} created, {} updated, {} deleted", instance.getHost(), instance.getPort(),
+										response.getCreated(), response.getUpdated(), response.getDeleted());
+							}
+						} catch (Exception e) {
+							log.warn("Can not sync frontier {}:{} due to: {}", instance.getHost(), instance.getPort(), e);
+						}
+					});
+
+			// And then the workers
+			discoveryClient.getInstances(ServiceIds.worker()).forEach(
+					instance -> {
+						try {
+							SyncResponse response = clients.onWorker(instance.getHostAndPort()).map(worker -> worker.syncWorkers(sync));
+
+							if (response.anyAction()) {
+								log.debug("On worker {}:{}, after sync: {} created, {} updated, {} deleted", instance.getHost(), instance.getPort(),
+										response.getCreated(), response.getUpdated(), response.getDeleted());
+							}
+						} catch (Exception e) {
+							log.warn("Can not sync worker {}:{} due to: {}", instance.getHost(), instance.getPort(), e);
+						}
+					});
 		}
 	}
 
@@ -251,7 +250,7 @@ public class SpiderService {
 	public List<Spider> listActive() {
 		return spiderRepository.listActive();
 	}
-	
+
 	public List<Spider> listLastActive(int limit) {
 		return spiderRepository.listLastActive(limit);
 	}

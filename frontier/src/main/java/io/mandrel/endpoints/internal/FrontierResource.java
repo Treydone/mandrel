@@ -33,11 +33,14 @@ import io.mandrel.transport.Clients;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -48,6 +51,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 
 @Component
+@Slf4j
 public class FrontierResource implements FrontierContract {
 
 	@Autowired
@@ -120,31 +124,38 @@ public class FrontierResource implements FrontierContract {
 	@Override
 	public SyncResponse syncFrontiers(SyncRequest sync) {
 		Collection<? extends io.mandrel.common.container.Container> containers = FrontierContainers.list();
-		Map<Long, Spider> ids = sync.getDefinitions().stream().map(def -> {
-			try {
-				return objectMapper.readValue(def, Spider.class);
-			} catch (Exception e) {
-				throw Throwables.propagate(e);
-			}
-		}).collect(Collectors.toMap(spider -> spider.getId(), spider -> spider));
+		final Map<Long, Spider> ids = new HashMap<>();
+		if (sync.getDefinitions() != null) {
+			ids.putAll(sync.getDefinitions().stream().map(def -> {
+				try {
+					return objectMapper.readValue(def, Spider.class);
+				} catch (Exception e) {
+					throw Throwables.propagate(e);
+				}
+			}).collect(Collectors.toMap(spider -> spider.getId(), spider -> spider)));
+		}
 
 		SyncResponse response = new SyncResponse();
 		List<Long> created = new ArrayList<>();
 		List<Long> updated = new ArrayList<>();
 		List<Long> deleted = new ArrayList<>();
 		response.setCreated(created).setDeleted(deleted).setUpdated(updated);
+
 		List<Long> existingSpiders = new ArrayList<>();
 		containers.forEach(c -> {
 			existingSpiders.add(c.spider().getId());
 			if (!ids.containsKey(c.spider().getId())) {
+				log.debug("Killing spider {}", c.spider().getId());
 				killFrontierContainer(c.spider().getId());
 				deleted.add(c.spider().getId());
 			} else if (ids.get(c.spider().getId()).getVersion() != c.spider().getVersion()) {
+				log.debug("Updating spider {}", c.spider().getId());
 				killFrontierContainer(c.spider().getId());
 				create(ids.get(c.spider().getId()));
 				updated.add(c.spider().getId());
 
 				if (Statuses.STARTED.equals(ids.get(c.spider().getId()).getStatus())) {
+					log.debug("Starting spider {}", c.spider().getId());
 					startFrontierContainer(c.spider().getId());
 				}
 			}
@@ -152,9 +163,11 @@ public class FrontierResource implements FrontierContract {
 
 		ids.forEach((id, spider) -> {
 			if (!existingSpiders.contains(id)) {
+				log.debug("Creating spider {}", id);
 				create(spider);
 
 				if (Statuses.STARTED.equals(spider.getStatus())) {
+					log.debug("Starting spider {}", id);
 					startFrontierContainer(spider.getId());
 				}
 				created.add(spider.getId());

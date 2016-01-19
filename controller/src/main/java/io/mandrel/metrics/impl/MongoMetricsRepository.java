@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -47,6 +48,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOneModel;
+import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
 
 @Component
@@ -57,7 +59,7 @@ public class MongoMetricsRepository implements MetricsRepository {
 	private final MongoClient mongoClient;
 	private final MongoProperties properties;
 	private final ObjectMapper mapper;
-	private final Splitter splitter = Splitter.on('.').limit(1).trimResults();
+	private final Splitter splitter = Splitter.on('.').limit(2).trimResults();
 
 	private MongoCollection<Document> counters;
 
@@ -67,16 +69,20 @@ public class MongoMetricsRepository implements MetricsRepository {
 	}
 
 	public void sync(Map<String, Long> accumulators) {
-		Map<String, List<Pair<String, Long>>> byKey = accumulators.entrySet().stream().map(e -> Pair.of(e.getKey(), e.getValue()))
-				.collect(Collectors.groupingBy(e -> e.getLeft()));
-
-		List<ReplaceOneModel<Document>> requests = byKey.entrySet().stream().map(e -> {
-			Document updates = new Document();
+		// {global.XXX=0, global.YYY=0, ...} to {global{XXX=O, YYY=0}, ...}
+		Stream<Pair<String, Pair<String, Long>>> map = accumulators.entrySet().stream().map(e -> {
 			Iterable<String> results = splitter.split(e.getKey());
-			String[] elts = (String[]) Lists.newArrayList(results).toArray();
-			e.getValue().stream().forEach(i -> updates.append(elts[1], i.getValue()));
-			return Pair.of(elts[0], new Document("$inc", updates));
-		}).map(pair -> new ReplaceOneModel<Document>(Filters.eq("_id", pair.getLeft()), pair.getRight(), new UpdateOptions().upsert(true)))
+			List<String> elts = Lists.newArrayList(results);
+			return Pair.of(elts.get(0), Pair.of(elts.get(1), e.getValue()));
+		});
+		Map<String, List<Pair<String, Long>>> byKey = map.collect(Collectors.groupingBy(e -> e.getLeft(),
+				Collectors.mapping(e -> e.getRight(), Collectors.toList())));
+
+		List<UpdateOneModel<Document>> requests = byKey.entrySet().stream().map(e -> {
+			Document updates = new Document();
+			e.getValue().stream().forEach(i -> updates.append(i.getKey(), i.getValue()));
+			return Pair.of(e.getKey(), new Document("$inc", updates));
+		}).map(pair -> new UpdateOneModel<Document>(Filters.eq("_id", pair.getLeft()), pair.getRight(), new UpdateOptions().upsert(true)))
 				.collect(Collectors.toList());
 
 		counters.bulkWrite(requests);

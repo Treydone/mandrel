@@ -338,15 +338,12 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 		return localContext;
 	}
 
-	// TODO use RxNetty with CompletableFuture
-	@Deprecated
 	public Blob get(Uri uri, Spider spider) throws Exception {
 		HttpUriRequest request = prepareRequest(uri, spider);
 		HttpResponse response = client.execute(request, null).get(5000, TimeUnit.MILLISECONDS);
 		return extractWebPage(uri, response, null);
 	}
 
-	@Deprecated
 	public Blob get(Uri uri) throws Exception {
 		HttpResponse response = client.execute(new HttpGet(uri.toURI()), null).get(5000, TimeUnit.MILLISECONDS);
 		return extractWebPage(uri, response, null);
@@ -402,16 +399,18 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 			}
 		}
 
-		CookieStore store = (CookieStore) localContext.getAttribute(HttpClientContext.COOKIE_STORE);
 		List<io.mandrel.requests.http.Cookie> cookies = null;
-		if (store.getCookies() != null) {
-			cookies = store
-					.getCookies()
-					.stream()
-					.filter(cookie -> cookie != null)
-					.map(cookie -> new io.mandrel.requests.http.Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie
-							.getExpiryDate() != null ? cookie.getExpiryDate().getTime() : 0, cookie.getExpiryDate() != null ? (int) cookie.getExpiryDate()
-							.getTime() : 0, cookie.isSecure(), false)).collect(Collectors.toList());
+		if (localContext != null) {
+			CookieStore store = (CookieStore) localContext.getAttribute(HttpClientContext.COOKIE_STORE);
+			if (store.getCookies() != null) {
+				cookies = store
+						.getCookies()
+						.stream()
+						.filter(cookie -> cookie != null)
+						.map(cookie -> new io.mandrel.requests.http.Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie
+								.getExpiryDate() != null ? cookie.getExpiryDate().getTime() : 0, cookie.getExpiryDate() != null ? (int) cookie.getExpiryDate()
+								.getTime() : 0, cookie.isSecure(), false)).collect(Collectors.toList());
+			}
 		}
 
 		HttpFetchMetadata metadata = new HttpFetchMetadata().headers(headers).cookies(cookies);

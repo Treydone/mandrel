@@ -46,11 +46,11 @@ public class SpiderAccumulator extends Accumulator {
 	}
 
 	public void incPageForContentType(String contentType) {
-		add(PREFIX + spiderId + "contentTypes." + contentType, 1);
+		add(PREFIX + spiderId + ".contentTypes." + contentType, 1);
 	}
 
 	public void incDocumentForExtractor(String extractor, int number) {
-		add(PREFIX + spiderId + "extractors." + extractor, number);
+		add(PREFIX + spiderId + ".extractors." + extractor, number);
 	}
 
 	public SpiderAccumulator(long spiderId) {
@@ -58,18 +58,18 @@ public class SpiderAccumulator extends Accumulator {
 	}
 
 	public void incConnectException() {
-		add(PREFIX + spiderId + "connectException", 1);
+		add(PREFIX + spiderId + ".connectException", 1);
 	}
 
 	public void incReadTimeout() {
-		add(PREFIX + spiderId + "readTimeout", 1);
+		add(PREFIX + spiderId + ".readTimeout", 1);
 	}
 
 	public void incConnectTimeout() {
-		add(PREFIX + spiderId + "connectTimeout", 1);
+		add(PREFIX + spiderId + ".connectTimeout", 1);
 	}
 
 	public void incTotalTimeToFetch(long time) {
-		add(PREFIX + spiderId + "totalTimeToFetch", 1);
+		add(PREFIX + spiderId + ".totalTimeToFetch", 1);
 	}
 }

@@ -21,18 +21,21 @@ package io.mandrel.frontier.store.impl;
 import io.mandrel.common.net.Uri;
 import io.mandrel.frontier.store.FetchRequest;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 
 import kafka.consumer.ConsumerIterator;
 import kafka.message.MessageAndMetadata;
+import lombok.extern.slf4j.Slf4j;
 
 import com.google.common.collect.Queues;
 
+@Slf4j
 public class Dequeuer implements Runnable {
 
-	private Queue<FetchRequest> queue = Queues.newArrayDeque();
-	private Map<String, ConsumerIterator<String, Uri>> topics;
+	private BlockingQueue<FetchRequest> queue = Queues.newArrayBlockingQueue(2000);
+	private Map<String, ConsumerIterator<String, Uri>> topics = new HashMap<>();
 
 	public void fetch(FetchRequest request) {
 		queue.add(request);
@@ -50,7 +53,7 @@ public class Dequeuer implements Runnable {
 	public void run() {
 		while (true) {
 			try {
-				FetchRequest request = queue.poll();
+				FetchRequest request = queue.take();
 
 				if (request != null) {
 					ConsumerIterator<String, Uri> stream = topics.get(request.getTopic());
@@ -64,7 +67,7 @@ public class Dequeuer implements Runnable {
 					}
 				}
 			} catch (Exception e) {
-				// TODO
+				log.warn("Can not dequeue", e);
 			}
 		}
 	}

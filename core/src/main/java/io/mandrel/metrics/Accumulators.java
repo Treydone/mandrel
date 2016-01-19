@@ -44,7 +44,7 @@ public class Accumulators {
 	}
 
 	public SpiderAccumulator spiderAccumulator(long spiderId) {
-		return spiders.putIfAbsent(spiderId, new SpiderAccumulator(spiderId));
+		return spiders.computeIfAbsent(spiderId, id -> new SpiderAccumulator(id));
 	}
 
 	public void destroy(long spiderId) {

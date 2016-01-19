@@ -34,11 +34,11 @@
 	                <div class="box-header with-border">
 	                  <h3 class="box-title">Spider definition</h3>
 	                </div><!-- /.box-header -->
-	                <form role="form">
+	                <form role="form" method="POST">
 	                <div class="box-body">
             			<div class="form-group">
 	                      <label>Textarea Disabled</label>
-	                      <textarea id='output' class="form-control" rows="20"></textarea>
+	                      <textarea id='output' class="form-control" rows="20" name="definition" id="definition"></textarea>
 	                    </div>
                      </div><!-- /.box-body -->
                      <div class="box-footer">

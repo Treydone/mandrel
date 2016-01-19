@@ -162,15 +162,15 @@ public class KafkaFrontierStore extends FrontierStore {
 	public void pool(FetchRequest request) {
 		int workerId = nextWorker.getAndIncrement() % workers.size();
 		Dequeuer worker = workers.get(workerId);
-		worker.fetch(request);
+		worker.fetch(FetchRequest.of(getTopicName(request.getTopic()), request.getCallback()));
 	}
 
 	public void schedule(String name, Uri item) {
-		producer.send(new ProducerRecord<String, Uri>(name, item));
+		producer.send(new ProducerRecord<String, Uri>(getTopicName(name), item));
 	}
 
 	public void schedule(String name, Set<Uri> items) {
-		items.stream().map(item -> new ProducerRecord<String, Uri>(name, item)).forEach(producer::send);
+		items.stream().map(item -> new ProducerRecord<String, Uri>(getTopicName(name), item)).forEach(producer::send);
 	}
 
 	private String getTopicName(String name) {
@@ -187,7 +187,7 @@ public class KafkaFrontierStore extends FrontierStore {
 		}
 
 		// Delete consumer on each worker
-		workers.stream().forEach(worker -> worker.unsubscribe(name));
+		workers.stream().forEach(worker -> worker.unsubscribe(topicName));
 	}
 
 	@Override
@@ -202,11 +202,11 @@ public class KafkaFrontierStore extends FrontierStore {
 		log.debug("Kafka topic '{}' found with configuration: {}", topicName, AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).toString());
 
 		// Prepare consumers
-		Map<String, List<KafkaStream<String, Uri>>> consumerMap = consumer.createMessageStreams(Collections.singletonMap(name, nbWorker), new StringDecoder(
-				null), new JsonDecoder<Uri>(Uri.class));
+		Map<String, List<KafkaStream<String, Uri>>> consumerMap = consumer.createMessageStreams(Collections.singletonMap(topicName, nbWorker),
+				new StringDecoder(null), new JsonDecoder<Uri>(Uri.class));
 
 		// Add the consumer to each worker
-		IntStream.range(0, nbWorker).forEach(i -> workers.get(i).subscribe(name, consumerMap.get(name).get(i).iterator()));
+		IntStream.range(0, nbWorker).forEach(i -> workers.get(i).subscribe(topicName, consumerMap.get(topicName).get(i).iterator()));
 	}
 
 	public void close() {

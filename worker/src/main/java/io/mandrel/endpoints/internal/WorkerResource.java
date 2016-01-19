@@ -34,6 +34,7 @@ import io.mandrel.worker.WorkerContainers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -106,13 +107,16 @@ public class WorkerResource implements WorkerContract {
 	@Override
 	public SyncResponse syncWorkers(SyncRequest sync) {
 		Collection<? extends io.mandrel.common.container.Container> containers = WorkerContainers.list();
-		Map<Long, Spider> ids = sync.getDefinitions().stream().map(def -> {
-			try {
-				return objectMapper.readValue(def, Spider.class);
-			} catch (Exception e) {
-				throw Throwables.propagate(e);
-			}
-		}).collect(Collectors.toMap(spider -> spider.getId(), spider -> spider));
+		final Map<Long, Spider> ids = new HashMap<>();
+		if (sync.getDefinitions() != null) {
+			ids.putAll(sync.getDefinitions().stream().map(def -> {
+				try {
+					return objectMapper.readValue(def, Spider.class);
+				} catch (Exception e) {
+					throw Throwables.propagate(e);
+				}
+			}).collect(Collectors.toMap(spider -> spider.getId(), spider -> spider)));
+		}
 
 		SyncResponse response = new SyncResponse();
 		List<Long> created = new ArrayList<>();
