@@ -60,7 +60,7 @@ public class MongoMetadataStore extends MetadataStore {
 		@JsonProperty("uri")
 		private String uri = "mongodb://localhost";
 		@JsonProperty("database")
-		private String database = "test";
+		private String database = "mandrel";
 		@JsonProperty("collection")
 		private String collection = "metadata_{0}";
 

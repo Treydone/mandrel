@@ -70,7 +70,7 @@ public class MongoBlobStore extends BlobStore {
 		@JsonProperty("uri")
 		private String uri = "mongodb://localhost";
 		@JsonProperty("database")
-		private String database = "test";
+		private String database = "mandrel";
 		@JsonProperty("bucket")
 		private String bucket = "blob_{0}";
 		@JsonProperty("batch_size")

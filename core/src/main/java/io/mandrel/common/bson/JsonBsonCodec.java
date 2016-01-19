@@ -29,6 +29,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class JsonBsonCodec {
 
+	public static String toBson(String value) {
+		return value.replaceAll("\\.", "\\+\\+");
+	}
+
 	@SneakyThrows(JsonProcessingException.class)
 	public static Document toBson(ObjectMapper mapper, Object value) {
 		String json = mapper.writeValueAsString(value);

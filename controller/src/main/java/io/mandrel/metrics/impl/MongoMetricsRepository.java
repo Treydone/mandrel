@@ -18,12 +18,12 @@
  */
 package io.mandrel.metrics.impl;
 
+import io.mandrel.common.bson.JsonBsonCodec;
 import io.mandrel.metrics.GlobalMetrics;
 import io.mandrel.metrics.MetricsRepository;
 import io.mandrel.metrics.NodeMetrics;
 import io.mandrel.metrics.SpiderMetrics;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,21 +33,19 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.stereotype.Component;
-import org.weakref.jmx.internal.guava.collect.Lists;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
 
@@ -80,30 +78,37 @@ public class MongoMetricsRepository implements MetricsRepository {
 
 		List<UpdateOneModel<Document>> requests = byKey.entrySet().stream().map(e -> {
 			Document updates = new Document();
-			e.getValue().stream().forEach(i -> updates.append(i.getKey(), i.getValue()));
-			return Pair.of(e.getKey(), new Document("$inc", updates));
+			e.getValue().stream().forEach(i -> {
+				Iterable<String> results = splitter.split(i.getKey());
+				List<String> elts = Lists.newArrayList(results);
+				if (elts.size() > 1) {
+					updates.put(elts.get(0) + "." + JsonBsonCodec.toBson(elts.get(1)), i.getValue());
+				} else {
+					updates.put(i.getKey(), i.getValue());
+				}
+			});
+
+			Pair<String, Document> bsonUpdates = Pair.of(e.getKey(), new Document("$inc", updates));
+			return bsonUpdates;
 		}).map(pair -> new UpdateOneModel<Document>(Filters.eq("_id", pair.getLeft()), pair.getRight(), new UpdateOptions().upsert(true)))
 				.collect(Collectors.toList());
 
 		counters.bulkWrite(requests);
 	}
 
-	@SneakyThrows(IOException.class)
 	public NodeMetrics node(String nodeId) {
 		Document document = counters.find(Filters.eq("_id", nodeId)).first();
-		return document != null ? mapper.readValue(document.toJson(), NodeMetrics.class) : new NodeMetrics();
+		return document != null ? JsonBsonCodec.fromBson(mapper, document, NodeMetrics.class) : new NodeMetrics();
 	}
 
-	@SneakyThrows(IOException.class)
 	public GlobalMetrics global() {
 		Document document = counters.find(Filters.eq("_id", "global")).first();
-		return document != null ? mapper.readValue(document.toJson(), GlobalMetrics.class) : new GlobalMetrics();
+		return document != null ? JsonBsonCodec.fromBson(mapper, document, GlobalMetrics.class) : new GlobalMetrics();
 	}
 
-	@SneakyThrows(IOException.class)
 	public SpiderMetrics spider(long spiderId) {
 		Document document = counters.find(Filters.eq("_id", spiderId)).first();
-		return document != null ? mapper.readValue(document.toJson(), SpiderMetrics.class) : new SpiderMetrics();
+		return document != null ? JsonBsonCodec.fromBson(mapper, document, SpiderMetrics.class) : new SpiderMetrics();
 	}
 
 	@Override

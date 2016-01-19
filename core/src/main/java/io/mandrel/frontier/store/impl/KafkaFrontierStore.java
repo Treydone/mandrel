@@ -137,7 +137,7 @@ public class KafkaFrontierStore extends FrontierStore {
 	private final ExecutorService executor;
 	private final List<Dequeuer> workers;
 	private final AtomicInteger nextWorker;
-	private final int nbWorker;
+	private final int nbWorkers;
 
 	public KafkaFrontierStore(TaskContext context, Properties properties, int partitions, int replicationFactor, int sessionTimeout, int connectionTimeout) {
 		super(context);
@@ -149,11 +149,11 @@ public class KafkaFrontierStore extends FrontierStore {
 
 		consumer = kafka.consumer.Consumer.createJavaConsumerConnector(new kafka.consumer.ConsumerConfig(properties));
 
-		nbWorker = Runtime.getRuntime().availableProcessors();
+		nbWorkers = Runtime.getRuntime().availableProcessors();
 
-		executor = Executors.newFixedThreadPool(nbWorker);
-		workers = Lists.newArrayListWithCapacity(nbWorker);
-		IntStream.range(0, nbWorker).forEach(i -> workers.add(new Dequeuer()));
+		executor = Executors.newFixedThreadPool(nbWorkers);
+		workers = Lists.newArrayListWithCapacity(nbWorkers);
+		IntStream.range(0, nbWorkers).forEach(i -> workers.add(new Dequeuer()));
 
 		workers.stream().forEach(worker -> executor.submit(worker));
 		nextWorker = new AtomicInteger(0);
@@ -202,11 +202,11 @@ public class KafkaFrontierStore extends FrontierStore {
 		log.debug("Kafka topic '{}' found with configuration: {}", topicName, AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).toString());
 
 		// Prepare consumers
-		Map<String, List<KafkaStream<String, Uri>>> consumerMap = consumer.createMessageStreams(Collections.singletonMap(topicName, nbWorker),
+		Map<String, List<KafkaStream<String, Uri>>> consumerMap = consumer.createMessageStreams(Collections.singletonMap(topicName, nbWorkers),
 				new StringDecoder(null), new JsonDecoder<Uri>(Uri.class));
 
 		// Add the consumer to each worker
-		IntStream.range(0, nbWorker).forEach(i -> workers.get(i).subscribe(topicName, consumerMap.get(topicName).get(i).iterator()));
+		IntStream.range(0, nbWorkers).forEach(i -> workers.get(i).subscribe(topicName, consumerMap.get(topicName).get(i).iterator()));
 	}
 
 	public void close() {
