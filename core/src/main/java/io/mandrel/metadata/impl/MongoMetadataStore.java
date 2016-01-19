@@ -32,6 +32,7 @@ import java.util.Set;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.experimental.Accessors;
 
 import org.bson.Document;
@@ -40,6 +41,7 @@ import org.bson.codecs.configuration.CodecRegistry;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -70,7 +72,7 @@ public class MongoMetadataStore extends MetadataStore {
 		}
 
 		@Override
-		public MetadataStore build(TaskContext context) {
+		public MongoMetadataStore build(TaskContext context) {
 			CodecRegistry codecRegistry = CodecRegistries.fromRegistries(MongoClient.getDefaultCodecRegistry(), CodecRegistries.fromCodecs(new UriCodec()));
 			MongoClientOptions.Builder options = MongoClientOptions.builder().codecRegistry(codecRegistry);
 			MongoClientURI uri = new MongoClientURI(this.uri, options);
@@ -79,6 +81,9 @@ public class MongoMetadataStore extends MetadataStore {
 	}
 
 	private final MongoClient mongoClient;
+
+	@VisibleForTesting
+	@Getter
 	private final MongoCollection<org.bson.Document> collection;
 	private final ObjectMapper mapper = new ObjectMapper();
 
@@ -96,21 +101,29 @@ public class MongoMetadataStore extends MetadataStore {
 	@Override
 	public void addMetadata(Uri uri, FetchMetadata metadata) {
 		org.bson.Document document = JsonBsonCodec.toBson(mapper, metadata);
-		document.append("_id", uri);
+		document.append("_id", uri.toString());
 		collection.insertOne(document);
 	}
 
 	@Override
 	public Set<Uri> deduplicate(Collection<Uri> uris) {
 		Set<Uri> temp = Sets.newHashSet(uris);
-		temp.removeAll(Sets.newHashSet(collection.find(Filters.in("_id", uris)).projection(Projections.include("_id")).map(doc -> doc.get("_id", Uri.class))
-				.iterator()));
+
+		Set<Uri> founds = Sets.newHashSet(collection.find(Filters.in("_id", uris)).projection(Projections.include("_id"))
+				.map(doc -> Uri.create(doc.getString("_id"))).iterator());
+		temp.removeAll(founds);
+
 		return temp;
 	}
 
 	@Override
+	public void delete(Uri uri) {
+		collection.deleteOne(Filters.eq("_id", uri.toString()));
+	}
+
+	@Override
 	public FetchMetadata getMetadata(Uri uri) {
-		Document doc = collection.find(Filters.eq("_id", uri)).first();
+		Document doc = collection.find(Filters.eq("_id", uri.toString())).first();
 		return JsonBsonCodec.fromBson(mapper, doc, FetchMetadata.class);
 	}
 

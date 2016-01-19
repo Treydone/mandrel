@@ -59,7 +59,7 @@ public class Dequeuer implements Runnable {
 					ConsumerIterator<String, Uri> stream = topics.get(request.getTopic());
 
 					if (stream.hasNext()) {
-						MessageAndMetadata<String, Uri> message = stream.peek();
+						MessageAndMetadata<String, Uri> message = stream.next();
 
 						if (request.getCallback() != null) {
 							request.getCallback().on(message.message());

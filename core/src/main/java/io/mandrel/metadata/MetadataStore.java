@@ -48,4 +48,6 @@ public abstract class MetadataStore extends TaskContextAware implements Checkabl
 	public abstract FetchMetadata getMetadata(Uri uri);
 
 	public abstract void deleteAll();
+
+	public abstract void delete(Uri uri);
 }

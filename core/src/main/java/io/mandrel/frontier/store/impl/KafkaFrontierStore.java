@@ -73,8 +73,15 @@ public class KafkaFrontierStore extends FrontierStore {
 		@JsonIgnore
 		private Properties properties = new Properties();
 
+		@JsonIgnore
+		private Properties consumerProperties = new Properties();
+		@JsonIgnore
+		private Properties producerProperties = new Properties();
+
 		@JsonProperty("partitions")
-		private int partitions = 1;
+		private int partitions = 2;
+		@JsonProperty("workers")
+		private int nbWorkers = 2;
 		@JsonProperty("replication_factor")
 		private int replicationFactor = 1;
 
@@ -85,15 +92,16 @@ public class KafkaFrontierStore extends FrontierStore {
 
 		public KafkaFrontierStoreDefinition() {
 
-			properties.put("zookeeper.connect", "127.0.0.1:2181");
-			properties.put("zookeeper.connectiontimeout.ms", "1000000");
-			properties.put("zookeeper.session.timeout.ms", "400");
-			properties.put("zookeeper.sync.time.ms", "200");
+			consumerProperties.putAll(properties);
+			consumerProperties.put("zookeeper.connect", "127.0.0.1:2181");
+			consumerProperties.put("zookeeper.connection.timeout.ms", "1000000");
+			consumerProperties.put("zookeeper.session.timeout.ms", "400");
+			consumerProperties.put("zookeeper.sync.time.ms", "200");
 
-			properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
-			properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
+			consumerProperties.put("auto.commit.enable", "true");
+			consumerProperties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
 			// properties.put(ConsumerConfig.SESSION_TIMEOUT_MS, "30000");
-			properties.put(ConsumerConfig.GROUP_ID_CONFIG, "mandrel");
+			consumerProperties.put(ConsumerConfig.GROUP_ID_CONFIG, "mandrel");
 			// properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
 			// StringDeserializer.class.getName());
 			// properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
@@ -101,9 +109,10 @@ public class KafkaFrontierStore extends FrontierStore {
 			// properties.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY,
 			// "range");
 
-			properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-			properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName());
-			properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+			producerProperties.putAll(properties);
+			producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+			producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName());
+			producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
 		}
 
 		@JsonAnyGetter
@@ -123,7 +132,8 @@ public class KafkaFrontierStore extends FrontierStore {
 
 		@Override
 		public KafkaFrontierStore build(TaskContext context) {
-			return new KafkaFrontierStore(context, properties, partitions, replicationFactor, sessionTimeout, connectionTimeout);
+			return new KafkaFrontierStore(context, consumerProperties, producerProperties, partitions, nbWorkers, replicationFactor, sessionTimeout,
+					connectionTimeout);
 		}
 	}
 
@@ -139,17 +149,18 @@ public class KafkaFrontierStore extends FrontierStore {
 	private final AtomicInteger nextWorker;
 	private final int nbWorkers;
 
-	public KafkaFrontierStore(TaskContext context, Properties properties, int partitions, int replicationFactor, int sessionTimeout, int connectionTimeout) {
+	public KafkaFrontierStore(TaskContext context, Properties consumerProperties, Properties producerProperties, int partitions, int nbWorkers,
+			int replicationFactor, int sessionTimeout, int connectionTimeout) {
 		super(context);
 		this.partitions = partitions;
 		this.replicationFactor = replicationFactor;
-		this.zkClient = new ZkClient(properties.getProperty("zookeeper.connect"), sessionTimeout, connectionTimeout, ZKStringSerializer$.MODULE$);
+		this.zkClient = new ZkClient(consumerProperties.getProperty("zookeeper.connect"), sessionTimeout, connectionTimeout, ZKStringSerializer$.MODULE$);
 		this.zkUtils = ZkUtils.apply(zkClient, false);
-		this.producer = new KafkaProducer<>(properties);
+		this.producer = new KafkaProducer<>(producerProperties);
 
-		consumer = kafka.consumer.Consumer.createJavaConsumerConnector(new kafka.consumer.ConsumerConfig(properties));
+		consumer = kafka.consumer.Consumer.createJavaConsumerConnector(new kafka.consumer.ConsumerConfig(consumerProperties));
 
-		nbWorkers = Runtime.getRuntime().availableProcessors();
+		this.nbWorkers = nbWorkers;
 
 		executor = Executors.newFixedThreadPool(nbWorkers);
 		workers = Lists.newArrayListWithCapacity(nbWorkers);
@@ -198,6 +209,15 @@ public class KafkaFrontierStore extends FrontierStore {
 		if (!AdminUtils.topicExists(zkUtils, topicName)) {
 			log.warn("Kafka topic '{}' doesn't exists, creating it", topicName);
 			AdminUtils.createTopic(zkUtils, topicName, partitions, replicationFactor, new Properties());
+		} else {
+			// Check size
+			if (partitions > AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).partitionsMetadata().size()) {
+				// Adding partitions
+				int diff = partitions - AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).partitionsMetadata().size();
+
+				log.debug("Missing {} partitions for topic '{}'", diff, topicName);
+				AdminUtils.addPartitions(zkUtils, topicName, diff, "", true);
+			}
 		}
 		log.debug("Kafka topic '{}' found with configuration: {}", topicName, AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).toString());
 
@@ -206,6 +226,7 @@ public class KafkaFrontierStore extends FrontierStore {
 				new StringDecoder(null), new JsonDecoder<Uri>(Uri.class));
 
 		// Add the consumer to each worker
+		// TODO Random assign, avoid hot spot
 		IntStream.range(0, nbWorkers).forEach(i -> workers.get(i).subscribe(topicName, consumerMap.get(topicName).get(i).iterator()));
 	}
 

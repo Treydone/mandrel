@@ -18,7 +18,9 @@
  */
 package io.mandrel.frontier.store.impl;
 
+import io.mandrel.common.data.Spider;
 import io.mandrel.common.net.Uri;
+import io.mandrel.common.service.TaskContext;
 import io.mandrel.frontier.store.FetchRequest;
 import io.mandrel.frontier.store.impl.KafkaFrontierStore.KafkaFrontierStoreDefinition;
 
@@ -29,15 +31,29 @@ public class KafkaFrontierStoreTest {
 	@Test
 	public void test() throws InterruptedException {
 
-		KafkaFrontierStoreDefinition definition = new KafkaFrontierStoreDefinition();
-		KafkaFrontierStore store = definition.build(null);
+		Spider spider = new Spider().setId(30);
+		TaskContext taskContext = new TaskContext();
+		taskContext.setDefinition(spider);
 
-		store.create("queue");
-		store.schedule("queue", Uri.create("test://test"));
+		KafkaFrontierStoreDefinition definition = new KafkaFrontierStoreDefinition();
+		KafkaFrontierStore store = definition.build(taskContext);
+
+		store.create("default");
+		store.schedule("default", Uri.create("test://test1"));
+		store.schedule("default", Uri.create("test://test2"));
+		store.schedule("default", Uri.create("test://test3"));
+		store.schedule("default", Uri.create("test://test4"));
 		Thread.sleep(500);
 
-		store.pool(FetchRequest.of("queue", (uri) -> {
-			System.err.println(uri);
+		store.pool(FetchRequest.of("default", (uri) -> {
+			System.err.println("1:" + uri);
 		}));
+		store.pool(FetchRequest.of("default", (uri) -> {
+			System.err.println("2:" + uri);
+		}));
+		store.pool(FetchRequest.of("default", (uri) -> {
+			System.err.println("3:" + uri);
+		}));
+		Thread.sleep(4000);
 	}
 }

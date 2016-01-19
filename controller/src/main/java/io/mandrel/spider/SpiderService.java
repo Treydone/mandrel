@@ -93,7 +93,7 @@ public class SpiderService {
 		// TODO Load the journal of commands
 	}
 
-	@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 30000)
 	public void sync() {
 		if (stateService.isStarted()) {
 

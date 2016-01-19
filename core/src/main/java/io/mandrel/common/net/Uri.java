@@ -20,6 +20,7 @@ package io.mandrel.common.net;
 
 import java.net.URI;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -28,6 +29,7 @@ import com.facebook.swift.codec.ThriftField;
 import com.facebook.swift.codec.ThriftStruct;
 import com.google.common.annotations.VisibleForTesting;
 
+@EqualsAndHashCode
 @Accessors(chain = true)
 @ThriftStruct
 public class Uri {
@@ -460,4 +462,5 @@ public class Uri {
 			return string != null && string.length() > 0;
 		}
 	}
+
 }
