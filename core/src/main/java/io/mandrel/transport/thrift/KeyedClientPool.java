@@ -18,9 +18,11 @@
  */
 package io.mandrel.transport.thrift;
 
+import io.airlift.units.Duration;
 import io.mandrel.endpoints.contracts.Contract;
 import io.mandrel.transport.Pooled;
 
+import java.util.concurrent.TimeUnit;
 import java.util.zip.Deflater;
 
 import lombok.Data;
@@ -42,7 +44,9 @@ import com.facebook.nifty.client.NiftyClientConnector;
 import com.facebook.nifty.duplex.TDuplexProtocolFactory;
 import com.facebook.nifty.duplex.TProtocolPair;
 import com.facebook.nifty.duplex.TTransportPair;
+import com.facebook.swift.service.ThriftClientEventHandler;
 import com.facebook.swift.service.ThriftClientManager;
+import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
 
 @Data
@@ -50,6 +54,19 @@ public class KeyedClientPool<T extends Contract & AutoCloseable> implements Auto
 
 	private static int DEFAULT_PORT = 9090;
 	private static Integer DEFAULT_DEFLATE_LEVEL = Integer.valueOf(Deflater.BEST_SPEED);
+
+	public static final Duration DEFAULT_CONNECT_TIMEOUT = new Duration(500, TimeUnit.MILLISECONDS);
+	public static final Duration DEFAULT_RECEIVE_TIMEOUT = new Duration(1, TimeUnit.MINUTES);
+	public static final Duration DEFAULT_READ_TIMEOUT = new Duration(30, TimeUnit.SECONDS);
+	public static final Duration DEFAULT_WRITE_TIMEOUT = new Duration(10, TimeUnit.MINUTES);
+	// Default max frame size of 16 MB
+	public static final int DEFAULT_MAX_FRAME_SIZE = 16777216;
+
+	private Duration connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+	private Duration receiveTimeout = DEFAULT_RECEIVE_TIMEOUT;
+	private Duration readTimeout = DEFAULT_READ_TIMEOUT;
+	private Duration writeTimeout = DEFAULT_WRITE_TIMEOUT;
+	private int maxFrameSize = DEFAULT_MAX_FRAME_SIZE;
 
 	private final GenericKeyedObjectPool<HostAndPort, T> internalPool;
 	private final ThriftClientManager clientManager;
@@ -106,7 +123,8 @@ public class KeyedClientPool<T extends Contract & AutoCloseable> implements Auto
 		@Override
 		public T create(HostAndPort hostAndPort) throws Exception {
 			NiftyClientConnector<? extends NiftyClientChannel> connector = clientConnectorFactory.make(hostAndPort);
-			return clientManager.createClient(connector, clazz).get();
+			return clientManager.createClient(connector, clazz, connectTimeout, receiveTimeout, readTimeout, writeTimeout, maxFrameSize, clazz.getSimpleName(),
+					ImmutableList.<ThriftClientEventHandler> of(), clientManager.getDefaultSocksProxy()).get();
 		}
 
 		@Override

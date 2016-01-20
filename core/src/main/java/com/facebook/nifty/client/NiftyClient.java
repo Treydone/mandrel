@@ -53,10 +53,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 @Slf4j
 public class NiftyClient implements Closeable {
-	public static final Duration DEFAULT_CONNECT_TIMEOUT = new Duration(2, TimeUnit.SECONDS);
+	public static final Duration DEFAULT_CONNECT_TIMEOUT = new Duration(20, TimeUnit.SECONDS);
 	public static final Duration DEFAULT_RECEIVE_TIMEOUT = new Duration(30, TimeUnit.SECONDS);
 	public static final Duration DEFAULT_READ_TIMEOUT = new Duration(30, TimeUnit.SECONDS);
-	private static final Duration DEFAULT_SEND_TIMEOUT = new Duration(2, TimeUnit.SECONDS);
+	private static final Duration DEFAULT_SEND_TIMEOUT = new Duration(20, TimeUnit.SECONDS);
 
 	private static final int DEFAULT_MAX_FRAME_SIZE = 16777216;
 

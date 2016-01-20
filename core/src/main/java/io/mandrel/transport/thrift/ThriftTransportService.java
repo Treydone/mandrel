@@ -18,6 +18,7 @@
  */
 package io.mandrel.transport.thrift;
 
+import io.airlift.units.Duration;
 import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.discovery.ServiceInstance;
 import io.mandrel.endpoints.contracts.Contract;
@@ -64,7 +65,7 @@ public class ThriftTransportService implements TransportService {
 	@Autowired
 	private ThriftTransportProperties properties;
 	@Autowired
-	private TransportProperties globalProperties;
+	private TransportProperties transportProperties;
 
 	@Value("${standalone:false}")
 	private boolean local;
@@ -82,10 +83,10 @@ public class ThriftTransportService implements TransportService {
 		// Arrays.asList(new ThriftServiceStatsHandler())
 				ImmutableList.of(), resources);
 
-		properties.setPort(globalProperties.getPort());
-		properties.setBindAddress(globalProperties.getBindAddress());
-		properties.setWorkerThreads(40);
-		// properties.setTaskExpirationTimeout(Duration.valueOf("30s"));
+		properties.setPort(transportProperties.getPort());
+		properties.setBindAddress(transportProperties.getBindAddress());
+		properties.setWorkerThreads(10);
+		properties.setTaskExpirationTimeout(Duration.valueOf("10s"));
 
 		server = new ThriftServer(processor, properties, new NiftyTimer("thrift"), ThriftServer.DEFAULT_FRAME_CODEC_FACTORIES,
 				ThriftServer.DEFAULT_PROTOCOL_FACTORIES, ThriftServer.DEFAULT_WORKER_EXECUTORS, ThriftServer.DEFAULT_SECURITY_FACTORY, local);
@@ -93,7 +94,7 @@ public class ThriftTransportService implements TransportService {
 
 		resources.forEach(resource -> {
 			log.debug("Registering service {}", resource.getServiceName());
-			ServiceInstance instance = ServiceInstance.builder().port(globalProperties.getPort()).name(resource.getServiceName()).build();
+			ServiceInstance instance = ServiceInstance.builder().port(transportProperties.getPort()).name(resource.getServiceName()).build();
 			discoveryClient.register(instance);
 		});
 

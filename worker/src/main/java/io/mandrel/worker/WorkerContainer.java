@@ -175,12 +175,20 @@ public class WorkerContainer extends AbstractContainer {
 		accumulators.destroy(spider.getId());
 	}
 
+	@Override
 	public void register() {
-		WorkerContainers.add(spider.getId(), this);
+		WorkerContainer oldContainer = WorkerContainers.add(spider.getId(), this);
+		if (oldContainer != null) {
+			oldContainer.kill();
+		}
 	}
 
+	@Override
 	public void unregister() {
-		WorkerContainers.remove(spider.getId());
+		WorkerContainer oldContainer = WorkerContainers.remove(spider.getId());
+		if (oldContainer != null) {
+			oldContainer.kill();
+		}
 	}
 
 }

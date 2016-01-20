@@ -54,8 +54,6 @@ import org.jboss.netty.handler.timeout.ReadTimeoutException;
 import org.jboss.netty.handler.timeout.WriteTimeoutException;
 import org.springframework.util.StopWatch;
 
-import com.google.common.util.concurrent.ListenableFuture;
-
 /**
  * Weeeeeeeeeeeeeeeeehhh!!
  */
@@ -102,14 +100,18 @@ public class Loop implements Runnable {
 				}
 
 				// Take on elements
-				ListenableFuture<Uri> result = clients.onRandomFrontier().map(frontier -> frontier.next(spider.getId()));
+				// ListenableFuture<Uri> result =
+				// clients.onRandomFrontier().map(frontier ->
+				// frontier.next(spider.getId()));
+				log.trace("> Asking for uri...");
+				Uri uri = clients.onRandomFrontier().map(frontier -> frontier.next(spider.getId()));
 
 				// TODO -> You can do better things than this...
-				Uri uri = result.get(20000, TimeUnit.MILLISECONDS);
+				// Uri uri = result.get(20000, TimeUnit.MILLISECONDS);
 
 				if (uri != null) {
 
-					log.debug("> Getting uri {}", uri);
+					log.trace("> Getting uri {} !", uri);
 
 					//
 					StopWatch watch = new StopWatch();

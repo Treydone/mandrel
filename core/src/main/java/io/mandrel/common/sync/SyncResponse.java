@@ -24,6 +24,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.facebook.swift.codec.ThriftField;
 import com.facebook.swift.codec.ThriftStruct;
 
@@ -39,10 +41,16 @@ public class SyncResponse {
 	private List<Long> updated;
 	@Getter(onMethod = @__(@ThriftField(3)))
 	@Setter(onMethod = @__(@ThriftField))
-	private List<Long> deleted;
+	private List<Long> killed;
+	@Getter(onMethod = @__(@ThriftField(4)))
+	@Setter(onMethod = @__(@ThriftField))
+	private List<Long> started;
+	@Getter(onMethod = @__(@ThriftField(5)))
+	@Setter(onMethod = @__(@ThriftField))
+	private List<Long> paused;
 
 	public boolean anyAction() {
-		return this.getCreated() != null && this.getCreated().size() > 1 && this.getUpdated() != null && this.getUpdated().size() > 1
-				&& this.getDeleted() != null && this.getDeleted().size() > 1;
+		return CollectionUtils.isNotEmpty(created) && CollectionUtils.isNotEmpty(updated) && CollectionUtils.isNotEmpty(killed)
+				&& CollectionUtils.isNotEmpty(started) && CollectionUtils.isNotEmpty(paused);
 	}
 }

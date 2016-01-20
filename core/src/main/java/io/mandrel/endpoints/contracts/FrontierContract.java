@@ -54,7 +54,7 @@ public interface FrontierContract extends Contract, AutoCloseable {
 	void killFrontierContainer(@ThriftField(value = 1, name = "id") Long id);
 
 	@ThriftMethod
-	ListenableFuture<Uri> next(@ThriftField(value = 1, name = "id") Long id);
+	Uri next(@ThriftField(value = 1, name = "id") Long id);
 
 	@ThriftMethod
 	void delete(@ThriftField(value = 1, name = "id") Long id, @ThriftField(value = 2, name = "uri") Uri uri);

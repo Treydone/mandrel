@@ -31,9 +31,9 @@ public class WorkerContainers {
 		return workerContainers.values();
 	}
 
-	public static void add(long spiderId, WorkerContainer WorkerContainer) {
+	public static WorkerContainer add(long spiderId, WorkerContainer WorkerContainer) {
 		synchronized (workerContainers) {
-			workerContainers.put(spiderId, WorkerContainer);
+			return workerContainers.put(spiderId, WorkerContainer);
 		}
 	}
 
@@ -41,9 +41,9 @@ public class WorkerContainers {
 		return workerContainers.get(spiderId) != null ? Optional.of(workerContainers.get(spiderId)) : Optional.empty();
 	}
 
-	public static void remove(Long spiderId) {
+	public static WorkerContainer remove(Long spiderId) {
 		synchronized (workerContainers) {
-			workerContainers.remove(spiderId);
+			return workerContainers.remove(spiderId);
 		}
 	}
 }

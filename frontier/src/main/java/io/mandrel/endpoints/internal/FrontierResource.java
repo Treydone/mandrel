@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,9 +138,11 @@ public class FrontierResource implements FrontierContract {
 
 		SyncResponse response = new SyncResponse();
 		List<Long> created = new ArrayList<>();
+		List<Long> started = new ArrayList<>();
 		List<Long> updated = new ArrayList<>();
-		List<Long> deleted = new ArrayList<>();
-		response.setCreated(created).setDeleted(deleted).setUpdated(updated);
+		List<Long> killed = new ArrayList<>();
+		List<Long> paused = new ArrayList<>();
+		response.setCreated(created).setKilled(killed).setUpdated(updated).setStarted(started);
 
 		List<Long> existingSpiders = new ArrayList<>();
 		containers.forEach(c -> {
@@ -147,7 +150,7 @@ public class FrontierResource implements FrontierContract {
 			if (!ids.containsKey(c.spider().getId())) {
 				log.debug("Killing spider {}", c.spider().getId());
 				killFrontierContainer(c.spider().getId());
-				deleted.add(c.spider().getId());
+				killed.add(c.spider().getId());
 			} else if (ids.get(c.spider().getId()).getVersion() != c.spider().getVersion()) {
 				log.debug("Updating spider {}", c.spider().getId());
 				killFrontierContainer(c.spider().getId());
@@ -157,6 +160,22 @@ public class FrontierResource implements FrontierContract {
 				if (Statuses.STARTED.equals(ids.get(c.spider().getId()).getStatus())) {
 					log.debug("Starting spider {}", c.spider().getId());
 					startFrontierContainer(c.spider().getId());
+					started.add(c.spider().getId());
+				}
+			} else if (!ids.get(c.spider().getId()).getStatus().equals(c.spider().getStatus())) {
+
+				switch (ids.get(c.spider().getId()).getStatus()) {
+				case Statuses.STARTED:
+					log.debug("Starting spider {}", c.spider().getId());
+					startFrontierContainer(c.spider().getId());
+					started.add(c.spider().getId());
+					break;
+				case Statuses.CREATED:
+				case Statuses.PAUSED:
+					log.debug("Pausing spider {}", c.spider().getId());
+					pauseFrontierContainer(c.spider().getId());
+					paused.add(c.spider().getId());
+					break;
 				}
 			}
 		});
@@ -165,23 +184,25 @@ public class FrontierResource implements FrontierContract {
 			if (!existingSpiders.contains(id)) {
 				log.debug("Creating spider {}", id);
 				create(spider);
+				created.add(spider.getId());
 
 				if (Statuses.STARTED.equals(spider.getStatus())) {
 					log.debug("Starting spider {}", id);
 					startFrontierContainer(spider.getId());
+					started.add(spider.getId());
 				}
-				created.add(spider.getId());
 			}
 		});
 		return response;
 	}
 
 	@Override
-	public ListenableFuture<Uri> next(Long id) {
+	@SneakyThrows
+	public Uri next(Long id) {
 		SettableFuture<Uri> result = SettableFuture.create();
 		FrontierContainers.get(id).orElseThrow(frontierNotFound).frontier().pool(uri -> {
 			result.set(uri);
 		});
-		return result;
+		return result.get();
 	}
 }

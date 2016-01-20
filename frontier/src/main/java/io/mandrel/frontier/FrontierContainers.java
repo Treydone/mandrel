@@ -31,9 +31,9 @@ public class FrontierContainers {
 		return frontierContainers.values();
 	}
 
-	public static void add(long spiderId, FrontierContainer frontierContainer) {
+	public static FrontierContainer add(long spiderId, FrontierContainer frontierContainer) {
 		synchronized (frontierContainers) {
-			frontierContainers.put(spiderId, frontierContainer);
+			return frontierContainers.put(spiderId, frontierContainer);
 		}
 	}
 
@@ -41,9 +41,9 @@ public class FrontierContainers {
 		return frontierContainers.get(spiderId) != null ? Optional.of(frontierContainers.get(spiderId)) : Optional.empty();
 	}
 
-	public static void remove(Long spiderId) {
+	public static FrontierContainer remove(Long spiderId) {
 		synchronized (frontierContainers) {
-			frontierContainers.remove(spiderId);
+			return frontierContainers.remove(spiderId);
 		}
 	}
 }

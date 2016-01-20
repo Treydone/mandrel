@@ -44,14 +44,14 @@ public class Pooled<T> {
 		try {
 			pooled = internalPool.borrowObject(hostAndPort);
 			return mapper.apply(pooled);
-		} catch (RuntimeTException e) {
-			try {
-				internalPool.invalidateObject(hostAndPort, pooled);
-				pooled = null;
-			} catch (Exception e1) {
-				log.warn("", e1);
-			}
-			throw e;
+			// } catch (RuntimeTException e) {
+			// try {
+			// internalPool.invalidateObject(hostAndPort, pooled);
+			// pooled = null;
+			// } catch (Exception e1) {
+			// log.warn("", e1);
+			// }
+			// throw e;
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		} finally {
@@ -70,14 +70,14 @@ public class Pooled<T> {
 		try {
 			pooled = internalPool.borrowObject(hostAndPort);
 			action.accept(pooled);
-		} catch (RuntimeTException e) {
-			try {
-				internalPool.invalidateObject(hostAndPort, pooled);
-				pooled = null;
-			} catch (Exception e1) {
-				log.warn("", e1);
-			}
-			throw e;
+			// } catch (RuntimeTException e) {
+			// try {
+			// internalPool.invalidateObject(hostAndPort, pooled);
+			// pooled = null;
+			// } catch (Exception e1) {
+			// log.warn("", e1);
+			// }
+			// throw e;
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		} finally {

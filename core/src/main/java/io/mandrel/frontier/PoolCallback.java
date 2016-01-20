@@ -18,7 +18,9 @@
  */
 package io.mandrel.frontier;
 
+import javax.annotation.Nullable;
+
 public interface PoolCallback<T> {
 
-	void on(T t);
+	void on(@Nullable T t);
 }

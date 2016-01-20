@@ -120,9 +120,11 @@ public class WorkerResource implements WorkerContract {
 
 		SyncResponse response = new SyncResponse();
 		List<Long> created = new ArrayList<>();
+		List<Long> started = new ArrayList<>();
 		List<Long> updated = new ArrayList<>();
-		List<Long> deleted = new ArrayList<>();
-		response.setCreated(created).setDeleted(deleted).setUpdated(updated);
+		List<Long> killed = new ArrayList<>();
+		List<Long> paused = new ArrayList<>();
+		response.setCreated(created).setKilled(killed).setUpdated(updated).setStarted(started);
 
 		List<Long> existingSpiders = new ArrayList<>();
 		containers.forEach(c -> {
@@ -130,7 +132,7 @@ public class WorkerResource implements WorkerContract {
 			if (!ids.containsKey(c.spider().getId())) {
 				log.debug("Killing spider {}", c.spider().getId());
 				killWorkerContainer(c.spider().getId());
-				deleted.add(c.spider().getId());
+				killed.add(c.spider().getId());
 			} else if (ids.get(c.spider().getId()).getVersion() != c.spider().getVersion()) {
 				log.debug("Updating spider {}", c.spider().getId());
 				killWorkerContainer(c.spider().getId());
@@ -140,6 +142,22 @@ public class WorkerResource implements WorkerContract {
 				if (Statuses.STARTED.equals(ids.get(c.spider().getId()).getStatus())) {
 					log.debug("Starting spider {}", c.spider().getId());
 					startWorkerContainer(c.spider().getId());
+					started.add(c.spider().getId());
+				}
+			} else if (!ids.get(c.spider().getId()).getStatus().equals(c.spider().getStatus())) {
+
+				switch (ids.get(c.spider().getId()).getStatus()) {
+				case Statuses.STARTED:
+					log.debug("Starting spider {}", c.spider().getId());
+					startWorkerContainer(c.spider().getId());
+					started.add(c.spider().getId());
+					break;
+				case Statuses.CREATED:
+				case Statuses.PAUSED:
+					log.debug("Pausing spider {}", c.spider().getId());
+					pauseWorkerContainer(c.spider().getId());
+					paused.add(c.spider().getId());
+					break;
 				}
 			}
 		});
@@ -148,12 +166,13 @@ public class WorkerResource implements WorkerContract {
 			if (!existingSpiders.contains(id)) {
 				log.debug("Creating spider {}", id);
 				create(spider);
+				created.add(spider.getId());
 
 				if (Statuses.STARTED.equals(spider.getStatus())) {
 					log.debug("Starting spider {}", id);
 					startWorkerContainer(spider.getId());
+					started.add(spider.getId());
 				}
-				created.add(spider.getId());
 			}
 		});
 		return response;

@@ -109,10 +109,17 @@ public class FrontierContainer extends AbstractContainer {
 
 	@Override
 	public void register() {
-		FrontierContainers.add(spider.getId(), this);
+		FrontierContainer oldContainer = FrontierContainers.add(spider.getId(), this);
+		if (oldContainer != null) {
+			oldContainer.kill();
+		}
 	}
 
+	@Override
 	public void unregister() {
-		FrontierContainers.remove(spider.getId());
+		FrontierContainer oldContainer = FrontierContainers.remove(spider.getId());
+		if (oldContainer != null) {
+			oldContainer.kill();
+		}
 	}
 }

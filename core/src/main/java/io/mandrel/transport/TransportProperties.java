@@ -18,6 +18,10 @@
  */
 package io.mandrel.transport;
 
+import io.mandrel.common.unit.TimeValue;
+
+import java.util.concurrent.TimeUnit;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
@@ -31,16 +35,16 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "transport")
 public class TransportProperties {
 
+	@Min(0)
+	@Max(65535)
 	private int port = 9090;
 	private String bindAddress = "localhost";
 
-	@Min(0)
-	@Max(65535)
-	public int getPort() {
-		return port;
-	}
+	private TimeValue connectTimeout = new TimeValue(500, TimeUnit.MILLISECONDS);
+	private TimeValue receiveTimeout = new TimeValue(1, TimeUnit.MINUTES);
+	private TimeValue readTimeout = new TimeValue(30, TimeUnit.SECONDS);
+	private TimeValue writeTimeout = new TimeValue(1, TimeUnit.MINUTES);
+	// Default max frame size of 16 MB
+	private int maxFrameSize = 16777216;
 
-	public void setPort(int port) {
-		this.port = port;
-	}
 }

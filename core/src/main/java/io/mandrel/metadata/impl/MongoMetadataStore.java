@@ -49,6 +49,7 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.UpdateOptions;
 
 public class MongoMetadataStore extends MetadataStore {
 
@@ -102,7 +103,7 @@ public class MongoMetadataStore extends MetadataStore {
 	public void addMetadata(Uri uri, FetchMetadata metadata) {
 		org.bson.Document document = JsonBsonCodec.toBson(mapper, metadata);
 		document.append("_id", uri.toString());
-		collection.insertOne(document);
+		collection.replaceOne(Filters.eq("_id", document.getString("_id")), document, new UpdateOptions().upsert(true));
 	}
 
 	@Override

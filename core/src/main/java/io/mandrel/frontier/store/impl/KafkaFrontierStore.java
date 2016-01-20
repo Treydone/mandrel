@@ -211,13 +211,13 @@ public class KafkaFrontierStore extends FrontierStore {
 			AdminUtils.createTopic(zkUtils, topicName, partitions, replicationFactor, new Properties());
 		} else {
 			// Check size
-			if (partitions > AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).partitionsMetadata().size()) {
-				// Adding partitions
-				int diff = partitions - AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).partitionsMetadata().size();
-
-				log.debug("Missing {} partitions for topic '{}'", diff, topicName);
-				AdminUtils.addPartitions(zkUtils, topicName, diff, "", true);
-			}
+//			if (partitions > AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).partitionsMetadata().size()) {
+//				// Adding partitions
+//				int diff = partitions - AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).partitionsMetadata().size();
+//
+//				log.debug("Missing {} partitions for topic '{}'", diff, topicName);
+//				AdminUtils.addPartitions(zkUtils, topicName, diff, "", true);
+//			}
 		}
 		log.debug("Kafka topic '{}' found with configuration: {}", topicName, AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).toString());
 

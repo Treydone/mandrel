@@ -64,6 +64,7 @@ import org.springframework.validation.BindingResult;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
+import com.google.common.util.concurrent.Monitor;
 
 @Component
 @Slf4j
@@ -86,7 +87,8 @@ public class SpiderService {
 	@Autowired
 	private ObjectMapper objectMapper;
 
-	private RandomNameGenerator generator = new RandomNameGenerator();
+	private final RandomNameGenerator generator = new RandomNameGenerator();
+	private final Monitor monitor = new Monitor();
 
 	@PostConstruct
 	public void init() {
@@ -96,54 +98,62 @@ public class SpiderService {
 	@Scheduled(fixedRate = 30000)
 	public void sync() {
 		if (stateService.isStarted()) {
-
 			// TODO HOW TO in case of multiple controller
 			// -> Acquiring distributed lock
-			log.debug("Syncing the nodes from the controller...");
+			if (monitor.tryEnter()) {
+				try {
+					log.debug("Syncing the nodes from the controller...");
 
-			SyncRequest sync = new SyncRequest();
+					SyncRequest sync = new SyncRequest();
 
-			// Load the existing spiders from the database
-			List<Spider> spiders = spiderRepository.listActive();
-			if (CollectionUtils.isNotEmpty(spiders)) {
-				sync.setDefinitions(spiders.stream().map(spider -> {
-					try {
-						return objectMapper.writeValueAsBytes(spider);
-					} catch (Exception e) {
-						throw Throwables.propagate(e);
+					// Load the existing spiders from the database
+					List<Spider> spiders = spiderRepository.listActive();
+					if (CollectionUtils.isNotEmpty(spiders)) {
+						sync.setDefinitions(spiders.stream().map(spider -> {
+							try {
+								return objectMapper.writeValueAsBytes(spider);
+							} catch (Exception e) {
+								throw Throwables.propagate(e);
+							}
+						}).collect(Collectors.toList()));
 					}
-				}).collect(Collectors.toList()));
+
+					// Sync first the frontiers
+					discoveryClient.getInstances(ServiceIds.frontier()).forEach(
+							instance -> {
+								try {
+									SyncResponse response = clients.onFrontier(instance.getHostAndPort()).map(frontier -> frontier.syncFrontiers(sync));
+
+									if (response.anyAction()) {
+										log.debug("On frontier {}:{}, after sync: {} created, {} updated, {} killed, {} started, {} paused",
+												instance.getHost(), instance.getPort(), response.getCreated(), response.getUpdated(), response.getKilled(),
+												response.getPaused());
+									}
+								} catch (Exception e) {
+									log.warn("Can not sync frontier {}:{} due to: {}", instance.getHost(), instance.getPort(), e.getMessage());
+								}
+							});
+
+					// And then the workers
+					discoveryClient.getInstances(ServiceIds.worker()).forEach(
+							instance -> {
+								try {
+									SyncResponse response = clients.onWorker(instance.getHostAndPort()).map(worker -> worker.syncWorkers(sync));
+
+									if (response.anyAction()) {
+										log.debug("On frontier {}:{}, after sync: {} created, {} updated, {} killed, {} started, {} paused",
+												instance.getHost(), instance.getPort(), response.getCreated(), response.getUpdated(), response.getKilled(),
+												response.getPaused());
+									}
+								} catch (Exception e) {
+									log.warn("Can not sync worker {}:{} due to: {}", instance.getHost(), instance.getPort(), e.getMessage());
+								}
+							});
+
+				} finally {
+					monitor.leave();
+				}
 			}
-
-			// Sync first the frontiers
-			discoveryClient.getInstances(ServiceIds.frontier()).forEach(
-					instance -> {
-						try {
-							SyncResponse response = clients.onFrontier(instance.getHostAndPort()).map(frontier -> frontier.syncFrontiers(sync));
-
-							if (response.anyAction()) {
-								log.debug("On frontier {}:{}, after sync: {} created, {} updated, {} deleted", instance.getHost(), instance.getPort(),
-										response.getCreated(), response.getUpdated(), response.getDeleted());
-							}
-						} catch (Exception e) {
-							log.warn("Can not sync frontier {}:{} due to: {}", instance.getHost(), instance.getPort(), e);
-						}
-					});
-
-			// And then the workers
-			discoveryClient.getInstances(ServiceIds.worker()).forEach(
-					instance -> {
-						try {
-							SyncResponse response = clients.onWorker(instance.getHostAndPort()).map(worker -> worker.syncWorkers(sync));
-
-							if (response.anyAction()) {
-								log.debug("On worker {}:{}, after sync: {} created, {} updated, {} deleted", instance.getHost(), instance.getPort(),
-										response.getCreated(), response.getUpdated(), response.getDeleted());
-							}
-						} catch (Exception e) {
-							log.warn("Can not sync worker {}:{} due to: {}", instance.getHost(), instance.getPort(), e);
-						}
-					});
 		}
 	}
 

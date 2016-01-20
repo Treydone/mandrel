@@ -31,7 +31,7 @@ public class KafkaFrontierStoreTest {
 	@Test
 	public void test() throws InterruptedException {
 
-		Spider spider = new Spider().setId(30);
+		Spider spider = new Spider().setId(31);
 		TaskContext taskContext = new TaskContext();
 		taskContext.setDefinition(spider);
 
@@ -53,6 +53,15 @@ public class KafkaFrontierStoreTest {
 		}));
 		store.pool(FetchRequest.of("default", (uri) -> {
 			System.err.println("3:" + uri);
+		}));
+		store.pool(FetchRequest.of("default", (uri) -> {
+			System.err.println("4:" + uri);
+		}));
+		store.pool(FetchRequest.of("default", (uri) -> {
+			System.err.println("5:" + uri);
+		}));
+		store.pool(FetchRequest.of("default", (uri) -> {
+			System.err.println("6:" + uri);
 		}));
 		Thread.sleep(4000);
 	}

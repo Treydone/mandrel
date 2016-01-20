@@ -18,6 +18,7 @@
  */
 package io.mandrel.transport.thrift;
 
+import io.airlift.units.Duration;
 import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.discovery.ServiceInstance;
@@ -30,6 +31,7 @@ import io.mandrel.endpoints.contracts.NodeContract;
 import io.mandrel.endpoints.contracts.WorkerContract;
 import io.mandrel.transport.Clients;
 import io.mandrel.transport.Pooled;
+import io.mandrel.transport.TransportProperties;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -63,6 +65,9 @@ public class ThriftClients implements Clients {
 	@Autowired
 	private DiscoveryClient discoveryClient;
 
+	@Autowired
+	private TransportProperties transportProperties;
+
 	@Value("${standalone:false}")
 	private boolean local;
 
@@ -70,7 +75,7 @@ public class ThriftClients implements Clients {
 	public void init() {
 
 		GenericKeyedObjectPoolConfig poolConfig = new GenericKeyedObjectPoolConfig();
-		poolConfig.setMaxTotalPerKey(20);
+		poolConfig.setMaxTotalPerKey(4);
 		poolConfig.setMinIdlePerKey(1);
 
 		ThriftCatalog catalog = new ThriftCatalog();
@@ -85,15 +90,30 @@ public class ThriftClients implements Clients {
 		frontiers = new KeyedClientPool<>(FrontierContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED
 				null, clientManager);
+		prepare(frontiers);
+
 		controllers = new KeyedClientPool<>(ControllerContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED
 				null, clientManager);
+		prepare(controllers);
+
 		workers = new KeyedClientPool<>(WorkerContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED
 				null, clientManager);
+		prepare(workers);
+
 		nodes = new KeyedClientPool<>(NodeContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED
 				null, clientManager);
+		prepare(nodes);
+	}
+
+	public void prepare(KeyedClientPool<?> pool) {
+		pool.setConnectTimeout(Duration.nanosSince(transportProperties.getConnectTimeout().nanos()));
+		pool.setReadTimeout(Duration.nanosSince(transportProperties.getReadTimeout().nanos()));
+		pool.setReceiveTimeout(Duration.nanosSince(transportProperties.getReceiveTimeout().nanos()));
+		pool.setWriteTimeout(Duration.nanosSince(transportProperties.getWriteTimeout().nanos()));
+		pool.setMaxFrameSize(transportProperties.getMaxFrameSize());
 	}
 
 	public Pooled<FrontierContract> onFrontier(HostAndPort hostAndPort) {

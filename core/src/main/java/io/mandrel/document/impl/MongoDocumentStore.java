@@ -42,6 +42,9 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.ReplaceOneModel;
+import com.mongodb.client.model.UpdateOptions;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -118,7 +121,10 @@ public class MongoDocumentStore extends DocumentStore {
 	@Override
 	public void save(List<Document> data) {
 		if (data != null) {
-			collection.insertMany(data.stream().map(toBson).collect(Collectors.toList()));
+			List<ReplaceOneModel<org.bson.Document>> updates = data.stream().map(toBson)
+					.map(doc -> new ReplaceOneModel<org.bson.Document>(Filters.eq("_id", doc.getString("_id")), doc, new UpdateOptions().upsert(true)))
+					.collect(Collectors.toList());
+			collection.bulkWrite(updates);
 		}
 	}
 

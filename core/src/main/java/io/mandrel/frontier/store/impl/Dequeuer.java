@@ -24,6 +24,7 @@ import io.mandrel.frontier.store.FetchRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import kafka.consumer.ConsumerIterator;
 import kafka.message.MessageAndMetadata;
@@ -53,17 +54,22 @@ public class Dequeuer implements Runnable {
 	public void run() {
 		while (true) {
 			try {
-				FetchRequest request = queue.take();
+				FetchRequest request = queue.poll(5000, TimeUnit.MILLISECONDS);
 
 				if (request != null) {
+					log.trace("Dequeue item: fetch from topic {}", request.getTopic());
+
 					ConsumerIterator<String, Uri> stream = topics.get(request.getTopic());
 
+					Uri uri = null;
 					if (stream.hasNext()) {
 						MessageAndMetadata<String, Uri> message = stream.next();
+						uri = message.message();
+						log.trace("Getting uri '{}' from topic {}", uri, request.getTopic());
+					}
 
-						if (request.getCallback() != null) {
-							request.getCallback().on(message.message());
-						}
+					if (request.getCallback() != null) {
+						request.getCallback().on(uri);
 					}
 				}
 			} catch (Exception e) {

@@ -95,13 +95,13 @@ public class MongoSpiderRepository implements SpiderRepository {
 	}
 
 	public List<Spider> listActive() {
-		Bson filter = Filters.or(Filters.eq("status", Statuses.STARTED), Filters.eq("status", Statuses.PAUSED));
+		Bson filter = activeFilter();
 		List<Spider> content = Lists.newArrayList(collection.find(filter).map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)));
 		return content;
 	}
 
 	public List<Spider> listLastActive(int size) {
-		Bson filter = Filters.or(Filters.eq("status", Statuses.STARTED), Filters.eq("status", Statuses.PAUSED));
+		Bson filter = activeFilter();
 		List<Spider> content = Lists.newArrayList(collection.find(filter).sort(Sorts.descending("created")).limit(size)
 				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)));
 		return content;
@@ -112,5 +112,9 @@ public class MongoSpiderRepository implements SpiderRepository {
 		List<Spider> content = Lists.newArrayList(collection.find().limit(pageable.getPageSize()).skip(pageable.getOffset())
 				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)));
 		return new PageImpl<>(content, pageable, collection.count());
+	}
+
+	protected Bson activeFilter() {
+		return Filters.or(Filters.eq("status", Statuses.STARTED), Filters.eq("status", Statuses.PAUSED), Filters.eq("status", Statuses.CREATED));
 	}
 }
