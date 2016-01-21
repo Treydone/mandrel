@@ -18,18 +18,32 @@
  */
 package io.mandrel.metadata;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class MetadataStores {
 
-	private final static ConcurrentHashMap<Long, MetadataStore> stores = new ConcurrentHashMap<>();
+	private final static Map<Long, MetadataStore> stores = new HashMap<>();
 
 	public static Iterable<MetadataStore> list() {
 		return stores.values();
 	}
 
-	public static void add(long spiderId, MetadataStore MetadataStore) {
-		stores.put(spiderId, MetadataStore);
+	public static void add(long spiderId, MetadataStore metadataStore) {
+		synchronized (stores) {
+			MetadataStore oldMetadataStore = stores.put(spiderId, metadataStore);
+			if (oldMetadataStore != null) {
+				try {
+					oldMetadataStore.close();
+				} catch (IOException e) {
+					log.warn("Can not close", e);
+				}
+			}
+		}
 	}
 
 	public static MetadataStore get(Long spiderId) {
@@ -37,6 +51,15 @@ public class MetadataStores {
 	}
 
 	public static void remove(Long spiderId) {
-		stores.remove(spiderId);
+		synchronized (stores) {
+			MetadataStore oldMetadataStore = stores.remove(spiderId);
+			if (oldMetadataStore != null) {
+				try {
+					oldMetadataStore.close();
+				} catch (IOException e) {
+					log.warn("Can not close", e);
+				}
+			}
+		}
 	}
 }

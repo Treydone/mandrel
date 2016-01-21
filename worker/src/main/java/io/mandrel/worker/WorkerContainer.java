@@ -21,7 +21,7 @@ package io.mandrel.worker;
 import io.mandrel.blob.BlobStore;
 import io.mandrel.blob.BlobStores;
 import io.mandrel.common.container.AbstractContainer;
-import io.mandrel.common.container.Status;
+import io.mandrel.common.container.ContainerStatus;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.extract.ExtractorService;
@@ -47,6 +47,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
+import com.google.common.util.concurrent.Monitor;
+
 @Slf4j
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -55,16 +57,13 @@ public class WorkerContainer extends AbstractContainer {
 
 	private final ExtractorService extractorService;
 
-	private ExecutorService executor;
-	private List<Loop> loops;
+	private final ExecutorService executor;
+	private final List<Loop> loops;
+	private final Monitor monitor = new Monitor();
 
 	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Spider spider, Clients clients) {
 		super(accumulators, spider, clients);
 		this.extractorService = extractorService;
-		init();
-	}
-
-	public void init() {
 
 		// Create the thread factory
 		BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("workerthread-%d").daemon(true).priority(Thread.MAX_PRIORITY).build();
@@ -118,7 +117,7 @@ public class WorkerContainer extends AbstractContainer {
 				Requesters.add(spider.getId(), requester);
 			});
 
-		current.set(Status.INITIATED);
+		current.set(ContainerStatus.INITIATED);
 	}
 
 	@Override
@@ -128,51 +127,72 @@ public class WorkerContainer extends AbstractContainer {
 
 	@Override
 	public void start() {
-		loops.forEach(loop -> loop.start());
-		current.set(Status.STARTED);
+		if (monitor.tryEnter()) {
+			try {
+				if (!current.get().equals(ContainerStatus.STARTED)) {
+					loops.forEach(loop -> loop.start());
+					current.set(ContainerStatus.STARTED);
+				}
+			} finally {
+				monitor.leave();
+			}
+		}
 	}
 
 	@Override
 	public void pause() {
-		loops.forEach(loop -> loop.pause());
-		current.set(Status.PAUSED);
+		if (monitor.tryEnter()) {
+			try {
+				if (!current.get().equals(ContainerStatus.PAUSED)) {
+					loops.forEach(loop -> loop.pause());
+					current.set(ContainerStatus.PAUSED);
+				}
+			} finally {
+				monitor.leave();
+			}
+		}
 	}
 
 	@Override
 	public void kill() {
+		if (monitor.tryEnter()) {
+			try {
+				loops.forEach(loop -> loop.pause());
+				try {
+					executor.shutdownNow();
+				} catch (Exception e) {
+					log.debug(e.getMessage(), e);
+				}
 
-		loops.forEach(loop -> loop.pause());
-		try {
-			executor.shutdownNow();
-		} catch (Exception e) {
-			log.debug(e.getMessage(), e);
+				try {
+					MetadataStores.remove(spider.getId());
+				} catch (Exception e) {
+					log.debug(e.getMessage(), e);
+				}
+
+				try {
+					BlobStores.remove(spider.getId());
+				} catch (Exception e) {
+					log.debug(e.getMessage(), e);
+				}
+
+				try {
+					DocumentStores.remove(spider.getId());
+				} catch (Exception e) {
+					log.debug(e.getMessage(), e);
+				}
+
+				try {
+					Requesters.remove(spider.getId());
+				} catch (Exception e) {
+					log.debug(e.getMessage(), e);
+				}
+
+				accumulators.destroy(spider.getId());
+			} finally {
+				monitor.leave();
+			}
 		}
-
-		try {
-			MetadataStores.remove(spider.getId());
-		} catch (Exception e) {
-			log.debug(e.getMessage(), e);
-		}
-
-		try {
-			BlobStores.remove(spider.getId());
-		} catch (Exception e) {
-			log.debug(e.getMessage(), e);
-		}
-
-		try {
-			DocumentStores.remove(spider.getId());
-		} catch (Exception e) {
-			log.debug(e.getMessage(), e);
-		}
-
-		try {
-			Requesters.remove(spider.getId());
-		} catch (Exception e) {
-			log.debug(e.getMessage(), e);
-		}
-
-		accumulators.destroy(spider.getId());
 	}
 
 	@Override
@@ -190,5 +210,4 @@ public class WorkerContainer extends AbstractContainer {
 			oldContainer.kill();
 		}
 	}
-
 }

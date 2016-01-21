@@ -28,7 +28,7 @@ import io.mandrel.frontier.revisit.RevisitStrategy.RevisitStrategyDefinition;
 import io.mandrel.frontier.revisit.SimpleRevisitStrategy.SimpleRevisitStrategyDefinition;
 import io.mandrel.frontier.store.FrontierStore;
 import io.mandrel.frontier.store.FrontierStore.FrontierStoreDefinition;
-import io.mandrel.frontier.store.impl.KafkaFrontierStore.KafkaFrontierStoreDefinition;
+import io.mandrel.frontier.store.impl.RedisFrontierStore.RedisFrontierStoreDefinition;
 import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
@@ -63,7 +63,7 @@ public abstract class Frontier extends TaskContextAware implements Checkable {
 		protected RevisitStrategyDefinition<? extends RevisitStrategy> revisit = new SimpleRevisitStrategyDefinition();
 
 		@JsonProperty("store")
-		protected FrontierStoreDefinition<? extends FrontierStore> store = new KafkaFrontierStoreDefinition();
+		protected FrontierStoreDefinition<? extends FrontierStore> store = new RedisFrontierStoreDefinition();
 
 		public FRONTIER build(FRONTIER frontier, TaskContext context) {
 			frontier.store(store.build(context)).politeness(politeness).revisit(revisit.build(context));

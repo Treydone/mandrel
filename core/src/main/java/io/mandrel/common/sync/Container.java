@@ -18,7 +18,7 @@
  */
 package io.mandrel.common.sync;
 
-import io.mandrel.common.container.Status;
+import io.mandrel.common.container.ContainerStatus;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,5 +40,5 @@ public class Container {
 	private long version;
 	@Getter(onMethod = @__(@ThriftField(3)))
 	@Setter(onMethod = @__(@ThriftField))
-	private Status status;
+	private ContainerStatus status;
 }

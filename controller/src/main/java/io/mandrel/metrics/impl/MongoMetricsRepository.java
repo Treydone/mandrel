@@ -97,7 +97,7 @@ public class MongoMetricsRepository implements MetricsRepository {
 	}
 
 	public NodeMetrics node(String nodeId) {
-		Document document = counters.find(Filters.eq("_id", nodeId)).first();
+		Document document = counters.find(Filters.eq("_id", "node_" + nodeId)).first();
 		return document != null ? JsonBsonCodec.fromBson(mapper, document, NodeMetrics.class) : new NodeMetrics();
 	}
 
@@ -107,7 +107,7 @@ public class MongoMetricsRepository implements MetricsRepository {
 	}
 
 	public SpiderMetrics spider(long spiderId) {
-		Document document = counters.find(Filters.eq("_id", spiderId)).first();
+		Document document = counters.find(Filters.eq("_id", "spider_" + spiderId)).first();
 		return document != null ? JsonBsonCodec.fromBson(mapper, document, SpiderMetrics.class) : new SpiderMetrics();
 	}
 

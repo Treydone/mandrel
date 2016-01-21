@@ -1,1 +1,2 @@
 io.mandrel.frontier.store.impl.KafkaFrontierStore$KafkaFrontierStoreDefinition
+io.mandrel.frontier.store.impl.RedisFrontierStore$RedisFrontierStoreDefinition

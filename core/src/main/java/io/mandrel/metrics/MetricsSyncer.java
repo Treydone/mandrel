@@ -45,8 +45,8 @@ public class MetricsSyncer {
 	private DiscoveryClient discoveryClient;
 	@Autowired
 	private StateService stateService;
-
-	@Scheduled(fixedRate = 5000)
+	
+	@Scheduled(fixedRate = 10000)
 	public void sync() {
 		if (stateService.isStarted()) {
 
@@ -57,6 +57,7 @@ public class MetricsSyncer {
 
 			if (MapUtils.isNotEmpty(total)) {
 				try {
+					log.debug("Updating metrics");
 					clients.onRandomController().with(controller -> controller.updateMetrics(total));
 				} catch (Exception e) {
 					log.info("Can not update metrics {} due to", total, e);

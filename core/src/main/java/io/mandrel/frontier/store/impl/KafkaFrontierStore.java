@@ -132,12 +132,14 @@ public class KafkaFrontierStore extends FrontierStore {
 
 		@Override
 		public KafkaFrontierStore build(TaskContext context) {
-			return new KafkaFrontierStore(context, consumerProperties, producerProperties, partitions, nbWorkers, replicationFactor, sessionTimeout,
+			return new KafkaFrontierStore(name(), context, consumerProperties, producerProperties, partitions, nbWorkers, replicationFactor, sessionTimeout,
 					connectionTimeout);
 		}
 	}
 
+
 	private final int partitions;
+	private final int nbWorkers;
 	private final int replicationFactor;
 	private final ZkClient zkClient;
 	private final ZkUtils zkUtils;
@@ -147,9 +149,8 @@ public class KafkaFrontierStore extends FrontierStore {
 	private final ExecutorService executor;
 	private final List<Dequeuer> workers;
 	private final AtomicInteger nextWorker;
-	private final int nbWorkers;
 
-	public KafkaFrontierStore(TaskContext context, Properties consumerProperties, Properties producerProperties, int partitions, int nbWorkers,
+	public KafkaFrontierStore(String name, TaskContext context, Properties consumerProperties, Properties producerProperties, int partitions, int nbWorkers,
 			int replicationFactor, int sessionTimeout, int connectionTimeout) {
 		super(context);
 		this.partitions = partitions;
@@ -164,7 +165,7 @@ public class KafkaFrontierStore extends FrontierStore {
 
 		executor = Executors.newFixedThreadPool(nbWorkers);
 		workers = Lists.newArrayListWithCapacity(nbWorkers);
-		IntStream.range(0, nbWorkers).forEach(i -> workers.add(new Dequeuer()));
+		IntStream.range(0, nbWorkers).forEach(i -> workers.add(new Dequeuer(name)));
 
 		workers.stream().forEach(worker -> executor.submit(worker));
 		nextWorker = new AtomicInteger(0);
@@ -210,14 +211,19 @@ public class KafkaFrontierStore extends FrontierStore {
 			log.warn("Kafka topic '{}' doesn't exists, creating it", topicName);
 			AdminUtils.createTopic(zkUtils, topicName, partitions, replicationFactor, new Properties());
 		} else {
+			// TODO
 			// Check size
-//			if (partitions > AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).partitionsMetadata().size()) {
-//				// Adding partitions
-//				int diff = partitions - AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).partitionsMetadata().size();
-//
-//				log.debug("Missing {} partitions for topic '{}'", diff, topicName);
-//				AdminUtils.addPartitions(zkUtils, topicName, diff, "", true);
-//			}
+			// if (partitions > AdminUtils.fetchTopicMetadataFromZk(topicName,
+			// zkUtils).partitionsMetadata().size()) {
+			// // Adding partitions
+			// int diff = partitions -
+			// AdminUtils.fetchTopicMetadataFromZk(topicName,
+			// zkUtils).partitionsMetadata().size();
+			//
+			// log.debug("Missing {} partitions for topic '{}'", diff,
+			// topicName);
+			// AdminUtils.addPartitions(zkUtils, topicName, diff, "", true);
+			// }
 		}
 		log.debug("Kafka topic '{}' found with configuration: {}", topicName, AdminUtils.fetchTopicMetadataFromZk(topicName, zkUtils).toString());
 

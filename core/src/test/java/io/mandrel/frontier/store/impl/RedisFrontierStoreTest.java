@@ -22,11 +22,11 @@ import io.mandrel.common.data.Spider;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.frontier.store.FetchRequest;
-import io.mandrel.frontier.store.impl.KafkaFrontierStore.KafkaFrontierStoreDefinition;
+import io.mandrel.frontier.store.impl.RedisFrontierStore.RedisFrontierStoreDefinition;
 
 import org.junit.Test;
 
-public class KafkaFrontierStoreTest {
+public class RedisFrontierStoreTest {
 
 	@Test
 	public void test() throws InterruptedException {
@@ -35,8 +35,8 @@ public class KafkaFrontierStoreTest {
 		TaskContext taskContext = new TaskContext();
 		taskContext.setDefinition(spider);
 
-		KafkaFrontierStoreDefinition definition = new KafkaFrontierStoreDefinition();
-		KafkaFrontierStore store = definition.build(taskContext);
+		RedisFrontierStoreDefinition definition = new RedisFrontierStoreDefinition();
+		RedisFrontierStore store = definition.build(taskContext);
 
 		store.create("default");
 		store.schedule("default", Uri.create("test://test1"));

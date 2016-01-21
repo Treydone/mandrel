@@ -67,11 +67,9 @@ public class ZookeeperDiscoveryClient implements DiscoveryClient {
 	}
 
 	protected ServiceInstanceBuilder<ZookeeperInstance> createService(ServiceInstance instance) throws Exception {
-		String host = getInstanceHost();
-
 		ServiceInstanceBuilder<ZookeeperInstance> service = org.apache.curator.x.discovery.ServiceInstance.<ZookeeperInstance> builder()
-				.name(instance.getName()).payload(new ZookeeperInstance(context.getId())).port(instance.getPort()).address(host)
-				.uriSpec(new UriSpec(zookeeperDiscoveryProperties.getUriSpec()));
+				.name(instance.getName()).payload(new ZookeeperInstance(context.getId())).port(instance.getPort())
+				.address(instance.getHost() != null ? instance.getHost() : getInstanceHost()).uriSpec(new UriSpec(zookeeperDiscoveryProperties.getUriSpec()));
 		return service;
 	}
 

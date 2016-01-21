@@ -18,10 +18,14 @@
  */
 package io.mandrel.blob;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class BlobStores {
 
 	private final static Map<Long, BlobStore> stores = new HashMap<>();
@@ -30,9 +34,16 @@ public class BlobStores {
 		return stores.values();
 	}
 
-	public static void add(long spiderId, BlobStore BlobStore) {
+	public static void add(long spiderId, BlobStore blobStore) {
 		synchronized (stores) {
-			stores.put(spiderId, BlobStore);
+			BlobStore oldBlobStore = stores.put(spiderId, blobStore);
+			if (oldBlobStore != null) {
+				try {
+					oldBlobStore.close();
+				} catch (IOException e) {
+					log.warn("Can not close", e);
+				}
+			}
 		}
 	}
 
@@ -42,8 +53,14 @@ public class BlobStores {
 
 	public static void remove(Long spiderId) {
 		synchronized (stores) {
-			stores.remove(spiderId);
+			BlobStore oldBlobStore = stores.remove(spiderId);
+			if (oldBlobStore != null) {
+				try {
+					oldBlobStore.close();
+				} catch (IOException e) {
+					log.warn("Can not close", e);
+				}
+			}
 		}
 	}
-
 }

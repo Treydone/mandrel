@@ -94,7 +94,8 @@ public class ThriftTransportService implements TransportService {
 
 		resources.forEach(resource -> {
 			log.debug("Registering service {}", resource.getServiceName());
-			ServiceInstance instance = ServiceInstance.builder().port(transportProperties.getPort()).name(resource.getServiceName()).build();
+			ServiceInstance instance = ServiceInstance.builder().host(transportProperties.getBindAddress()).port(transportProperties.getPort())
+					.name(resource.getServiceName()).build();
 			discoveryClient.register(instance);
 		});
 

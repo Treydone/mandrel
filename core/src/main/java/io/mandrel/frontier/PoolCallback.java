@@ -22,5 +22,5 @@ import javax.annotation.Nullable;
 
 public interface PoolCallback<T> {
 
-	void on(@Nullable T t);
+	void on(@Nullable T t, String storeName);
 }

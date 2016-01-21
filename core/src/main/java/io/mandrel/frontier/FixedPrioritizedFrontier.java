@@ -106,9 +106,9 @@ public class FixedPrioritizedFrontier extends Frontier {
 	public void pool(int i, PoolCallback<Uri> poolCallback) {
 		Priority priority = priorities.get(i);
 
-		PoolCallback<Uri> chidlPoolCallback = (uri) -> {
+		PoolCallback<Uri> chidlPoolCallback = (uri, name) -> {
 			if (uri != null) {
-				poolCallback.on(uri);
+				poolCallback.on(uri, name);
 			} else {
 				int index = i;
 				index++;
@@ -116,7 +116,7 @@ public class FixedPrioritizedFrontier extends Frontier {
 				if (index < priorities.size() - 1) {
 					pool(index, poolCallback);
 				} else {
-					poolCallback.on(null);
+					poolCallback.on(null, name);
 				}
 			}
 		};

@@ -36,7 +36,9 @@ logging:
   level:
     org.springframework: INFO
     io.mandrel: DEBUG
-    io.mandrel.worker.Loop: TRACE
+    io.mandrel.worker.Loop: DEBUG
+    io.mandrel.frontier.store.impl.Dequeuer: TRACE
+    io.mandrel.spider.SpiderService : DEBUG
     
 management:
   context-path: /admin

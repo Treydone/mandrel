@@ -35,10 +35,10 @@ public abstract class AbstractContainer implements Container {
 	protected final Spider spider;
 	protected final Clients clients;
 
-	protected final AtomicReference<Status> current = new AtomicReference<>(Status.CREATED);
+	protected final AtomicReference<ContainerStatus> current = new AtomicReference<>(ContainerStatus.CREATED);
 
 	@Override
-	public Status status() {
+	public ContainerStatus status() {
 		return current.get();
 	}
 }

@@ -18,6 +18,8 @@
  */
 package io.mandrel.common.loader;
 
+import io.mandrel.common.MandrelException;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
@@ -96,7 +98,7 @@ public class NamedProviderLoader<T extends NamedDefinition> {
 		if (null != (obj = providersByName.get(shortName))) {
 			return obj;
 		}
-		return null;
+		throw new MandrelException("Unkown provider '" + shortName + "'");
 	}
 
 	public Map<String, T> getProvidersByName() {

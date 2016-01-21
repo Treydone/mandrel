@@ -25,7 +25,7 @@ import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.MandrelException;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.Statuses;
+import io.mandrel.common.data.SpiderStatuses;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
@@ -95,7 +95,7 @@ public class SpiderService {
 		// TODO Load the journal of commands
 	}
 
-	@Scheduled(fixedRate = 30000)
+	@Scheduled(fixedRate = 10000)
 	public void sync() {
 		if (stateService.isStarted()) {
 			// TODO HOW TO in case of multiple controller
@@ -121,6 +121,7 @@ public class SpiderService {
 					// Sync first the frontiers
 					discoveryClient.getInstances(ServiceIds.frontier()).forEach(
 							instance -> {
+								log.trace("Syncing frontier {}", instance);
 								try {
 									SyncResponse response = clients.onFrontier(instance.getHostAndPort()).map(frontier -> frontier.syncFrontiers(sync));
 
@@ -137,6 +138,7 @@ public class SpiderService {
 					// And then the workers
 					discoveryClient.getInstances(ServiceIds.worker()).forEach(
 							instance -> {
+								log.trace("Syncing worker {}", instance);
 								try {
 									SyncResponse response = clients.onWorker(instance.getHostAndPort()).map(worker -> worker.syncWorkers(sync));
 
@@ -215,7 +217,7 @@ public class SpiderService {
 			throw new BindException(errors);
 		}
 
-		spider.setStatus(Statuses.CREATED);
+		spider.setStatus(SpiderStatuses.CREATED);
 		spider.setCreated(LocalDateTime.now());
 
 		spider = spiderRepository.add(spider);
@@ -240,7 +242,7 @@ public class SpiderService {
 			throw new BindException(errors);
 		}
 
-		spider.setStatus(Statuses.CREATED);
+		spider.setStatus(SpiderStatuses.CREATED);
 		spider.setCreated(LocalDateTime.now());
 		spider = spiderRepository.add(spider);
 
@@ -273,11 +275,11 @@ public class SpiderService {
 	public void start(long spiderId) {
 		Spider spider = get(spiderId);
 
-		if (Statuses.STARTED.equals(spider.getStatus())) {
+		if (SpiderStatuses.STARTED.equals(spider.getStatus())) {
 			return;
 		}
 
-		if (Statuses.KILLED.equals(spider.getStatus())) {
+		if (SpiderStatuses.KILLED.equals(spider.getStatus())) {
 			throw new MandrelException("Spider cancelled!");
 		}
 
@@ -286,11 +288,11 @@ public class SpiderService {
 			throw new MandrelException("Can not start spider, you need a least a frontier instance!");
 		}
 
-		if (Statuses.CREATED.equals(spider.getStatus())) {
-			injectSingletonSources(spider);
+		if (SpiderStatuses.CREATED.equals(spider.getStatus())) {
+			// injectSingletonSources(spider);
 		}
 
-		spiderRepository.updateStatus(spiderId, Statuses.STARTED);
+		spiderRepository.updateStatus(spiderId, SpiderStatuses.STARTED);
 
 		updateTimeline(spider, SpiderEventType.SPIDER_CREATED);
 
@@ -324,7 +326,7 @@ public class SpiderService {
 		Spider spider = get(spiderId);
 
 		// Update status
-		spiderRepository.updateStatus(spiderId, Statuses.PAUSED);
+		spiderRepository.updateStatus(spiderId, SpiderStatuses.PAUSED);
 
 		updateTimeline(spider, SpiderEventType.SPIDER_PAUSED);
 
@@ -334,7 +336,7 @@ public class SpiderService {
 		Spider spider = get(spiderId);
 
 		// Update status
-		spiderRepository.updateStatus(spiderId, Statuses.KILLED);
+		spiderRepository.updateStatus(spiderId, SpiderStatuses.KILLED);
 
 		updateTimeline(spider, SpiderEventType.SPIDER_KILLED);
 	}
@@ -343,7 +345,7 @@ public class SpiderService {
 		Spider spider = get(spiderId);
 
 		// Update status
-		spiderRepository.updateStatus(spiderId, Statuses.DELETED);
+		spiderRepository.updateStatus(spiderId, SpiderStatuses.DELETED);
 
 		updateTimeline(spider, SpiderEventType.SPIDER_DELETED);
 

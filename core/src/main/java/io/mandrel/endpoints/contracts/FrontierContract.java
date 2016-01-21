@@ -23,11 +23,13 @@ import io.mandrel.common.net.Uri;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
+import io.mandrel.transport.RemoteException;
 
 import java.util.List;
 import java.util.Set;
 
 import com.facebook.swift.codec.ThriftField;
+import com.facebook.swift.service.ThriftException;
 import com.facebook.swift.service.ThriftMethod;
 import com.facebook.swift.service.ThriftService;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -35,35 +37,35 @@ import com.google.common.util.concurrent.ListenableFuture;
 @ThriftService
 public interface FrontierContract extends Contract, AutoCloseable {
 
-	@ThriftMethod
-	SyncResponse syncFrontiers(@ThriftField(value = 1, name = "sync") SyncRequest sync);
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	SyncResponse syncFrontiers(@ThriftField(value = 1, name = "sync") SyncRequest sync) throws RemoteException;
 
-	@ThriftMethod
-	List<Container> listRunningFrontierContainers();
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	List<Container> listRunningFrontierContainers() throws RemoteException;
 
-	@ThriftMethod
-	void createFrontierContainer(@ThriftField(value = 1, name = "definition") byte[] definition);
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	void createFrontierContainer(@ThriftField(value = 1, name = "definition") byte[] definition) throws RemoteException;
 
-	@ThriftMethod
-	void startFrontierContainer(@ThriftField(value = 1, name = "id") Long id);
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	void startFrontierContainer(@ThriftField(value = 1, name = "id") Long id) throws RemoteException;
 
-	@ThriftMethod
-	void pauseFrontierContainer(@ThriftField(value = 1, name = "id") Long id);
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	void pauseFrontierContainer(@ThriftField(value = 1, name = "id") Long id) throws RemoteException;
 
-	@ThriftMethod
-	void killFrontierContainer(@ThriftField(value = 1, name = "id") Long id);
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	void killFrontierContainer(@ThriftField(value = 1, name = "id") Long id) throws RemoteException;
 
-	@ThriftMethod
-	Uri next(@ThriftField(value = 1, name = "id") Long id);
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	ListenableFuture<Next> next(@ThriftField(value = 1, name = "id") Long id) throws RemoteException;
 
-	@ThriftMethod
-	void delete(@ThriftField(value = 1, name = "id") Long id, @ThriftField(value = 2, name = "uri") Uri uri);
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	void delete(@ThriftField(value = 1, name = "id") Long id, @ThriftField(value = 2, name = "uri") Uri uri) throws RemoteException;
 
-	@ThriftMethod
-	void schedule(@ThriftField(value = 1, name = "id") Long id, @ThriftField(value = 2, name = "uri") Uri uri);
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	void schedule(@ThriftField(value = 1, name = "id") Long id, @ThriftField(value = 2, name = "uri") Uri uri) throws RemoteException;
 
-	@ThriftMethod
-	void mschedule(@ThriftField(value = 1, name = "id") Long id, @ThriftField(value = 2, name = "uris") Set<Uri> uris);
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	void mschedule(@ThriftField(value = 1, name = "id") Long id, @ThriftField(value = 2, name = "uris") Set<Uri> uris) throws RemoteException;
 
 	public default String getServiceName() {
 		return ServiceIds.frontier();

@@ -30,6 +30,7 @@ import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.service.TaskContextAware;
 import io.mandrel.monitor.health.Checkable;
 
+import java.io.Closeable;
 import java.io.Serializable;
 import java.util.Set;
 
@@ -42,7 +43,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true, fluent = true)
-public abstract class Requester<STRATEGY extends Strategy> extends TaskContextAware implements Checkable, Initializable {
+public abstract class Requester<STRATEGY extends Strategy> extends TaskContextAware implements Checkable, Initializable, Closeable {
 
 	public Requester(TaskContext context) {
 		super(context);

@@ -19,7 +19,7 @@
 package io.mandrel.frontier;
 
 import io.mandrel.common.container.AbstractContainer;
-import io.mandrel.common.container.Status;
+import io.mandrel.common.container.ContainerStatus;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.source.Source;
@@ -31,6 +31,8 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
+import com.google.common.util.concurrent.Monitor;
+
 @Slf4j
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -39,18 +41,10 @@ public class FrontierContainer extends AbstractContainer {
 
 	private TaskContext context = new TaskContext();
 	private Frontier frontier;
+	private final Monitor monitor = new Monitor();
 
 	public FrontierContainer(Spider spider, Accumulators accumulators, Clients clients) {
 		super(accumulators, spider, clients);
-		init();
-	}
-
-	@Override
-	public String type() {
-		return "frontier";
-	}
-
-	public void init() {
 
 		// Create context
 		context.setDefinition(spider);
@@ -61,50 +55,82 @@ public class FrontierContainer extends AbstractContainer {
 		// Init frontier
 		frontier = spider.getFrontier().build(context);
 
-		current.set(Status.INITIATED);
+		current.set(ContainerStatus.INITIATED);
+	}
+
+	@Override
+	public String type() {
+		return "frontier";
 	}
 
 	@Override
 	public void start() {
+		if (monitor.tryEnter()) {
+			try {
+				if (!current.get().equals(ContainerStatus.STARTED)) {
 
-		log.debug("Starting the frontier");
-		frontier.init();
+					log.debug("Starting the frontier");
+					frontier.init();
 
-		// Init sources
-		log.debug("Initializing the sources");
-		spider.getSources().forEach(s -> {
-			Source source = s.build(context);
-			if (!source.singleton() && source.check()) {
-				source.register(uri -> {
-					frontier.schedule(uri);
-				});
+					// Init sources
+					log.debug("Initializing the sources");
+					spider.getSources().forEach(s -> {
+						Source source = s.build(context);
+						if (!source.singleton() && source.check()) {
+							source.register(uri -> {
+								frontier.schedule(uri);
+							});
+						}
+					});
+
+					current.set(ContainerStatus.STARTED);
+				}
+			} finally {
+				monitor.leave();
 			}
-		});
-
-		current.set(Status.STARTED);
+		}
 	}
 
 	@Override
 	public void pause() {
-		current.set(Status.PAUSED);
+		if (monitor.tryEnter()) {
+			try {
+				if (!current.get().equals(ContainerStatus.PAUSED)) {
+					log.debug("Pausing the frontier");
+
+					// TODO We should pause some things here
+
+					current.set(ContainerStatus.PAUSED);
+				}
+			} finally {
+				monitor.leave();
+			}
+		}
 	}
 
 	@Override
 	public void kill() {
+		if (monitor.tryEnter()) {
+			try {
+				if (!current.get().equals(ContainerStatus.KILLED)) {
+					try {
+						frontier.destroy();
+					} catch (Exception e) {
+						log.warn("Can not destroy the frontier");
+					}
 
-		try {
-			frontier.destroy();
-		} catch (Exception e) {
-			log.warn("Can not destroy the frontier");
+					try {
+						accumulators.destroy(spider.getId());
+					} catch (Exception e) {
+						log.warn("Can not destroy the accumulators");
+					}
+
+					current.set(ContainerStatus.KILLED);
+				}
+			} finally {
+				monitor.leave();
+			}
 		}
-
-		try {
-			accumulators.destroy(spider.getId());
-		} catch (Exception e) {
-			log.warn("Can not destroy the accumulators");
-		}
-
-		current.set(Status.KILLED);
 	}
 
 	@Override

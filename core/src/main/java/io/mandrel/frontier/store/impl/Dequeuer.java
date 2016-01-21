@@ -24,21 +24,25 @@ import io.mandrel.frontier.store.FetchRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import kafka.consumer.ConsumerIterator;
 import kafka.message.MessageAndMetadata;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import com.google.common.collect.Queues;
 
 @Slf4j
+@Data
 public class Dequeuer implements Runnable {
 
-	private BlockingQueue<FetchRequest> queue = Queues.newArrayBlockingQueue(2000);
-	private Map<String, ConsumerIterator<String, Uri>> topics = new HashMap<>();
+	private final BlockingQueue<FetchRequest> queue = Queues.newArrayBlockingQueue(2000);
+	private final Map<String, ConsumerIterator<String, Uri>> topics = new HashMap<>();
+
+	private final String name;
 
 	public void fetch(FetchRequest request) {
+		log.trace("Waiting for queuer {}", request.getTopic());
 		queue.add(request);
 	}
 
@@ -54,7 +58,7 @@ public class Dequeuer implements Runnable {
 	public void run() {
 		while (true) {
 			try {
-				FetchRequest request = queue.poll(5000, TimeUnit.MILLISECONDS);
+				FetchRequest request = queue.poll();
 
 				if (request != null) {
 					log.trace("Dequeue item: fetch from topic {}", request.getTopic());
@@ -62,15 +66,17 @@ public class Dequeuer implements Runnable {
 					ConsumerIterator<String, Uri> stream = topics.get(request.getTopic());
 
 					Uri uri = null;
-					if (stream.hasNext()) {
+					if (stream != null && stream.hasNext()) {
 						MessageAndMetadata<String, Uri> message = stream.next();
 						uri = message.message();
 						log.trace("Getting uri '{}' from topic {}", uri, request.getTopic());
 					}
 
 					if (request.getCallback() != null) {
-						request.getCallback().on(uri);
+						request.getCallback().on(uri, name);
 					}
+
+					log.trace("Dequeue done");
 				}
 			} catch (Exception e) {
 				log.warn("Can not dequeue", e);

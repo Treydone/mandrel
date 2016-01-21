@@ -22,7 +22,7 @@ import io.mandrel.cluster.idgenerator.IdGenerator;
 import io.mandrel.cluster.idgenerator.MongoIdGenerator;
 import io.mandrel.common.bson.JsonBsonCodec;
 import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.Statuses;
+import io.mandrel.common.data.SpiderStatuses;
 import io.mandrel.spider.SpiderRepository;
 
 import java.time.LocalDateTime;
@@ -115,6 +115,6 @@ public class MongoSpiderRepository implements SpiderRepository {
 	}
 
 	protected Bson activeFilter() {
-		return Filters.or(Filters.eq("status", Statuses.STARTED), Filters.eq("status", Statuses.PAUSED), Filters.eq("status", Statuses.CREATED));
+		return Filters.or(Filters.eq("status", SpiderStatuses.STARTED), Filters.eq("status", SpiderStatuses.PAUSED), Filters.eq("status", SpiderStatuses.CREATED));
 	}
 }

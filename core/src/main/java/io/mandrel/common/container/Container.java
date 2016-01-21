@@ -34,7 +34,7 @@ public interface Container {
 
 	void kill();
 
-	Status status();
+	ContainerStatus status();
 	
 	Spider spider();
 }

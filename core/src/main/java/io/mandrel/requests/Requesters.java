@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Requesters {
 
 	private final static Map<Long, Map<String, Requester<? extends Strategy>>> requesters = new HashMap<>();
@@ -46,11 +49,19 @@ public class Requesters {
 
 	public static void add(long spiderId, Requester<? extends Strategy> requester) {
 		synchronized (requesters) {
+			requesters.putIfAbsent(spiderId, new HashMap<>());
 			Map<String, Requester<? extends Strategy>> map = requesters.get(spiderId);
-			if (map == null) {
-				map = new HashMap<>();
-				requesters.put(spiderId, map);
-			}
+			requester.getProtocols().forEach(protocol -> {
+
+				Requester<? extends Strategy> oldRequester = map.put(protocol, requester);
+				if (oldRequester != null) {
+					try {
+						oldRequester.close();
+					} catch (Exception e) {
+						log.warn("Can not close", e);
+					}
+				}
+			});
 			map.putAll(requester.getProtocols().stream().collect(Collectors.toMap(p -> p, p -> requester)));
 			requesters.put(spiderId, map);
 		}
@@ -62,7 +73,14 @@ public class Requesters {
 
 	public static void remove(Long spiderId) {
 		synchronized (requesters) {
-			requesters.remove(spiderId);
+			Map<String, Requester<? extends Strategy>> oldRequesters = requesters.remove(spiderId);
+			oldRequesters.forEach((protocol, req) -> {
+				try {
+					req.close();
+				} catch (Exception e) {
+					log.warn("Can not close", e);
+				}
+			});
 		}
 	}
 

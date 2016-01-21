@@ -26,6 +26,7 @@ import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.requests.Requester;
 
+import java.io.IOException;
 import java.util.Set;
 
 import lombok.Data;
@@ -94,5 +95,10 @@ public class FtpRequester extends Requester<FtpStrategy> {
 	public boolean check() {
 		// TODO
 		return true;
+	}
+
+	@Override
+	public void close() throws IOException {
+
 	}
 }

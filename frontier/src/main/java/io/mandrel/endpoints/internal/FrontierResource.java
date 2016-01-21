@@ -19,17 +19,20 @@
 package io.mandrel.endpoints.internal;
 
 import io.mandrel.common.NotFoundException;
+import io.mandrel.common.container.ContainerStatus;
 import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.Statuses;
+import io.mandrel.common.data.SpiderStatuses;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
 import io.mandrel.endpoints.contracts.FrontierContract;
+import io.mandrel.endpoints.contracts.Next;
 import io.mandrel.frontier.FrontierContainer;
 import io.mandrel.frontier.FrontierContainers;
 import io.mandrel.metrics.Accumulators;
 import io.mandrel.transport.Clients;
+import io.mandrel.transport.RemoteException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,7 +43,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,9 +127,9 @@ public class FrontierResource implements FrontierContract {
 	@Override
 	public SyncResponse syncFrontiers(SyncRequest sync) {
 		Collection<? extends io.mandrel.common.container.Container> containers = FrontierContainers.list();
-		final Map<Long, Spider> ids = new HashMap<>();
+		final Map<Long, Spider> spiderByIdFromController = new HashMap<>();
 		if (sync.getDefinitions() != null) {
-			ids.putAll(sync.getDefinitions().stream().map(def -> {
+			spiderByIdFromController.putAll(sync.getDefinitions().stream().map(def -> {
 				try {
 					return objectMapper.readValue(def, Spider.class);
 				} catch (Exception e) {
@@ -146,47 +148,66 @@ public class FrontierResource implements FrontierContract {
 
 		List<Long> existingSpiders = new ArrayList<>();
 		containers.forEach(c -> {
-			existingSpiders.add(c.spider().getId());
-			if (!ids.containsKey(c.spider().getId())) {
-				log.debug("Killing spider {}", c.spider().getId());
-				killFrontierContainer(c.spider().getId());
-				killed.add(c.spider().getId());
-			} else if (ids.get(c.spider().getId()).getVersion() != c.spider().getVersion()) {
-				log.debug("Updating spider {}", c.spider().getId());
-				killFrontierContainer(c.spider().getId());
-				create(ids.get(c.spider().getId()));
-				updated.add(c.spider().getId());
 
-				if (Statuses.STARTED.equals(ids.get(c.spider().getId()).getStatus())) {
-					log.debug("Starting spider {}", c.spider().getId());
-					startFrontierContainer(c.spider().getId());
-					started.add(c.spider().getId());
-				}
-			} else if (!ids.get(c.spider().getId()).getStatus().equals(c.spider().getStatus())) {
+			Spider containerSpider = c.spider();
+			long containerSpiderId = containerSpider.getId();
 
-				switch (ids.get(c.spider().getId()).getStatus()) {
-				case Statuses.STARTED:
-					log.debug("Starting spider {}", c.spider().getId());
-					startFrontierContainer(c.spider().getId());
-					started.add(c.spider().getId());
-					break;
-				case Statuses.CREATED:
-				case Statuses.PAUSED:
-					log.debug("Pausing spider {}", c.spider().getId());
-					pauseFrontierContainer(c.spider().getId());
-					paused.add(c.spider().getId());
-					break;
+			existingSpiders.add(containerSpiderId);
+			if (!spiderByIdFromController.containsKey(containerSpiderId)) {
+				log.debug("Killing spider {}", containerSpiderId);
+				killFrontierContainer(containerSpiderId);
+				killed.add(containerSpiderId);
+			} else {
+				Spider remoteSpider = spiderByIdFromController.get(containerSpiderId);
+
+				if (remoteSpider.getVersion() != containerSpider.getVersion()) {
+					log.debug("Updating spider {}", containerSpiderId);
+					killFrontierContainer(containerSpiderId);
+					create(remoteSpider);
+					updated.add(containerSpiderId);
+
+					if (SpiderStatuses.STARTED.equals(remoteSpider.getStatus())) {
+						log.debug("Starting spider {}", containerSpiderId);
+						startFrontierContainer(containerSpiderId);
+						started.add(containerSpiderId);
+					}
+				} else if (!remoteSpider.getStatus().equalsIgnoreCase(containerSpider.getStatus())) {
+					log.info("Container for {} is {}, but has to be {}", containerSpider.getId(), c.status(), remoteSpider.getStatus());
+
+					switch (remoteSpider.getStatus()) {
+					case SpiderStatuses.STARTED:
+						if (!ContainerStatus.STARTED.equals(c.status())) {
+							log.debug("Starting spider {}", containerSpiderId);
+							startFrontierContainer(containerSpiderId);
+							started.add(containerSpiderId);
+						}
+						break;
+					case SpiderStatuses.CREATED:
+						if (!ContainerStatus.INITIATED.equals(c.status())) {
+							log.debug("Re-init spider {}", containerSpiderId);
+							killFrontierContainer(containerSpiderId);
+							create(remoteSpider);
+						}
+						break;
+					case SpiderStatuses.PAUSED:
+						if (!ContainerStatus.PAUSED.equals(c.status())) {
+							log.debug("Pausing spider {}", containerSpiderId);
+							pauseFrontierContainer(containerSpiderId);
+							paused.add(containerSpiderId);
+						}
+						break;
+					}
 				}
 			}
 		});
 
-		ids.forEach((id, spider) -> {
+		spiderByIdFromController.forEach((id, spider) -> {
 			if (!existingSpiders.contains(id)) {
 				log.debug("Creating spider {}", id);
 				create(spider);
 				created.add(spider.getId());
 
-				if (Statuses.STARTED.equals(spider.getStatus())) {
+				if (SpiderStatuses.STARTED.equals(spider.getStatus())) {
 					log.debug("Starting spider {}", id);
 					startFrontierContainer(spider.getId());
 					started.add(spider.getId());
@@ -197,12 +218,16 @@ public class FrontierResource implements FrontierContract {
 	}
 
 	@Override
-	@SneakyThrows
-	public Uri next(Long id) {
-		SettableFuture<Uri> result = SettableFuture.create();
-		FrontierContainers.get(id).orElseThrow(frontierNotFound).frontier().pool(uri -> {
-			result.set(uri);
+	public ListenableFuture<Next> next(Long id) {
+		SettableFuture<Next> result = SettableFuture.create();
+		FrontierContainers.get(id).orElseThrow(frontierNotFound).frontier().pool((uri, name) -> {
+			result.set(new Next().setUri(uri).setFromStore(name));
 		});
-		return result.get();
+		try {
+			return result;
+		} catch (Exception e) {
+			log.debug("Well...", e);
+			throw RemoteException.of(RemoteException.Error.G_UNKNOWN, e.getMessage());
+		}
 	}
 }

@@ -27,12 +27,14 @@ import io.mandrel.data.Link;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.document.Document;
+import io.mandrel.endpoints.contracts.Next;
 import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.GlobalAccumulator;
 import io.mandrel.metrics.SpiderAccumulator;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.Requesters;
 import io.mandrel.transport.Clients;
+import io.mandrel.transport.RemoteException;
 
 import java.net.ConnectException;
 import java.util.HashMap;
@@ -40,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,6 +50,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.jboss.netty.handler.timeout.ReadTimeoutException;
 import org.jboss.netty.handler.timeout.WriteTimeoutException;
@@ -104,7 +106,8 @@ public class Loop implements Runnable {
 				// clients.onRandomFrontier().map(frontier ->
 				// frontier.next(spider.getId()));
 				log.trace("> Asking for uri...");
-				Uri uri = clients.onRandomFrontier().map(frontier -> frontier.next(spider.getId()));
+				Next next = clients.onRandomFrontier().map(frontier -> frontier.next(spider.getId())).get(20000, TimeUnit.MILLISECONDS);
+				Uri uri = next.getUri();
 
 				// TODO -> You can do better things than this...
 				// Uri uri = result.get(20000, TimeUnit.MILLISECONDS);
@@ -196,18 +199,9 @@ public class Loop implements Runnable {
 						log.trace("", e);
 					}
 				}
-			} catch (Exception e) {
-				// TODO This is ugly, but don't have the choice... Hope that a
-				// new thrift client will throw a good TimeoutException
-				if (e instanceof ExecutionException && e.getMessage().contains("Task timed out while executing.")) {
-					log.debug("Time out when getting uri from frontier, waiting 20 sec", e.getMessage());
-					try {
-						TimeUnit.MILLISECONDS.sleep(20000);
-					} catch (InterruptedException ie) {
-						// Don't care
-						log.trace("", ie);
-					}
-				} else {
+			} catch (RemoteException e) {
+				switch (e.getError()) {
+				case G_UNKNOWN:
 					log.warn("Got a problem, waiting 2 sec...", e);
 					try {
 						TimeUnit.MILLISECONDS.sleep(2000);
@@ -215,6 +209,14 @@ public class Loop implements Runnable {
 						// Don't care
 						log.trace("", ie);
 					}
+				}
+			} catch (Exception e) {
+				log.warn("Got a problem, waiting 2 sec...", e);
+				try {
+					TimeUnit.MILLISECONDS.sleep(2000);
+				} catch (InterruptedException ie) {
+					// Don't care
+					log.trace("", ie);
 				}
 			}
 		}
@@ -239,10 +241,14 @@ public class Loop implements Runnable {
 	}
 
 	public void add(long spiderId, Set<Uri> uris) {
-		clients.onRandomFrontier().with(frontier -> frontier.mschedule(spiderId, uris));
+		if (CollectionUtils.isNotEmpty(uris)) {
+			clients.onRandomFrontier().with(frontier -> frontier.mschedule(spiderId, uris));
+		}
 	}
 
 	public void add(long spiderId, Uri uri) {
-		clients.onRandomFrontier().with(frontier -> frontier.schedule(spiderId, uri));
+		if (uri != null) {
+			clients.onRandomFrontier().with(frontier -> frontier.schedule(spiderId, uri));
+		}
 	}
 }

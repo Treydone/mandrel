@@ -18,7 +18,7 @@
  */
 package io.mandrel.common.data;
 
-public interface Statuses {
+public interface SpiderStatuses {
 	String CREATED = "created";
 	String STARTED = "started";
 	String PAUSED = "paused";
