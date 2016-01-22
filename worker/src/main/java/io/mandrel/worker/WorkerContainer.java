@@ -55,14 +55,16 @@ import com.google.common.util.concurrent.Monitor;
 @Accessors(chain = true, fluent = true)
 public class WorkerContainer extends AbstractContainer {
 
+	private final Monitor monitor = new Monitor();
+	private final TaskContext context = new TaskContext();
 	private final ExtractorService extractorService;
-
 	private final ExecutorService executor;
 	private final List<Loop> loops;
-	private final Monitor monitor = new Monitor();
 
 	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Spider spider, Clients clients) {
 		super(accumulators, spider, clients);
+		context.setDefinition(spider);
+
 		this.extractorService = extractorService;
 
 		// Create the thread factory
@@ -81,10 +83,6 @@ public class WorkerContainer extends AbstractContainer {
 			loops.add(loop);
 			executor.submit(loop);
 		});
-
-		// Create context
-		TaskContext context = new TaskContext();
-		context.setDefinition(spider);
 
 		// Init stores
 		MetadataStore metadatastore = spider.getStores().getMetadataStore().build(context);
@@ -157,38 +155,42 @@ public class WorkerContainer extends AbstractContainer {
 	public void kill() {
 		if (monitor.tryEnter()) {
 			try {
-				loops.forEach(loop -> loop.pause());
-				try {
-					executor.shutdownNow();
-				} catch (Exception e) {
-					log.debug(e.getMessage(), e);
-				}
+				if (!current.get().equals(ContainerStatus.KILLED)) {
+					loops.forEach(loop -> loop.pause());
+					try {
+						executor.shutdownNow();
+					} catch (Exception e) {
+						log.debug(e.getMessage(), e);
+					}
 
-				try {
-					MetadataStores.remove(spider.getId());
-				} catch (Exception e) {
-					log.debug(e.getMessage(), e);
-				}
+					try {
+						MetadataStores.remove(spider.getId());
+					} catch (Exception e) {
+						log.debug(e.getMessage(), e);
+					}
 
-				try {
-					BlobStores.remove(spider.getId());
-				} catch (Exception e) {
-					log.debug(e.getMessage(), e);
-				}
+					try {
+						BlobStores.remove(spider.getId());
+					} catch (Exception e) {
+						log.debug(e.getMessage(), e);
+					}
 
-				try {
-					DocumentStores.remove(spider.getId());
-				} catch (Exception e) {
-					log.debug(e.getMessage(), e);
-				}
+					try {
+						DocumentStores.remove(spider.getId());
+					} catch (Exception e) {
+						log.debug(e.getMessage(), e);
+					}
 
-				try {
-					Requesters.remove(spider.getId());
-				} catch (Exception e) {
-					log.debug(e.getMessage(), e);
-				}
+					try {
+						Requesters.remove(spider.getId());
+					} catch (Exception e) {
+						log.debug(e.getMessage(), e);
+					}
 
-				accumulators.destroy(spider.getId());
+					accumulators.destroy(spider.getId());
+
+					current.set(ContainerStatus.KILLED);
+				}
 			} finally {
 				monitor.leave();
 			}
@@ -197,17 +199,11 @@ public class WorkerContainer extends AbstractContainer {
 
 	@Override
 	public void register() {
-		WorkerContainer oldContainer = WorkerContainers.add(spider.getId(), this);
-		if (oldContainer != null) {
-			oldContainer.kill();
-		}
+		WorkerContainers.add(spider.getId(), this);
 	}
 
 	@Override
 	public void unregister() {
-		WorkerContainer oldContainer = WorkerContainers.remove(spider.getId());
-		if (oldContainer != null) {
-			oldContainer.kill();
-		}
+		WorkerContainers.remove(spider.getId());
 	}
 }

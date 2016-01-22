@@ -18,11 +18,16 @@
  */
 package io.mandrel.worker;
 
+import io.mandrel.common.container.Container;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class WorkerContainers {
 
 	private final static Map<Long, WorkerContainer> workerContainers = new HashMap<>();
@@ -31,9 +36,16 @@ public class WorkerContainers {
 		return workerContainers.values();
 	}
 
-	public static WorkerContainer add(long spiderId, WorkerContainer WorkerContainer) {
+	public static void add(long spiderId, WorkerContainer workerContainer) {
 		synchronized (workerContainers) {
-			return workerContainers.put(spiderId, WorkerContainer);
+			Container oldContainer = workerContainers.put(spiderId, workerContainer);
+			if (oldContainer != null) {
+				try {
+					oldContainer.kill();
+				} catch (Exception e) {
+					log.warn("Can not close", e);
+				}
+			}
 		}
 	}
 
@@ -41,9 +53,16 @@ public class WorkerContainers {
 		return workerContainers.get(spiderId) != null ? Optional.of(workerContainers.get(spiderId)) : Optional.empty();
 	}
 
-	public static WorkerContainer remove(Long spiderId) {
+	public static void remove(Long spiderId) {
 		synchronized (workerContainers) {
-			return workerContainers.remove(spiderId);
+			Container oldContainer = workerContainers.remove(spiderId);
+			if (oldContainer != null) {
+				try {
+					oldContainer.kill();
+				} catch (Exception e) {
+					log.warn("Can not close", e);
+				}
+			}
 		}
 	}
 }

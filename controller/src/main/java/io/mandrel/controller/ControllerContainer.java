@@ -16,13 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.frontier;
+package io.mandrel.controller;
 
+import io.mandrel.blob.BlobStore;
+import io.mandrel.blob.BlobStores;
 import io.mandrel.common.container.AbstractContainer;
 import io.mandrel.common.container.ContainerStatus;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
-import io.mandrel.data.source.Source;
+import io.mandrel.document.DocumentStore;
+import io.mandrel.document.DocumentStores;
+import io.mandrel.metadata.MetadataStore;
 import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.Accumulators;
 import io.mandrel.transport.Clients;
@@ -37,52 +41,61 @@ import com.google.common.util.concurrent.Monitor;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true, fluent = true)
-public class FrontierContainer extends AbstractContainer {
+public class ControllerContainer extends AbstractContainer {
 
 	private final Monitor monitor = new Monitor();
 	private final TaskContext context = new TaskContext();
-	private Frontier frontier;
 
-	public FrontierContainer(Spider spider, Accumulators accumulators, Clients clients) {
+	public ControllerContainer(Spider spider, Accumulators accumulators, Clients clients) {
 		super(accumulators, spider, clients);
 		context.setDefinition(spider);
 
 		// Init stores
-		MetadataStores.add(spider.getId(), spider.getStores().getMetadataStore().build(context));
+		MetadataStore metadatastore = spider.getStores().getMetadataStore().build(context);
+		metadatastore.init();
+		MetadataStores.add(spider.getId(), metadatastore);
 
-		// Init frontier
-		frontier = spider.getFrontier().build(context);
+		BlobStore blobStore = spider.getStores().getBlobStore().build(context);
+		blobStore.init();
+		BlobStores.add(spider.getId(), blobStore);
+
+		spider.getExtractors().getPages().forEach(ex -> {
+			DocumentStore documentStore = ex.getDocumentStore().metadataExtractor(ex).build(context);
+			documentStore.init();
+			DocumentStores.add(spider.getId(), ex.getName(), documentStore);
+		});
 
 		current.set(ContainerStatus.INITIATED);
+
 	}
 
 	@Override
 	public String type() {
-		return "frontier";
+		return "controller";
 	}
 
 	@Override
 	public void start() {
 		if (monitor.tryEnter()) {
 			try {
-				if (!current.get().equals(ContainerStatus.STARTED)) {
-
-					log.debug("Starting the frontier");
-					frontier.init();
-
-					// Init sources
-					log.debug("Initializing the sources");
-					spider.getSources().forEach(s -> {
-						Source source = s.build(context);
-						if (!source.singleton() && source.check()) {
-							source.register(uri -> {
-								frontier.schedule(uri);
-							});
-						}
-					});
-
-					current.set(ContainerStatus.STARTED);
+				try {
+					MetadataStores.remove(spider.getId());
+				} catch (Exception e) {
+					log.debug(e.getMessage(), e);
 				}
+
+				try {
+					BlobStores.remove(spider.getId());
+				} catch (Exception e) {
+					log.debug(e.getMessage(), e);
+				}
+
+				try {
+					DocumentStores.remove(spider.getId());
+				} catch (Exception e) {
+					log.debug(e.getMessage(), e);
+				}
+
 			} finally {
 				monitor.leave();
 			}
@@ -94,10 +107,7 @@ public class FrontierContainer extends AbstractContainer {
 		if (monitor.tryEnter()) {
 			try {
 				if (!current.get().equals(ContainerStatus.PAUSED)) {
-					log.debug("Pausing the frontier");
-
-					// TODO We should pause some things here
-
+					log.debug("Pausing the controller");
 					current.set(ContainerStatus.PAUSED);
 				}
 			} finally {
@@ -111,18 +121,6 @@ public class FrontierContainer extends AbstractContainer {
 		if (monitor.tryEnter()) {
 			try {
 				if (!current.get().equals(ContainerStatus.KILLED)) {
-					try {
-						frontier.destroy();
-					} catch (Exception e) {
-						log.warn("Can not destroy the frontier");
-					}
-
-					try {
-						accumulators.destroy(spider.getId());
-					} catch (Exception e) {
-						log.warn("Can not destroy the accumulators");
-					}
-
 					current.set(ContainerStatus.KILLED);
 				}
 			} finally {
@@ -133,11 +131,11 @@ public class FrontierContainer extends AbstractContainer {
 
 	@Override
 	public void register() {
-		FrontierContainers.add(spider.getId(), this);
+		ControllerContainers.add(spider.getId(), this);
 	}
 
 	@Override
 	public void unregister() {
-		FrontierContainers.remove(spider.getId());
+		ControllerContainers.remove(spider.getId());
 	}
 }

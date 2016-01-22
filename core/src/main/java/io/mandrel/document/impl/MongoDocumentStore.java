@@ -61,7 +61,7 @@ public class MongoDocumentStore extends DocumentStore {
 		@JsonProperty("uri")
 		private String uri = "mongodb://localhost";
 		@JsonProperty("database")
-		private String database = "test";
+		private String database = "mandrel";
 		@JsonProperty("collection")
 		private String collection = "document_{0}";
 		@JsonProperty("batch_size")

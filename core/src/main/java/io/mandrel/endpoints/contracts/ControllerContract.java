@@ -19,15 +19,40 @@
 package io.mandrel.endpoints.contracts;
 
 import io.mandrel.cluster.discovery.ServiceIds;
+import io.mandrel.common.sync.Container;
+import io.mandrel.common.sync.SyncRequest;
+import io.mandrel.common.sync.SyncResponse;
 import io.mandrel.timeline.Event;
+import io.mandrel.transport.RemoteException;
 
+import java.util.List;
 import java.util.Map;
 
+import com.facebook.swift.codec.ThriftField;
+import com.facebook.swift.service.ThriftException;
 import com.facebook.swift.service.ThriftMethod;
 import com.facebook.swift.service.ThriftService;
 
 @ThriftService
 public interface ControllerContract extends Contract, AutoCloseable {
+
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	SyncResponse syncControllers(@ThriftField(value = 1, name = "sync") SyncRequest sync) throws RemoteException;
+
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	List<Container> listRunningControllerContainers() throws RemoteException;
+
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	void createControllerContainer(@ThriftField(value = 1, name = "definition") byte[] definition) throws RemoteException;
+
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	void startControllerContainer(@ThriftField(value = 1, name = "id") Long id) throws RemoteException;
+
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	void pauseControllerContainer(@ThriftField(value = 1, name = "id") Long id) throws RemoteException;
+
+	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
+	void killControllerContainer(@ThriftField(value = 1, name = "id") Long id) throws RemoteException;
 
 	@ThriftMethod
 	void addEvent(Event event);

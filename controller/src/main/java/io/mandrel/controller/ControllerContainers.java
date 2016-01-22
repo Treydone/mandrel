@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.frontier;
+package io.mandrel.controller;
 
 import io.mandrel.common.container.Container;
 
@@ -28,17 +28,17 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class FrontierContainers {
+public class ControllerContainers {
 
-	private final static Map<Long, FrontierContainer> frontierContainers = new HashMap<>();
+	private final static Map<Long, ControllerContainer> controllerContainers = new HashMap<>();
 
-	public static Collection<FrontierContainer> list() {
-		return frontierContainers.values();
+	public static Collection<ControllerContainer> list() {
+		return controllerContainers.values();
 	}
 
-	public static void add(long spiderId, FrontierContainer frontierContainer) {
-		synchronized (frontierContainers) {
-			Container oldContainer = frontierContainers.put(spiderId, frontierContainer);
+	public static void add(long spiderId, ControllerContainer frontierContainer) {
+		synchronized (controllerContainers) {
+			Container oldContainer = controllerContainers.put(spiderId, frontierContainer);
 			if (oldContainer != null) {
 				try {
 					oldContainer.kill();
@@ -49,13 +49,13 @@ public class FrontierContainers {
 		}
 	}
 
-	public static Optional<FrontierContainer> get(Long spiderId) {
-		return frontierContainers.get(spiderId) != null ? Optional.of(frontierContainers.get(spiderId)) : Optional.empty();
+	public static Optional<ControllerContainer> get(Long spiderId) {
+		return controllerContainers.get(spiderId) != null ? Optional.of(controllerContainers.get(spiderId)) : Optional.empty();
 	}
 
 	public static void remove(Long spiderId) {
-		synchronized (frontierContainers) {
-			Container oldContainer = frontierContainers.remove(spiderId);
+		synchronized (controllerContainers) {
+			Container oldContainer = controllerContainers.remove(spiderId);
 			if (oldContainer != null) {
 				try {
 					oldContainer.kill();

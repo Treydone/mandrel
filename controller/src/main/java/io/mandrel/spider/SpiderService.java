@@ -95,14 +95,14 @@ public class SpiderService {
 		// TODO Load the journal of commands
 	}
 
-	@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 2000)
 	public void sync() {
 		if (stateService.isStarted()) {
 			// TODO HOW TO in case of multiple controller
 			// -> Acquiring distributed lock
 			if (monitor.tryEnter()) {
 				try {
-					log.debug("Syncing the nodes from the controller...");
+					log.trace("Syncing the nodes from the controller...");
 
 					SyncRequest sync = new SyncRequest();
 
@@ -117,8 +117,26 @@ public class SpiderService {
 							}
 						}).collect(Collectors.toList()));
 					}
+					// Sync first the controllers
+					discoveryClient.getInstances(ServiceIds.controller())
+							.forEach(
+									instance -> {
+										log.trace("Syncing controller {}", instance);
+										try {
+											SyncResponse response = clients.onController(instance.getHostAndPort()).map(
+													controller -> controller.syncControllers(sync));
 
-					// Sync first the frontiers
+											if (response.anyAction()) {
+												log.debug("On controller {}:{}, after sync: {} created, {} updated, {} killed, {} started, {} paused",
+														instance.getHost(), instance.getPort(), response.getCreated(), response.getUpdated(),
+														response.getKilled(), response.getPaused());
+											}
+										} catch (Exception e) {
+											log.warn("Can not sync controller {}:{} due to: {}", instance.getHost(), instance.getPort(), e.getMessage());
+										}
+									});
+
+					// And then the frontiers
 					discoveryClient.getInstances(ServiceIds.frontier()).forEach(
 							instance -> {
 								log.trace("Syncing frontier {}", instance);

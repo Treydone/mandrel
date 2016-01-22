@@ -94,7 +94,9 @@ public class FrontierResource implements FrontierContract {
 
 	@Override
 	public void killFrontierContainer(Long id) {
-		FrontierContainers.get(id).orElseThrow(frontierNotFound).kill();
+		FrontierContainer container = FrontierContainers.get(id).orElseThrow(frontierNotFound);
+		container.kill();
+		container.unregister();
 	}
 
 	@Override
@@ -211,6 +213,10 @@ public class FrontierResource implements FrontierContract {
 					log.debug("Starting spider {}", id);
 					startFrontierContainer(spider.getId());
 					started.add(spider.getId());
+				} else if (SpiderStatuses.PAUSED.equals(spider.getStatus())) {
+					log.debug("Pausing spider {}", id);
+					pauseFrontierContainer(spider.getId());
+					paused.add(spider.getId());
 				}
 			}
 		});

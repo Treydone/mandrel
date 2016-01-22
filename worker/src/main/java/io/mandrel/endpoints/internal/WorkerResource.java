@@ -95,7 +95,9 @@ public class WorkerResource implements WorkerContract {
 
 	@Override
 	public void killWorkerContainer(Long id) {
-		WorkerContainers.get(id).orElseThrow(workerNotFound).kill();
+		WorkerContainer container = WorkerContainers.get(id).orElseThrow(workerNotFound);
+		container.kill();
+		container.unregister();
 	}
 
 	@Override
@@ -192,6 +194,10 @@ public class WorkerResource implements WorkerContract {
 					log.debug("Starting spider {}", id);
 					startWorkerContainer(spider.getId());
 					started.add(spider.getId());
+				} else if (SpiderStatuses.PAUSED.equals(spider.getStatus())) {
+					log.debug("Pausing spider {}", id);
+					pauseWorkerContainer(spider.getId());
+					paused.add(spider.getId());
 				}
 			}
 		});
@@ -209,5 +215,4 @@ public class WorkerResource implements WorkerContract {
 	public void close() throws Exception {
 
 	}
-
 }
