@@ -417,7 +417,9 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 		metadata.setUri(uri).setStatusCode(result.getStatusLine() != null ? result.getStatusLine().getStatusCode() : 0)
 				.setStatusText(result.getStatusLine() != null ? result.getStatusLine().getReasonPhrase() : null);
 
-		Blob blob = new Blob(new BlobMetadata().setUri(uri).setFetchMetadata(metadata)).payload(result.getEntity().getContent());
+		long contentLength = result.getEntity().getContentLength();
+		Blob blob = new Blob(new BlobMetadata().setUri(uri).setSize(contentLength < 0 ? null : contentLength).setFetchMetadata(metadata)).payload(result
+				.getEntity().getContent());
 		return blob;
 	}
 

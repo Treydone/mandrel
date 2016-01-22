@@ -26,9 +26,9 @@
 			  var pagesByHostChart = new Chart(pagesByHostChartCanvas);
 			    
 			    var pagesByHost = [
-			    <#if (metrics.pagesByHost)??>
-				<#list metrics.pagesByHost?keys as key>
-					<#assign value = metrics.pagesByHost[key]>
+			    <#if (metrics.hosts)??>
+				<#list metrics.hosts?keys as key>
+					<#assign value = metrics.hosts[key]>
 					<#if key?starts_with("1")>
 					  <#assign color="#00c0ef">
 					<#elseif key?starts_with("2")>
@@ -43,7 +43,7 @@
 					  <#assign color="#d2d6de">
 					</#if>
 					{
-					  value: ${value},
+					  value: ${value?c},
 				      color: "#f56954",
 				      highlight: "#f56954",
 				      label: "${key}"
@@ -56,9 +56,9 @@
 			  var pagesByStatusChart = new Chart(pagesByStatusChartCanvas);
 	            
 	            var pagesByStatus = [
-	            <#if (metrics.pagesByStatus)??>
-				<#list metrics.pagesByStatus?keys as key>
-					<#assign value = metrics.pagesByStatus[key]>
+	            <#if (metrics.statuses)??>
+				<#list metrics.statuses?keys as key>
+					<#assign value = metrics.statuses[key]>
 					<#if key?starts_with("1")>
 					  <#assign color="#00c0ef">
 					<#elseif key?starts_with("2")>
@@ -73,7 +73,7 @@
 					  <#assign color="#d2d6de">
 					</#if>
 					{
-				      value: ${value},
+				      value: ${value?c},
 				      color: "${color}",
 				      highlight: "${color}",
 				      label: "${key}"
@@ -332,8 +332,8 @@
 			                    </div><!-- /.col -->
 			                    <div class="col-md-4">
 			                      <ul class="chart-legend clearfix">
-			                        <#if (metrics.pagesByHost)??>
-				                    <#list metrics.pagesByHost?keys as key>
+			                        <#if (metrics.hosts)??>
+				                    <#list metrics.hosts?keys as key>
 			                        <li><i class="fa fa-circle-o text-red"></i> ${key}</li>
 			                        </#list>
 			                        </#if>
@@ -423,8 +423,8 @@
 	                        <span class="sr-only">Toggle Dropdown</span>
 	                      </button>
 	                      <ul class="dropdown-menu" role="menu">
-	                        <li><a href="/api/v1/spiders/${spider.id}/raw/export?format=json" target="_blank">JSON</a></li>
-	                        <li><a href="/api/v1/spiders/${spider.id}/raw/export?format=csv" target="_blank">CSV</a></li>
+	                        <li><a href="/api/v1/spiders/${spider.id?c}/raw/export?format=json" target="_blank">JSON</a></li>
+	                        <li><a href="/api/v1/spiders/${spider.id?c}/raw/export?format=csv" target="_blank">CSV</a></li>
 	                      </ul>
 	                    </div>
 	                  </div>
@@ -451,12 +451,12 @@
 		                        <span class="sr-only">Toggle Dropdown</span>
 		                      </button>
 		                      <ul class="dropdown-menu" role="menu">
-		                        <li><a href="/api/v1/spiders/${spider.id}/export/${extractor.name}?format=json" target="_blank">JSON</a></li>
-		                        <li><a href="/api/v1/spiders/${spider.id}/export/${extractor.name}?format=csv" target="_blank">CSV</a></li>
+		                        <li><a href="/api/v1/spiders/${spider.id?c}/export/${extractor.name}?format=json" target="_blank">JSON</a></li>
+		                        <li><a href="/api/v1/spiders/${spider.id?c}/export/${extractor.name}?format=csv" target="_blank">CSV</a></li>
 		                      </ul>
 		                    </div>
 		                  </div>
-		                  <a href="/spiders/${spider.id}/data/${extractor.name}" class="small-box-footer">
+		                  <a href="/spiders/${spider.id?c}/data/${extractor.name}" class="small-box-footer">
 		                  View data <i class="fa fa-arrow-circle-right"></i>
 		                </a>
 		              </div>

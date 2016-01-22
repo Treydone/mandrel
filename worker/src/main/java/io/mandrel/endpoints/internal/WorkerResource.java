@@ -152,7 +152,7 @@ public class WorkerResource implements WorkerContract {
 						startWorkerContainer(containerSpiderId);
 						started.add(containerSpiderId);
 					}
-				} else if (!remoteSpider.getStatus().equalsIgnoreCase(containerSpider.getStatus())) {
+				} else if (!remoteSpider.getStatus().equalsIgnoreCase(c.status().toString())) {
 					log.info("Container for {} is {}, but has to be {}", containerSpider.getId(), c.status(), remoteSpider.getStatus());
 
 					switch (remoteSpider.getStatus()) {
@@ -164,6 +164,12 @@ public class WorkerResource implements WorkerContract {
 						}
 						break;
 					case SpiderStatuses.CREATED:
+						if (!ContainerStatus.INITIATED.equals(c.status())) {
+							log.debug("Re-init spider {}", containerSpiderId);
+							killWorkerContainer(containerSpiderId);
+							create(remoteSpider);
+						}
+						break;
 					case SpiderStatuses.PAUSED:
 						if (!ContainerStatus.PAUSED.equals(c.status())) {
 							log.debug("Pausing spider {}", containerSpiderId);

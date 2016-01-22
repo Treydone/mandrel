@@ -171,7 +171,7 @@ public class FrontierResource implements FrontierContract {
 						startFrontierContainer(containerSpiderId);
 						started.add(containerSpiderId);
 					}
-				} else if (!remoteSpider.getStatus().equalsIgnoreCase(containerSpider.getStatus())) {
+				} else if (!remoteSpider.getStatus().equalsIgnoreCase(c.status().toString())) {
 					log.info("Container for {} is {}, but has to be {}", containerSpider.getId(), c.status(), remoteSpider.getStatus());
 
 					switch (remoteSpider.getStatus()) {

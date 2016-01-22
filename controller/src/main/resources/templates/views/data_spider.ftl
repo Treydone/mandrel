@@ -17,7 +17,7 @@
           <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
             <li><a href="/spiders"><i class="fa fa-tasks"></i> Spiders</a></li>
-            <li><a href="/spiders/${spider.id}"><i class="fa fa-database"></i> ${spider.name}</a></li>
+            <li><a href="/spiders/${spider.id?c}"><i class="fa fa-database"></i> ${spider.name}</a></li>
             <li class="active">Data</li>
           </ol>
 </#macro>
@@ -34,7 +34,7 @@
 		        "scrollX": true,
 		        "searching": false,
 		        "ajax": {
-		            "url": "/spiders/${spider.id}/data/${extractor.name}",
+		            "url": "/spiders/${spider.id?c}/data/${extractor.name}",
 		            "type": "POST"
 		        },
 		        "columns": [

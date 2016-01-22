@@ -18,22 +18,29 @@
  */
 package io.mandrel.document;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class DocumentStores {
 
 	private final static Map<Long, Map<String, DocumentStore>> stores = new HashMap<>();
 
 	public static void add(long spiderId, String name, DocumentStore documentStore) {
 		synchronized (stores) {
-			Map<String, io.mandrel.document.DocumentStore> map = stores.get(spiderId);
-			if (map == null) {
-				map = new HashMap<>();
-				stores.put(spiderId, map);
+			stores.putIfAbsent(spiderId, new HashMap<>());
+			DocumentStore oldDocumentStore = stores.get(spiderId).put(name, documentStore);
+			if (oldDocumentStore != null) {
+				try {
+					oldDocumentStore.close();
+				} catch (IOException e) {
+					log.warn("Can not close", e);
+				}
 			}
-			map.put(name, documentStore);
 		}
 	}
 
@@ -48,7 +55,16 @@ public class DocumentStores {
 
 	public static void remove(Long spiderId) {
 		synchronized (stores) {
-			stores.remove(spiderId);
+			Map<String, DocumentStore> oldDocumentStores = stores.remove(spiderId);
+			oldDocumentStores.forEach((key, oldDocumentStore) -> {
+				if (oldDocumentStore != null) {
+					try {
+						oldDocumentStore.close();
+					} catch (IOException e) {
+						log.warn("Can not close", e);
+					}
+				}
+			});
 		}
 	}
 }
