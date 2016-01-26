@@ -19,25 +19,24 @@
 package io.mandrel.metrics;
 
 public class GlobalAccumulator extends Accumulator {
-	private static final String PREFIX = "global.";
 
 	public void incNbPages() {
-		add(PREFIX + "nbPagesTotal", 1);
+		add(MetricKeys.globalNbPages(), 1);
 	}
 
 	public void incTotalSize(long size) {
-		add(PREFIX + "totalSizeTotal", size);
+		add(MetricKeys.globalTotalSize(), size);
 	}
 
 	public void incPageForStatus(int httpStatus) {
-		add(PREFIX + "statuses." + httpStatus, 1);
+		add(MetricKeys.globalPageForStatus(httpStatus), 1);
 	}
 
 	public void incPageForHost(String host) {
-		add(PREFIX + "hosts." + host, 1);
+		add(MetricKeys.globalPageForHost(host), 1);
 	}
 
 	public void incPageForContentType(String contentType) {
-		add(PREFIX + "contentTypes." + contentType, 1);
+		add(MetricKeys.globalPageForContentType(contentType), 1);
 	}
 }

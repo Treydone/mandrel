@@ -32,6 +32,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.Monitor;
 
 @Slf4j
 @Component
@@ -45,22 +46,30 @@ public class MetricsSyncer {
 	private DiscoveryClient discoveryClient;
 	@Autowired
 	private StateService stateService;
-	
+
+	private final Monitor monitor = new Monitor();
+
 	@Scheduled(fixedRate = 10000)
 	public void sync() {
 		if (stateService.isStarted()) {
-
-			Map<String, Long> total = Maps.newHashMap();
-			total.putAll(accumulators.globalAccumulator().tick());
-			total.putAll(accumulators.nodeAccumulator().tick());
-			accumulators.spiderAccumulators().forEach((spiderId, acc) -> total.putAll(acc.tick()));
-
-			if (MapUtils.isNotEmpty(total)) {
+			if (monitor.tryEnter()) {
 				try {
-					log.debug("Updating metrics");
-					clients.onRandomController().with(controller -> controller.updateMetrics(total));
-				} catch (Exception e) {
-					log.info("Can not update metrics {} due to", total, e);
+					Map<String, Long> total = Maps.newHashMap();
+					total.putAll(accumulators.globalAccumulator().tick());
+					total.putAll(accumulators.nodeAccumulator().tick());
+					accumulators.spiderAccumulators().forEach((spiderId, acc) -> total.putAll(acc.tick()));
+
+					if (MapUtils.isNotEmpty(total)) {
+						try {
+							log.debug("Updating metrics");
+							clients.onRandomController().with(controller -> controller.updateMetrics(total));
+						} catch (Exception e) {
+							log.info("Can not update metrics {} due to", total, e);
+						}
+					}
+
+				} finally {
+					monitor.leave();
 				}
 			}
 		}

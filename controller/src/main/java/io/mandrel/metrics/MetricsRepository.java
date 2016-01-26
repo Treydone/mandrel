@@ -24,6 +24,8 @@ public interface MetricsRepository {
 
 	void sync(Map<String, Long> accumulators);
 
+	Timeserie serie(String name);
+	
 	NodeMetrics node(String nodeId);
 
 	GlobalMetrics global();

@@ -18,21 +18,52 @@
  */
 package io.mandrel.metrics.impl;
 
+import io.mandrel.common.bson.HostAndPortCodec;
+import io.mandrel.common.bson.LocalDateTimeCodec;
+import io.mandrel.metrics.MetricKeys;
+import io.mandrel.metrics.Timeserie;
+
 import java.util.Map;
 
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoDatabase;
 
 public class MongoMetricsRepositoryTest {
+
+	private MongoMetricsRepository mongoMetricsRepository;
+	private MongoDatabase database;
+
+	@Before
+	public void beforeEachTest() {
+
+		CodecRegistry codecRegistry = CodecRegistries.fromRegistries(MongoClient.getDefaultCodecRegistry(),
+				CodecRegistries.fromCodecs(new LocalDateTimeCodec(), new HostAndPortCodec(), new LocalDateTimeCodec()));
+
+		MongoProperties properties = new MongoProperties();
+
+		MongoClient mongoClient = new MongoClient(new MongoClientURI(properties.getUri(), MongoClientOptions.builder().codecRegistry(codecRegistry)));
+		database = mongoClient.getDatabase(properties.getMongoClientDatabase());
+
+		mongoMetricsRepository = new MongoMetricsRepository(mongoClient, properties, new ObjectMapper());
+
+		mongoMetricsRepository.init();
+
+	}
 
 	@Test
 	public void test() {
 
-		MongoMetricsRepository mongoMetricsRepository = new MongoMetricsRepository(new MongoClient(), new MongoProperties(), new ObjectMapper());
 		mongoMetricsRepository.init();
 
 		Map<String, Long> accumulators = Maps.newHashMap();
@@ -43,5 +74,34 @@ public class MongoMetricsRepositoryTest {
 		accumulators.put("node_1.hosts.www.leboncoin.com", 1l);
 		accumulators.put("node_1.statuses.200", 5l);
 		mongoMetricsRepository.sync(accumulators);
+	}
+
+	@Test
+	public void test2() {
+
+		mongoMetricsRepository.init();
+
+		Map<String, Long> accumulators = Maps.newHashMap();
+		accumulators.put("global.totalSizeTotal", 5l);
+		accumulators.put("node_1.hosts.www.leboncoin.com", 1l);
+		accumulators.put("node_1.totalSizeTotal", 5l);
+		mongoMetricsRepository.sync(accumulators);
+
+		Timeserie serie = mongoMetricsRepository.serie("totalSizeTotal");
+		System.err.println(serie);
+
+	}
+
+	@Test
+	public void prepare() {
+		System.err.println(Lists.newArrayList(database.getCollection("timeseries").listIndexes()));
+
+		mongoMetricsRepository.init();
+
+		mongoMetricsRepository.prepareNextMinutes();
+
+		Timeserie serie = mongoMetricsRepository.serie(MetricKeys.globalTotalSize());
+		System.err.println(serie);
+
 	}
 }

@@ -18,6 +18,9 @@
  */
 package io.mandrel.metrics;
 
+import static io.mandrel.metrics.MetricKeys.METRIC_DELIM;
+import static io.mandrel.metrics.MetricKeys.SPIDER;
+import static io.mandrel.metrics.MetricKeys.TYPE_DELIM;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -25,51 +28,45 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class SpiderAccumulator extends Accumulator {
 
-	private static final String PREFIX = "spider_";
-
 	private final long spiderId;
 
 	public void incNbPages() {
-		add(PREFIX + spiderId + ".nbPages", 1);
+		add(MetricKeys.spiderNbPages(spiderId), 1);
 	}
 
 	public void incTotalSize(long size) {
-		add(PREFIX + spiderId + ".totalSize", size);
+		add(MetricKeys.spiderTotalSize(spiderId), size);
 	}
 
 	public void incPageForStatus(int httpStatus) {
-		add(PREFIX + spiderId + ".statuses." + httpStatus, 1);
+		add(MetricKeys.spiderPageForStatus(spiderId, httpStatus), 1);
 	}
 
 	public void incPageForHost(String host) {
-		add(PREFIX + spiderId + ".hosts." + host, 1);
+		add(MetricKeys.spiderPageForHost(spiderId, host), 1);
 	}
 
 	public void incPageForContentType(String contentType) {
-		add(PREFIX + spiderId + ".contentTypes." + contentType, 1);
+		add(MetricKeys.spiderPageForContentType(spiderId, contentType), 1);
 	}
 
 	public void incDocumentForExtractor(String extractor, int number) {
-		add(PREFIX + spiderId + ".extractors." + extractor, number);
-	}
-
-	public SpiderAccumulator(long spiderId) {
-		this.spiderId = spiderId;
+		add(MetricKeys.spiderPageForExtractor(spiderId, extractor), number);
 	}
 
 	public void incConnectException() {
-		add(PREFIX + spiderId + ".connectException", 1);
+		add(SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + "connectException", 1);
 	}
 
 	public void incReadTimeout() {
-		add(PREFIX + spiderId + ".readTimeout", 1);
+		add(SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + "readTimeout", 1);
 	}
 
 	public void incConnectTimeout() {
-		add(PREFIX + spiderId + ".connectTimeout", 1);
+		add(SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + "connectTimeout", 1);
 	}
 
 	public void incTotalTimeToFetch(long time) {
-		add(PREFIX + spiderId + ".totalTimeToFetch", 1);
+		add(SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + "totalTimeToFetch", 1);
 	}
 }

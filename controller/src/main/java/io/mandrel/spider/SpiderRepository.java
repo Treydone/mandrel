@@ -41,8 +41,7 @@ public interface SpiderRepository {
 	List<Spider> listActive();
 
 	List<Spider> listLastActive(int limit);
-	
-	Page<Spider> page(Pageable pageable);
 
+	Page<Spider> page(Pageable pageable);
 
 }

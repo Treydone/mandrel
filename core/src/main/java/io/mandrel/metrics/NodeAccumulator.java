@@ -25,27 +25,25 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class NodeAccumulator extends Accumulator {
 
-	private static final String PREFIX = "node_";
-
 	private String id;
 
 	public void incNbPages() {
-		add(PREFIX + id + ".nbPagesTotal", 1);
+		add(MetricKeys.nodeNbPages(id), 1);
 	}
 
 	public void incTotalSize(long size) {
-		add(PREFIX + id + ".totalSizeTotal", size);
+		add(MetricKeys.nodeTotalSize(id), size);
 	}
 
 	public void incPageForStatus(int httpStatus) {
-		add(PREFIX + id + ".statuses." + httpStatus, 1);
+		add(MetricKeys.nodePageForStatus(id, httpStatus), 1);
 	}
 
 	public void incPageForHost(String host) {
-		add(PREFIX + id + ".hosts." + host, 1);
+		add(MetricKeys.nodePageForHost(id, host), 1);
 	}
 
 	public void incPageForContentType(String contentType) {
-		add(PREFIX + id + ".contentTypes." + contentType, 1);
+		add(MetricKeys.nodePageForContentType(id, contentType), 1);
 	}
 }

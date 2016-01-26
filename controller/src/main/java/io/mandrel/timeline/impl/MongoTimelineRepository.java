@@ -18,6 +18,7 @@
  */
 package io.mandrel.timeline.impl;
 
+import io.mandrel.common.mongo.MongoUtils;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.TimelineRepository;
 
@@ -43,11 +44,9 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.mongodb.CursorType;
 import com.mongodb.MongoClient;
-import com.mongodb.ReadPreference;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 
@@ -71,24 +70,7 @@ public class MongoTimelineRepository implements TimelineRepository {
 	public void init() {
 		MongoDatabase database = mongoClient.getDatabase(properties.getMongoClientDatabase());
 
-		if (Lists.newArrayList(database.listCollectionNames()).contains(collectionName)) {
-			log.debug("'{}' collection already exists...", collectionName);
-
-			// Check if already capped
-			Document command = new Document("collStats", collectionName);
-			boolean isCapped = database.runCommand(command, ReadPreference.primary()).getBoolean("capped").booleanValue();
-
-			if (!isCapped) {
-				log.info("'{}' is not capped, converting it...", collectionName);
-				command = new Document("convertToCapped", collectionName).append("size", size).append("max", maxDocuments);
-				database.runCommand(command, ReadPreference.primary());
-			} else {
-				log.debug("'{}' collection already capped!", collectionName);
-			}
-
-		} else {
-			database.createCollection(collectionName, new CreateCollectionOptions().capped(true).maxDocuments(maxDocuments).sizeInBytes(size));
-		}
+		MongoUtils.checkCapped(database, collectionName, size, maxDocuments);
 		timeline = database.getCollection(collectionName);
 	}
 
