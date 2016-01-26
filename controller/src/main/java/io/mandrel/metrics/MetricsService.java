@@ -1,6 +1,13 @@
 package io.mandrel.metrics;
 
+import io.mandrel.metrics.Timeserie.Data;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.LongStream;
 
 import javax.inject.Inject;
 
@@ -19,7 +26,21 @@ public class MetricsService {
 	}
 
 	public Timeserie serie(String name) {
-		return metricsRepository.serie(name);
+		Timeserie serie = metricsRepository.serie(name);
+
+		LocalDateTime firstTime = serie.first().getTime();
+
+		Set<Data> results = LongStream.range(0, Duration.between(firstTime, serie.last().getTime()).toMinutes())
+				.mapToObj(minutes -> firstTime.plusMinutes(minutes)).map(time -> Data.of(time, Long.valueOf(0)))
+				.collect(TreeSet::new, TreeSet::add, (left, right) -> {
+					left.addAll(right);
+				});
+
+		Timeserie serieWithBlank = new Timeserie();
+		serieWithBlank.addAll(results);
+		serieWithBlank.addAll(serie);
+
+		return serie;
 	}
 
 	public NodeMetrics node(String nodeId) {

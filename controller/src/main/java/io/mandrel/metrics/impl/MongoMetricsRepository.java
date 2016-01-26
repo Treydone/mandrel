@@ -98,7 +98,7 @@ public class MongoMetricsRepository implements MetricsRepository {
 		List<String> indexNames = indexes.stream().map(doc -> doc.getString("name")).collect(Collectors.toList());
 		if (!indexNames.contains(INDEX_NAME)) {
 			log.warn("Index on field time and type is missing, creating it. Exisiting indexes: {}", indexes);
-			database.getCollection("timeseries").createIndex(new Document("timestamp_hour", -1).append("type", 1),
+			database.getCollection("timeseries").createIndex(new Document("timestamp_hour", 1).append("type", 1),
 					new IndexOptions().name(INDEX_NAME).unique(true));
 		}
 	}
@@ -150,7 +150,8 @@ public class MongoMetricsRepository implements MetricsRepository {
 										List<String> elts = Lists.newArrayList(results);
 
 										if (elts.size() == 1 && e.getKey().equalsIgnoreCase(MetricKeys.global())) {
-											tsUpdates.add(new UpdateOneModel<Document>(Filters.and(Filters.eq("type", i.getKey()),
+											tsUpdates.add(new UpdateOneModel<Document>(Filters.and(
+													Filters.eq("type", e.getKey() + MetricKeys.METRIC_DELIM + i.getKey()),
 													Filters.eq("timestamp_hour", keytime)), new Document("$inc", new Document("values."
 													+ Integer.toString(now.getMinute()), i.getValue())), new UpdateOptions().upsert(true)));
 										}
@@ -163,14 +164,19 @@ public class MongoMetricsRepository implements MetricsRepository {
 
 	}
 
-	@Scheduled(cron = "1 * * * *")
+	// Every hour
+	@Scheduled(cron = "0 0 * * * *")
 	public void prepareNextMinutes() {
 		log.debug("Preparing next metric bucket");
 
 		// TODO Distributed lock!
 		LocalDateTime now = LocalDateTime.now();
-		LocalDateTime keytime = now.withMinute(0).withSecond(0).withNano(0);
+		LocalDateTime keytime = now.withMinute(0).withSecond(0).withNano(0).plusMinutes(1);
 
+		prepareMinutes(keytime);
+	}
+
+	public void prepareMinutes(LocalDateTime keytime) {
 		List<? extends WriteModel<Document>> requests = Arrays
 				.asList(MetricKeys.globalTotalSize(), MetricKeys.globalNbPages())
 				.stream()
@@ -215,7 +221,7 @@ public class MongoMetricsRepository implements MetricsRepository {
 		Set<Data> results = StreamSupport
 				.stream(timeseries
 						.find(Filters.eq("type", name))
-						.sort(Sorts.descending("timestamp_hour"))
+						.sort(Sorts.ascending("timestamp_hour"))
 						.limit(3)
 						.map(doc -> {
 							LocalDateTime hour = LocalDateTime.ofEpochSecond(((Date) doc.get("timestamp_hour")).getTime() / 1000, 0, ZoneOffset.UTC);

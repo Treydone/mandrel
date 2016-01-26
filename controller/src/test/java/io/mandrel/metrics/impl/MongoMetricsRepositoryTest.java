@@ -32,17 +32,14 @@ import org.junit.Test;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoDatabase;
 
 public class MongoMetricsRepositoryTest {
 
 	private MongoMetricsRepository mongoMetricsRepository;
-	private MongoDatabase database;
 
 	@Before
 	public void beforeEachTest() {
@@ -53,7 +50,6 @@ public class MongoMetricsRepositoryTest {
 		MongoProperties properties = new MongoProperties();
 
 		MongoClient mongoClient = new MongoClient(new MongoClientURI(properties.getUri(), MongoClientOptions.builder().codecRegistry(codecRegistry)));
-		database = mongoClient.getDatabase(properties.getMongoClientDatabase());
 
 		mongoMetricsRepository = new MongoMetricsRepository(mongoClient, properties, new ObjectMapper());
 
@@ -63,8 +59,6 @@ public class MongoMetricsRepositoryTest {
 
 	@Test
 	public void test() {
-
-		mongoMetricsRepository.init();
 
 		Map<String, Long> accumulators = Maps.newHashMap();
 		accumulators.put("global.hosts.www.leboncoin.com", 1l);
@@ -79,8 +73,6 @@ public class MongoMetricsRepositoryTest {
 	@Test
 	public void test2() {
 
-		mongoMetricsRepository.init();
-
 		Map<String, Long> accumulators = Maps.newHashMap();
 		accumulators.put("global.totalSizeTotal", 5l);
 		accumulators.put("node_1.hosts.www.leboncoin.com", 1l);
@@ -94,9 +86,6 @@ public class MongoMetricsRepositoryTest {
 
 	@Test
 	public void prepare() {
-		System.err.println(Lists.newArrayList(database.getCollection("timeseries").listIndexes()));
-
-		mongoMetricsRepository.init();
 
 		mongoMetricsRepository.prepareNextMinutes();
 
