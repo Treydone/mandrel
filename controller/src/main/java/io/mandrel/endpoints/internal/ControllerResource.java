@@ -29,7 +29,7 @@ import io.mandrel.common.sync.SyncResponse;
 import io.mandrel.controller.ControllerContainer;
 import io.mandrel.controller.ControllerContainers;
 import io.mandrel.endpoints.contracts.ControllerContract;
-import io.mandrel.metrics.MetricsRepository;
+import io.mandrel.metrics.MetricsService;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.TimelineService;
 import io.mandrel.transport.RemoteException;
@@ -57,7 +57,7 @@ public class ControllerResource implements ControllerContract {
 	@Autowired
 	private TimelineService timelineService;
 	@Autowired
-	private MetricsRepository metricsRepository;
+	private MetricsService metricsService;
 	@Autowired
 	private NodeRepository nodeRepository;
 	@Autowired
@@ -72,7 +72,7 @@ public class ControllerResource implements ControllerContract {
 
 	@Override
 	public void updateMetrics(Map<String, Long> accumulators) {
-		metricsRepository.sync(accumulators);
+		metricsService.sync(accumulators);
 	}
 
 	@Override

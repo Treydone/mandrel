@@ -13,6 +13,7 @@ import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,11 +29,15 @@ public class MetricsService {
 	public Timeserie serie(String name) {
 		Timeserie serie = metricsRepository.serie(name);
 
-		LocalDateTime firstTime = serie.first().getTime();
+		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime minus4Hours = now.withMinute(0).withSecond(0).withNano(0).minusHours(4);
 
-		Set<Data> results = LongStream.range(0, Duration.between(firstTime, serie.last().getTime()).toMinutes())
-				.mapToObj(minutes -> firstTime.plusMinutes(minutes)).map(time -> Data.of(time, Long.valueOf(0)))
-				.collect(TreeSet::new, TreeSet::add, (left, right) -> {
+		LocalDateTime firstTime = CollectionUtils.isNotEmpty(serie) && serie.first() != null && serie.first().getTime().isBefore(minus4Hours) ? serie.first()
+				.getTime() : minus4Hours;
+		LocalDateTime lastTime = now;
+
+		Set<Data> results = LongStream.range(0, Duration.between(firstTime, lastTime).toMinutes()).mapToObj(minutes -> firstTime.plusMinutes(minutes))
+				.map(time -> Data.of(time, Long.valueOf(0))).collect(TreeSet::new, TreeSet::add, (left, right) -> {
 					left.addAll(right);
 				});
 
@@ -40,7 +45,7 @@ public class MetricsService {
 		serieWithBlank.addAll(results);
 		serieWithBlank.addAll(serie);
 
-		return serie;
+		return serieWithBlank;
 	}
 
 	public NodeMetrics node(String nodeId) {

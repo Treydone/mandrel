@@ -20,7 +20,7 @@ package io.mandrel.endpoints.web;
 
 import io.mandrel.common.settings.InfoSettings;
 import io.mandrel.metrics.MetricKeys;
-import io.mandrel.metrics.MetricsRepository;
+import io.mandrel.metrics.MetricsService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -46,7 +46,7 @@ public class MandrelHandlerInterceptor implements HandlerInterceptor {
 	private final static BeansWrapper BEANSWRAPPER = new BeansWrapperBuilder(Configuration.VERSION_2_3_22).build();
 
 	private final InfoSettings infoSettings;
-	private final MetricsRepository metricsRepository;
+	private final MetricsService metricsService;
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -60,7 +60,7 @@ public class MandrelHandlerInterceptor implements HandlerInterceptor {
 			modelAndView.getModelMap().addAttribute("statics", BEANSWRAPPER.getStaticModels());
 
 			modelAndView.getModelMap().addAttribute("infoSettings", infoSettings);
-			modelAndView.getModelMap().addAttribute("throughput", metricsRepository.serie(MetricKeys.global()));
+			modelAndView.getModelMap().addAttribute("throughput", metricsService.serie(MetricKeys.globalTotalSize()));
 		}
 	}
 

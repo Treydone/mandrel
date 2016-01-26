@@ -19,7 +19,7 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.metrics.MetricsRepository;
+import io.mandrel.metrics.MetricsService;
 import io.mandrel.metrics.SpiderMetrics;
 import io.mandrel.spider.SpiderService;
 import io.mandrel.transport.Clients;
@@ -53,7 +53,7 @@ public class SpiderResource {
 
 	private final Clients clients;
 	private final SpiderService spiderService;
-	private final MetricsRepository metricsRepository;
+	private final MetricsService metricsService;
 
 	@ApiOperation(value = "List all the spiders", response = Spider.class, responseContainer = "List")
 	@RequestMapping(method = RequestMethod.GET)
@@ -119,6 +119,6 @@ public class SpiderResource {
 	@RequestMapping(value = "/{id}/stats", method = RequestMethod.GET)
 	public SpiderMetrics stats(@PathVariable Long id) {
 		Spider spider = spiderService.get(id);
-		return metricsRepository.spider(spider.getId());
+		return metricsService.spider(spider.getId());
 	}
 }

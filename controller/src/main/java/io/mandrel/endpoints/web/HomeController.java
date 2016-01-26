@@ -20,7 +20,7 @@ package io.mandrel.endpoints.web;
 
 import io.mandrel.cluster.node.NodeService;
 import io.mandrel.messaging.StompService;
-import io.mandrel.metrics.MetricsRepository;
+import io.mandrel.metrics.MetricsService;
 import io.mandrel.spider.SpiderService;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.TimelineService;
@@ -49,11 +49,11 @@ public class HomeController {
 
 	private final StompService stompService;
 
-	private final MetricsRepository metricsRepository;
+	private final MetricsService metricsService;
 
 	@RequestMapping
 	public String home(Model model) {
-		model.addAttribute("metrics", metricsRepository.global());
+		model.addAttribute("metrics", metricsService.global());
 		model.addAttribute("spiders", spiderService.listLastActive(10));
 		model.addAttribute("nodes", nodeService.nodes());
 		model.addAttribute("events", timelineService.pageByDate(0, 10));

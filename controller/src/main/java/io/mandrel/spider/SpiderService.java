@@ -36,7 +36,7 @@ import io.mandrel.data.source.FixedSource.FixedSourceDefinition;
 import io.mandrel.data.source.Source;
 import io.mandrel.data.validation.Validators;
 import io.mandrel.metrics.Accumulators;
-import io.mandrel.metrics.MetricsRepository;
+import io.mandrel.metrics.MetricsService;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.Event.SpiderInfo.SpiderEventType;
 import io.mandrel.timeline.TimelineService;
@@ -83,7 +83,7 @@ public class SpiderService {
 	@Autowired
 	private Accumulators accumulators;
 	@Autowired
-	private MetricsRepository metricsRepository;
+	private MetricsService metricsService;
 	@Autowired
 	private ObjectMapper objectMapper;
 
@@ -367,7 +367,7 @@ public class SpiderService {
 
 		updateTimeline(spider, SpiderEventType.SPIDER_DELETED);
 
-		metricsRepository.delete(spiderId);
+		metricsService.delete(spiderId);
 
 	}
 }

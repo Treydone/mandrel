@@ -19,7 +19,7 @@
 package io.mandrel.endpoints.web;
 
 import io.mandrel.cluster.node.NodeService;
-import io.mandrel.metrics.MetricsRepository;
+import io.mandrel.metrics.MetricsService;
 
 import javax.inject.Inject;
 
@@ -37,12 +37,12 @@ public class NodeController {
 
 	private final NodeService nodeService;
 
-	private final MetricsRepository metricsRepository;
+	private final MetricsService metricsService;
 
 	@RequestMapping
 	public String nodes(Model model) {
 		model.addAttribute("nodes", nodeService.nodes());
-		model.addAttribute("metrics", metricsRepository.global());
+		model.addAttribute("metrics", metricsService.global());
 		return "views/nodes";
 	}
 
@@ -50,7 +50,7 @@ public class NodeController {
 	public String node(@PathVariable String id, Model model) {
 		model.addAttribute("node", nodeService.node(id));
 		model.addAttribute("containersByType", nodeService.containers(id));
-		model.addAttribute("metrics", metricsRepository.node(id));
+		model.addAttribute("metrics", metricsService.node(id));
 		return "views/node";
 	}
 }

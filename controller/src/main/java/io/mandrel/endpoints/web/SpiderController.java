@@ -19,7 +19,7 @@
 package io.mandrel.endpoints.web;
 
 import io.mandrel.common.data.Spider;
-import io.mandrel.metrics.MetricsRepository;
+import io.mandrel.metrics.MetricsService;
 import io.mandrel.spider.SpiderService;
 
 import java.io.IOException;
@@ -49,7 +49,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class SpiderController {
 
 	private final SpiderService spiderService;
-	private final MetricsRepository metricsRepository;
+	private final MetricsService metricsService;
 	private final ObjectMapper mapper;
 
 	@RequestMapping
@@ -63,7 +63,7 @@ public class SpiderController {
 		Spider spider = spiderService.get(id);
 		model.addAttribute("spider", spider);
 		model.addAttribute("json", mapper.writer(new DefaultPrettyPrinter()).writeValueAsString(spider));
-		model.addAttribute("metrics", metricsRepository.spider(id));
+		model.addAttribute("metrics", metricsService.spider(id));
 		return "views/spider";
 	}
 
