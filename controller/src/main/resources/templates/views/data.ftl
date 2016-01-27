@@ -31,13 +31,13 @@
                       <th>State</th>
                       <th>Extractor</th>
                     </tr>
-                    <#list spiders as spider>
+                    <#list spiders.content as spider>
                     	<#list spider.extractors.pages as extractor>
                 		<tr>
 	                      <td><a href="/spiders/${spider.id?c}">${spider.name}</a></td>
-	                      <td>${spider.added}</td>
-	                      <#switch spider.state>
-								<#case "NEW">
+	                      <td>${spider.created}</td>
+	                      <#switch spider.status>
+								<#case "CREATED">
 									<#assign label = "primary">
 									<#break>
 								<#case "STARTED">
@@ -46,14 +46,14 @@
 								<#case "ENDED">
 									<#assign label = "success">
 		 							<#break>
-		 						<#case "CANCELLED">
+		 						<#case "KILLED">
 		 							<#assign label = "danger">
 		 							<#break>
 								<#default>
 									<#assign label = "warning">
 									<#break>
 							</#switch>
-	                      <td><span class="label label-${label}">${spider.state}</span></td>
+	                      <td><span class="label label-${label}">${spider.status}</span></td>
 	                      <td><a href="/spiders/${spider.id?c}/data/${extractor.name}">${extractor.name}</a></td>
 	                    </tr>
 	                    </#list>

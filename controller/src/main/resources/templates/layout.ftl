@@ -43,10 +43,14 @@
   <head>
     <!-- Tell the browser to be responsive to screen width -->
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    
+    <link href="/public/bundles/common.min.css" rel="stylesheet" type="text/css" />
+    <!--
     <link href="/webjars/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="/webjars/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
     <link href="/webjars/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css" />
     <link href="/public/css/jquery-jvectormap-1.2.2.css" rel="stylesheet" type="text/css" />
+    -->
     
     <@css/>
     <link href="/public/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
@@ -167,6 +171,8 @@
 
     </div><!-- ./wrapper -->
 
+	<script src="/public/bundles/common.min.js" type="text/javascript"></script>
+	<!--
     <script src="/webjars/jquery/2.1.4/jquery.min.js" type="text/javascript"></script>
     <script src="/webjars/bootstrap/3.3.4/js/bootstrap.min.js" type="text/javascript"></script>
     <script src="/webjars/jQuery-slimScroll/1.3.3/jquery.slimscroll.min.js" type="text/javascript"></script>
@@ -177,6 +183,7 @@
     <script src="/webjars/jquery.sparkline/2.1.2/jquery.sparkline.min.js" type="text/javascript"></script>
     <script src="/public/js/jquery-jvectormap-1.2.2.min.js" type="text/javascript"></script>
     <script src="/public/js/jquery-jvectormap-world-mill-en.js" type="text/javascript"></script>
+    -->
     
     <script>
     var throughput = [<#if (throughput)??><#list throughput as item>${item.value}<#sep>,</#sep></#list></#if>];

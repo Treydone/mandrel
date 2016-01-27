@@ -29,7 +29,6 @@
 			<groupId>com.mangofactory</groupId>
 			<artifactId>swagger-springmvc</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>bootstrap</artifactId>
@@ -185,38 +184,38 @@
 				<includes>
 					<include>public/**</include>
 				</includes>
-				<targetPath>${project.build.directory}/static</targetPath>
 			</resource>
 		</resources>
 
 		<plugins>
 
-			<!-- <plugin> -->
-			<!-- <groupId>org.apache.maven.plugins</groupId> -->
-			<!-- <artifactId>maven-enforcer-plugin</artifactId> -->
-			<!-- </plugin> -->
-			<!-- <plugin> -->
-			<!-- <groupId>org.apache.maven.plugins</groupId> -->
-			<!-- <artifactId>maven-compiler-plugin</artifactId> -->
-			<!-- </plugin> -->
-			<!-- <plugin> -->
-			<!-- <groupId>org.jasig.maven</groupId> -->
-			<!-- <artifactId>maven-notice-plugin</artifactId> -->
-			<!-- </plugin> -->
-			<!-- <plugin> -->
-			<!-- <groupId>org.codehaus.mojo</groupId> -->
-			<!-- <artifactId>license-maven-plugin</artifactId> -->
-			<!-- </plugin> -->
-			<!-- <plugin> -->
-			<!-- <groupId>com.mycila</groupId> -->
-			<!-- <artifactId>license-maven-plugin</artifactId> -->
-			<!-- </plugin> -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.jasig.maven</groupId>
+				<artifactId>maven-notice-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-eclipse-plugin</artifactId>
 			</plugin>
 
+			<!-- ONLY BECAUSE WRO4J CAN NOT YET MANAGE URI FOR FONTS IN IMPORTS -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -230,13 +229,41 @@
 						</goals>
 						<configuration>
 							<includeGroupIds>org.webjars</includeGroupIds>
-							<outputDirectory>${project.build.directory}/generated-resources/webjars</outputDirectory>
+							<!-- <includes>**\/*.woff,**\/*.woff2,**\/*.eot,**\/*.otf,**\/*.ttf,**\/*.svg</includes> -->
+							<includes>**\/*.woff,**\/*.woff2</includes>
+							<outputDirectory>${project.build.directory}/generated-resources/fonts</outputDirectory>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.8</version>
+				<executions>
+					<execution>
+						<phase>generate-resources</phase>
+						<configuration>
+							<target>
+								<copy todir="${basedir}/src/main/resources/public/fonts"
+									flatten="true">
+									<fileset dir="${project.build.directory}/generated-resources/fonts">
+										<include name="**/*.woff" />
+										<include name="**/*.woff2" />
+									</fileset>
+								</copy>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!--/ ONLY BECAUSE WRO4J CAN NOT YET MANAGE URI FOR FONTS IN IMPORTS -->
+
 
 			<plugin>
 				<groupId>ro.isdc.wro4j</groupId>
@@ -251,9 +278,9 @@
 					</execution>
 				</executions>
 				<configuration>
-					<destinationFolder>${basedir}/src/main/webapp/wro</destinationFolder>
+					<destinationFolder>${basedir}/src/main/resources/public/bundles</destinationFolder>
 					<wroManagerFactory>ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory</wroManagerFactory>
-					<contextFolder>${project.build.directory}/generated-resources/webjars/META-INF/resources</contextFolder>
+					<contextFolder>${basedir}/src/main/resources/public</contextFolder>
 				</configuration>
 			</plugin>
 
