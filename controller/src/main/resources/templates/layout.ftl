@@ -170,12 +170,14 @@
       </footer>
 
     </div><!-- ./wrapper -->
-
-	<script src="/public/bundles/common.min.js" type="text/javascript"></script>
-	<!--
+    
+    <script src="/public/bundles/common.min.js" type="text/javascript"></script>
+    
+    <!--
     <script src="/webjars/jquery/2.1.4/jquery.min.js" type="text/javascript"></script>
     <script src="/webjars/bootstrap/3.3.4/js/bootstrap.min.js" type="text/javascript"></script>
     <script src="/webjars/jQuery-slimScroll/1.3.3/jquery.slimscroll.min.js" type="text/javascript"></script>
+    <script src="/webjars/momentjs/2.9.0/min/moment.min.js" type="text/javascript"></script>
     <script src="/webjars/bootstrap-3-datepicker/1.4.0/dist/js/bootstrap-datepicker.js" type="text/javascript"></script>
     <script src="/webjars/bootstrap-daterangepicker/1.3.22/daterangepicker.js" type="text/javascript"></script>
     <script src="/webjars/fastclick/1.0.6/fastclick.js" type="text/javascript"></script>
@@ -187,10 +189,7 @@
     
     <script>
     var throughput = [<#if (throughput)??><#list throughput as item>${item.value}<#sep>,</#sep></#list></#if>];
-    
-    
-    	$('#mainbar')
-    		.sparkline(throughput, { 
+    	$('#mainbar').sparkline(throughput, { 
     			type: 'bar',
     			barColor: '#000',
     			height: '50',

@@ -34,6 +34,10 @@
 			<artifactId>bootstrap</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>momentjs</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.webjars.bower</groupId>
 			<artifactId>bootstrap-3-datepicker</artifactId>
 		</dependency>
@@ -229,8 +233,8 @@
 						</goals>
 						<configuration>
 							<includeGroupIds>org.webjars</includeGroupIds>
-							<!-- <includes>**\/*.woff,**\/*.woff2,**\/*.eot,**\/*.otf,**\/*.ttf,**\/*.svg</includes> -->
-							<includes>**\/*.woff,**\/*.woff2</includes>
+							<includes>**\/*.woff,**\/*.woff2,**\/*.eot,**\/*.otf,**\/*.ttf,**\/*.svg</includes>
+							<!-- <includes>**\/*.woff,**\/*.woff2</includes> -->
 							<outputDirectory>${project.build.directory}/generated-resources/fonts</outputDirectory>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
@@ -252,6 +256,10 @@
 									<fileset dir="${project.build.directory}/generated-resources/fonts">
 										<include name="**/*.woff" />
 										<include name="**/*.woff2" />
+										<include name="**/*.eot" />
+										<include name="**/*.otf" />
+										<include name="**/*.ttf" />
+										<include name="**/*.svg" />
 									</fileset>
 								</copy>
 							</target>
@@ -281,6 +289,7 @@
 					<destinationFolder>${basedir}/src/main/resources/public/bundles</destinationFolder>
 					<wroManagerFactory>ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory</wroManagerFactory>
 					<contextFolder>${basedir}/src/main/resources/public</contextFolder>
+					<minimize>true</minimize>
 				</configuration>
 			</plugin>
 
