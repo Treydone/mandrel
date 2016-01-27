@@ -51,6 +51,7 @@
     <@css/>
     <link href="/public/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
     <link href="/public/css/_all-skins.min.css" rel="stylesheet" type="text/css" />
+    <link href="/public/css/fonts.css" rel="stylesheet" type="text/css" />
     
     <!-- <link href="/public/css/blue.css" rel="stylesheet" type="text/css" />
     <link href="/public/css/morris.css" rel="stylesheet" type="text/css" />

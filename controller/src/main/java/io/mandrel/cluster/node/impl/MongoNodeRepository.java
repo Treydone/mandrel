@@ -33,6 +33,7 @@ import javax.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.bson.Document;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
@@ -94,15 +95,17 @@ public class MongoNodeRepository implements NodeRepository {
 
 	@Override
 	public void update(List<Node> nodes) {
-		collection.bulkWrite(nodes
-				.stream()
-				.map(node -> {
-					try {
-						return new ReplaceOneModel<Document>(new Document("_id", node.getId()), Document.parse(mapper.writeValueAsString(node)),
-								new UpdateOptions().upsert(true));
-					} catch (Exception e) {
-						throw Throwables.propagate(e);
-					}
-				}).collect(Collectors.toList()));
+		if (CollectionUtils.isNotEmpty(nodes)) {
+			collection.bulkWrite(nodes
+					.stream()
+					.map(node -> {
+						try {
+							return new ReplaceOneModel<Document>(new Document("_id", node.getId()), Document.parse(mapper.writeValueAsString(node)),
+									new UpdateOptions().upsert(true));
+						} catch (Exception e) {
+							throw Throwables.propagate(e);
+						}
+					}).collect(Collectors.toList()));
+		}
 	}
 }
