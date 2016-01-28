@@ -20,6 +20,7 @@ package io.mandrel.worker;
 
 import io.mandrel.blob.BlobStore;
 import io.mandrel.blob.BlobStores;
+import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.common.container.AbstractContainer;
 import io.mandrel.common.container.ContainerStatus;
 import io.mandrel.common.data.Spider;
@@ -36,8 +37,9 @@ import io.mandrel.transport.Clients;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import lombok.Data;
@@ -58,28 +60,33 @@ public class WorkerContainer extends AbstractContainer {
 	private final Monitor monitor = new Monitor();
 	private final TaskContext context = new TaskContext();
 	private final ExtractorService extractorService;
-	private final ExecutorService executor;
+	private final ScheduledExecutorService executor;
 	private final List<Loop> loops;
 
-	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Spider spider, Clients clients) {
+	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Spider spider, Clients clients, DiscoveryClient discoveryClient) {
 		super(accumulators, spider, clients);
 		context.setDefinition(spider);
 
 		this.extractorService = extractorService;
 
 		// Create the thread factory
-		BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("workerthread-%d").daemon(true).priority(Thread.MAX_PRIORITY).build();
+		BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("worker-" + spider.getId() + "-%d").daemon(true)
+				.priority(Thread.MAX_PRIORITY).build();
 
 		// Get number of parallel loops
 		int parallel = Runtime.getRuntime().availableProcessors();
-		executor = Executors.newFixedThreadPool(parallel, threadFactory);
+		// Prepare a pool for the X parallel loops, the barrier refresh and the
+		// revisitor
+		executor = Executors.newScheduledThreadPool(parallel + 2, threadFactory);
 
-		// spider.getClient().
+		// Prepare the barrier
+		Barrier barrier = new Barrier(spider.getFrontier().getPoliteness(), discoveryClient);
+		executor.scheduleAtFixedRate(() -> barrier.updateBuckets(), 10, 10, TimeUnit.SECONDS);
 
 		// Create loop
 		loops = new ArrayList<>(parallel);
 		IntStream.range(0, parallel).forEach(idx -> {
-			Loop loop = new Loop(extractorService, spider, clients, accumulators.spiderAccumulator(spider.getId()), accumulators.globalAccumulator());
+			Loop loop = new Loop(extractorService, spider, clients, accumulators.spiderAccumulator(spider.getId()), accumulators.globalAccumulator(), barrier);
 			loops.add(loop);
 			executor.submit(loop);
 		});

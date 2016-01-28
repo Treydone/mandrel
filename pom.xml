@@ -327,6 +327,11 @@
 				<artifactId>servo-core</artifactId>
 				<version>0.9.4</version>
 			</dependency>
+			<dependency>
+				<groupId>org.isomorphism</groupId>
+				<artifactId>token-bucket</artifactId>
+				<version>1.6</version>
+			</dependency>
 
 			<dependency>
 				<groupId>com.mangofactory</groupId>

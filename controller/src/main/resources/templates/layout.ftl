@@ -45,12 +45,6 @@
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     
     <link href="/public/bundles/common.min.css" rel="stylesheet" type="text/css" />
-    <!--
-    <link href="/webjars/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link href="/webjars/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
-    <link href="/webjars/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css" />
-    <link href="/public/css/jquery-jvectormap-1.2.2.css" rel="stylesheet" type="text/css" />
-    -->
     
     <@css/>
     <link href="/public/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
@@ -131,6 +125,11 @@
               </a>
             </li>
             <li>
+              <a href="/metrics">
+                <i class="fa fa fa-pie-chart"></i> <span>Metrics</span>
+              </a>
+            </li>
+            <li>
               <a href="/console">
                 <i class="fa fa-terminal"></i> <span>Console</span>
               </a>
@@ -172,20 +171,6 @@
     </div><!-- ./wrapper -->
     
     <script src="/public/bundles/common.min.js" type="text/javascript"></script>
-    
-    <!--
-    <script src="/webjars/jquery/2.1.4/jquery.min.js" type="text/javascript"></script>
-    <script src="/webjars/bootstrap/3.3.4/js/bootstrap.min.js" type="text/javascript"></script>
-    <script src="/webjars/jQuery-slimScroll/1.3.3/jquery.slimscroll.min.js" type="text/javascript"></script>
-    <script src="/webjars/momentjs/2.9.0/min/moment.min.js" type="text/javascript"></script>
-    <script src="/webjars/bootstrap-3-datepicker/1.4.0/dist/js/bootstrap-datepicker.js" type="text/javascript"></script>
-    <script src="/webjars/bootstrap-daterangepicker/1.3.22/daterangepicker.js" type="text/javascript"></script>
-    <script src="/webjars/fastclick/1.0.6/fastclick.js" type="text/javascript"></script>
-    <script src="/webjars/chartjs/1.0.2/Chart.min.js" type="text/javascript"></script>
-    <script src="/webjars/jquery.sparkline/2.1.2/jquery.sparkline.min.js" type="text/javascript"></script>
-    <script src="/public/js/jquery-jvectormap-1.2.2.min.js" type="text/javascript"></script>
-    <script src="/public/js/jquery-jvectormap-world-mill-en.js" type="text/javascript"></script>
-    -->
     
     <script>
     var throughput = [<#if (throughput)??><#list throughput as item>${item.value}<#sep>,</#sep></#list></#if>];

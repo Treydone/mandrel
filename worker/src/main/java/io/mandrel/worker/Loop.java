@@ -70,6 +70,8 @@ public class Loop implements Runnable {
 	private final SpiderAccumulator spiderAccumulator;
 	private final GlobalAccumulator globalAccumulator;
 
+	private final Barrier barrier;
+
 	private final AtomicBoolean run = new AtomicBoolean(false);
 
 	public void start() {
@@ -86,7 +88,6 @@ public class Loop implements Runnable {
 
 	@Override
 	public void run() {
-
 		while (true) {
 
 			try {
@@ -109,9 +110,6 @@ public class Loop implements Runnable {
 				Next next = clients.onRandomFrontier().map(frontier -> frontier.next(spider.getId())).get(20000, TimeUnit.MILLISECONDS);
 				Uri uri = next.getUri();
 
-				// TODO -> You can do better things than this...
-				// Uri uri = result.get(20000, TimeUnit.MILLISECONDS);
-
 				if (uri != null) {
 
 					log.trace("> Getting uri {} !", uri);
@@ -124,52 +122,10 @@ public class Loop implements Runnable {
 					Optional<Requester<? extends Strategy>> requester = Requesters.of(spider.getId(), uri.getScheme());
 					if (requester.isPresent()) {
 						Requester<? extends Strategy> r = requester.get();
+
+						Blob blob = null;
 						try {
-							Blob blob = r.get(uri);
-
-							watch.stop();
-
-							log.trace("> Start parsing data for {}", uri);
-
-							blob.getMetadata().getFetchMetadata().setTimeToFetch(watch.getTotalTimeMillis());
-
-							updateMetrics(watch, blob);
-
-							Map<String, Instance<?>> cachedSelectors = new HashMap<>();
-							if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
-								log.trace(">  - Extracting documents for {}...", uri);
-								spider.getExtractors().getPages().forEach(ex -> {
-									List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, blob, ex);
-
-									if (documents != null) {
-										spiderAccumulator.incDocumentForExtractor(ex.getName(), documents.size());
-									}
-								});
-								log.trace(">  - Extracting documents for {} done!", uri);
-							}
-
-							if (spider.getExtractors().getOutlinks() != null) {
-								log.trace(">  - Extracting outlinks for {}...", uri);
-								final Uri theUri = uri;
-								spider.getExtractors()
-										.getOutlinks()
-										.forEach(
-												ol -> {
-													Set<Link> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, theUri, cachedSelectors,
-															blob, ol).getRight();
-													blob.getMetadata().getFetchMetadata().setOutlinks(allFilteredOutlinks);
-													add(spider.getId(), allFilteredOutlinks.stream().map(l -> l.getUri()).collect(Collectors.toSet()));
-												});
-								log.trace(">  - Extracting outlinks done for {}!", uri);
-							}
-
-							BlobStores.get(spider.getId()).ifPresent(b -> b.putBlob(blob.getMetadata().getUri(), blob));
-
-							log.trace(">  - Storing metadata for {}...", uri);
-							MetadataStores.get(spider.getId()).addMetadata(blob.getMetadata().getUri(), blob.getMetadata().getFetchMetadata());
-							log.trace(">  - Storing metadata for {} done!", uri);
-
-							log.trace("> End parsing data for {}", uri);
+							blob = processBlob(uri, watch, r);
 						} catch (Exception t) {
 							// TODO create and use internal exception instead...
 							if (t instanceof ConnectTimeoutException) {
@@ -185,6 +141,8 @@ public class Loop implements Runnable {
 							} else {
 								log.debug("Error while looping", t);
 							}
+						} finally {
+							barrier.passOrWait(blob != null && blob.getMetadata() != null ? blob.getMetadata().getSize() : null);
 						}
 					} else {
 						// TODO Unknown protocol
@@ -222,7 +180,53 @@ public class Loop implements Runnable {
 		}
 	}
 
-	public void updateMetrics(StopWatch watch, Blob blob) {
+	protected Blob processBlob(Uri uri, StopWatch watch, Requester<? extends Strategy> r) throws Exception {
+		Blob blob;
+		blob = r.get(uri);
+
+		watch.stop();
+
+		log.trace("> Start parsing data for {}", uri);
+
+		blob.getMetadata().getFetchMetadata().setTimeToFetch(watch.getTotalTimeMillis());
+
+		updateMetrics(watch, blob);
+
+		Map<String, Instance<?>> cachedSelectors = new HashMap<>();
+		if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
+			log.trace(">  - Extracting documents for {}...", uri);
+			spider.getExtractors().getPages().forEach(ex -> {
+				List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, blob, ex);
+
+				if (documents != null) {
+					spiderAccumulator.incDocumentForExtractor(ex.getName(), documents.size());
+				}
+			});
+			log.trace(">  - Extracting documents for {} done!", uri);
+		}
+
+		if (spider.getExtractors().getOutlinks() != null) {
+			log.trace(">  - Extracting outlinks for {}...", uri);
+			final Uri theUri = uri;
+			spider.getExtractors().getOutlinks().forEach(ol -> {
+				Set<Link> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, theUri, cachedSelectors, blob, ol).getRight();
+				blob.getMetadata().getFetchMetadata().setOutlinks(allFilteredOutlinks);
+				add(spider.getId(), allFilteredOutlinks.stream().map(l -> l.getUri()).collect(Collectors.toSet()));
+			});
+			log.trace(">  - Extracting outlinks done for {}!", uri);
+		}
+
+		BlobStores.get(spider.getId()).ifPresent(b -> b.putBlob(blob.getMetadata().getUri(), blob));
+
+		log.trace(">  - Storing metadata for {}...", uri);
+		MetadataStores.get(spider.getId()).addMetadata(blob.getMetadata().getUri(), blob.getMetadata().getFetchMetadata());
+		log.trace(">  - Storing metadata for {} done!", uri);
+
+		log.trace("> End parsing data for {}", uri);
+		return blob;
+	}
+
+	protected void updateMetrics(StopWatch watch, Blob blob) {
 		spiderAccumulator.incNbPages();
 		globalAccumulator.incNbPages();
 
@@ -240,13 +244,13 @@ public class Loop implements Runnable {
 		}
 	}
 
-	public void add(long spiderId, Set<Uri> uris) {
+	protected void add(long spiderId, Set<Uri> uris) {
 		if (CollectionUtils.isNotEmpty(uris)) {
 			clients.onRandomFrontier().with(frontier -> frontier.mschedule(spiderId, uris));
 		}
 	}
 
-	public void add(long spiderId, Uri uri) {
+	protected void add(long spiderId, Uri uri) {
 		if (uri != null) {
 			clients.onRandomFrontier().with(frontier -> frontier.schedule(spiderId, uri));
 		}

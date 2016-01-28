@@ -122,8 +122,18 @@ public class FrontierResource implements FrontierContract {
 	}
 
 	@Override
-	public void close() throws Exception {
-
+	public ListenableFuture<Next> next(Long id) {
+		FrontierContainer frontier = FrontierContainers.get(id).orElseThrow(frontierNotFound);
+		SettableFuture<Next> result = SettableFuture.create();
+		frontier.frontier().pool((uri, name) -> {
+			result.set(new Next().setUri(uri).setFromStore(name));
+		});
+		try {
+			return result;
+		} catch (Exception e) {
+			log.debug("Well...", e);
+			throw RemoteException.of(RemoteException.Error.G_UNKNOWN, e.getMessage());
+		}
 	}
 
 	@Override
@@ -224,16 +234,8 @@ public class FrontierResource implements FrontierContract {
 	}
 
 	@Override
-	public ListenableFuture<Next> next(Long id) {
-		SettableFuture<Next> result = SettableFuture.create();
-		FrontierContainers.get(id).orElseThrow(frontierNotFound).frontier().pool((uri, name) -> {
-			result.set(new Next().setUri(uri).setFromStore(name));
-		});
-		try {
-			return result;
-		} catch (Exception e) {
-			log.debug("Well...", e);
-			throw RemoteException.of(RemoteException.Error.G_UNKNOWN, e.getMessage());
-		}
+	public void close() throws Exception {
+
 	}
+
 }

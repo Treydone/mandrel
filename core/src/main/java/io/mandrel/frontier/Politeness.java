@@ -29,11 +29,17 @@ public class Politeness implements Serializable {
 
 	private static final long serialVersionUID = -3487435400772289245L;
 
-	@JsonProperty("global_rate")
-	private long globalRate = 1000;
+	@JsonProperty("page_mean_rate")
+	private long pageMeanRate = 20;
 
-	@JsonProperty("per_node_rate")
-	private long perNodeRate = 500;
+	@JsonProperty("page_peek_rate")
+	private long pagePeekRate = 50;
+
+	@JsonProperty("max_bandwith")
+	private long maxBandwith = 8 * 1024 * 1024;
+
+	@JsonProperty("max_peek_bandwith")
+	private long maxPeekBandwith = 20 * 1024 * 1024;
 
 	@JsonProperty("max_pages")
 	private long maxPages = 100;
@@ -43,8 +49,5 @@ public class Politeness implements Serializable {
 
 	@JsonProperty("ignore_robots_txt")
 	private boolean ignoreRobotsTxt = false;
-
-	@JsonProperty("recrawl_after")
-	private int recrawlAfterSeconds = -1;
 
 }

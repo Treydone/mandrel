@@ -67,7 +67,6 @@ public class MetricsSyncer {
 							log.info("Can not update metrics {} due to", total, e);
 						}
 					}
-
 				} finally {
 					monitor.leave();
 				}

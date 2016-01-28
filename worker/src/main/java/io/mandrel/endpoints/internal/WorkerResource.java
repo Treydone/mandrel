@@ -18,6 +18,7 @@
  */
 package io.mandrel.endpoints.internal;
 
+import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.container.ContainerStatus;
 import io.mandrel.common.data.Spider;
@@ -57,6 +58,8 @@ public class WorkerResource implements WorkerContract {
 	@Autowired
 	private Clients clients;
 	@Autowired
+	private DiscoveryClient discoveryClient;
+	@Autowired
 	private ObjectMapper objectMapper;
 	@Autowired
 	private AnalysisService analysisService;
@@ -79,7 +82,7 @@ public class WorkerResource implements WorkerContract {
 	}
 
 	public void create(Spider spider) {
-		WorkerContainer container = new WorkerContainer(extractorService, accumulators, spider, clients);
+		WorkerContainer container = new WorkerContainer(extractorService, accumulators, spider, clients, discoveryClient);
 		container.register();
 	}
 
