@@ -44,11 +44,30 @@ Mandrel can be used to build various mining jobs:
 === Compared to...
 
 ==== Nutch
-Heavy batchs, recrawling seems complicated
+Big, big Java project. Open-source. Built for crawling all the web and can be distributed on several machines, such as on AWS or any other cloud provider, as well as  crawling a specific targeted group of websites, every x days or hours.
+The architecture is pretty heavy and has lots of dependencies (ant, gora, hbase, hadoop, etc.). Very powerful and manages scheduling, domain restriction, politeness, etc.
+Can be run in standalone without Hadoop. Very polite and makes sure that there is only one query per host running at the same time, to avoid being blacklisted.
+Run from the command.
+
+In distributed mode, Nutch need a full Hadoop stack (...) and use (veryyyy) long-running MapReduce in order to sort and crawl URL.
+
+Last version is Nutch 2.x, which is a huge rewrite almost from scratch and therefore not so close to 1.x. However, Nutch 2.x is slower and has less features than Nutch 1.x.
+
+In addition to the crawler feature, Nutch is also a search engine and use Lucène to index documents.
 
 ==== Heristrix
-Powerful job definition
-No GUI
+Heritrix is the Internet Archive's open-source, extensible, web-scale, archival-quality web crawler project.
+Have Web Control management interface. A powerful job definition, but based on Spring beans definition. Not designed to be scalable.
+
+Last version is 3.2.0 (Jan 2014).
+
+==== Scrapy
+Open-source Python project, best suited for scraping focused websites. Light and easy to use,.
+Useful when building a handmade parser on a known website in order to extract precise informations.
+
+Not distributed by default, so not a right tool for a huge amount of websites or big websites.
+Some initiatives aimed to add cluster features (Distributed Frontera and Scrapy Cluster) to Scrapy but are difficult to deploy since they are based on Kafka and/or HBase and need an Hadoop cluster.
+Politness is respected, but only one process can download on one host at a time.
 
 === Internals
 Mandrel uses Zookeeper, Thrift, Netty, Undertow and Spring. It can be connected to:
