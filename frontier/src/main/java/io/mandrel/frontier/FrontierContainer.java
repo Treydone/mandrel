@@ -23,13 +23,20 @@ import io.mandrel.common.container.ContainerStatus;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.source.Source;
+import io.mandrel.metadata.MetadataStore;
 import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.Accumulators;
 import io.mandrel.transport.Clients;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 import com.google.common.util.concurrent.Monitor;
 
@@ -41,17 +48,28 @@ public class FrontierContainer extends AbstractContainer {
 
 	private final Monitor monitor = new Monitor();
 	private final TaskContext context = new TaskContext();
-	private Frontier frontier;
+	private final ExecutorService executor;
+	private final Frontier frontier;
+	private final Revisitor revisitor;
 
 	public FrontierContainer(Spider spider, Accumulators accumulators, Clients clients) {
 		super(accumulators, spider, clients);
 		context.setDefinition(spider);
 
 		// Init stores
-		MetadataStores.add(spider.getId(), spider.getStores().getMetadataStore().build(context));
+		MetadataStore metadatastore = spider.getStores().getMetadataStore().build(context);
+		metadatastore.init();
+		MetadataStores.add(spider.getId(), metadatastore);
 
 		// Init frontier
 		frontier = spider.getFrontier().build(context);
+
+		// Revisitor
+		BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("frontier-" + spider.getId() + "-%d").daemon(true)
+				.priority(Thread.MAX_PRIORITY).build();
+		executor = Executors.newFixedThreadPool(1, threadFactory);
+		revisitor = new Revisitor(frontier, metadatastore);
+		executor.submit(revisitor);
 
 		current.set(ContainerStatus.INITIATED);
 	}
@@ -81,6 +99,8 @@ public class FrontierContainer extends AbstractContainer {
 						}
 					});
 
+					revisitor.start();
+
 					current.set(ContainerStatus.STARTED);
 				}
 			} finally {
@@ -96,7 +116,7 @@ public class FrontierContainer extends AbstractContainer {
 				if (!current.get().equals(ContainerStatus.PAUSED)) {
 					log.debug("Pausing the frontier");
 
-					// TODO We should pause some things here
+					revisitor.pause();
 
 					current.set(ContainerStatus.PAUSED);
 				}
@@ -111,6 +131,12 @@ public class FrontierContainer extends AbstractContainer {
 		if (monitor.tryEnter()) {
 			try {
 				if (!current.get().equals(ContainerStatus.KILLED)) {
+					try {
+						executor.shutdownNow();
+					} catch (Exception e) {
+						log.debug(e.getMessage(), e);
+					}
+
 					try {
 						frontier.destroy();
 					} catch (Exception e) {

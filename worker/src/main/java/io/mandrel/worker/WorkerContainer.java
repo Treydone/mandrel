@@ -75,9 +75,8 @@ public class WorkerContainer extends AbstractContainer {
 
 		// Get number of parallel loops
 		int parallel = Runtime.getRuntime().availableProcessors();
-		// Prepare a pool for the X parallel loops, the barrier refresh and the
-		// revisitor
-		executor = Executors.newScheduledThreadPool(parallel + 2, threadFactory);
+		// Prepare a pool for the X parallel loops and the barrier refresh
+		executor = Executors.newScheduledThreadPool(parallel + 1, threadFactory);
 
 		// Prepare the barrier
 		Barrier barrier = new Barrier(spider.getFrontier().getPoliteness(), discoveryClient);

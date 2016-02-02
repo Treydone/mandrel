@@ -1,1 +1,3 @@
 io.mandrel.document.impl.MongoDocumentStore$MongoDocumentStoreDefinition
+io.mandrel.document.impl.ElasticsearchDocumentStore$ElasticsearchDocumentStoreDefinition
+io.mandrel.document.impl.MultipleOutputDocumentStore$MultipleOutputDocumentStoreDefinition

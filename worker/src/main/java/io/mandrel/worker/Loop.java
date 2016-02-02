@@ -219,7 +219,7 @@ public class Loop implements Runnable {
 		BlobStores.get(spider.getId()).ifPresent(b -> b.putBlob(blob.getMetadata().getUri(), blob));
 
 		log.trace(">  - Storing metadata for {}...", uri);
-		MetadataStores.get(spider.getId()).addMetadata(blob.getMetadata().getUri(), blob.getMetadata().getFetchMetadata());
+		MetadataStores.get(spider.getId()).addMetadata(blob.getMetadata().getUri(), blob.getMetadata());
 		log.trace(">  - Storing metadata for {} done!", uri);
 
 		log.trace("> End parsing data for {}", uri);

@@ -83,7 +83,20 @@ public class SimpleRevisitStrategy extends RevisitStrategy {
 	@Override
 	public boolean isScheduledForRevisit(BlobMetadata metadata) {
 
+		LocalDateTime now = LocalDateTime.now();
+
+		if (metadata.getFetchMetadata().getLastCrawlDate().plusSeconds(rescheduledAfter.getSeconds()).isBefore(now)) {
+			return true;
+		}
+
+		// TODO if has error metadata.getFetchMetadata().getStatusCode()
 		if (onFetchError.getNextAttempt().getMillis() > Duration.between(LocalDateTime.now(), LocalDateTime.now()).toMillis()) {
+			return true;
+		}
+		if (onParsingError.getNextAttempt().getMillis() > Duration.between(LocalDateTime.now(), LocalDateTime.now()).toMillis()) {
+			return true;
+		}
+		if (onGlobalError.getNextAttempt().getMillis() > Duration.between(LocalDateTime.now(), LocalDateTime.now()).toMillis()) {
 			return true;
 		}
 

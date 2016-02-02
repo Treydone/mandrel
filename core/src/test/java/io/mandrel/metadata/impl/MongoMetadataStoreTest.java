@@ -18,10 +18,10 @@
  */
 package io.mandrel.metadata.impl;
 
+import io.mandrel.blob.BlobMetadata;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
-import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.metadata.impl.MongoMetadataStore.MongoMetadataStoreDefinition;
 
 import java.util.Set;
@@ -49,7 +49,7 @@ public class MongoMetadataStoreTest {
 
 		Uri uri = new Uri("http", null, "test", 80, "/pouet", null);
 		store.delete(uri);
-		store.addMetadata(uri, new FetchMetadata());
+		store.addMetadata(uri, new BlobMetadata());
 
 		Set<Uri> deduplicate = store.deduplicate(Sets.newHashSet(uri));
 

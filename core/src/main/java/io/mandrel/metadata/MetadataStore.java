@@ -18,6 +18,7 @@
  */
 package io.mandrel.metadata;
 
+import io.mandrel.blob.BlobMetadata;
 import io.mandrel.common.lifecycle.Initializable;
 import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.net.Uri;
@@ -41,13 +42,21 @@ public abstract class MetadataStore extends TaskContextAware implements Checkabl
 
 	}
 
+	@FunctionalInterface
+	public static interface Callback {
+		boolean on(Collection<BlobMetadata> elements);
+	}
+
 	public abstract Set<Uri> deduplicate(Collection<Uri> uris);
 
-	public abstract void addMetadata(Uri uri, FetchMetadata metadata);
+	public abstract void addMetadata(Uri uri, BlobMetadata metadata);
 
-	public abstract FetchMetadata getMetadata(Uri uri);
+	public abstract BlobMetadata getMetadata(Uri uri);
+
+	public abstract void byPages(int pageSize, Callback callback);
 
 	public abstract void deleteAll();
 
 	public abstract void delete(Uri uri);
+
 }

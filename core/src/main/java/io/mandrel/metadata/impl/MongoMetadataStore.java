@@ -18,17 +18,20 @@
  */
 package io.mandrel.metadata.impl;
 
+import io.mandrel.blob.BlobMetadata;
 import io.mandrel.common.bson.JsonBsonCodec;
 import io.mandrel.common.bson.UriCodec;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
-import io.mandrel.metadata.FetchMetadata;
 import io.mandrel.metadata.MetadataStore;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -47,6 +50,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.UpdateOptions;
@@ -66,6 +70,8 @@ public class MongoMetadataStore extends MetadataStore {
 		private String database = "mandrel";
 		@JsonProperty("collection")
 		private String collection = "metadata_{0}";
+		@JsonProperty("batch_size")
+		private int batchSize = 1000;
 
 		@Override
 		public String name() {
@@ -77,7 +83,7 @@ public class MongoMetadataStore extends MetadataStore {
 			CodecRegistry codecRegistry = CodecRegistries.fromRegistries(MongoClient.getDefaultCodecRegistry(), CodecRegistries.fromCodecs(new UriCodec()));
 			MongoClientOptions.Builder options = MongoClientOptions.builder().codecRegistry(codecRegistry);
 			MongoClientURI uri = new MongoClientURI(this.uri, options);
-			return new MongoMetadataStore(context, new MongoClient(uri), database, MessageFormat.format(collection, context.getSpiderId()));
+			return new MongoMetadataStore(context, new MongoClient(uri), database, MessageFormat.format(collection, context.getSpiderId()), batchSize);
 		}
 	}
 
@@ -87,10 +93,12 @@ public class MongoMetadataStore extends MetadataStore {
 	@Getter
 	private final MongoCollection<org.bson.Document> collection;
 	private final ObjectMapper mapper = new ObjectMapper();
+	private final int batchSize;
 
-	public MongoMetadataStore(TaskContext context, MongoClient mongoClient, String databaseName, String collectionName) {
+	public MongoMetadataStore(TaskContext context, MongoClient mongoClient, String databaseName, String collectionName, int batchSize) {
 		super(context);
 		this.mongoClient = mongoClient;
+		this.batchSize = batchSize;
 		collection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
 	}
 
@@ -100,7 +108,7 @@ public class MongoMetadataStore extends MetadataStore {
 	}
 
 	@Override
-	public void addMetadata(Uri uri, FetchMetadata metadata) {
+	public void addMetadata(Uri uri, BlobMetadata metadata) {
 		org.bson.Document document = JsonBsonCodec.toBson(mapper, metadata);
 		document.append("_id", uri.toString());
 		collection.replaceOne(Filters.eq("_id", document.getString("_id")), document, new UpdateOptions().upsert(true));
@@ -123,9 +131,28 @@ public class MongoMetadataStore extends MetadataStore {
 	}
 
 	@Override
-	public FetchMetadata getMetadata(Uri uri) {
+	public BlobMetadata getMetadata(Uri uri) {
 		Document doc = collection.find(Filters.eq("_id", uri.toString())).first();
-		return JsonBsonCodec.fromBson(mapper, doc, FetchMetadata.class);
+		return JsonBsonCodec.fromBson(mapper, doc, BlobMetadata.class);
+	}
+
+	@Override
+	public void byPages(int pageSize, Callback callback) {
+		MongoCursor<org.bson.Document> cursor = collection.find().iterator();
+		boolean loop = true;
+		try {
+			while (loop) {
+				List<org.bson.Document> docs = new ArrayList<>(batchSize);
+				int i = 0;
+				while (cursor.hasNext() && i < batchSize) {
+					docs.add(cursor.next());
+					i++;
+				}
+				loop = callback.on(docs.stream().map(doc -> JsonBsonCodec.fromBson(mapper, doc, BlobMetadata.class)).collect(Collectors.toList()));
+			}
+		} finally {
+			cursor.close();
+		}
 	}
 
 	@Override
