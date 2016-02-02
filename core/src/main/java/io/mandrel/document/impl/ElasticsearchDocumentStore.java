@@ -191,7 +191,7 @@ public class ElasticsearchDocumentStore extends DocumentStore {
 		Map<String, Object> source = hit.getSource();
 		Document document = new Document();
 		document.setId(hit.getId());
-		document.putAll((Map<String, ? extends List<? extends Object>>) source);
+		document.putAll((Map<? extends String, ? extends List<? extends Object>>) source);
 		return document;
 	};
 
