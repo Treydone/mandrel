@@ -73,6 +73,7 @@ Politness is respected, but only one process can download on one host at a time.
 Mandrel uses Zookeeper, Thrift, Netty, Undertow and Spring. It can be connected to:
 
 - Mongo
+- Elasticsearch
 - Kafka
 - Cassandra
 - Hbase + HDFS
@@ -287,7 +288,8 @@ $ mandrel-controller stop
 
 === Frontier
 
-The goal of the frontier is to know which URI to process next, and when. The frontier decides the logic and policies to follow when a crawler is visiting sources like websites: what pages should be crawled next, priorities and ordering, how often pages are revisited, etc.
+The goal of the frontier is to know which URI to process next, and when.
+The frontier decides the logic and policies to follow when a crawler is visiting sources like websites: what pages should be crawled next, priorities and ordering, how often pages are revisited, etc.
 It keeps the state of the crawl. This includes, but is not limited to:
 
 - What URIs have been discovered
@@ -316,21 +318,67 @@ The frontier is set of various background tasks:
 
 === Worker
 
+The goal of the worker is simple, it download and parse the content of uri given by the frontiers. Its workflow is more or less the following:
+
 - Pick out a uri from the frontier
 - Fetch the content
 - Store raw results in blobstore
 - Find links in the content
 - Store metadata in metadatastore
 - If extraction needed, parse the content and store the results in documentstore
-- Push some infos back to the frontier
 
 == Scalabilty
+
+All the components in Mandrel can have multiple instances:
+
+- Multiple controllers for high-availibility on the main component in Mandrel deployment
+- Multiple  frontiers in order to dsitribute the heavy job of priorization and reschedule
+- Multiple  workers in order to grow up the bandwidth
+
+All these instances are registered in a discovery service. By default, Mandrel uses Zookeeper as a discovery service.
+An other discovery service, 'local', is present but only used by the standalone mode.
+Other discovery services caneasily be added by implementing these interfaces:
+
+[source]
+import java.util.List;
+public interface DiscoveryClient {
+	ServiceInstance register(ServiceInstance instance);
+	void unregister(String serviceId);
+	List<ServiceInstance> getInstances(String serviceId);
+	List<String> getServices();
+	String getInstanceHost();
+	ServiceInstance getLocalInstance(String serviceId);
+	ServiceInstance getInstance(String id, String serviceId);
+	String getInstanceId();
+}
+
+Example:
+
+[source]
+@ConditionalOnProperty(value = "discovery.mynewdiscovery.enabled", matchIfMissing = false)
+@Component
+public class MyNewDiscoveryClient implements DiscoveryClient {
+        ...
+}
+
+And finally by enabling the new discovery service in the properties:
+
+[source]
+discovery:
+  local:
+    enabled: false
+  zookeeper:
+    enabled: false
+  mynewdiscovery:
+    enabled: true
 
 = Using Mandrel
 
 == Web UI
 
 == API REST
+
+All the documentation can be found on the Swagger endpoint at:  //TODO
 
 === API Conventions
 
@@ -339,34 +387,71 @@ The frontier is set of various background tasks:
 ==== Spiders
 
 [[spiders]]
-*`/spiders`*::
+*GET `/spiders`*::
 +
 .Description
 List all the spider
 
 [[spiders_id]]
-*`/spiders/{id}`*::
+*GET `/spiders/{id}`*::
 +
 .Description
 Return a spider
 
 [[spiders_start]]
-*`/spiders/{id}/start`*::
+*GET `/spiders/{id}/start`*::
 +
 .Description
 Start
 
 [[spiders_stop]]
-*`/spiders/{id}/stop`*::
+*GET `/spiders/{id}/stop`*::
 +
 .Description
 Stop
+
+
+==== Nodes
+
+[[nodes]]
+*GET `/nodes`*::
++
+.Description
+List all the nodes
+
+[[node]]
+*GET `/nodes/{id}`*::
++
+.Description
+Find a node by its id
 
 ==== Data
 
 ==== Cluster
 
 == Spider definition
+
+=== Introduction
+
+A spider is at least composed by:
+
+- sources: a set of sources (static list of uris, files, endpoint...) containing uris
+- stores: where to stores the raw data and their metadata
+- frontier: the list of uris discovered to be fetched or revisited
+- client: the bridge between Mandrel and the uris to be crawled, by default contains an HTTP/S and a FTP/S client
+
+You can also define:
+
+- filters: if you want to fetch only a specific type of uri (on the same domain, only starting with a prefix...)
+- extractors: if your want to extract some data from the downloaded content
+
+=== Examples
+
+Let's see some examples!
+
+==== IMDB
+
+==== LinkedIn
 
 === Filtering
 
@@ -378,7 +463,6 @@ You can add filters to your spider. There are two types of filters:
 Link filters apply conditions only on the link whereas blob filters apply conditions on the downloaded blob. This means also that link filters are applied BEFORE the crawling and blob filters AFTER. Take this in consideration when developping new spiders
 
 ==== Link filters
-
 
 *Domains*
 
@@ -577,41 +661,110 @@ $ curl -X POST http://localhost:8080/spiders/export/movie_extractor?format=csv|j
     "end_of_line_symbols":"\r\n"
 }
 
-=== Stores
+=== Blob & metadata stores
+
+Example for using Mongo:
 
 [source]
 {
    "stores":{
       "metadata":{
-         "type":"internal"
+         "type":"mongo"
       },
-      "page":{
-         "type":"internal"
+      "blob":{
+         "type":"mongo"
       }
    }
 }
 
+The store for blob is not mandatory, if you extract data via extractors for instance, but the metadata is:
+
 [source]
 {
    "stores":{
       "metadata":{
-         "type":"internal"
+         "type":"mongo"
       },
-      "page":null
+      "blob":null
    }
 }
 
+==== Mongo
+
+Blob, metadata, document
+
+[source]
+"stores" : {
+        "metadata" : {
+                "type" : "mongo",
+                "uri" : "mongodb://localhost",
+                "database" : "mandrel",
+                "collection" : "metadata_{0}",
+                "batch_size" : 1000
+        },
+        "blob" : {
+                "type" : "mongo",
+                "uri" : "mongodb://localhost",
+                "database" : "mandrel",
+                "bucket" : "blob_{0}",
+                "batch_size" : 10
+        }
+}
+
+=== Document stores
+
+==== Mongo
+
+[source]
+"extractors" : {
+        "data" : [
+                {
+                        "store" : {
+                                "type" : "mongo",
+                                "uri" : "mongodb://localhost",
+                                "database" : "mandrel",
+                                "collection" : "document_{0}",
+                                "batch_size" : 1000
+                        }
+                }
+        ]
+}
+
+==== Elasticsearch
+
+Document
+
+[source]
+"extractors" : {
+        "data" : [
+                {
+                        "store" : {
+                                "type" : "elasticsearch",
+                                "addresses" : ["localhost:9300"],
+                                "type" : "document",
+                                "index" : "mandrel_{0}",
+                                "cluster" : "mandrel",
+                                "batch_size" : 1000
+                        }
+                }
+        ]
+}
+
+
+==== Redis
+
+==== Mutliple output
 
 === Client
 
-Each spider can be configured with a specified HTTP client in order to configure:
+Each spider can be configured with a specified client in order to configure:
 
 * Proxies
 * Request and connection timeouts
 * User-agent generation
 * Custom cookies (jsessionid...) and headers (X-Request-By, Basic-Authentication...)
 * DNS resolution strategies
-* Politeness
+...
 
 [source]
 {
