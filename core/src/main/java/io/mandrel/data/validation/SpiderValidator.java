@@ -20,7 +20,8 @@ package io.mandrel.data.validation;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.StoresDefinition;
-import io.mandrel.data.content.MetadataExtractor;
+import io.mandrel.data.content.DataExtractor;
+import io.mandrel.data.content.DefaultDataExtractor;
 import io.mandrel.data.source.Source;
 import io.mandrel.data.source.Source.SourceDefinition;
 
@@ -66,9 +67,9 @@ public class SpiderValidator implements Validator {
 		}
 
 		// Extractors
-		if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
+		if (spider.getExtractors() != null && spider.getExtractors().getData() != null) {
 			int i = 0;
-			for (MetadataExtractor ex : spider.getExtractors().getPages()) {
+			for (DataExtractor ex : spider.getExtractors().getData()) {
 				if (ex.getName() == null) {
 					errors.rejectValue("extractors.pages[" + i + "].name", "extractors.name.not.null", null, "Can not be null.");
 				}
@@ -84,14 +85,18 @@ public class SpiderValidator implements Validator {
 				// "Check " + ex.getName() + " failed.");
 				// }
 
-				if (ex.getFields() == null) {
-					errors.rejectValue("extractors.pages[" + i + "].fields", "extractors.fields.not.null", null, "Can not be null.");
-				}
+				if (ex instanceof DefaultDataExtractor) {
+					DefaultDataExtractor dex = (DefaultDataExtractor) ex;
+					if (dex.getFields() == null) {
+						errors.rejectValue("extractors.pages[" + i + "].fields", "extractors.fields.not.null", null, "Can not be null.");
+					}
 
-				if (ex.getMultiple() != null) {
-					if (ex.getFields().stream().filter(f -> f.isUseMultiple()).anyMatch(f -> !ex.getMultiple().getType().equals(f.getExtractor().getType()))) {
-						errors.rejectValue("extractors.pages[" + i + "].fields", "extractors.fields.not.same.type.as.multiple", null,
-								"Is not the same type as the multiple.");
+					if (dex.getMultiple() != null) {
+						if (dex.getFields().stream().filter(f -> f.isUseMultiple())
+								.anyMatch(f -> !dex.getMultiple().getType().equals(f.getExtractor().getType()))) {
+							errors.rejectValue("extractors.pages[" + i + "].fields", "extractors.fields.not.same.type.as.multiple", null,
+									"Is not the same type as the multiple.");
+						}
 					}
 				}
 				i++;

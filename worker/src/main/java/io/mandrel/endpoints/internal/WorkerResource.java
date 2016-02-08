@@ -168,9 +168,9 @@ public class WorkerResource implements WorkerContract {
 							started.add(containerSpiderId);
 						}
 						break;
-					case SpiderStatuses.CREATED:
+					case SpiderStatuses.INITIATED:
 						if (!ContainerStatus.INITIATED.equals(c.status())) {
-							log.debug("Re-init spider {}", containerSpiderId);
+							log.debug("Re-create spider {}", containerSpiderId);
 							killWorkerContainer(containerSpiderId);
 							create(remoteSpider);
 						}

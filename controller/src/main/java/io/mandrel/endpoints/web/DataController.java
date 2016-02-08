@@ -20,10 +20,12 @@ package io.mandrel.endpoints.web;
 
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
-import io.mandrel.data.content.MetadataExtractor;
+import io.mandrel.data.content.DataExtractor;
+import io.mandrel.data.content.DefaultDataExtractor;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.document.DocumentStores;
+import io.mandrel.document.NavigableDocumentStore;
 import io.mandrel.spider.SpiderService;
 
 import java.util.Collection;
@@ -33,6 +35,7 @@ import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
@@ -54,13 +57,20 @@ public class DataController {
 		return "views/data";
 	}
 
-	@RequestMapping("/spiders/{id}/data/{extractor}")
-	public String view(@PathVariable Long id, @PathVariable String extractor, Model model) {
+	@RequestMapping("/spiders/{id}/data/{extractorName}")
+	public String view(@PathVariable Long id, @PathVariable String extractorName, Model model) {
 		Spider spider = spiderService.get(id);
 		model.addAttribute("spider", spider);
-		model.addAttribute("extractor",
-				spider.getExtractors().getPages().stream().filter(ex -> extractor.equals(ex.getName())).findFirst()
-						.orElseThrow(() -> new NotFoundException("")));
+
+		DataExtractor extractor = spider.getExtractors().getData().stream().filter(ex -> extractorName.equals(ex.name())).findFirst()
+				.orElseThrow(() -> new NotFoundException(""));
+
+		DocumentStore theStore = DocumentStores.get(id, extractorName).orElseThrow(() -> new NotFoundException(""));
+		if (!theStore.isNavigable()) {
+			throw new NotImplementedException("Not a navigable document store");
+		}
+
+		model.addAttribute("extractor", extractor);
 		return "views/data_spider";
 	}
 
@@ -69,14 +79,22 @@ public class DataController {
 	public PageResponse data(@PathVariable Long id, @PathVariable String extractor, PageRequest request, Model model) {
 		Spider spider = spiderService.get(id);
 
-		DocumentStore store = DocumentStores.get(id, extractor).orElseThrow(() -> new NotFoundException(""));
+		DocumentStore theStore = DocumentStores.get(id, extractor).orElseThrow(() -> new NotFoundException(""));
 
-		// TODO get the extractor from the store!
-		MetadataExtractor theExtractor = spider.getExtractors().getPages().stream().filter(ex -> extractor.equals(ex.getName())).findFirst()
+		if (!theStore.isNavigable()) {
+			throw new NotImplementedException("Not a navigable document store");
+		}
+		NavigableDocumentStore store = (NavigableDocumentStore) theStore;
+
+		DataExtractor theExtractor = spider.getExtractors().getData().stream().filter(ex -> extractor.equals(ex.name())).findFirst()
 				.orElseThrow(() -> new NotFoundException(""));
 
+		if (theExtractor instanceof DefaultDataExtractor) {
+			throw new NotImplementedException("Not a default data extractor");
+		}
+
 		Collection<Document> page = store.byPages(request.getLength(), request.getStart() / request.getLength());
-		page.forEach(doc -> theExtractor.getFields().forEach(f -> doc.putIfAbsent(f.getName(), Collections.emptyList())));
+		page.forEach(doc -> ((DefaultDataExtractor) theExtractor).getFields().forEach(f -> doc.putIfAbsent(f.getName(), Collections.emptyList())));
 		Long total = store.total();
 
 		PageResponse dataPage = PageResponse.of(page);

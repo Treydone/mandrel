@@ -18,39 +18,35 @@
  */
 package io.mandrel.data.content;
 
+import io.mandrel.blob.Blob;
 import io.mandrel.common.data.Filters;
+import io.mandrel.common.loader.NamedDefinition;
+import io.mandrel.data.content.selector.Selector.Instance;
+import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.document.DocumentStore.DocumentStoreDefinition;
 import io.mandrel.document.impl.MongoDocumentStore.MongoDocumentStoreDefinition;
+import io.mandrel.script.ScriptingService;
 
-import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import lombok.Data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-public class MetadataExtractor implements Serializable {
-
-	private static final long serialVersionUID = -4537707331477217731L;
+public abstract class DataExtractor implements NamedDefinition {
 
 	@JsonProperty("name")
-	private String name;
+	protected String name;
 
 	@JsonProperty("store")
-	private DocumentStoreDefinition<? extends DocumentStore> documentStore = new MongoDocumentStoreDefinition();
+	protected DocumentStoreDefinition<? extends DocumentStore> documentStore = new MongoDocumentStoreDefinition();
 
 	@JsonProperty("filters")
-	private Filters filters = new Filters();
+	protected Filters filters = new Filters();
 
-	@JsonProperty("multiple")
-	private Extractor multiple;
-
-	@JsonProperty("fields")
-	private List<FieldExtractor> fields;
-	
-	@JsonProperty("key_field")
-	private String keyField;
+	public abstract List<Document> extract(ScriptingService engine, Map<String, Instance<?>> selectors, Blob blob);
 
 }

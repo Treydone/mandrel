@@ -99,11 +99,13 @@ public class WorkerContainer extends AbstractContainer {
 		blobStore.init();
 		BlobStores.add(spider.getId(), blobStore);
 
-		spider.getExtractors().getPages().forEach(ex -> {
-			DocumentStore documentStore = ex.getDocumentStore().metadataExtractor(ex).build(context);
-			documentStore.init();
-			DocumentStores.add(spider.getId(), ex.getName(), documentStore);
-		});
+		if (spider.getExtractors().getData() != null) {
+			spider.getExtractors().getData().forEach(ex -> {
+				DocumentStore documentStore = ex.getDocumentStore().metadataExtractor(ex).build(context);
+				documentStore.init();
+				DocumentStores.add(spider.getId(), ex.getName(), documentStore);
+			});
+		}
 
 		// Init requesters
 		spider.getClient().getRequesters().forEach(r -> {

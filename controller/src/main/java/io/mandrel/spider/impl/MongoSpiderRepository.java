@@ -115,6 +115,6 @@ public class MongoSpiderRepository implements SpiderRepository {
 	}
 
 	protected Bson activeFilter() {
-		return Filters.or(Filters.eq("status", SpiderStatuses.STARTED), Filters.eq("status", SpiderStatuses.PAUSED), Filters.eq("status", SpiderStatuses.CREATED));
+		return Filters.or(Filters.eq("status", SpiderStatuses.STARTED), Filters.eq("status", SpiderStatuses.PAUSED), Filters.eq("status", SpiderStatuses.INITIATED));
 	}
 }

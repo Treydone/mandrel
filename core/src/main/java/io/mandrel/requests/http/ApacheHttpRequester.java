@@ -25,6 +25,7 @@ import io.mandrel.common.data.HttpStrategy.HttpStrategyDefinition;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
+import io.mandrel.requests.RequestException;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.proxy.ProxyServer;
 
@@ -40,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.net.ssl.HostnameVerifier;
@@ -53,9 +53,7 @@ import lombok.experimental.Accessors;
 import org.apache.http.Consts;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.CookieSpecs;
@@ -68,47 +66,28 @@ import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.MessageConstraints;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.DnsResolver;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.impl.DefaultHttpResponseFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.conn.SystemDefaultDnsResolver;
 import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.impl.nio.codecs.DefaultHttpRequestWriterFactory;
-import org.apache.http.impl.nio.codecs.DefaultHttpResponseParser;
-import org.apache.http.impl.nio.codecs.DefaultHttpResponseParserFactory;
-import org.apache.http.impl.nio.conn.ManagedNHttpClientConnectionFactory;
-import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
-import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
-import org.apache.http.impl.nio.reactor.IOReactorConfig;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicLineParser;
-import org.apache.http.message.LineParser;
-import org.apache.http.nio.NHttpMessageParser;
-import org.apache.http.nio.NHttpMessageParserFactory;
-import org.apache.http.nio.NHttpMessageWriterFactory;
-import org.apache.http.nio.conn.ManagedNHttpClientConnection;
-import org.apache.http.nio.conn.NHttpConnectionFactory;
-import org.apache.http.nio.conn.NoopIOSessionStrategy;
-import org.apache.http.nio.conn.SchemeIOSessionStrategy;
-import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
-import org.apache.http.nio.reactor.ConnectingIOReactor;
-import org.apache.http.nio.reactor.IOReactorException;
-import org.apache.http.nio.reactor.SessionInputBuffer;
-import org.apache.http.nio.util.HeapByteBufferAllocator;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
-import org.apache.http.util.CharArrayBuffer;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
+import com.google.common.net.HttpHeaders;
 
 @Data
 @Accessors(chain = true, fluent = true)
@@ -142,7 +121,7 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 
 		@Override
 		public ApacheHttpRequester build(TaskContext context) {
-			return build(new ApacheHttpRequester(context).maxLineLength(maxLineLength).maxHeaderCount(maxHeaderCount).ioThreadCount(ioThreadCount), context);
+			return build(new ApacheHttpRequester(context).maxLineLength(maxLineLength).maxHeaderCount(maxHeaderCount), context);
 		}
 
 	}
@@ -156,13 +135,10 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 	}
 
 	private int maxLineLength = -1;
-
 	private int maxHeaderCount = -1;
 
-	private int ioThreadCount = Runtime.getRuntime().availableProcessors();
-
 	// //////////////////////////////////////
-	private CloseableHttpAsyncClient client;
+	private CloseableHttpClient client;
 
 	private RequestConfig defaultRequestConfig;
 
@@ -176,33 +152,12 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 
 		available = new Semaphore(strategy().maxParallel(), true);
 
-		NHttpMessageParserFactory<HttpResponse> responseParserFactory = new DefaultHttpResponseParserFactory() {
-			@Override
-			public NHttpMessageParser<HttpResponse> create(final SessionInputBuffer buffer, final MessageConstraints constraints) {
-				LineParser lineParser = new BasicLineParser() {
-
-					@Override
-					public Header parseHeader(final CharArrayBuffer buffer) {
-						try {
-							return super.parseHeader(buffer);
-						} catch (ParseException ex) {
-							return new BasicHeader(buffer.toString(), null);
-						}
-					}
-				};
-				return new DefaultHttpResponseParser(buffer, lineParser, DefaultHttpResponseFactory.INSTANCE, constraints);
-			}
-		};
-		NHttpMessageWriterFactory<HttpRequest> requestWriterFactory = new DefaultHttpRequestWriterFactory();
-
-		NHttpConnectionFactory<ManagedNHttpClientConnection> connFactory = new ManagedNHttpClientConnectionFactory(requestWriterFactory, responseParserFactory,
-				HeapByteBufferAllocator.INSTANCE);
-
-		SSLContext sslcontext = SSLContexts.createSystemDefault();
+		SSLContext sslContext = SSLContexts.createSystemDefault();
 		HostnameVerifier hostnameVerifier = new DefaultHostnameVerifier();
 
-		Registry<SchemeIOSessionStrategy> sessionStrategyRegistry = RegistryBuilder.<SchemeIOSessionStrategy> create()
-				.register("http", NoopIOSessionStrategy.INSTANCE).register("https", new SSLIOSessionStrategy(sslcontext, null, null, hostnameVerifier)).build();
+		Registry<ConnectionSocketFactory> sessionStrategyRegistry = RegistryBuilder.<ConnectionSocketFactory> create()
+				.register("http", PlainConnectionSocketFactory.getSocketFactory())
+				.register("https", new SSLConnectionSocketFactory(sslContext, hostnameVerifier)).build();
 
 		DnsResolver dnsResolver = new SystemDefaultDnsResolver() {
 			@Override
@@ -215,22 +170,8 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 			}
 		};
 
-		// Create I/O reactor configuration
-
-		IOReactorConfig ioReactorConfig = IOReactorConfig.custom().setIoThreadCount(ioThreadCount).setConnectTimeout(strategy().connectTimeout())
-				.setSoReuseAddress(strategy().reuseAddress()).setSoKeepAlive(strategy().keepAlive()).setTcpNoDelay(strategy().tcpNoDelay())
-				.setSoTimeout(strategy().socketTimeout()).build();
-
-		// Create a custom I/O reactor
-		ConnectingIOReactor ioReactor;
-		try {
-			ioReactor = new DefaultConnectingIOReactor(ioReactorConfig);
-		} catch (IOReactorException e) {
-			throw Throwables.propagate(e);
-		}
-
 		// Create a connection manager with custom configuration.
-		PoolingNHttpClientConnectionManager connManager = new PoolingNHttpClientConnectionManager(ioReactor, connFactory, sessionStrategyRegistry, dnsResolver);
+		PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager(sessionStrategyRegistry, dnsResolver);
 
 		// Create message constraints
 		MessageConstraints messageConstraints = MessageConstraints.custom().setMaxHeaderCount(maxHeaderCount).setMaxLineLength(maxLineLength).build();
@@ -259,67 +200,10 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 
 		// Create an HttpClient with the given custom dependencies and
 		// configuration.
-		client = HttpAsyncClients.custom().setConnectionManager(connManager)
+		client = HttpClients.custom().setConnectionManager(connManager)
 		// .setDefaultCredentialsProvider(credentialsProvider)
 				.setDefaultRequestConfig(defaultRequestConfig).build();
-
-		client.start();
 	}
-
-	// public void get(Uri uri, Spider spider, SuccessCallback successCallback,
-	// FailureCallback failureCallback) {
-	// if (uri != null) {
-	// log.debug("Requesting {}...", uri);
-	//
-	// try {
-	// if (available.tryAcquire(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)) {
-	// HttpUriRequest request = prepareRequest(uri, spider);
-	// HttpContext localContext = prepareContext(spider);
-	//
-	// client.execute(request, localContext, new FutureCallback<HttpResponse>()
-	// {
-	// @Override
-	// public void failed(Exception ex) {
-	// try {
-	// log.trace(ex.getMessage(), ex);
-	// failureCallback.on(ex);
-	// } finally {
-	// available.release();
-	// }
-	// }
-	//
-	// @Override
-	// public void completed(HttpResponse result) {
-	// try {
-	// log.debug("Getting response for {}", uri);
-	// Blob webPage = extractWebPage(uri, result, localContext);
-	// successCallback.on(webPage);
-	// } catch (Exception e) {
-	// log.debug("Can not construct web page", e);
-	// throw Throwables.propagate(e);
-	// } finally {
-	// available.release();
-	// }
-	// }
-	//
-	// @Override
-	// public void cancelled() {
-	// try {
-	// log.warn("Cancelled");
-	// failureCallback.on(null);
-	// } finally {
-	// available.release();
-	// }
-	// }
-	// });
-	// } else {
-	// throw new MandrelException("Can not acquire lock, too many connection!");
-	// }
-	// } catch (InterruptedException e) {
-	// throw Throwables.propagate(e);
-	// }
-	// }
-	// }
 
 	public HttpContext prepareContext(Spider spider) {
 		CookieStore store = new BasicCookieStore();
@@ -340,12 +224,19 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 
 	public Blob get(Uri uri, Spider spider) throws Exception {
 		HttpUriRequest request = prepareRequest(uri, spider);
-		HttpResponse response = client.execute(request, null).get(5000, TimeUnit.MILLISECONDS);
+		HttpResponse response;
+		try {
+			response = client.execute(request);
+		} catch (ConnectTimeoutException e) {
+			throw new io.mandrel.requests.ConnectTimeoutException(e);
+		} catch (IOException e) {
+			throw new RequestException(e);
+		}
 		return extractWebPage(uri, response, null);
 	}
 
 	public Blob get(Uri uri) throws Exception {
-		HttpResponse response = client.execute(new HttpGet(uri.toURI()), null).get(5000, TimeUnit.MILLISECONDS);
+		HttpResponse response = client.execute(new HttpGet(uri.toURI()));
 		return extractWebPage(uri, response, null);
 	}
 
@@ -376,7 +267,7 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 		// Configure the user -agent
 		String userAgent = strategy().userAgentProvisionner().get(uri.toString(), spider);
 		if (Strings.isNullOrEmpty(userAgent)) {
-			request.addHeader("User-Agent", userAgent);
+			request.addHeader(HttpHeaders.USER_AGENT, userAgent);
 		}
 
 		// Configure the proxy

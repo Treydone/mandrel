@@ -106,8 +106,8 @@ public class AnalysisService {
 			Map<String, Instance<?>> cachedSelectors = new HashMap<>();
 
 			// Page extraction
-			if (spider.getExtractors().getPages() != null) {
-				Map<String, List<Document>> documentsByExtractor = spider.getExtractors().getPages().stream()
+			if (spider.getExtractors().getData() != null) {
+				Map<String, List<Document>> documentsByExtractor = spider.getExtractors().getData().stream()
 						.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(cachedSelectors, blob, ex)))
 						.filter(pair -> pair != null && pair.getKey() != null && pair.getValue() != null)
 						.collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));

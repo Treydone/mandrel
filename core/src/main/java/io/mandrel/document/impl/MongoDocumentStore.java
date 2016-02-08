@@ -19,9 +19,9 @@
 package io.mandrel.document.impl;
 
 import io.mandrel.common.service.TaskContext;
-import io.mandrel.data.content.MetadataExtractor;
+import io.mandrel.data.content.DataExtractor;
 import io.mandrel.document.Document;
-import io.mandrel.document.DocumentStore;
+import io.mandrel.document.NavigableDocumentStore;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -49,7 +49,7 @@ import com.mongodb.client.model.UpdateOptions;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true, fluent = true)
-public class MongoDocumentStore extends DocumentStore {
+public class MongoDocumentStore extends NavigableDocumentStore {
 
 	@Data
 	@Accessors(chain = false, fluent = false)
@@ -77,7 +77,7 @@ public class MongoDocumentStore extends DocumentStore {
 			MongoClientOptions.Builder options = MongoClientOptions.builder();
 			// TODO options.description("");
 			MongoClientURI uri = new MongoClientURI(this.uri, options);
-			return new MongoDocumentStore(context, metadataExtractor, new MongoClient(uri), database, MessageFormat.format(collection, context.getSpiderId()),
+			return new MongoDocumentStore(context, dataExtractor, new MongoClient(uri), database, MessageFormat.format(collection, context.getSpiderId()),
 					batchSize);
 		}
 	}
@@ -103,7 +103,7 @@ public class MongoDocumentStore extends DocumentStore {
 		return document;
 	};
 
-	public MongoDocumentStore(TaskContext context, MetadataExtractor metadataExtractor, MongoClient mongoClient, String databaseName, String collectionName,
+	public MongoDocumentStore(TaskContext context, DataExtractor metadataExtractor, MongoClient mongoClient, String databaseName, String collectionName,
 			int batchSize) {
 		super(context, metadataExtractor);
 		this.mongoClient = mongoClient;

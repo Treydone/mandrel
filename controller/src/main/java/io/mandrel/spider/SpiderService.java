@@ -185,7 +185,7 @@ public class SpiderService {
 			throw new BindException(errors);
 		}
 
-		updateTimeline(spider, SpiderEventType.SPIDER_STARTED);
+		updateTimeline(spider, SpiderEventType.SPIDER_UPDATED);
 
 		return spiderRepository.update(spider);
 	}
@@ -235,7 +235,7 @@ public class SpiderService {
 			throw new BindException(errors);
 		}
 
-		spider.setStatus(SpiderStatuses.CREATED);
+		spider.setStatus(SpiderStatuses.INITIATED);
 		spider.setCreated(LocalDateTime.now());
 
 		spider = spiderRepository.add(spider);
@@ -260,7 +260,7 @@ public class SpiderService {
 			throw new BindException(errors);
 		}
 
-		spider.setStatus(SpiderStatuses.CREATED);
+		spider.setStatus(SpiderStatuses.INITIATED);
 		spider.setCreated(LocalDateTime.now());
 		spider = spiderRepository.add(spider);
 
@@ -306,7 +306,7 @@ public class SpiderService {
 			throw new MandrelException("Can not start spider, you need a least a frontier instance!");
 		}
 
-		if (SpiderStatuses.CREATED.equals(spider.getStatus())) {
+		if (SpiderStatuses.INITIATED.equals(spider.getStatus())) {
 			// injectSingletonSources(spider);
 		}
 

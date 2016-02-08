@@ -28,9 +28,9 @@ import javax.inject.Inject;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wordnik.swagger.annotations.Api;
@@ -50,9 +50,9 @@ public class NodesResource {
 		return nodeService.nodes();
 	}
 
-	@RequestMapping(params = "uri", method = RequestMethod.GET)
+	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ApiOperation(value = "Find a node by its id", response = Node.class)
-	public Node id(@RequestParam String id) {
+	public Node id(@PathVariable String id) {
 		return nodeService.node(id);
 	}
 }

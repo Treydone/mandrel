@@ -19,9 +19,10 @@
 package io.mandrel.document.impl;
 
 import io.mandrel.common.service.TaskContext;
-import io.mandrel.data.content.MetadataExtractor;
+import io.mandrel.data.content.DataExtractor;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
+import io.mandrel.document.NavigableDocumentStore;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -39,7 +40,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Slf4j
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true, fluent = true)
-public class MultipleOutputDocumentStore extends DocumentStore {
+public class MultipleOutputDocumentStore extends NavigableDocumentStore {
 
 	@Data
 	@Accessors(chain = false, fluent = false)
@@ -58,14 +59,14 @@ public class MultipleOutputDocumentStore extends DocumentStore {
 
 		@Override
 		public MultipleOutputDocumentStore build(TaskContext context) {
-			return new MultipleOutputDocumentStore(context, metadataExtractor, stores.stream().map(definition -> definition.build(context))
-					.collect(Collectors.toList()));
+			List<? extends DocumentStore> documentStores = stores.stream().map(definition -> definition.build(context)).collect(Collectors.toList());
+			return new MultipleOutputDocumentStore(context, dataExtractor, documentStores);
 		}
 	}
 
 	private final List<? extends DocumentStore> stores;
 
-	public MultipleOutputDocumentStore(TaskContext context, MetadataExtractor metadataExtractor, List<? extends DocumentStore> stores) {
+	public MultipleOutputDocumentStore(TaskContext context, DataExtractor metadataExtractor, List<? extends DocumentStore> stores) {
 		super(context, metadataExtractor);
 		this.stores = stores;
 	}
@@ -92,22 +93,26 @@ public class MultipleOutputDocumentStore extends DocumentStore {
 
 	@Override
 	public void deleteAll() {
-		stores.forEach(store -> store.deleteAll());
+		stores.forEach(store -> {
+			if (store.isNavigable()) {
+				((NavigableDocumentStore) store).deleteAll();
+			}
+		});
 	}
 
 	@Override
 	public void byPages(int pageSize, Callback callback) {
-		stores.get(0).byPages(pageSize, callback);
+		((NavigableDocumentStore) stores.get(0)).byPages(pageSize, callback);
 	}
 
 	@Override
 	public long total() {
-		return stores.get(0).total();
+		return ((NavigableDocumentStore) stores.get(0)).total();
 	}
 
 	@Override
 	public Collection<Document> byPages(int pageSize, int pageNumber) {
-		return stores.get(0).byPages(pageSize, pageNumber);
+		return ((NavigableDocumentStore) stores.get(0)).byPages(pageSize, pageNumber);
 	}
 
 	@Override

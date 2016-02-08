@@ -22,9 +22,9 @@ import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobMetadata;
 import io.mandrel.common.net.Uri;
 import io.mandrel.data.Link;
+import io.mandrel.data.content.DefaultDataExtractor;
 import io.mandrel.data.content.Extractor;
 import io.mandrel.data.content.FieldExtractor;
-import io.mandrel.data.content.MetadataExtractor;
 import io.mandrel.data.content.OutlinkExtractor;
 import io.mandrel.data.content.SourceType;
 import io.mandrel.document.Document;
@@ -67,7 +67,7 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost")));
-		MetadataExtractor extractor = new MetadataExtractor();
+		DefaultDataExtractor extractor = new DefaultDataExtractor();
 
 		// Actions
 		extractorService.extractThenFormatThenStore(0, new HashMap<>(), blob, extractor);
@@ -80,7 +80,7 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost")));
-		MetadataExtractor extractor = new MetadataExtractor();
+		DefaultDataExtractor extractor = new DefaultDataExtractor();
 
 		// Actions
 		extractorService.extractThenFormatThenStore(0, new HashMap<>(), blob, extractor);
@@ -93,7 +93,7 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost")));
-		MetadataExtractor extractor = new MetadataExtractor();
+		DefaultDataExtractor extractor = new DefaultDataExtractor();
 
 		FieldExtractor field = new FieldExtractor();
 		field.setName("date");
@@ -110,7 +110,7 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost")));
-		MetadataExtractor extractor = new MetadataExtractor();
+		DefaultDataExtractor extractor = new DefaultDataExtractor();
 
 		DocumentStores.add(0, extractor.getName(), documentStore);
 		FieldExtractor field = new FieldExtractor();
@@ -128,7 +128,7 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost")));
-		MetadataExtractor extractor = new MetadataExtractor();
+		DefaultDataExtractor extractor = new DefaultDataExtractor();
 
 		DocumentStores.add(0, extractor.getName(), documentStore);
 		FieldExtractor field = new FieldExtractor();
@@ -149,7 +149,7 @@ public class ExtractorServiceTest {
 
 		// Arrange
 		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost")));
-		MetadataExtractor extractor = new MetadataExtractor();
+		DefaultDataExtractor extractor = new DefaultDataExtractor();
 
 		DocumentStores.add(0, extractor.getName(), documentStore);
 		FieldExtractor field = new FieldExtractor();
@@ -172,7 +172,7 @@ public class ExtractorServiceTest {
 		byte[] stream = "<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes();
 
 		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost"))).setPayload(Payloads.newByteArrayPayload(stream));
-		MetadataExtractor extractor = new MetadataExtractor();
+		DefaultDataExtractor extractor = new DefaultDataExtractor();
 
 		DocumentStores.add(0, extractor.getName(), documentStore);
 		FieldExtractor field = new FieldExtractor();
@@ -200,7 +200,7 @@ public class ExtractorServiceTest {
 		byte[] stream = "<html><test><o>value1</o><t>key1</t></test><test><o>value2</o></test></html>".getBytes();
 
 		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost"))).setPayload(Payloads.newByteArrayPayload(stream));
-		MetadataExtractor extractor = new MetadataExtractor();
+		DefaultDataExtractor extractor = new DefaultDataExtractor();
 
 		DocumentStores.add(0, extractor.getName(), documentStore);
 
@@ -240,7 +240,7 @@ public class ExtractorServiceTest {
 				.getBytes();
 
 		Blob blob = new Blob(new BlobMetadata().setUri(Uri.create("http://localhost"))).setPayload(Payloads.newByteArrayPayload(stream));
-		MetadataExtractor extractor = new MetadataExtractor();
+		DefaultDataExtractor extractor = new DefaultDataExtractor();
 		DocumentStores.add(0, extractor.getName(), documentStore);
 
 		FieldExtractor dateField = new FieldExtractor();
@@ -299,7 +299,7 @@ public class ExtractorServiceTest {
 		Set<Link> links = extractorService.extractOutlinks(new HashMap<>(), blob, extractor);
 
 		// Asserts
-		Assertions.assertThat(links).containsExactly(new Link().setText("Relative").setUri(Uri.create("http://localhost/pouet")),
+		Assertions.assertThat(links).containsOnly(new Link().setText("Relative").setUri(Uri.create("http://localhost/pouet")),
 				new Link().setText("Absolute").setUri(Uri.create("http://test.com/pouet")));
 	}
 }

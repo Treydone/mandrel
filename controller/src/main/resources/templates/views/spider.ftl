@@ -266,16 +266,16 @@
 					      <h3 class="box-title">Actions</h3>
 					    </div>
 					    <div class="box-body">
-					      <a class="btn btn-app <#if spider.status != "created">disabled</#if>">
+					      <a class="btn btn-app <#if spider.status != "initiated">disabled</#if>">
 					        <i class="fa fa-edit"></i> Edit
 					      </a>
-					      <a class="btn btn-app <#if spider.status != "created" && spider.status != "paused">disabled</#if>" href="/spiders/${spider.id?c}/start">
+					      <a class="btn btn-app <#if spider.status != "initiated" && spider.status != "paused">disabled</#if>" href="/spiders/${spider.id?c}/start">
 					        <i class="fa fa-play"></i> Start
 					      </a>
 					      <a class="btn btn-app <#if spider.status != "started">disabled</#if>" href="/spiders/${spider.id?c}/pause">
 					        <i class="fa fa-pause"></i> Pause
 					      </a>
-					      <a class="btn btn-app <#if spider.status != "created" && spider.status != "started">disabled</#if>" href="/spiders/${spider.id?c}/cancel">
+					      <a class="btn btn-app <#if spider.status != "initiated" && spider.status != "started">disabled</#if>" href="/spiders/${spider.id?c}/cancel">
 					        <i class="fa fa-exclamation-triangle"></i> Cancel
 					      </a>
 					      <a class="btn btn-app <#if spider.status != "killed" && spider.status != "ended">disabled</#if>" href="/spiders/${spider.id?c}/delete">

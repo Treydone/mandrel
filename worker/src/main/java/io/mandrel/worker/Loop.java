@@ -31,19 +31,19 @@ import io.mandrel.endpoints.contracts.Next;
 import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.GlobalAccumulator;
 import io.mandrel.metrics.SpiderAccumulator;
+import io.mandrel.requests.ConnectTimeoutException;
+import io.mandrel.requests.ReadTimeoutException;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.Requesters;
 import io.mandrel.transport.Clients;
 import io.mandrel.transport.RemoteException;
 
-import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -51,9 +51,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.http.conn.ConnectTimeoutException;
-import org.jboss.netty.handler.timeout.ReadTimeoutException;
-import org.jboss.netty.handler.timeout.WriteTimeoutException;
 import org.springframework.util.StopWatch;
 
 /**
@@ -102,10 +99,6 @@ public class Loop implements Runnable {
 					continue;
 				}
 
-				// Take on elements
-				// ListenableFuture<Uri> result =
-				// clients.onRandomFrontier().map(frontier ->
-				// frontier.next(spider.getId()));
 				log.trace("> Asking for uri...");
 				Next next = clients.onRandomFrontier().map(frontier -> frontier.next(spider.getId())).get(20000, TimeUnit.MILLISECONDS);
 				Uri uri = next.getUri();
@@ -133,10 +126,6 @@ public class Loop implements Runnable {
 								add(spider.getId(), uri);
 							} else if (t instanceof ReadTimeoutException) {
 								spiderAccumulator.incReadTimeout();
-								add(spider.getId(), uri);
-							} else if (t instanceof ConnectException || t instanceof WriteTimeoutException || t instanceof TimeoutException
-									|| t instanceof java.util.concurrent.TimeoutException) {
-								spiderAccumulator.incConnectException();
 								add(spider.getId(), uri);
 							} else {
 								log.debug("Error while looping", t);
@@ -193,9 +182,9 @@ public class Loop implements Runnable {
 		updateMetrics(watch, blob);
 
 		Map<String, Instance<?>> cachedSelectors = new HashMap<>();
-		if (spider.getExtractors() != null && spider.getExtractors().getPages() != null) {
+		if (spider.getExtractors() != null && spider.getExtractors().getData() != null) {
 			log.trace(">  - Extracting documents for {}...", uri);
-			spider.getExtractors().getPages().forEach(ex -> {
+			spider.getExtractors().getData().forEach(ex -> {
 				List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, blob, ex);
 
 				if (documents != null) {

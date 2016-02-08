@@ -59,7 +59,7 @@ public class ControllerContainer extends AbstractContainer {
 		blobStore.init();
 		BlobStores.add(spider.getId(), blobStore);
 
-		spider.getExtractors().getPages().forEach(ex -> {
+		spider.getExtractors().getData().forEach(ex -> {
 			DocumentStore documentStore = ex.getDocumentStore().metadataExtractor(ex).build(context);
 			documentStore.init();
 			DocumentStores.add(spider.getId(), ex.getName(), documentStore);

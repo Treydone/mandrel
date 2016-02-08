@@ -19,9 +19,9 @@
 package io.mandrel.document.impl;
 
 import io.mandrel.common.service.TaskContext;
-import io.mandrel.data.content.MetadataExtractor;
+import io.mandrel.data.content.DataExtractor;
 import io.mandrel.document.Document;
-import io.mandrel.document.DocumentStore;
+import io.mandrel.document.NavigableDocumentStore;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -40,6 +40,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -62,7 +63,7 @@ import com.google.common.net.HostAndPort;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true, fluent = true)
-public class ElasticsearchDocumentStore extends DocumentStore {
+public class ElasticsearchDocumentStore extends NavigableDocumentStore {
 
 	@Data
 	@Slf4j
@@ -113,7 +114,7 @@ public class ElasticsearchDocumentStore extends DocumentStore {
 					throw Throwables.propagate(e);
 				}
 			});
-			return new ElasticsearchDocumentStore(context, metadataExtractor, client, MessageFormat.format(index, context.getSpiderId()), type, batchSize);
+			return new ElasticsearchDocumentStore(context, dataExtractor, client, MessageFormat.format(index, context.getSpiderId()), type, batchSize);
 		}
 	}
 
@@ -122,7 +123,7 @@ public class ElasticsearchDocumentStore extends DocumentStore {
 	private final String index;
 	private final String type;
 
-	public ElasticsearchDocumentStore(TaskContext context, MetadataExtractor metadataExtractor, TransportClient client, String index, String type, int batchSize) {
+	public ElasticsearchDocumentStore(TaskContext context, DataExtractor metadataExtractor, TransportClient client, String index, String type, int batchSize) {
 		super(context, metadataExtractor);
 		this.client = client;
 		this.index = index;
@@ -191,7 +192,8 @@ public class ElasticsearchDocumentStore extends DocumentStore {
 		Map<String, Object> source = hit.getSource();
 		Document document = new Document();
 		document.setId(hit.getId());
-		document.putAll((Map<? extends String, ? extends List<? extends Object>>) source);
+		document.putAll(source.entrySet().stream().map(entry -> Pair.of(entry.getKey(), (List<Object>) entry.getValue()))
+				.collect(Collectors.toMap(Pair::getLeft, Pair::getRight)));
 		return document;
 	};
 

@@ -23,21 +23,20 @@ import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.service.TaskContextAware;
-import io.mandrel.data.content.MetadataExtractor;
+import io.mandrel.data.content.DataExtractor;
 import io.mandrel.monitor.health.Checkable;
 
 import java.io.Closeable;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public abstract class DocumentStore extends TaskContextAware implements Checkable, Initializable, Closeable {
 
-	protected final MetadataExtractor metadataExtractor;
+	protected final DataExtractor metadataExtractor;
 
-	public DocumentStore(TaskContext context, MetadataExtractor metadataExtractor) {
+	public DocumentStore(TaskContext context, DataExtractor metadataExtractor) {
 		super(context);
 		this.metadataExtractor = metadataExtractor;
 	}
@@ -47,10 +46,10 @@ public abstract class DocumentStore extends TaskContextAware implements Checkabl
 		private static final long serialVersionUID = -9187921401073694191L;
 
 		@JsonIgnore
-		protected MetadataExtractor metadataExtractor;
+		protected DataExtractor dataExtractor;
 
-		public DocumentStoreDefinition<DOCUMENTSTORE> metadataExtractor(MetadataExtractor metadataExtractor) {
-			this.metadataExtractor = metadataExtractor;
+		public DocumentStoreDefinition<DOCUMENTSTORE> metadataExtractor(DataExtractor metadataExtractor) {
+			this.dataExtractor = metadataExtractor;
 			return this;
 		}
 	}
@@ -59,19 +58,7 @@ public abstract class DocumentStore extends TaskContextAware implements Checkabl
 
 	public abstract void save(List<Document> documents);
 
-	public abstract void deleteAll();
-
-	// Stream<Document> all(long spiderId);
-
-	@FunctionalInterface
-	public static interface Callback {
-		boolean on(Collection<Document> elements);
+	public boolean isNavigable() {
+		return false;
 	}
-
-	public abstract void byPages(int pageSize, Callback callback);
-
-	public abstract Collection<Document> byPages(int pageSize, int pageNumber);
-
-	public abstract long total();
-
 }

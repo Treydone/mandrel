@@ -21,8 +21,11 @@ package io.mandrel.data.export;
 import io.mandrel.blob.BlobStores;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Spider;
-import io.mandrel.data.content.MetadataExtractor;
+import io.mandrel.data.content.DataExtractor;
+import io.mandrel.data.content.DefaultDataExtractor;
+import io.mandrel.document.DocumentStore;
 import io.mandrel.document.DocumentStores;
+import io.mandrel.document.NavigableDocumentStore;
 import io.mandrel.spider.SpiderService;
 
 import java.io.BufferedWriter;
@@ -35,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -47,14 +51,26 @@ public class ExporterService {
 	public void export(Long id, String extractorName, Exporter exporter, Writer writer) {
 		Spider spider = spiderService.get(id);
 
-		Optional<MetadataExtractor> oExtractor = spider.getExtractors().getPages().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
+		Optional<? extends DataExtractor> oExtractor = spider.getExtractors().getData().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
 		if (oExtractor.isPresent()) {
+
+			DataExtractor theExtractor = oExtractor.get();
+			if (theExtractor instanceof DefaultDataExtractor) {
+				throw new NotImplementedException("Not a default data extractor");
+			}
+
 			try {
 				exporter.init(writer);
-				MetadataExtractor extractor = oExtractor.get();
-				DocumentStores.get(id, extractorName).get().byPages(1000, data -> {
+
+				DocumentStore theStore = DocumentStores.get(id, extractorName).get();
+				if (!theStore.isNavigable()) {
+					throw new NotImplementedException("Not a navigable document store");
+				}
+				NavigableDocumentStore store = (NavigableDocumentStore) theStore;
+
+				store.byPages(1000, data -> {
 					try {
-						exporter.export(data, extractor.getFields());
+						exporter.export(data, ((DefaultDataExtractor) theExtractor).getFields());
 					} catch (Exception e) {
 						log.debug("Uhhh...", e);
 						return false;
