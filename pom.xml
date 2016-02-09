@@ -424,6 +424,21 @@
 				<artifactId>datatables</artifactId>
 				<version>1.10.7</version>
 			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>morrisjs</artifactId>
+				<version>0.5.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>raphaeljs</artifactId>
+				<version>2.1.4</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>jquery-knob</artifactId>
+				<version>1.2.11</version>
+			</dependency>
 
 			<dependency>
 				<groupId>org.mongodb</groupId>
@@ -476,6 +491,11 @@
 				<groupId>biz.paluch.redis</groupId>
 				<artifactId>lettuce</artifactId>
 				<version>4.0.Final</version>
+			</dependency>
+			<dependency>
+				<groupId>org.elasticsearch</groupId>
+				<artifactId>elasticsearch</artifactId>
+				<version>2.1.1</version>
 			</dependency>
 
 			<dependency>

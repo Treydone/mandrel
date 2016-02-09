@@ -59,9 +59,6 @@ public interface FrontierContract extends Contract, AutoCloseable {
 	ListenableFuture<Next> next(@ThriftField(value = 1, name = "id") Long id) throws RemoteException;
 
 	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
-	void delete(@ThriftField(value = 1, name = "id") Long id, @ThriftField(value = 2, name = "uri") Uri uri) throws RemoteException;
-
-	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })
 	void schedule(@ThriftField(value = 1, name = "id") Long id, @ThriftField(value = 2, name = "uri") Uri uri) throws RemoteException;
 
 	@ThriftMethod(exception = { @ThriftException(type = RemoteException.class, id = 1) })

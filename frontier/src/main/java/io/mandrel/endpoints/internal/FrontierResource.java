@@ -110,11 +110,6 @@ public class FrontierResource implements FrontierContract {
 	}
 
 	@Override
-	public void delete(Long id, Uri uri) {
-		FrontierContainers.get(id).orElseThrow(frontierNotFound).frontier().schedule(uri);
-	}
-
-	@Override
 	public List<Container> listRunningFrontierContainers() {
 		return FrontierContainers.list().stream()
 				.map(f -> new Container().setSpiderId(f.spider().getId()).setVersion(f.spider().getVersion()).setStatus(f.status()))
