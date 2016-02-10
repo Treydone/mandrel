@@ -1,5 +1,6 @@
 # Mandrel
-[![Build Status](https://api.travis-ci.org/Treydone/mandrel.svg?branch=master)](https://travis-ci.org/Treydone/mandrel)
+[![Join the chat at https://gitter.im/Treydone/mandrel](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Treydone/mandrel?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://api.travis-ci.org/Treydone/mandrel.svg?branch=dev)](https://travis-ci.org/Treydone/mandrel)
 
 # Introduction
 

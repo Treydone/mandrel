@@ -171,7 +171,7 @@ public class MongoMetricsRepository implements MetricsRepository {
 
 		// TODO Distributed lock!
 		LocalDateTime now = LocalDateTime.now();
-		LocalDateTime keytime = now.withMinute(0).withSecond(0).withNano(0).plusMinutes(1);
+		LocalDateTime keytime = now.withMinute(0).withSecond(0).withNano(0).plusHours(1);
 
 		prepareMinutes(keytime);
 	}
