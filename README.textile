@@ -1,319 +1,56 @@
-[![Build Status](https://travis-ci.org/Treydone/mandrel.svg?branch=master)](https://travis-ci.org/Treydone/mandrel)
-[![Build Status](https://travis-ci.org/Treydone/mandrel.svg?branch=dev)](https://travis-ci.org/Treydone/mandrel)
+[![Build Status](https://api.travis-ci.org/Treydone/mandrel.svg?branch=master)](https://travis-ci.org/Treydone/mandrel)
 
 h1. Mandrel
 
-h2. A Distributed Crawler Engine
+h2. Introduction
 
-Mandrel is a distributed Crawler engine built for the cloud. Features include:
-* Distributed and Highly Available Crawler Engine.
+Mandrel is a distributed mining engine built for the cloud. Features include:
+
+* Distributed and Highly Available mining Engine.
 * Powerful and customizable
 * HTTP RESTful API
 * Open Source under the Apache License, version 2 ("ALv2")
 
+Mandrel is designed as a whole product, with the idea of bringing a complete mining engine solution that runs out of the box. It is designed for performance and scalability. Event if it has been tested on small and on medium-sized cluster (~30 nodes), Mandrel can scale on cloud-sized cluster without any effort.
+
+Mandrel can be used to build various mining jobs:
+
+- Web crawlers: make the web your in-house database by turning web pages into data
+- SEO analytics: test web pages and links for valid syntax and structure, find broken links and 404 pages
+- Monitor sites to see when their structure or contents change
+- Build a special-purpose search index, intranet/extranet indexation...
+- Maintain mirror sites for popular Web sites
+- Search for copyright infringements: find duplicate of content
+
 h2. Getting Started
+
+
+h3. System Requirements
+
+Mandrel works on Linux, Mac and Windows. All you need is Java 8.
+
 
 h3. Installation
 
-* Download and unzip the Mandrel official distribution OR checkout the code and build it via a "mvn package -DskipTests"
-* Run @bin/mandrel@ on unix
-* Go to @curl -X GET http://localhost:8080/@.
+* Download and unzip the Mandrel official distribution
+* Run @bin/standalone@
+* Go to @http://localhost:8080/@.
 * Enjoy
-* Start more servers and repeat...
 
-h3. Crawling
+OR
 
-h4. The easy way
+* Checkout the code
+* Build it via a "mvn package -DskipTests"
+* Run @bin/standalone@
+* Go to @http://localhost:8080/@.
+* Enjoy
 
-Ok, we want to crawl Wikipedia. First step, we create a spider:
-@curl -X GET http://localhost:9200/spiders/wikipedia?urls=http://en.wikipedia.org@
+h2. Where to go from here? 
 
-You can see all the spiders here:
-@curl -X GET http://localhost:8080/spiders@
-
-Or just your newly created spider:
-@curl -X GET http://localhost:8080/spiders/wikipedia@
-
-Now start it:
-@curl -X POST http://localhost:8080/spiders/wikipedia/start@
-
-Aaaaaaand, that's it. Wait, what???
-
-Mandrel create the spider named "wikipedia" and distribute it across all the nodes. When you start it, Mandrel begin the crawl by using the urls you give and dig in the pages in order to find other urls. 
-
-bq. By default, only 100 urls are crawled. See below in order to configure your spider.
-
-Once you have done all you want with your spider, you can kill it:
-@curl -X POST http://localhost:8080/spiders/wikipedia/cancel@
-
-Before starting your spider, it may be useful to test it against a url and have a first look of the result:
-@curl -X GET http://localhost:8080/spiders/wikipedia/analyze?source=http://myurl.com/...@
-
-h4. The advanced way
+Refer to the Mandrel online "documentation":http://treydone.github.io/mandrel/ .
 
 
-
-h3. Filtering
-
-You can add filters to your spider. There are two types of filters:
-- url filters
-- page filters
-
-Url filters apply conditions only on the url whereas page filters apply conditions on the page. This means also that url filters are applied BEFORE the crawling and page filters AFTER.
-
-h4. Url filters
-
-*Domains*
-Example:
-
-bc. {
-    "type":"allowed_for_domains",
-    "domains": [
-        "mydomain1",
-        "mydomain2"
-    ]
-}
-
-*Skip ancor*
-Example:
-
-bc. {
-    "type":"skip_ancor"
-}
-
-*Pattern*
-Example:
-
-bc. {
-    "type":"pattern",
-    "pattern": "..."
-}
-
-*Sanitize*
-Remove all the parameters in a URI (tck=..., timestamp=..., adsclick=...)
-
-Example:
-
-bc. {
-    "type":"sanitize_params"
-}
-      
-To be continued...
-- Keep only some parameters
-
-*Booleans*
-or|and|not|true|false
-Example:
-
-bc. 
-{
-    "not": {
-        "type":"allowed_for_domains",
-        "domains": [
-            "mydomain1",
-            "mydomain2"
-        ]
-    }
-}
-
-bc. 
-{
-    "and": [ 
-        {
-            "type":"allowed_for_domains",
-            "domains": [
-                "mydomain1",
-                "mydomain2"
-            ]
-        },
-        {
-            "type":"pattern",
-            "pattern": "..."
-        }
-    ]
-}
-
-h4. Page filters
-
-*Size*
-
-*Booleans*
-or|and|not|true|false
-
-      
-To be continued...
-
-h3. Raw exporting
-
-Your spider is now done. Or not. We don't care, we just want to export the raw data of the pages/documents. You have to two ways to do this:
-- Extract the data from the page store if you have specified one during the creation (SQL, Cassandra...)
-- Use the dedicated endpoint
-
-@curl -X GET http://localhost:8080/spiders/wikipedia/raw/export?format=csv|json@
-
-To be continued...
-- Define options for the exporters
-- Add formats for parquet
-- Support compression
-
-h3. Extracting
-
-Something we want to crawl pages. But what we really want is the data INSIDE the pages.
-
-bc. curl -X POST http://localhost:8080/spiders/imdb -d '
-{
-   "sources":[
-      {
-         "type":"fixed",
-         "urls":[
-            "http://www.imdb.com/"
-         ]
-      }
-   ],
-   "extractors":[
-      {
-         "name":"movie_extractor"
-         "filters":[
-            {
-               "type":"patterns",
-               "value":[
-                  "/title"
-               ]
-            }
-         ],
-         "fields":[
-            {
-               "title":{
-                  "extractor":{
-                     "type":"xpath",
-                     "value":"//*[@id="overview-top"]/h1/span[1]/text()",
-                     "source":"body"
-                  }
-               }
-            },
-            {
-               "description":{
-                  "extractor":{
-                     "type":"xpath",
-                     "value":"//*[@id="overview-top"]/p[2]/text()",
-                     "source":"body"
-                  }
-               }
-            },
-            {
-               "actors":{
-                  "extractor":{
-                     "type":"xpath",
-                     "value":"//*[@id="overview-top"]/div[6]/a/span",
-                     "source":"body"
-                  }
-               }
-            }            
-         ]
-      }
-   ]
-}
-'
-
-This will extract the fields 'title', 'description' and 'actors' from the page.
-
-h3. Data exporting
-
-Ok, now we got some data, we can export them by calling:
-
-@curl -X POST http://localhost:8080/spiders/export/movie_extractor?format=csv|json@
-
-h4. JSON
-
-bc. {
-    "type":"json"
-}
-
-h4. Delimited separated values
-
-
-bc. {
-    "type":"csv",
-    "quote_char":"\"",
-    "delimiter_values":44,
-    "delimiter_multivalues":124,
-    "keep_only_first_value":false,
-    "add_header":true,
-    "end_of_line_symbols":"\r\n"
-}
-
-h4. Stores
-
-bc. {
-   "stores":{
-      "metadata":{
-         "type":"internal"
-      },
-      "page":{
-         "type":"internal"
-      }
-   }
-}
-
-bc. {
-   "stores":{
-      "metadata":{
-         "type":"internal"
-      },
-      "page":null
-   }
-}
-   
-h3. Client
-
-Each spider can be configured with a specified HTTP client in order to configure:
-* Proxies
-* Request and connection timeouts
-* User-agent generation
-* Custom cookies (jsessionid...) and headers (X-Request-By, Basic-Authentication...)
-* DNS resolution strategies
-* Politeness
-
-bc. {
-    "request_time_out":3000,
-    "headers":null,
-    "params":null,
-    "follow_redirects":false,
-    "cookies":null,
-    "user_agent_provisionner":{
-        "type":"fixed",
-        "ua":"Mandrel"
-    },
-    "dns_cache":{
-        "type":"internal"
-    },
-    "proxy":{
-        "type":"no"
-    },
-    "politeness":{
-        "global_rate":1000,
-        "per_node_rate":500,
-        "max_pages":500,
-        "wait":100,
-        "ignore_robots_txt":false,
-        "recrawl_after":-1
-    }
-}
-
-h3. Distributed, Highly Available
-
-TODO...
-
-h3. Building from Source
-
-Mandrel uses "Maven":http://maven.apache.org for its build system.
-
-In order to create a distribution, simply run the @mvn clean package -DskipTests@ command in the cloned directory.
-
-h2. Examples
-
-
-h1. License
+h2. License
 
 <pre>
 This software is licensed under the Apache License, version 2 ("ALv2"), quoted below.
