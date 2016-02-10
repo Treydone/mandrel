@@ -1,8 +1,7 @@
+# Mandrel
 [![Build Status](https://api.travis-ci.org/Treydone/mandrel.svg?branch=master)](https://travis-ci.org/Treydone/mandrel)
 
-h1. Mandrel
-
-h2. Introduction
+# Introduction
 
 Mandrel is a distributed mining engine built for the cloud. Features include:
 
@@ -22,15 +21,15 @@ Mandrel can be used to build various mining jobs:
 - Maintain mirror sites for popular Web sites
 - Search for copyright infringements: find duplicate of content
 
-h2. Getting Started
+# Getting Started
 
 
-h3. System Requirements
+## System Requirements
 
 Mandrel works on Linux, Mac and Windows. All you need is Java 8.
 
 
-h3. Installation
+## Installation
 
 * Download and unzip the Mandrel official distribution
 * Run @bin/standalone@
@@ -45,14 +44,13 @@ OR
 * Go to @http://localhost:8080/@.
 * Enjoy
 
-h2. Where to go from here? 
+# Where to go from here? 
 
 Refer to the Mandrel online "documentation":http://treydone.github.io/mandrel/ .
 
 
-h2. License
+# License
 
-<pre>
 This software is licensed under the Apache License, version 2 ("ALv2"), quoted below.
 
 Copyright 2009-2015 Mandrel
@@ -68,4 +66,3 @@ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
-</pre>
