@@ -620,6 +620,8 @@
 						<releaseProfiles>release</releaseProfiles>
 						<goals></goals>
 						<tagNameFormat>v@{project.version}</tagNameFormat>
+						<arguments>-DskipTests</arguments>
+						<pushChanges>false</pushChanges>
 					</configuration>
 				</plugin>
 
