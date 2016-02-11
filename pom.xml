@@ -7,7 +7,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Mandrel</name>
-	<description>The crawler at scale</description>
+	<description>The distributed mining engine built for the cloud</description>
 
 	<licenses>
 		<license>
@@ -22,6 +22,14 @@
 		<developerConnection>scm:git:git@github.com:Treydone/mandrel.git</developerConnection>
 		<url>http://github.com/Treydone/mandrel</url>
 	</scm>
+
+	<distributionManagement>
+		<repository>
+			<id>bintray</id>
+			<name>mandrel</name>
+			<url>https://api.bintray.com/maven/treydone/maven/mandrel/;publish=1</url>
+		</repository>
+	</distributionManagement>
 
 	<issueManagement>
 		<system>github</system>

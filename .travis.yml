@@ -2,3 +2,16 @@ language: java
 script: mvn clean install -DskipTests
 jdk:
   - oraclejdk8
+
+after_success:
+  - mvn -s settings.xml clean deploy -DskipTests
+branches:
+  only:
+    - master
+    - dev
+env:
+  global:
+    # BINTRAY_USER
+    - secure: "n8/EZJ2VKcUY8zHlon6DWZCeY5Wr6Mel7UEEWnjwjBO6rn2OSQjmTZqcmRmkg1kWDZvfifx5F9xvVrjFbs8KRQOjE0Oy8hrKZwn/XprkrvHf5yEkNAR8GN3nMMWhG2MfMG4zQ+oTMPj+TuqsldNMntubDSoC6pyWbrf6EZcpX5E="
+    # BINTRAY_API_KEY
+    - secure: "MGlrO4VrT+mK2Oti2WVLFXJFADSYh/LqDbhjEvw4Z0MxHC5wfuJm+S0Gd8DTjUgR3xhzVD+sRKlmlFaPxu8eO8usy5XbHeCKrhIMnw+nhCYrQYeav0rUYBUX6vk59YIS5iUhLsSW/dhzq9TlHGj7Xsv1TTu/7IjRH7IIEuPxl2o="
