@@ -1,10 +1,12 @@
 language: java
-script: mvn clean install -DskipTests
 jdk:
   - oraclejdk8
+  
+script: mvn clean install -DskipTests
 
 after_success:
-  - mvn -s settings.xml clean deploy -DskipTests
+  - mvn --settings travis/travis-settings.xml deploy -DskipTests
+
 branches:
   only:
     - master
