@@ -5,12 +5,15 @@ jdk:
 script: mvn clean install -DskipTests
 
 after_success:
-  - mvn --settings travis/travis-settings.xml deploy -DskipTests
+  #- mvn clean cobertura:cobertura coveralls:report javadoc:jar
+  - test "${TRAVIS_PULL_REQUEST}" == "false" && test “${TRAVIS_JDK_VERSION}” == “oraclejdk8″ && test "${TRAVIS_TAG}" != "" && mvn deploy -DskipTests --settings travis/travis-settings.xml
 
 branches:
   only:
     - master
     - dev
+    # Build tags that match this regex in addition to building the master and dev branches.
+    - /^v[0-9]+\.[0-9]+\.[0-9]+/
 env:
   global:
     # BINTRAY_USER
