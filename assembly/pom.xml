@@ -9,8 +9,10 @@
 	</parent>
 	<artifactId>assembly</artifactId>
 	<packaging>pom</packaging>
+	<name>Assembly</name>
 
 	<build>
 
 	</build>
+	
 </project>
