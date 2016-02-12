@@ -27,7 +27,7 @@
 	<distributionManagement>
 		<repository>
 			<id>bintray</id>
-			<url>https://api.bintray.com/maven/Treydone/maven/mandrel/;publish=1</url>
+			<url>https://api.bintray.com/maven/treydone/maven/mandrel/;publish=1</url>
 		</repository>
 	</distributionManagement>
 
