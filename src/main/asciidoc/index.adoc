@@ -99,9 +99,9 @@ Mandrel works on Linux, Mac and Windows. All you need is Java 8.
 Mandrel uses Maven for its build system. Simply run:
 
 [source]
-mvn clean package -DskipTests
+mvn clean install -DskipTests
 cd standalone
-mvn spring:boot run -DskipTests
+mvn spring-boot:run -DskipTests
 
 === Install with +yum+
 
@@ -128,6 +128,23 @@ To install Mandrel on Debian Sid or Ubuntu Saucy or greater:
 . Type the +apt-get+ command
 
  $ sudo apt-get install mandrel
+
+== Build a release
+
+A release can be built with the maven-release-plugin and pushing the new tag. Travis-CI will then deploy the new tag on Bintray
+[source]
+mvn release:clean
+mvn release:prepare -Darguments="-DskipTests" -DpushChanges=false
+git push --follow-tags
+
+If something weird happen, just rollback
+[source]
+mvn release:rollback
+mvn release:clean
+
+Travis-CI: https://travis-ci.org/Treydone/mandrel/
+
+Bintray: https://bintray.com/treydone/maven/mandrel/view
 
 == Configuration
 
