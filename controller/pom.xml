@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -11,9 +12,8 @@
 	<name>Controller</name>
 
 	<properties>
-		<component.id>${project.artifactId}</component.id>
-		<component.class.main>io.mandrel.bootstrap.Controller</component.class.main>
-		<component.class.wrapper>io.mandrel.bootstrap.WrapperController</component.class.wrapper>
+		<!-- Build resources properties -->
+		<mandrel.tools.directory>../tools</mandrel.tools.directory>
 	</properties>
 
 	<dependencies>
@@ -262,7 +262,8 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<target>
-								<copy todir="${basedir}/src/main/resources/public/fonts" flatten="true">
+								<copy todir="${basedir}/src/main/resources/public/fonts"
+									flatten="true">
 									<fileset dir="${project.build.directory}/generated-resources/fonts">
 										<include name="**/*.woff" />
 										<include name="**/*.woff2" />
@@ -315,20 +316,6 @@
 						<exlude>*.xml</exlude>
 					</excludes>
 				</configuration>
-			</plugin>
-			
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>${spring-boot.version}</version>
-				<configuration>
-					<mainClass>io.mandrel.bootstrap.Controller</mainClass>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>appassembler-maven-plugin</artifactId>
 			</plugin>
 
 		</plugins>
