@@ -1,7 +1,12 @@
 language: java
 jdk:
   - oraclejdk8
-  
+
+addons:
+  apt:
+    packages:
+    - rpm
+    
 script: mvn clean install -DskipTests
 
 after_success:
