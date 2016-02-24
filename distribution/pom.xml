@@ -18,7 +18,7 @@
 			<id>default</id>
 			<activation>
 				<property>
-					<name>!deploy</name>
+					<name>!skipDeploy</name>
 				</property>
 			</activation>
 			<build>
@@ -39,6 +39,7 @@
 									<arguments>
 										<argument>package</argument>
 										<argument>-Pstandalone</argument>
+										<argument>-DskipDeploy=true</argument>
 									</arguments>
 								</configuration>
 							</execution>
@@ -53,6 +54,7 @@
 									<arguments>
 										<argument>package</argument>
 										<argument>-Pcontroller</argument>
+										<argument>-DskipDeploy=true</argument>
 									</arguments>
 								</configuration>
 							</execution>
@@ -67,6 +69,7 @@
 									<arguments>
 										<argument>package</argument>
 										<argument>-Pfrontier</argument>
+										<argument>-DskipDeploy=true</argument>
 									</arguments>
 								</configuration>
 							</execution>
@@ -81,6 +84,7 @@
 									<arguments>
 										<argument>package</argument>
 										<argument>-Pworker</argument>
+										<argument>-DskipDeploy=true</argument>
 									</arguments>
 								</configuration>
 							</execution>
@@ -290,6 +294,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-deploy-plugin</artifactId>
+						<version>2.8.2</version>
 						<executions>
 							<execution>
 								<id>zip</id>
