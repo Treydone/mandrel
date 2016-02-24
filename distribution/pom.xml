@@ -306,7 +306,7 @@
 									<repositoryId>bintray</repositoryId>
 									<packaging>zip</packaging>
 									<generatePom>false</generatePom>
-									<url>https://api.bintray.com/content/treydone/generic/mandrel/${project.version}/mandrel-${project.version}.zip?publish=1</url>
+									<url>https://api.bintray.com/content/treydone/generic/mandrel-${project.version}.zip;bt_package=mandrel;bt_version=${project.version};publish=1;override=1;explode=0</url>
 									<groupId>${project.groupId}</groupId>
 									<artifactId>${project.artifactId}</artifactId>
 									<version>${project.version}</version>
@@ -328,7 +328,7 @@
 									<groupId>${project.groupId}</groupId>
 									<artifactId>${project.artifactId}</artifactId>
 									<version>${project.version}</version>
-									<file>target/${project.artifactId}-${project.version}_all.deb</file>
+									<file>target/${project.artifactId}_${project.version}_all.deb</file>
 								</configuration>
 							</execution>
 							<execution>
@@ -346,7 +346,7 @@
 									<groupId>${project.groupId}</groupId>
 									<artifactId>${project.artifactId}</artifactId>
 									<version>${project.version}</version>
-									<file>target/rpm/distribution/RPMS/noarch/${project.artifactId}-${project.version}.noarch.rpm</file>
+									<file>target/rpm/distribution/RPMS/noarch/${project.artifactId}-${project.version}-1.noarch.rpm</file>
 								</configuration>
 							</execution>
 						</executions>
