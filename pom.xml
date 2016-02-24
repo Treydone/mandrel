@@ -649,6 +649,7 @@
 						<tagNameFormat>v@{project.version}</tagNameFormat>
 						<arguments>-DskipTests</arguments>
 						<pushChanges>false</pushChanges>
+						<preparationGoals>clean install</preparationGoals>
 					</configuration>
 				</plugin>
 
