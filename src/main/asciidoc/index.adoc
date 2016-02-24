@@ -87,23 +87,16 @@ TIP: A useful tip
 
 
 === System Requirements
-Mandrel works on Linux, Mac and Windows. All you need is Java 8.
+Mandrel works on Linux, Mac and Windows. All you need is Java 8+ and a running instance of Mongo 3.0+.
 
 
 = Setup
 
 == Installation
 
-=== From the sources
+=== With the +tar.gz+
 
-Mandrel uses Maven for its build system. Simply run:
-
-[source]
-mvn clean install -DskipTests
-cd standalone
-mvn spring-boot:run -DskipTests
-
-=== Install with +yum+
+=== With +yum+
 
 //tag::yum[]
 To install Mandrel on Fedora or other RPM-based systems:
@@ -119,7 +112,7 @@ To install Mandrel on Fedora or other RPM-based systems:
 +
  $ sudo dnf install mandrel
 
-=== Install with +apt-get+
+=== With +apt-get+
 
 //tag::aptget[]
 To install Mandrel on Debian Sid or Ubuntu Saucy or greater:
@@ -128,6 +121,15 @@ To install Mandrel on Debian Sid or Ubuntu Saucy or greater:
 . Type the +apt-get+ command
 
  $ sudo apt-get install mandrel
+
+=== From the sources
+
+Mandrel uses Maven for its build system. Simply run:
+
+[source]
+mvn clean install -DskipTests
+cd standalone
+mvn spring-boot:run -DskipTests
 
 == Build a release
 

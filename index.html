@@ -569,6 +569,9 @@ Politness is respected, but only one process can download on one host at a time.
 <p>Mongo</p>
 </li>
 <li>
+<p>Elasticsearch</p>
+</li>
+<li>
 <p>Kafka</p>
 </li>
 <li>
@@ -604,7 +607,7 @@ A useful tip
 <div class="sect2">
 <h3 id="_system_requirements">System Requirements</h3>
 <div class="paragraph">
-<p>Mandrel works on Linux, Mac and Windows. All you need is Java 8.</p>
+<p>Mandrel works on Linux, Mac and Windows. All you need is Java 8+ and a running instance of Mongo 3.0+.</p>
 </div>
 </div>
 </div>
@@ -614,20 +617,11 @@ A useful tip
 <h2 id="_installation">Installation</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_from_the_sources">From the sources</h3>
-<div class="paragraph">
-<p>Mandrel uses Maven for its build system. Simply run:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>mvn clean package -DskipTests
-cd standalone
-mvn spring:boot run -DskipTests</code></pre>
-</div>
-</div>
+<h3 id="_with_the_tar_gz">With the tar.gz</h3>
+
 </div>
 <div class="sect2">
-<h3 id="_install_with_yum">Install with yum</h3>
+<h3 id="_with_yum">With yum</h3>
 <div class="paragraph">
 <p>To install Mandrel on Fedora or other RPM-based systems:</p>
 </div>
@@ -663,7 +657,7 @@ mvn spring:boot run -DskipTests</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_install_with_apt_get">Install with apt-get</h3>
+<h3 id="_with_apt_get">With apt-get</h3>
 <div class="paragraph">
 <p>To install Mandrel on Debian Sid or Ubuntu Saucy or greater:</p>
 </div>
@@ -682,6 +676,49 @@ mvn spring:boot run -DskipTests</code></pre>
 </li>
 </ol>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_from_the_sources">From the sources</h3>
+<div class="paragraph">
+<p>Mandrel uses Maven for its build system. Simply run:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>mvn clean install -DskipTests
+cd standalone
+mvn spring-boot:run -DskipTests</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_build_a_release">Build a release</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A release can be built with the maven-release-plugin and pushing the new tag. Travis-CI will then deploy the new tag on Bintray</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>mvn release:clean
+mvn release:prepare -Darguments="-DskipTests" -DpushChanges=false
+git push --follow-tags</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If something weird happen, just rollback</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>mvn release:rollback
+mvn release:clean</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Travis-CI: <a href="https://travis-ci.org/Treydone/mandrel/" class="bare">https://travis-ci.org/Treydone/mandrel/</a></p>
+</div>
+<div class="paragraph">
+<p>Bintray: <a href="https://bintray.com/treydone/maven/mandrel/view" class="bare">https://bintray.com/treydone/maven/mandrel/view</a></p>
 </div>
 </div>
 </div>
@@ -922,7 +959,8 @@ $ mandrel-controller stop</code></pre>
 <div class="sect2">
 <h3 id="_frontier">Frontier</h3>
 <div class="paragraph">
-<p>The goal of the frontier is to know which URI to process next, and when. The frontier decides the logic and policies to follow when a crawler is visiting sources like websites: what pages should be crawled next, priorities and ordering, how often pages are revisited, etc.
+<p>The goal of the frontier is to know which URI to process next, and when.
+The frontier decides the logic and policies to follow when a crawler is visiting sources like websites: what pages should be crawled next, priorities and ordering, how often pages are revisited, etc.
 It keeps the state of the crawl. This includes, but is not limited to:</p>
 </div>
 <div class="ulist">
@@ -992,6 +1030,9 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 </div>
 <div class="sect2">
 <h3 id="_worker">Worker</h3>
+<div class="paragraph">
+<p>The goal of the worker is simple, it download and parse the content of uri given by the frontiers. Its workflow is more or less the following:</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
@@ -1012,9 +1053,6 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 <li>
 <p>If extraction needed, parse the content and store the results in documentstore</p>
 </li>
-<li>
-<p>Push some infos back to the frontier</p>
-</li>
 </ul>
 </div>
 </div>
@@ -1023,7 +1061,68 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 <div class="sect1">
 <h2 id="_scalabilty">Scalabilty</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>All the components in Mandrel can have multiple instances:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Multiple controllers for high-availibility on the main component in Mandrel deployment</p>
+</li>
+<li>
+<p>Multiple  frontiers in order to dsitribute the heavy job of priorization and reschedule</p>
+</li>
+<li>
+<p>Multiple  workers in order to grow up the bandwidth</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>All these instances are registered in a discovery service. By default, Mandrel uses Zookeeper as a discovery service.
+An other discovery service, 'local', is present but only used by the standalone mode.
+Other discovery services caneasily be added by implementing these interfaces:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>import java.util.List;
+public interface DiscoveryClient {
+	ServiceInstance register(ServiceInstance instance);
+	void unregister(String serviceId);
+	List&lt;ServiceInstance&gt; getInstances(String serviceId);
+	List&lt;String&gt; getServices();
+	String getInstanceHost();
+	ServiceInstance getLocalInstance(String serviceId);
+	ServiceInstance getInstance(String id, String serviceId);
+	String getInstanceId();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>@ConditionalOnProperty(value = "discovery.mynewdiscovery.enabled", matchIfMissing = false)
+@Component
+public class MyNewDiscoveryClient implements DiscoveryClient {
+        ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And finally by enabling the new discovery service in the properties:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>discovery:
+  local:
+    enabled: false
+  zookeeper:
+    enabled: false
+  mynewdiscovery:
+    enabled: true</code></pre>
+</div>
+</div>
 </div>
 </div>
 <h1 id="_using_mandrel" class="sect0">Using Mandrel</h1>
@@ -1036,6 +1135,9 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 <div class="sect1">
 <h2 id="_api_rest">API REST</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>All the documentation can be found on the Swagger endpoint at:  //TODO</p>
+</div>
 <div class="sect2">
 <h3 id="_api_conventions">API Conventions</h3>
 
@@ -1046,7 +1148,7 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 <h4 id="_spiders">Spiders</h4>
 <div id="spiders" class="dlist">
 <dl>
-<dt class="hdlist1"><strong><code>/spiders</code></strong></dt>
+<dt class="hdlist1"><strong>GET <code>/spiders</code></strong></dt>
 <dd>
 <div class="paragraph">
 <div class="title">Description</div>
@@ -1057,7 +1159,7 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 </div>
 <div id="spiders_id" class="dlist">
 <dl>
-<dt class="hdlist1"><strong><code>/spiders/{id}</code></strong></dt>
+<dt class="hdlist1"><strong>GET <code>/spiders/{id}</code></strong></dt>
 <dd>
 <div class="paragraph">
 <div class="title">Description</div>
@@ -1068,7 +1170,7 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 </div>
 <div id="spiders_start" class="dlist">
 <dl>
-<dt class="hdlist1"><strong><code>/spiders/{id}/start</code></strong></dt>
+<dt class="hdlist1"><strong>GET <code>/spiders/{id}/start</code></strong></dt>
 <dd>
 <div class="paragraph">
 <div class="title">Description</div>
@@ -1079,11 +1181,36 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 </div>
 <div id="spiders_stop" class="dlist">
 <dl>
-<dt class="hdlist1"><strong><code>/spiders/{id}/stop</code></strong></dt>
+<dt class="hdlist1"><strong>GET <code>/spiders/{id}/stop</code></strong></dt>
 <dd>
 <div class="paragraph">
 <div class="title">Description</div>
 <p>Stop</p>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_nodes">Nodes</h4>
+<div id="nodes" class="dlist">
+<dl>
+<dt class="hdlist1"><strong>GET <code>/nodes</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>List all the nodes</p>
+</div>
+</dd>
+</dl>
+</div>
+<div id="node" class="dlist">
+<dl>
+<dt class="hdlist1"><strong>GET <code>/nodes/{id}</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>Find a node by its id</p>
 </div>
 </dd>
 </dl>
@@ -1103,6 +1230,55 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 <div class="sect1">
 <h2 id="_spider_definition">Spider definition</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_introduction_2">Introduction</h3>
+<div class="paragraph">
+<p>A spider is at least composed by:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>sources: a set of sources (static list of uris, files, endpoint&#8230;&#8203;) containing uris</p>
+</li>
+<li>
+<p>stores: where to stores the raw data and their metadata</p>
+</li>
+<li>
+<p>frontier: the list of uris discovered to be fetched or revisited</p>
+</li>
+<li>
+<p>client: the bridge between Mandrel and the uris to be crawled, by default contains an HTTP/S and a FTP/S client</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You can also define:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>filters: if you want to fetch only a specific type of uri (on the same domain, only starting with a prefix&#8230;&#8203;)</p>
+</li>
+<li>
+<p>extractors: if your want to extract some data from the downloaded content</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_examples">Examples</h3>
+<div class="paragraph">
+<p>Let&#8217;s see some examples!</p>
+</div>
+<div class="sect3">
+<h4 id="_imdb">IMDB</h4>
+
+</div>
+<div class="sect3">
+<h4 id="_linkedin">LinkedIn</h4>
+
+</div>
+</div>
 <div class="sect2">
 <h3 id="_filtering">Filtering</h3>
 <div class="paragraph">
@@ -1396,38 +1572,125 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_stores">Stores</h3>
+<h3 id="_blob_metadata_stores">Blob &amp; metadata stores</h3>
+<div class="paragraph">
+<p>Example for using Mongo:</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code>{
    "stores":{
       "metadata":{
-         "type":"internal"
+         "type":"mongo"
       },
-      "page":{
-         "type":"internal"
+      "blob":{
+         "type":"mongo"
       }
    }
 }</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>The store for blob is not mandatory, if you extract data via extractors for instance, but the metadata is:</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code>{
    "stores":{
       "metadata":{
-         "type":"internal"
+         "type":"mongo"
       },
-      "page":null
+      "blob":null
    }
 }</code></pre>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_mongo">Mongo</h4>
+<div class="paragraph">
+<p>Blob, metadata, document</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>"stores" : {
+        "metadata" : {
+                "type" : "mongo",
+                "uri" : "mongodb://localhost",
+                "database" : "mandrel",
+                "collection" : "metadata_{0}",
+                "batch_size" : 1000
+        },
+        "blob" : {
+                "type" : "mongo",
+                "uri" : "mongodb://localhost",
+                "database" : "mandrel",
+                "bucket" : "blob_{0}",
+                "batch_size" : 10
+        }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_document_stores">Document stores</h3>
+<div class="sect3">
+<h4 id="_mongo_2">Mongo</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>"extractors" : {
+        "data" : [
+                {
+                        "store" : {
+                                "type" : "mongo",
+                                "uri" : "mongodb://localhost",
+                                "database" : "mandrel",
+                                "collection" : "document_{0}",
+                                "batch_size" : 1000
+                        }
+                }
+        ]
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_elasticsearch">Elasticsearch</h4>
+<div class="paragraph">
+<p>Document</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>"extractors" : {
+        "data" : [
+                {
+                        "store" : {
+                                "type" : "elasticsearch",
+                                "addresses" : ["localhost:9300"],
+                                "type" : "document",
+                                "index" : "mandrel_{0}",
+                                "cluster" : "mandrel",
+                                "batch_size" : 1000
+                        }
+                }
+        ]
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_redis">Redis</h4>
+
+</div>
+<div class="sect3">
+<h4 id="_mutliple_output">Mutliple output</h4>
+
 </div>
 </div>
 <div class="sect2">
 <h3 id="_client">Client</h3>
 <div class="paragraph">
-<p>Each spider can be configured with a specified HTTP client in order to configure:</p>
+<p>Each spider can be configured with a specified client in order to configure:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1444,10 +1707,8 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 <p>Custom cookies (jsessionid&#8230;&#8203;) and headers (X-Request-By, Basic-Authentication&#8230;&#8203;)</p>
 </li>
 <li>
-<p>DNS resolution strategies</p>
-</li>
-<li>
-<p>Politeness</p>
+<p>DNS resolution strategies
+&#8230;&#8203;</p>
 </li>
 </ul>
 </div>
@@ -1624,7 +1885,7 @@ the License.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-01-31 13:58:13 +01:00
+Last updated 2016-02-20 20:43:53 +01:00
 </div>
 </div>
 </body>
