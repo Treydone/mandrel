@@ -45,7 +45,7 @@ public class MandrelException extends RuntimeException {
 	 * message.
 	 *
 	 * The message can be parameterized using {@code as placeholders for the
-	 * given arguments
+	 * given arguments.
 	 *
 	 * @param msg
 	 *            the detail message
@@ -61,9 +61,9 @@ public class MandrelException extends RuntimeException {
 	 * message and nested exception.
 	 *
 	 * The message can be parameterized using {@code as placeholders for the
-	 * given arguments
+	 * given arguments.
 	 *
-	 * @param msg
+	 * @param msg 
 	 *            the detail message
 	 * @param cause
 	 *            the nested exception
