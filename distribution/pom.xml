@@ -8,7 +8,7 @@
 		<version>0.0.5-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	<artifactId>assembly</artifactId>
+	<artifactId>distribution</artifactId>
 	<packaging>pom</packaging>
 	<name>Assembly</name>
 
@@ -92,6 +92,7 @@
 							<execution>
 								<id>make-final</id>
 								<configuration>
+									<appendAssemblyId>false</appendAssemblyId>
 									<descriptors>
 										<descriptor>assembly/zip.xml</descriptor>
 									</descriptors>
@@ -283,6 +284,68 @@
 						</configuration>
 					</plugin>
 
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-deploy-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>zip</id>
+								<goals>
+									<goal>deploy-file</goal>
+								</goals>
+								<phase>deploy</phase>
+								<configuration>
+									<id>bintray</id>
+									<repositoryId>bintray</repositoryId>
+									<packaging>zip</packaging>
+									<generatePom>false</generatePom>
+									<url>https://api.bintray.com/content/treydone/generic/mandrel/${project.version}/mandrel-${project.version}.zip?publish=1</url>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.artifactId}</artifactId>
+									<version>${project.version}</version>
+									<file>target/${project.artifactId}-${project.version}.zip</file>
+								</configuration>
+							</execution>
+							<execution>
+								<id>deb</id>
+								<goals>
+									<goal>deploy-file</goal>
+								</goals>
+								<phase>deploy</phase>
+								<configuration>
+									<id>bintray</id>
+									<repositoryId>bintray</repositoryId>
+									<packaging>rpm</packaging>
+									<generatePom>false</generatePom>
+									<url>https://api.bintray.com/content/treydone/deb/mandrel/${project.version}/mandrel-${project.version}.deb;deb_distribution=:distributions;deb_component=main;deb_architecture=noarch;publish=1;override=1</url>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.artifactId}</artifactId>
+									<version>${project.version}</version>
+									<file>target/${project.artifactId}-${project.version}_all.deb</file>
+								</configuration>
+							</execution>
+							<execution>
+								<id>rpm</id>
+								<goals>
+									<goal>deploy-file</goal>
+								</goals>
+								<phase>deploy</phase>
+								<configuration>
+									<id>bintray</id>
+									<repositoryId>bintray</repositoryId>
+									<packaging>zip</packaging>
+									<generatePom>false</generatePom>
+									<url>https://api.bintray.com/content/treydone/rpm/mandrel/${project.version}/mandrel-${project.version}.noarch.rpm;publish=1;override=1</url>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.artifactId}</artifactId>
+									<version>${project.version}</version>
+									<file>target/rpm/distribution/RPMS/noarch/${project.artifactId}-${project.version}.noarch.rpm</file>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
 				</plugins>
 			</build>
 		</profile>
@@ -298,7 +361,6 @@
 				<dependency>
 					<groupId>io.mandrel</groupId>
 					<artifactId>standalone</artifactId>
-					<version>${project.version}</version>
 				</dependency>
 			</dependencies>
 			<build>
@@ -325,7 +387,6 @@
 				<dependency>
 					<groupId>io.mandrel</groupId>
 					<artifactId>controller</artifactId>
-					<version>${project.version}</version>
 				</dependency>
 			</dependencies>
 			<build>
@@ -352,7 +413,6 @@
 				<dependency>
 					<groupId>io.mandrel</groupId>
 					<artifactId>frontier</artifactId>
-					<version>${project.version}</version>
 				</dependency>
 			</dependencies>
 			<build>
@@ -379,7 +439,6 @@
 				<dependency>
 					<groupId>io.mandrel</groupId>
 					<artifactId>worker</artifactId>
-					<version>${project.version}</version>
 				</dependency>
 			</dependencies>
 			<build>
@@ -424,9 +483,6 @@
 								<daemons>
 									<daemon>
 										<id>${component.id}d</id>
-										<commandLineArguments>
-											<commandLineArgument>--spring.config.location=../conf/${component.id}.yml</commandLineArgument>
-										</commandLineArguments>
 										<jvmSettings>
 											<initialMemorySize>1024</initialMemorySize>
 											<maxMemorySize>1024</maxMemorySize>
@@ -494,9 +550,6 @@
 									<program>
 										<id>${component.id}</id>
 										<mainClass>${component.class.main}</mainClass>
-										<commandLineArguments>
-											<commandLineArgument>--spring.config.location=../conf/${component.id}.yml</commandLineArgument>
-										</commandLineArguments>
 										<jvmSettings>
 											<initialMemorySize>1024m</initialMemorySize>
 											<maxMemorySize>1024m</maxMemorySize>

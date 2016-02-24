@@ -42,7 +42,7 @@
 		<module>worker</module>
 		<module>controller</module>
 		<module>standalone</module>
-		<module>assembly</module>
+		<module>distribution</module>
 	</modules>
 
 	<properties>
@@ -76,6 +76,26 @@
 			<dependency>
 				<groupId>io.mandrel</groupId>
 				<artifactId>core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.mandrel</groupId>
+				<artifactId>standalone</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.mandrel</groupId>
+				<artifactId>frontier</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.mandrel</groupId>
+				<artifactId>controller</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.mandrel</groupId>
+				<artifactId>worker</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 

@@ -22,17 +22,14 @@
 		<dependency>
 			<groupId>io.mandrel</groupId>
 			<artifactId>controller</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.mandrel</groupId>
 			<artifactId>frontier</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.mandrel</groupId>
 			<artifactId>worker</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
