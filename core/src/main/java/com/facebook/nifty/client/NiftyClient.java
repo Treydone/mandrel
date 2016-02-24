@@ -113,31 +113,9 @@ public class NiftyClient implements Closeable {
 		return defaultSocksProxyAddress;
 	}
 
-	/**
-	 * @deprecated Use
-	 *             {@link NiftyClient#connectAsync(NiftyClientConnector, Duration, Duration, Duration, Duration, int)}
-	 *             .
-	 */
-	@Deprecated
-	public <T extends NiftyClientChannel> ListenableFuture<T> connectAsync(NiftyClientConnector<T> clientChannelConnector, @Nullable Duration connectTimeout,
-			@Nullable Duration receiveTimeout, @Nullable Duration sendTimeout, int maxFrameSize) {
-		return connectAsync(clientChannelConnector, connectTimeout, receiveTimeout, receiveTimeout, sendTimeout, maxFrameSize);
-	}
-
 	public <T extends NiftyClientChannel> ListenableFuture<T> connectAsync(NiftyClientConnector<T> clientChannelConnector, @Nullable Duration connectTimeout,
 			@Nullable Duration receiveTimeout, @Nullable Duration readTimeout, @Nullable Duration sendTimeout, int maxFrameSize) {
 		return connectAsync(clientChannelConnector, connectTimeout, receiveTimeout, readTimeout, sendTimeout, maxFrameSize, defaultSocksProxyAddress);
-	}
-
-	/**
-	 * @deprecated Use
-	 *             {@link NiftyClient#connectAsync(NiftyClientConnector, Duration, Duration, Duration, Duration, int, com.google.common.net.HostAndPort)}
-	 *             .
-	 */
-	@Deprecated
-	public <T extends NiftyClientChannel> ListenableFuture<T> connectAsync(NiftyClientConnector<T> clientChannelConnector, @Nullable Duration connectTimeout,
-			@Nullable Duration receiveTimeout, @Nullable Duration sendTimeout, int maxFrameSize, @Nullable HostAndPort socksProxyAddress) {
-		return connectAsync(clientChannelConnector, connectTimeout, receiveTimeout, receiveTimeout, sendTimeout, maxFrameSize, socksProxyAddress);
 	}
 
 	public <T extends NiftyClientChannel> ListenableFuture<T> connectAsync(NiftyClientConnector<T> clientChannelConnector, @Nullable Duration connectTimeout,
@@ -189,73 +167,6 @@ public class NiftyClient implements Closeable {
 			Throwables.propagateIfInstanceOf(e, TTransportException.class);
 			throw new TTransportException(TTransportException.UNKNOWN, "Failed to establish client connection", e);
 		}
-	}
-
-	/**
-	 * @deprecated Use the versions of connectSync that take a client
-	 *             {@link Class} and a
-	 *             {@link com.facebook.nifty.client.NiftyClientConnector}
-	 *             instead (this method acts like such a transport around a
-	 *             {@link com.facebook.nifty.client.FramedClientConnector}
-	 */
-	@Deprecated
-	public TNiftyClientTransport connectSync(InetSocketAddress addr) throws TTransportException, InterruptedException {
-		return connectSync(addr, DEFAULT_CONNECT_TIMEOUT, DEFAULT_RECEIVE_TIMEOUT, DEFAULT_SEND_TIMEOUT, DEFAULT_MAX_FRAME_SIZE);
-	}
-
-	/**
-	 * @deprecated Use the versions of connectSync that take a client
-	 *             {@link Class} and a
-	 *             {@link com.facebook.nifty.client.NiftyClientConnector}
-	 *             instead (this method acts like such a transport around a
-	 *             {@link com.facebook.nifty.client.FramedClientConnector}
-	 */
-	@Deprecated
-	public TNiftyClientTransport connectSync(InetSocketAddress addr, @Nullable Duration connectTimeout, @Nullable Duration receiveTimeout,
-			@Nullable Duration sendTimeout, int maxFrameSize) throws TTransportException, InterruptedException {
-		return connectSync(addr, connectTimeout, receiveTimeout, sendTimeout, maxFrameSize, defaultSocksProxyAddress);
-	}
-
-	/**
-	 * @deprecated Use the versions of connectSync that take a client
-	 *             {@link Class} and a
-	 *             {@link com.facebook.nifty.client.NiftyClientConnector}
-	 *             instead (this method acts like such a transport around a
-	 *             {@link com.facebook.nifty.client.FramedClientConnector}
-	 */
-	@Deprecated
-	public TNiftyClientTransport connectSync(InetSocketAddress addr, @Nullable Duration connectTimeout, @Nullable Duration receiveTimeout,
-			@Nullable Duration sendTimeout, int maxFrameSize, @Nullable HostAndPort socksProxyAddress) throws TTransportException, InterruptedException {
-		// TODO: implement send timeout for sync client
-		ClientBootstrap bootstrap = createClientBootstrap(socksProxyAddress);
-		bootstrap.setOptions(nettyClientConfig.getBootstrapOptions());
-
-		if (connectTimeout != null) {
-			bootstrap.setOption("connectTimeoutMillis", connectTimeout.toMillis());
-		}
-
-		bootstrap.setPipelineFactory(new NiftyClientChannelPipelineFactory(maxFrameSize));
-		ChannelFuture f = bootstrap.connect(addr);
-		f.await();
-		Channel channel = f.getChannel();
-		if (f.getCause() != null) {
-			String message = String.format("unable to connect to %s:%d %s", addr.getHostName(), addr.getPort(), socksProxyAddress == null ? ""
-					: "via socks proxy at " + socksProxyAddress);
-			throw new TTransportException(message, f.getCause());
-		}
-
-		if (f.isSuccess() && channel != null) {
-			if (channel.isOpen()) {
-				allChannels.add(channel);
-			}
-
-			TNiftyClientTransport transport = new TNiftyClientTransport(channel, receiveTimeout);
-			channel.getPipeline().addLast("thrift", transport);
-			return transport;
-		}
-
-		throw new TTransportException(String.format("unknown error connecting to %s:%d %s", addr.getHostName(), addr.getPort(), socksProxyAddress == null ? ""
-				: "via socks proxy at " + socksProxyAddress));
 	}
 
 	@Override
