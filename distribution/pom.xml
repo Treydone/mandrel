@@ -345,7 +345,7 @@
 					                    try {
 						                    
 						                    String url = "https://api.bintray.com/content/treydone/generic/mandrel-${project.version}.zip;bt_package=mandrel;bt_version=${project.version};publish=1;override=1;explode=0";
-						                    File file = new File("target/${project.artifactId}-${project.version}.zip");
+						                    File file = new File("${project.build.directory}/${project.artifactId}-${project.version}.zip");
 						                    HttpPut put = new HttpPut(url);
 						                    InputStreamEntity entity = new InputStreamEntity(file.newInputStream());
 						                    put.setEntity entity;
@@ -354,7 +354,7 @@
 						                    response.close();
 						                    
 					                		url = "https://api.bintray.com/content/treydone/deb/mandrel/${project.version}/mandrel-${project.version}.deb;deb_distribution=:distributions;deb_component=main;deb_architecture=noarch;publish=1;override=1";
-						                    file = new File("target/${project.artifactId}_${project.version}_all.deb");
+						                    file = new File("${project.build.directory}/${project.artifactId}_${project.version}_all.deb");
 						                    put = new HttpPut(url);
 						                    entity = new InputStreamEntity(file.newInputStream());
 						                    put.setEntity entity;
@@ -363,7 +363,7 @@
 						                    response.close();
 						                    
 						                    url = "https://api.bintray.com/content/treydone/rpm/mandrel/${project.version}/mandrel-${project.version}.noarch.rpm;publish=1;override=1";
-						                    file = new File("target/rpm/distribution/RPMS/noarch/${project.artifactId}-${project.version}-1.noarch.rpm");
+						                    file = new File("${project.build.directory}/rpm/distribution/RPMS/noarch/${project.artifactId}-${project.version}-1.noarch.rpm");
 						                    put = new HttpPut(url);
 						                    entity = new InputStreamEntity(file.newInputStream());
 						                    put.setEntity entity;
