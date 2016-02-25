@@ -11,7 +11,7 @@ script: mvn clean install -DskipTests
 
 after_success:
   #- mvn clean cobertura:cobertura coveralls:report javadoc:jar
-  - test "${TRAVIS_TAG}" != "" && mvn -q deploy -Prelease -DskipTests --settings travis/travis-settings.xml
+  - test "${TRAVIS_TAG}" != "" && mvn deploy -Prelease -DskipTests --settings travis/travis-settings.xml
 
 branches:
   only:
