@@ -1,6 +1,7 @@
 
 = Mandrel
 Vincent Devillers <https://twitter.com/treydone[@Treydone]>;
+:toc: left
 
 [NOTE]
 .This document is under active development
@@ -204,6 +205,109 @@ Travis-CI: https://travis-ci.org/Treydone/mandrel/
 
 Bintray: https://bintray.com/treydone/maven/mandrel/view
 
+= Architecture
+
+== Overview
+
+[[img-archi]]
+.Architecture
+image::archi.png[Architecture, 800, 200]
+
+== Components
+
+=== Controller
+
+=== Frontier
+
+The goal of the frontier is to know which URI to process next, and when.
+The frontier decides the logic and policies to follow when a crawler is visiting sources like websites: what pages should be crawled next, priorities and ordering, how often pages are revisited, etc.
+It keeps the state of the crawl. This includes, but is not limited to:
+
+- What URIs have been discovered
+- What URIs are being processed (fetched)
+- What URIs have been processed
+
+The frontier garanties the respect of the politeness like the bandwidth limits or the number of pages to be crawled.
+
+The frontier is set of various background tasks:
+
+- Priorizer: from a set of URIs, schedule the priority of the URIs and push them in the internal queues
+- Revister: revist a page, when and how
+
+==== Revisit policies
+
+- Freshness: This is a binary measure that indicates whether the local copy is accurate or not.
+- Age: This is a measure that indicates how outdated the local copy is.
+- Uniform policy: This involves re-visiting all pages in the collection with the same frequency, regardless of their rates of change.
+- Proportional policy: This involves re-visiting more often the pages that change more frequently. The visiting frequency is directly proportional to the (estimated) change frequency.
+
+==== Politeness
+
+- Parallel connections
+- Max pages per second
+- Max bytes per second/bandwidth
+
+=== Worker
+
+The goal of the worker is simple, it download and parse the content of uri given by the frontiers. Its workflow is more or less the following:
+
+- Pick out a uri from the frontier
+- Fetch the content
+- Store raw results in blobstore
+- Find links in the content
+- Store metadata in metadatastore
+- If extraction needed, parse the content and store the results in documentstore
+
+== Running modes
+
+=== Standalone - Single-JVM
+
+[[img-standalone]]
+.Standalone Mode
+image::standalone.png[Standalone Mode, 350, 200]
+
+[source]
+discovery:
+  local:
+    enabled: true
+  zookeeper:
+    enabled: false
+
+ $ mandrel-standalone start
+
+ $ mandrel-standalone stop
+
+=== Standalone - Pseudo-distributed
+
+[[img-pseudodistributed]]
+.Pseudo-distributed Mode
+image::pseudodistributed.png[Pseudo-distributed Mode, 400, 200]
+
+[source]
+discovery:
+  zookeeper:
+    enabled: true
+
+ $ mandrel-standalone start
+
+ $ mandrel-standalone stop
+
+=== Distributed
+
+[[img-distributed]]
+.Distributed Mode
+image::distributed.png[Distributed Mode, 800, 200]
+
+[source]
+$ mandrel-controller start
+$ mandrel-frontier start
+$ mandrel-worker start
+
+[source]
+$ mandrel-worker start
+$ mandrel-frontier start
+$ mandrel-controller stop
+
 == Configuration
 
 === Common
@@ -313,94 +417,6 @@ discovery:
     enabled: true
   zookeeper:
     enabled: false
-
-== Running modes
-
-=== Standalone - Single-JVM
-
-[source]
-discovery:
-  local:
-    enabled: true
-  zookeeper:
-    enabled: false
-
- $ mandrel-standalone start
-
- $ mandrel-standalone stop
-
-=== Standalone - Pseudo-distributed
-
-[source]
-discovery:
-  zookeeper:
-    enabled: true
-
- $ mandrel-standalone start
-
- $ mandrel-standalone stop
-
-=== Distributed
-
-[source]
-$ mandrel-controller start
-$ mandrel-frontier start
-$ mandrel-worker start
-
-[source]
-$ mandrel-worker start
-$ mandrel-frontier start
-$ mandrel-controller stop
-
-
-= Architecture
-
-== Overview
-
-== Components
-
-=== Controller
-
-=== Frontier
-
-The goal of the frontier is to know which URI to process next, and when.
-The frontier decides the logic and policies to follow when a crawler is visiting sources like websites: what pages should be crawled next, priorities and ordering, how often pages are revisited, etc.
-It keeps the state of the crawl. This includes, but is not limited to:
-
-- What URIs have been discovered
-- What URIs are being processed (fetched)
-- What URIs have been processed
-
-The frontier garanties the respect of the politeness like the bandwidth limits or the number of pages to be crawled.
-
-The frontier is set of various background tasks:
-
-- Priorizer: from a set of URIs, schedule the priority of the URIs and push them in the internal queues
-- Revister: revist a page, when and how
-
-==== Revisit policies
-
-- Freshness: This is a binary measure that indicates whether the local copy is accurate or not.
-- Age: This is a measure that indicates how outdated the local copy is.
-- Uniform policy: This involves re-visiting all pages in the collection with the same frequency, regardless of their rates of change.
-- Proportional policy: This involves re-visiting more often the pages that change more frequently. The visiting frequency is directly proportional to the (estimated) change frequency.
-
-==== Politeness
-
-- Parallel connections
-- Max pages per second
-- Max bytes per second/bandwidth
-
-=== Worker
-
-The goal of the worker is simple, it download and parse the content of uri given by the frontiers. Its workflow is more or less the following:
-
-- Pick out a uri from the frontier
-- Fetch the content
-- Store raw results in blobstore
-- Find links in the content
-- Store metadata in metadatastore
-- If extraction needed, parse the content and store the results in documentstore
 
 == Scalabilty
 
@@ -901,10 +917,27 @@ Watch out for swapping. Set swappiness to 0.
 
 NOTE: Section pending
 
+[glossary]
 == Glossary
 
 NOTE: Section pending
 
+[glossary]
+controller::
+is the main process for a Mandrel infrastructure.
+worker::
+is the process collecting the data from the source.
+frontier::
+is the process keeping the state of the jobs.
+
+[appendix]
+== Bibliography
+
+[bibliography]
+- [[[ctheweb]]] Gautam Pant, Padmini Srinivasan, and Filippo Menczer.
+Crawling the Web
+
+[appendix]
 == Copyright and License
 
 NOTE: Section pending

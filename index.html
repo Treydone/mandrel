@@ -410,12 +410,121 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 .show-for-print{display:inherit!important}}
 </style>
 </head>
-<body class="book">
+<body class="book toc2 toc-left">
 <div id="header">
 <h1>Mandrel</h1>
 <div class="details">
 <span id="author" class="author">Vincent Devillers</span><br>
 <span id="email" class="email"><a href="https://twitter.com/treydone">@Treydone</a></span><br>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel0">
+<li><a href="#_introduction">Introduction</a>
+<ul class="sectlevel1">
+<li><a href="#_what_is_mandrel">What is Mandrel?</a>
+<ul class="sectlevel2">
+<li><a href="#_the_big_picture">The Big Picture</a></li>
+<li><a href="#_what_for">What for?</a></li>
+<li><a href="#_compared_to">Compared to&#8230;&#8203;</a></li>
+<li><a href="#_internals">Internals</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_quick_start">Quick Start</a>
+<ul class="sectlevel1">
+<li><a href="#_getting_started">Getting Started</a>
+<ul class="sectlevel2">
+<li><a href="#_system_requirements">System Requirements</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_setup">Setup</a>
+<ul class="sectlevel1">
+<li><a href="#_installation">Installation</a>
+<ul class="sectlevel2">
+<li><a href="#_with_the_archive">With the archive</a></li>
+<li><a href="#_with_rpms">With RPMs</a></li>
+<li><a href="#_with_debs">With DEBs</a></li>
+<li><a href="#_from_the_sources">From the sources</a></li>
+<li><a href="#_with_docker">With Docker</a></li>
+<li><a href="#_on_windows">On Windows</a></li>
+</ul>
+</li>
+<li><a href="#_build_a_release">Build a release</a></li>
+</ul>
+</li>
+<li><a href="#_architecture">Architecture</a>
+<ul class="sectlevel1">
+<li><a href="#_overview">Overview</a></li>
+<li><a href="#_components">Components</a>
+<ul class="sectlevel2">
+<li><a href="#_controller">Controller</a></li>
+<li><a href="#_frontier">Frontier</a></li>
+<li><a href="#_worker">Worker</a></li>
+</ul>
+</li>
+<li><a href="#_running_modes">Running modes</a>
+<ul class="sectlevel2">
+<li><a href="#_standalone_single_jvm">Standalone - Single-JVM</a></li>
+<li><a href="#_standalone_pseudo_distributed">Standalone - Pseudo-distributed</a></li>
+<li><a href="#_distributed">Distributed</a></li>
+</ul>
+</li>
+<li><a href="#_configuration">Configuration</a>
+<ul class="sectlevel2">
+<li><a href="#_common">Common</a></li>
+<li><a href="#_controller_yml">controller.yml</a></li>
+<li><a href="#_frontier_yml">frontier.yml</a></li>
+<li><a href="#_worker_yml">worker.yml</a></li>
+<li><a href="#_standalone_yml">standalone.yml</a></li>
+</ul>
+</li>
+<li><a href="#_scalabilty">Scalabilty</a></li>
+</ul>
+</li>
+<li><a href="#_using_mandrel">Using Mandrel</a>
+<ul class="sectlevel1">
+<li><a href="#_web_ui">Web UI</a></li>
+<li><a href="#_api_rest">API REST</a>
+<ul class="sectlevel2">
+<li><a href="#_api_conventions">API Conventions</a></li>
+<li><a href="#_endpoints">Endpoints</a></li>
+</ul>
+</li>
+<li><a href="#_spider_definition">Spider definition</a>
+<ul class="sectlevel2">
+<li><a href="#_introduction_2">Introduction</a></li>
+<li><a href="#_examples">Examples</a></li>
+<li><a href="#_filtering">Filtering</a></li>
+<li><a href="#_raw_exporting">Raw exporting</a></li>
+<li><a href="#_extracting">Extracting</a></li>
+<li><a href="#_data_exporting">Data exporting</a></li>
+<li><a href="#_blob_metadata_stores">Blob &amp; metadata stores</a></li>
+<li><a href="#_document_stores">Document stores</a></li>
+<li><a href="#_client">Client</a></li>
+</ul>
+</li>
+<li><a href="#_security">Security</a></li>
+<li><a href="#_production_considerations_performance_tuning">Production considerations &amp; performance tuning</a>
+<ul class="sectlevel2">
+<li><a href="#_general_guidelines">General Guidelines</a></li>
+<li><a href="#_operating_system">Operating System</a></li>
+<li><a href="#_network">Network</a></li>
+<li><a href="#_java">Java</a></li>
+<li><a href="#_zookeeper">ZooKeeper</a></li>
+<li><a href="#_case_studies">Case studies</a></li>
+</ul>
+</li>
+<li><a href="#_troubleshooting">Troubleshooting</a></li>
+<li><a href="#_glossary">Glossary</a></li>
+<li><a href="#_bibliography">Appendix A: Bibliography</a></li>
+<li><a href="#_copyright_and_license">Appendix B: Copyright and License</a></li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 <div id="content">
@@ -818,6 +927,209 @@ mvn release:clean</code></pre>
 </div>
 </div>
 </div>
+<h1 id="_architecture" class="sect0">Architecture</h1>
+<div class="sect1">
+<h2 id="_overview">Overview</h2>
+<div class="sectionbody">
+<div id="img-archi" class="imageblock">
+<div class="content">
+<img src="images/archi.png" alt="Architecture" width="800" height="200">
+</div>
+<div class="title">Figure 1. Architecture</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_components">Components</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_controller">Controller</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_frontier">Frontier</h3>
+<div class="paragraph">
+<p>The goal of the frontier is to know which URI to process next, and when.
+The frontier decides the logic and policies to follow when a crawler is visiting sources like websites: what pages should be crawled next, priorities and ordering, how often pages are revisited, etc.
+It keeps the state of the crawl. This includes, but is not limited to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>What URIs have been discovered</p>
+</li>
+<li>
+<p>What URIs are being processed (fetched)</p>
+</li>
+<li>
+<p>What URIs have been processed</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The frontier garanties the respect of the politeness like the bandwidth limits or the number of pages to be crawled.</p>
+</div>
+<div class="paragraph">
+<p>The frontier is set of various background tasks:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Priorizer: from a set of URIs, schedule the priority of the URIs and push them in the internal queues</p>
+</li>
+<li>
+<p>Revister: revist a page, when and how</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_revisit_policies">Revisit policies</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>Freshness: This is a binary measure that indicates whether the local copy is accurate or not.</p>
+</li>
+<li>
+<p>Age: This is a measure that indicates how outdated the local copy is.</p>
+</li>
+<li>
+<p>Uniform policy: This involves re-visiting all pages in the collection with the same frequency, regardless of their rates of change.</p>
+</li>
+<li>
+<p>Proportional policy: This involves re-visiting more often the pages that change more frequently. The visiting frequency is directly proportional to the (estimated) change frequency.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_politeness">Politeness</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>Parallel connections</p>
+</li>
+<li>
+<p>Max pages per second</p>
+</li>
+<li>
+<p>Max bytes per second/bandwidth</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_worker">Worker</h3>
+<div class="paragraph">
+<p>The goal of the worker is simple, it download and parse the content of uri given by the frontiers. Its workflow is more or less the following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Pick out a uri from the frontier</p>
+</li>
+<li>
+<p>Fetch the content</p>
+</li>
+<li>
+<p>Store raw results in blobstore</p>
+</li>
+<li>
+<p>Find links in the content</p>
+</li>
+<li>
+<p>Store metadata in metadatastore</p>
+</li>
+<li>
+<p>If extraction needed, parse the content and store the results in documentstore</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_running_modes">Running modes</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_standalone_single_jvm">Standalone - Single-JVM</h3>
+<div id="img-standalone" class="imageblock">
+<div class="content">
+<img src="images/standalone.png" alt="Standalone Mode" width="350" height="200">
+</div>
+<div class="title">Figure 2. Standalone Mode</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>discovery:
+  local:
+    enabled: true
+  zookeeper:
+    enabled: false</code></pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ mandrel-standalone start</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ mandrel-standalone stop</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_standalone_pseudo_distributed">Standalone - Pseudo-distributed</h3>
+<div id="img-pseudodistributed" class="imageblock">
+<div class="content">
+<img src="images/pseudodistributed.png" alt="Pseudo-distributed Mode" width="400" height="200">
+</div>
+<div class="title">Figure 3. Pseudo-distributed Mode</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>discovery:
+  zookeeper:
+    enabled: true</code></pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ mandrel-standalone start</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ mandrel-standalone stop</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_distributed">Distributed</h3>
+<div id="img-distributed" class="imageblock">
+<div class="content">
+<img src="images/distributed.png" alt="Distributed Mode" width="800" height="200">
+</div>
+<div class="title">Figure 4. Distributed Mode</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>$ mandrel-controller start
+$ mandrel-frontier start
+$ mandrel-worker start</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>$ mandrel-worker start
+$ mandrel-frontier start
+$ mandrel-controller stop</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div class="sect1">
 <h2 id="_configuration">Configuration</h2>
 <div class="sectionbody">
@@ -970,186 +1282,6 @@ discovery:
   zookeeper:
     enabled: false</code></pre>
 </div>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_running_modes">Running modes</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_standalone_single_jvm">Standalone - Single-JVM</h3>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>discovery:
-  local:
-    enabled: true
-  zookeeper:
-    enabled: false</code></pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>$ mandrel-standalone start</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>$ mandrel-standalone stop</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_standalone_pseudo_distributed">Standalone - Pseudo-distributed</h3>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>discovery:
-  zookeeper:
-    enabled: true</code></pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>$ mandrel-standalone start</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>$ mandrel-standalone stop</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_distributed">Distributed</h3>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>$ mandrel-controller start
-$ mandrel-frontier start
-$ mandrel-worker start</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>$ mandrel-worker start
-$ mandrel-frontier start
-$ mandrel-controller stop</code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<h1 id="_architecture" class="sect0">Architecture</h1>
-<div class="sect1">
-<h2 id="_overview">Overview</h2>
-<div class="sectionbody">
-
-</div>
-</div>
-<div class="sect1">
-<h2 id="_components">Components</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_controller">Controller</h3>
-
-</div>
-<div class="sect2">
-<h3 id="_frontier">Frontier</h3>
-<div class="paragraph">
-<p>The goal of the frontier is to know which URI to process next, and when.
-The frontier decides the logic and policies to follow when a crawler is visiting sources like websites: what pages should be crawled next, priorities and ordering, how often pages are revisited, etc.
-It keeps the state of the crawl. This includes, but is not limited to:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>What URIs have been discovered</p>
-</li>
-<li>
-<p>What URIs are being processed (fetched)</p>
-</li>
-<li>
-<p>What URIs have been processed</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>The frontier garanties the respect of the politeness like the bandwidth limits or the number of pages to be crawled.</p>
-</div>
-<div class="paragraph">
-<p>The frontier is set of various background tasks:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Priorizer: from a set of URIs, schedule the priority of the URIs and push them in the internal queues</p>
-</li>
-<li>
-<p>Revister: revist a page, when and how</p>
-</li>
-</ul>
-</div>
-<div class="sect3">
-<h4 id="_revisit_policies">Revisit policies</h4>
-<div class="ulist">
-<ul>
-<li>
-<p>Freshness: This is a binary measure that indicates whether the local copy is accurate or not.</p>
-</li>
-<li>
-<p>Age: This is a measure that indicates how outdated the local copy is.</p>
-</li>
-<li>
-<p>Uniform policy: This involves re-visiting all pages in the collection with the same frequency, regardless of their rates of change.</p>
-</li>
-<li>
-<p>Proportional policy: This involves re-visiting more often the pages that change more frequently. The visiting frequency is directly proportional to the (estimated) change frequency.</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_politeness">Politeness</h4>
-<div class="ulist">
-<ul>
-<li>
-<p>Parallel connections</p>
-</li>
-<li>
-<p>Max pages per second</p>
-</li>
-<li>
-<p>Max bytes per second/bandwidth</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_worker">Worker</h3>
-<div class="paragraph">
-<p>The goal of the worker is simple, it download and parse the content of uri given by the frontiers. Its workflow is more or less the following:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Pick out a uri from the frontier</p>
-</li>
-<li>
-<p>Fetch the content</p>
-</li>
-<li>
-<p>Store raw results in blobstore</p>
-</li>
-<li>
-<p>Find links in the content</p>
-</li>
-<li>
-<p>Store metadata in metadatastore</p>
-</li>
-<li>
-<p>If extraction needed, parse the content and store the results in documentstore</p>
-</li>
-</ul>
 </div>
 </div>
 </div>
@@ -1936,10 +2068,39 @@ Section pending
 </tr>
 </table>
 </div>
+<div class="dlist glossary">
+<dl>
+<dt>controller</dt>
+<dd>
+<p>is the main process for a Mandrel infrastructure.</p>
+</dd>
+<dt>worker</dt>
+<dd>
+<p>is the process collecting the data from the source.</p>
+</dd>
+<dt>frontier</dt>
+<dd>
+<p>is the process keeping the state of the jobs.</p>
+</dd>
+</dl>
+</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_copyright_and_license">Copyright and License</h2>
+<h2 id="_bibliography">Appendix A: Bibliography</h2>
+<div class="sectionbody">
+<div class="ulist bibliography">
+<ul class="bibliography">
+<li>
+<p><a id="ctheweb"></a>[ctheweb] Gautam Pant, Padmini Srinivasan, and Filippo Menczer.
+Crawling the Web</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_copyright_and_license">Appendix B: Copyright and License</h2>
 <div class="sectionbody">
 <div class="admonitionblock note">
 <table>
@@ -1981,7 +2142,7 @@ the License.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-02-25 10:28:03 +01:00
+Last updated 2016-02-25 17:43:10 +01:00
 </div>
 </div>
 </body>
