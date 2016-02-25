@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -96,16 +97,17 @@
 						<executions>
 							<execution>
 								<id>make-final</id>
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<phase>package</phase>
 								<configuration>
 									<appendAssemblyId>false</appendAssemblyId>
 									<descriptors>
 										<descriptor>assembly/zip.xml</descriptor>
 									</descriptors>
+									<attach>false</attach>
 								</configuration>
-								<phase>package</phase>
-								<goals>
-									<goal>single</goal>
-								</goals>
 							</execution>
 						</executions>
 					</plugin>
@@ -116,12 +118,13 @@
 						<version>1.0.1</version>
 						<executions>
 							<execution>
-								<phase>package</phase>
 								<goals>
 									<goal>jdeb</goal>
 								</goals>
+								<phase>package</phase>
 								<configuration>
 									<verbose>true</verbose>
+									<attach>false</attach>
 									<controlDir>${basedir}/deb/control</controlDir>
 									<dataSet>
 										<data>
@@ -181,10 +184,11 @@
 						<version>2.1-alpha-3</version>
 						<executions>
 							<execution>
-								<id>attach-rpm</id>
+								<id>rpm</id>
 								<goals>
-									<goal>attached-rpm</goal>
+									<goal>rpm</goal>
 								</goals>
+								<phase>package</phase>
 							</execution>
 						</executions>
 						<configuration>
@@ -289,64 +293,104 @@
 						</configuration>
 					</plugin>
 
-
 					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-deploy-plugin</artifactId>
-						<version>2.8.2</version>
+						<groupId>org.codehaus.groovy.maven</groupId>
+						<artifactId>gmaven-plugin</artifactId>
+						<dependencies>
+							<dependency>
+								<groupId>org.apache.httpcomponents</groupId>
+								<artifactId>httpclient</artifactId>
+								<version>4.4.1</version>
+							</dependency>
+						</dependencies>
 						<executions>
 							<execution>
-								<id>zip</id>
 								<goals>
-									<goal>deploy-file</goal>
+									<goal>execute</goal>
 								</goals>
-								<phase>deploy</phase>
+								<phase>package</phase>
 								<configuration>
-									<id>bintray</id>
-									<repositoryId>bintray</repositoryId>
-									<packaging>zip</packaging>
-									<generatePom>false</generatePom>
-									<url>https://api.bintray.com/content/treydone/generic/mandrel-${project.version}.zip;bt_package=mandrel;bt_version=${project.version};publish=1;override=1;explode=0</url>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>${project.artifactId}</artifactId>
-									<version>${project.version}</version>
-									<file>target/${project.artifactId}-${project.version}.zip</file>
-								</configuration>
-							</execution>
-							<execution>
-								<id>deb</id>
-								<goals>
-									<goal>deploy-file</goal>
-								</goals>
-								<phase>deploy</phase>
-								<configuration>
-									<id>bintray</id>
-									<repositoryId>bintray</repositoryId>
-									<packaging>rpm</packaging>
-									<generatePom>false</generatePom>
-									<url>https://api.bintray.com/content/treydone/deb/mandrel/${project.version}/mandrel-${project.version}.deb;deb_distribution=:distributions;deb_component=main;deb_architecture=noarch;publish=1;override=1</url>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>${project.artifactId}</artifactId>
-									<version>${project.version}</version>
-									<file>target/${project.artifactId}_${project.version}_all.deb</file>
-								</configuration>
-							</execution>
-							<execution>
-								<id>rpm</id>
-								<goals>
-									<goal>deploy-file</goal>
-								</goals>
-								<phase>deploy</phase>
-								<configuration>
-									<id>bintray</id>
-									<repositoryId>bintray</repositoryId>
-									<packaging>zip</packaging>
-									<generatePom>false</generatePom>
-									<url>https://api.bintray.com/content/treydone/rpm/mandrel/${project.version}/mandrel-${project.version}.noarch.rpm;publish=1;override=1</url>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>${project.artifactId}</artifactId>
-									<version>${project.version}</version>
-									<file>target/rpm/distribution/RPMS/noarch/${project.artifactId}-${project.version}-1.noarch.rpm</file>
+									<source><![CDATA[
+										import org.apache.http.HttpHost;
+										import org.apache.http.auth.AuthScope;
+										import org.apache.http.impl.auth.BasicScheme;
+										import org.apache.http.auth.UsernamePasswordCredentials;
+										import org.apache.http.client.CredentialsProvider;
+										import org.apache.http.impl.client.BasicCredentialsProvider;
+					                    import org.apache.http.client.methods.CloseableHttpResponse;
+					                    import org.apache.http.client.methods.HttpPut;
+					                    import org.apache.http.impl.client.BasicAuthCache;
+					                    import org.apache.http.client.protocol.HttpClientContext;
+					                    import org.apache.http.client.AuthCache;
+					                    import org.apache.http.impl.client.CloseableHttpClient;
+										import org.apache.http.impl.client.HttpClients;
+					                    import org.apache.http.entity.InputStreamEntity;
+										
+					                    def server = settings.getServer("bintray");
+					                    
+					                    HttpHost target = new HttpHost("api.bintray.com", 443, "https");
+										CredentialsProvider credsProvider = new BasicCredentialsProvider();
+								        credsProvider.setCredentials(
+								                new AuthScope(target.getHostName(), target.getPort()),
+								                new UsernamePasswordCredentials(server.username, server.password));
+								        CloseableHttpClient client = HttpClients.custom()
+								                .setDefaultCredentialsProvider(credsProvider)
+								                .build();
+								                
+								        // Create AuthCache instance
+							            AuthCache authCache = new BasicAuthCache();
+							            // Generate BASIC scheme object and add it to the local auth cache
+							            BasicScheme basicAuth = new BasicScheme();
+							            authCache.put(target, basicAuth);
+							
+							            // Add AuthCache to the execution context
+							            HttpClientContext localContext = HttpClientContext.create();
+							            localContext.setAuthCache(authCache);
+								        
+								        CloseableHttpResponse response = null;
+					                    try {
+						                    
+						                    String url = "https://api.bintray.com/content/treydone/generic/mandrel-${project.version}.zip;bt_package=mandrel;bt_version=${project.version};publish=1;override=1;explode=0";
+						                    File file = new File("target/${project.artifactId}-${project.version}.zip");
+						                    HttpPut put = new HttpPut(url);
+						                    InputStreamEntity entity = new InputStreamEntity(file.newInputStream());
+						                    put.setEntity entity;
+						                    response = client.execute(target, put, localContext);
+						                    println "Response: " + response;
+						                    response.close();
+						                    
+					                		url = "https://api.bintray.com/content/treydone/deb/mandrel/${project.version}/mandrel-${project.version}.deb;deb_distribution=:distributions;deb_component=main;deb_architecture=noarch;publish=1;override=1";
+						                    file = new File("target/${project.artifactId}_${project.version}_all.deb");
+						                    put = new HttpPut(url);
+						                    entity = new InputStreamEntity(file.newInputStream());
+						                    put.setEntity entity;
+						                    response = client.execute(target, put, localContext);
+						                    println "Response: " + response;
+						                    response.close();
+						                    
+						                    url = "https://api.bintray.com/content/treydone/rpm/mandrel/${project.version}/mandrel-${project.version}.noarch.rpm;publish=1;override=1";
+						                    file = new File("target/rpm/distribution/RPMS/noarch/${project.artifactId}-${project.version}-1.noarch.rpm");
+						                    put = new HttpPut(url);
+						                    entity = new InputStreamEntity(file.newInputStream());
+						                    put.setEntity entity;
+						                    response = client.execute(target, put, localContext);
+						                    println "Response: " + response;
+						                    response.close();
+					                    	
+					                    } catch(Exception e) {
+					                    	if(response != null) {
+					                    		println "Response: " + response;
+					                    	}
+					                    	println "Error: " + e;
+					                    	e.printStackTrace();
+					                    } finally {
+					                    	if(response != null) {
+					                    		response.close();	
+					                    	}
+					                    	client.close();
+					                    }
+					
+					                ]]></source>
 								</configuration>
 							</execution>
 						</executions>
