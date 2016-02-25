@@ -15,12 +15,7 @@
 	<profiles>
 
 		<profile>
-			<id>default</id>
-			<activation>
-				<property>
-					<name>!skipDeploy</name>
-				</property>
-			</activation>
+			<id>release</id>
 			<build>
 				<plugins>
 					<plugin>
