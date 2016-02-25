@@ -3,7 +3,7 @@
 
 	<groupId>io.mandrel</groupId>
 	<artifactId>parent</artifactId>
-	<version>0.0.12</version>
+	<version>0.0.13-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Mandrel</name>
 	<description>The distributed mining engine built for the cloud</description>
@@ -20,7 +20,7 @@
 		<connection>scm:git:git@github.com:Treydone/mandrel.git</connection>
 		<developerConnection>scm:git:git@github.com:Treydone/mandrel.git</developerConnection>
 		<url>http://github.com/Treydone/mandrel</url>
-		<tag>v0.0.12</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<distributionManagement>
