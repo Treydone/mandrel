@@ -94,33 +94,81 @@ Mandrel works on Linux, Mac and Windows. All you need is Java 8+ and a running i
 
 == Installation
 
-=== With the +tar.gz+
+=== With the archive
 
-=== With +yum+
+This is the easiest method, you can download the latest version here:
+https://dl.bintray.com/treydone/generic/
 
-//tag::yum[]
-To install Mandrel on Fedora or other RPM-based systems:
+Just unzip the archive and you are done.
 
-. Open a terminal
-. Run the installation command
+=== With RPMs
 
-  Fedora 21 or earlier::
-+
- $ sudo yum install mandrel
+==== Using +yum+
 
-  Fedora 22 or later::
-+
- $ sudo dnf install mandrel
+ .  Copy this text into a 'mandrel.repo' file on your Linux machine:
 
-=== With +apt-get+
+[source]
+#For Mandrel
+[mandrel]
+name=mandrel
+baseurl=https://dl.bintray.com/treydone/rpm
+gpgcheck=0
+enabled=1
 
-//tag::aptget[]
+OR
+
+ . Run the following to get a generated .repo file:
+
+ $ wget https://bintray.com/treydone/rpm/rpm -O mandrel.repo
+
+.  Move the repo file to /etc/yum.repos.d/
+
+ $ sudo mv  mandrel.repo /etc/yum.repos.d/
+
+ . Run the installation command
+
+   RHEL and Fedora 21 or earlier::
+ +
+  $ sudo yum install mandrel
+
+   Fedora 22 or later::
+ +
+  $ sudo dnf install mandrel
+
+==== By downloading
+
+You can directly download the rpm by using:
+
+ $ curl -L "https://dl.bintray.com/treydone/rpm/mandrel-XXX.noarch.rpm" -o mandrel.noarch.rpm
+
+ $ rpm -Ivh mandrel.noarch.rpm
+
+=== With DEBs
+
+==== Using +apt-get+
+
 To install Mandrel on Debian Sid or Ubuntu Saucy or greater:
 
-. Open a terminal
-. Type the +apt-get+ command
+. Using the command line, add the following to your /etc/apt/sources.list system config file:
+
+ $ echo "deb https://dl.bintray.com/treydone/deb {distribution} {components}" | sudo tee -a /etc/apt/sources.list
+
+OR
+
+. Add the repository URLs using the "Software Sources" admin UI:
+
+ deb https://dl.bintray.com/treydone/deb {distribution} {components}
+
+. In a terminal, type the +apt-get+ command
 
  $ sudo apt-get install mandrel
+
+==== By downloading
+
+You can directly download the deb by using:
+
+ $ curl -L "https://dl.bintray.com/treydone/deb/mandrel-XXX.deb" -o mandrel.deb
+ $ dpkg -i mandrel.deb
 
 === From the sources
 
@@ -130,6 +178,14 @@ Mandrel uses Maven for its build system. Simply run:
 mvn clean install -DskipTests
 cd standalone
 mvn spring-boot:run -DskipTests
+
+=== With Docker
+
+Coming soon...
+
+=== On Windows
+
+Coming soon...
 
 == Build a release
 

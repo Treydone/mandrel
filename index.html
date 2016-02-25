@@ -617,38 +617,70 @@ A useful tip
 <h2 id="_installation">Installation</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_with_the_tar_gz">With the tar.gz</h3>
-
+<h3 id="_with_the_archive">With the archive</h3>
+<div class="paragraph">
+<p>This is the easiest method, you can download the latest version here:
+<a href="https://dl.bintray.com/treydone/generic/" class="bare">https://dl.bintray.com/treydone/generic/</a></p>
+</div>
+<div class="paragraph">
+<p>Just unzip the archive and you are done.</p>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_with_yum">With yum</h3>
+<h3 id="_with_rpms">With RPMs</h3>
+<div class="sect3">
+<h4 id="_using_yum">Using yum</h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Copy this text into a 'mandrel.repo' file on your Linux machine:</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>#For Mandrel
+[mandrel]
+name=mandrel
+baseurl=https://dl.bintray.com/treydone/rpm
+gpgcheck=0
+enabled=1</code></pre>
+</div>
+</div>
 <div class="paragraph">
-<p>To install Mandrel on Fedora or other RPM-based systems:</p>
+<p>OR</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Open a terminal</p>
+<p>Run the following to get a generated .repo file:</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ wget https://bintray.com/treydone/rpm/rpm -O mandrel.repo</pre>
+</div>
+</div>
+</li>
+<li>
+<p>Move the repo file to /etc/yum.repos.d/</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ sudo mv  mandrel.repo /etc/yum.repos.d/</pre>
+</div>
+</div>
 </li>
 <li>
 <p>Run the installation command</p>
 <div class="dlist">
 <dl>
-<dt class="hdlist1">Fedora 21 or earlier</dt>
+<dt class="hdlist1">RHEL and Fedora 21 or earlier</dt>
 <dd>
-<div class="literalblock">
-<div class="content">
-<pre>$ sudo yum install mandrel</pre>
-</div>
-</div>
+<p>+
+ $ sudo yum install mandrel</p>
 </dd>
 <dt class="hdlist1">Fedora 22 or later</dt>
 <dd>
-<div class="literalblock">
-<div class="content">
-<pre>$ sudo dnf install mandrel</pre>
-</div>
-</div>
+<p>+
+ $ sudo dnf install mandrel</p>
 </dd>
 </dl>
 </div>
@@ -656,18 +688,57 @@ A useful tip
 </ol>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_by_downloading">By downloading</h4>
+<div class="paragraph">
+<p>You can directly download the rpm by using:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ curl -L "https://dl.bintray.com/treydone/rpm/mandrel-XXX.noarch.rpm" -o mandrel.noarch.rpm</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ rpm -Ivh mandrel.noarch.rpm</pre>
+</div>
+</div>
+</div>
+</div>
 <div class="sect2">
-<h3 id="_with_apt_get">With apt-get</h3>
+<h3 id="_with_debs">With DEBs</h3>
+<div class="sect3">
+<h4 id="_using_apt_get">Using apt-get</h4>
 <div class="paragraph">
 <p>To install Mandrel on Debian Sid or Ubuntu Saucy or greater:</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Open a terminal</p>
+<p>Using the command line, add the following to your /etc/apt/sources.list system config file:</p>
+<div class="literalblock">
+<div class="content">
+<pre>$ echo "deb https://dl.bintray.com/treydone/deb {distribution} {components}" | sudo tee -a /etc/apt/sources.list</pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>OR</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Add the repository URLs using the "Software Sources" admin UI:</p>
+<div class="literalblock">
+<div class="content">
+<pre>deb https://dl.bintray.com/treydone/deb {distribution} {components}</pre>
+</div>
+</div>
 </li>
 <li>
-<p>Type the apt-get command</p>
+<p>In a terminal, type the apt-get command</p>
 <div class="literalblock">
 <div class="content">
 <pre>$ sudo apt-get install mandrel</pre>
@@ -675,6 +746,19 @@ A useful tip
 </div>
 </li>
 </ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_by_downloading_2">By downloading</h4>
+<div class="paragraph">
+<p>You can directly download the deb by using:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ curl -L "https://dl.bintray.com/treydone/deb/mandrel-XXX.deb" -o mandrel.deb
+$ dpkg -i mandrel.deb</pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -688,6 +772,18 @@ A useful tip
 cd standalone
 mvn spring-boot:run -DskipTests</code></pre>
 </div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_with_docker">With Docker</h3>
+<div class="paragraph">
+<p>Coming soon&#8230;&#8203;</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_on_windows">On Windows</h3>
+<div class="paragraph">
+<p>Coming soon&#8230;&#8203;</p>
 </div>
 </div>
 </div>
@@ -1885,7 +1981,7 @@ the License.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-02-20 20:43:53 +01:00
+Last updated 2016-02-25 10:28:03 +01:00
 </div>
 </div>
 </body>
