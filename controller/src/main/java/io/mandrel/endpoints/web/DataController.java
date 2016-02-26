@@ -53,7 +53,7 @@ public class DataController {
 
 	@RequestMapping("/data")
 	public String data(Model model, @PageableDefault(page = 0, size = 20) Pageable pageable) {
-		model.addAttribute("spiders", spiderService.page(pageable));
+		model.addAttribute("spiders", spiderService.pageForActive(pageable));
 		return "views/data";
 	}
 
@@ -62,7 +62,7 @@ public class DataController {
 		Spider spider = spiderService.get(id);
 		model.addAttribute("spider", spider);
 
-		DataExtractor extractor = spider.getExtractors().getData().stream().filter(ex -> extractorName.equals(ex.name())).findFirst()
+		DataExtractor extractor = spider.getExtractors().getData().stream().filter(ex -> extractorName.equals(ex.getName())).findFirst()
 				.orElseThrow(() -> new NotFoundException(""));
 
 		DocumentStore theStore = DocumentStores.get(id, extractorName).orElseThrow(() -> new NotFoundException(""));
@@ -86,10 +86,10 @@ public class DataController {
 		}
 		NavigableDocumentStore store = (NavigableDocumentStore) theStore;
 
-		DataExtractor theExtractor = spider.getExtractors().getData().stream().filter(ex -> extractor.equals(ex.name())).findFirst()
+		DataExtractor theExtractor = spider.getExtractors().getData().stream().filter(ex -> extractor.equals(ex.getName())).findFirst()
 				.orElseThrow(() -> new NotFoundException(""));
 
-		if (theExtractor instanceof DefaultDataExtractor) {
+		if (!(theExtractor instanceof DefaultDataExtractor)) {
 			throw new NotImplementedException("Not a default data extractor");
 		}
 

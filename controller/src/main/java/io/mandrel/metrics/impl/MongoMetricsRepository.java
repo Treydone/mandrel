@@ -47,6 +47,7 @@ import javax.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -74,6 +75,7 @@ import com.mongodb.client.model.WriteModel;
 public class MongoMetricsRepository implements MetricsRepository {
 
 	private static final String INDEX_NAME = "_time_and_type_";
+	private static final List<String> TIMESERIES_ALLOWED_KEYS = Arrays.asList(MetricKeys.globalTotalSize(), MetricKeys.globalNbPages());
 	private final MongoClient mongoClient;
 	private final MongoProperties properties;
 	private final ObjectMapper mapper;
@@ -90,8 +92,11 @@ public class MongoMetricsRepository implements MetricsRepository {
 		MongoDatabase database = mongoClient.getDatabase(properties.getMongoClientDatabase());
 
 		counters = database.getCollection("counters");
+		timeseries = database.getCollection("timeseries");
 
-		MongoUtils.checkCapped(database, "timeseries", size, maxDocuments);
+		checkFilled();
+
+		MongoUtils.checkCapped(database, "timeseries", size, maxDocuments, false);
 		timeseries = database.getCollection("timeseries");
 
 		List<Document> indexes = Lists.newArrayList(database.getCollection("timeseries").listIndexes());
@@ -100,6 +105,44 @@ public class MongoMetricsRepository implements MetricsRepository {
 			log.warn("Index on field time and type is missing, creating it. Exisiting indexes: {}", indexes);
 			database.getCollection("timeseries").createIndex(new Document("timestamp_hour", 1).append("type", 1),
 					new IndexOptions().name(INDEX_NAME).unique(true));
+		}
+	}
+
+	public void checkFilled() {
+		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime keytime = now.withMinute(0).withSecond(0).withNano(0);
+		if (TIMESERIES_ALLOWED_KEYS.stream().anyMatch(key -> {
+			Document serie = timeseries.find(Filters.and(Filters.eq("type", key), Filters.eq("timestamp_hour", keytime))).limit(1).first();
+			if (serie != null) {
+				Map<String, Long> values = (Map<String, Long>) serie.get("values");
+				if (values.size() != 60) {
+					log.warn("Wrong values size for timeserie collection {}", key);
+					return true;
+				}
+				return false;
+			}
+			return false;
+		})) {
+			log.warn("Dropping the timeseries collection");
+			timeseries.drop();
+		}
+
+		List<? extends WriteModel<Document>> requests = TIMESERIES_ALLOWED_KEYS
+				.stream()
+				.map(key -> Pair.of(key, timeseries.find(Filters.and(Filters.eq("type", key), Filters.eq("timestamp_hour", keytime))).limit(1).first()))
+				.filter(doc -> doc.getRight() == null)
+				.map(pair -> pair.getLeft())
+				.map(key -> {
+					Document document = new Document();
+					document.append("type", key).append("timestamp_hour", keytime);
+					document.append("values",
+							IntStream.range(0, 60).collect(Document::new, (doc, val) -> doc.put(Integer.toString(val), Long.valueOf(0)), Document::putAll));
+					return document;
+				})
+				.map(doc -> new UpdateOneModel<Document>(Filters.and(Filters.eq("type", doc.getString("type")), Filters.eq("timestamp_hour", keytime)),
+						new Document("$set", doc), new UpdateOptions().upsert(true))).collect(Collectors.toList());
+		if (CollectionUtils.isNotEmpty(requests)) {
+			timeseries.bulkWrite(requests);
 		}
 	}
 
@@ -177,8 +220,7 @@ public class MongoMetricsRepository implements MetricsRepository {
 	}
 
 	public void prepareMinutes(LocalDateTime keytime) {
-		List<? extends WriteModel<Document>> requests = Arrays
-				.asList(MetricKeys.globalTotalSize(), MetricKeys.globalNbPages())
+		List<? extends WriteModel<Document>> requests = TIMESERIES_ALLOWED_KEYS
 				.stream()
 				.map(el -> {
 					Document document = new Document();

@@ -277,8 +277,8 @@ public class SpiderService {
 		return spiderRepository.page(pageable);
 	}
 
-	public List<Spider> listActive() {
-		return spiderRepository.listActive();
+	public Page<Spider> pageForActive(Pageable pageable) {
+		return spiderRepository.pageForActive(pageable);
 	}
 
 	public List<Spider> listLastActive(int limit) {

@@ -30,7 +30,7 @@ import com.mongodb.client.model.CreateCollectionOptions;
 @Slf4j
 public abstract class MongoUtils {
 
-	public static void checkCapped(MongoDatabase database, String collectionName, int size, int maxDocuments) {
+	public static void checkCapped(MongoDatabase database, String collectionName, int size, int maxDocuments, boolean delete) {
 		if (Lists.newArrayList(database.listCollectionNames()).contains(collectionName)) {
 			log.debug("'{}' collection already exists...", collectionName);
 
@@ -39,9 +39,14 @@ public abstract class MongoUtils {
 			boolean isCapped = database.runCommand(command, ReadPreference.primary()).getBoolean("capped").booleanValue();
 
 			if (!isCapped) {
-				log.info("'{}' is not capped, converting it...", collectionName);
-				command = new Document("convertToCapped", collectionName).append("size", size).append("max", maxDocuments);
-				database.runCommand(command, ReadPreference.primary());
+				if (delete) {
+					database.getCollection(collectionName).drop();
+					database.createCollection(collectionName, new CreateCollectionOptions().capped(true).maxDocuments(maxDocuments).sizeInBytes(size));
+				} else {
+					log.info("'{}' is not capped, converting it...", collectionName);
+					command = new Document("convertToCapped", collectionName).append("size", size).append("max", maxDocuments);
+					database.runCommand(command, ReadPreference.primary());
+				}
 			} else {
 				log.debug("'{}' collection already capped!", collectionName);
 			}

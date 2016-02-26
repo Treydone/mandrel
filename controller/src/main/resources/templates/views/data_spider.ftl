@@ -34,7 +34,7 @@
 		        "scrollX": true,
 		        "searching": false,
 		        "ajax": {
-		            "url": "/spiders/${spider.id?c}/data/${extractor.name}",
+		            "url": "/spiders/${spider.id?c}/data/${extractor.getName()}",
 		            "type": "POST"
 		        },
 		        "columns": [

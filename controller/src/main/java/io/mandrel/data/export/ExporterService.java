@@ -55,7 +55,7 @@ public class ExporterService {
 		if (oExtractor.isPresent()) {
 
 			DataExtractor theExtractor = oExtractor.get();
-			if (theExtractor instanceof DefaultDataExtractor) {
+			if (!(theExtractor instanceof DefaultDataExtractor)) {
 				throw new NotImplementedException("Not a default data extractor");
 			}
 

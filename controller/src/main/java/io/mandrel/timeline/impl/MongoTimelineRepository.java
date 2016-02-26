@@ -70,7 +70,7 @@ public class MongoTimelineRepository implements TimelineRepository {
 	public void init() {
 		MongoDatabase database = mongoClient.getDatabase(properties.getMongoClientDatabase());
 
-		MongoUtils.checkCapped(database, collectionName, size, maxDocuments);
+		MongoUtils.checkCapped(database, collectionName, size, maxDocuments, false);
 		timeline = database.getCollection(collectionName);
 	}
 
