@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.facebook.nifty.client;
+package io.mandrel.transport.thrift.nifty;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import io.airlift.units.Duration;
@@ -47,6 +47,10 @@ import org.jboss.netty.channel.socket.nio.NioWorkerPool;
 import org.jboss.netty.util.ThreadNameDeterminer;
 import org.jboss.netty.util.Timer;
 
+import com.facebook.nifty.client.NettyClientConfig;
+import com.facebook.nifty.client.NiftyClientChannel;
+import com.facebook.nifty.client.NiftyClientConnector;
+import com.facebook.nifty.client.TNiftyClientChannelTransport;
 import com.facebook.nifty.client.socks.Socks4ClientBootstrap;
 import com.facebook.nifty.core.ShutdownUtil;
 import com.google.common.base.Throwables;

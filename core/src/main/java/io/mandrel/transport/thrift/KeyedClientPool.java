@@ -21,6 +21,7 @@ package io.mandrel.transport.thrift;
 import io.airlift.units.Duration;
 import io.mandrel.endpoints.contracts.Contract;
 import io.mandrel.transport.Pooled;
+import io.mandrel.transport.thrift.nifty.ThriftClientManager;
 
 import java.util.concurrent.TimeUnit;
 import java.util.zip.Deflater;
@@ -45,7 +46,6 @@ import com.facebook.nifty.duplex.TDuplexProtocolFactory;
 import com.facebook.nifty.duplex.TProtocolPair;
 import com.facebook.nifty.duplex.TTransportPair;
 import com.facebook.swift.service.ThriftClientEventHandler;
-import com.facebook.swift.service.ThriftClientManager;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
 
