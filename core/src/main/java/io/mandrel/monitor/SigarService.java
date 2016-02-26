@@ -19,6 +19,7 @@
 package io.mandrel.monitor;
 
 import io.mandrel.monitor.Infos.Interface;
+import kamon.sigar.SigarProvisioner;
 import lombok.extern.slf4j.Slf4j;
 
 import org.hyperic.sigar.NetFlags;
@@ -39,12 +40,13 @@ public class SigarService {
 	public SigarService() {
 		Sigar sigar = null;
 		try {
+			SigarProvisioner.provision();
 			sigar = new Sigar();
 			// call it to make sure the library was loaded
 			sigar.getPid();
 			log.debug("sigar loaded successfully");
 		} catch (Throwable t) {
-			log.debug("failed to load sigar", t);
+			log.error("failed to load sigar", t);
 			throw Throwables.propagate(t);
 		}
 		this.sigar = sigar;
