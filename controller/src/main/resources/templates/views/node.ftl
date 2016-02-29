@@ -52,7 +52,7 @@
 	        <span class="info-box-icon bg-red"><i class="fa fa-star-o"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Timeout</span>
-	          <span class="info-box-number">O</span>
+	          <span class="info-box-number">0</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -66,16 +66,24 @@
               <h3 class="box-title">Headlines</h3>
             </div><!-- /.box-header -->
             <div class="box-body">
-	            <ul>
-			      <li><a href="/nodes/${node.id}">${node.id}</a></li>
-			      <li>${node.infos.hostname}</li>
-			      <li>${node.infos.fqdn}</li>
-			      <li><span class="label label-success">OK</span></li>
-			      <li>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</li>
-			      <li>${node.infos.jvmInfo.startTime}</li>
-			      <li>${node.infos.jvmInfo.vmName} <b>${node.infos.jvmInfo.version}</b> ${node.infos.jvmInfo.vmVersion} from ${node.infos.jvmInfo.vmVendor}</li>
-			      <li>${node.infos.jvmInfo.mem.heapInit.printableValue}/${node.infos.jvmInfo.mem.heapMax.printableValue} (${node.infos.jvmInfo.mem.nonHeapInit.printableValue}/${node.infos.jvmInfo.mem.nonHeapMax.printableValue})</li>
-			    </ul>
+            	<dl class="dl-horizontal">
+                    <dt>Id</dt>
+                    <dd><a href="/nodes/${node.id}">${node.id}</a></dd>
+                    <dt>Hostname</dt>
+			        <dd>${node.infos.hostname}</dd>
+			        <dt>Fqdn</dt>
+			        <dd>${node.infos.fqdn}</dd>
+			        <dt>Start time</dt>
+			        <dd>${node.infos.jvmInfo.startTime}</dd>
+			        <dt>JVM</dt>
+			        <dd>${node.infos.jvmInfo.vmName} <b>${node.infos.jvmInfo.version}</b> ${node.infos.jvmInfo.vmVersion} from ${node.infos.jvmInfo.vmVendor}</dd>
+			        <dt>Heap</dt>
+			        <dd>${node.infos.jvmInfo.mem.heapInit.printableValue}/${node.infos.jvmInfo.mem.heapMax.printableValue} (${node.infos.jvmInfo.mem.nonHeapInit.printableValue}/${node.infos.jvmInfo.mem.nonHeapMax.printableValue})</li>
+			        <dt>Network interfaces</dt>
+			        <dd><#list node.infos.interfaces as interface>
+			         ${interface.name} (${interface.type}): ${interface.address}<#sep>; </#sep>
+			         </#list></dd>
+                </dl>
             </div><!-- /.box-body -->
           </div><!-- /.box -->
         </div><!-- ./col -->

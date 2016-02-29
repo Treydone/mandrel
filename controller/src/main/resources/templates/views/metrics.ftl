@@ -76,29 +76,31 @@
             <section class="col-lg-7 connectedSortable ui-sortable">
             
             
-              <!-- solid sales graph -->
+              <!-- solid graph -->
               <div class="box box-solid bg-teal-gradient">
                 <div class="box-header">
                   <i class="fa fa-th"></i>
-                  <h3 class="box-title">Sales Graph</h3>
+                  <h3 class="box-title">Total size</h3>
                 </div>
                 <div class="box-body border-radius-none">
                   <div class="chart" id="line-chart" style="height: 250px;"></div>
                 </div><!-- /.box-body -->
                 <div class="box-footer no-border">
                   <div class="row">
+                  <!--
                     <div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4">
                       <input type="text" class="knob" data-readonly="true" value="20" data-width="60" data-height="60" data-fgColor="#39CCCC" />
                       <div class="knob-label">Mail-Orders</div>
-                    </div><!-- ./col -->
+                    </div>
                     <div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4">
                       <input type="text" class="knob" data-readonly="true" value="50" data-width="60" data-height="60" data-fgColor="#39CCCC" />
                       <div class="knob-label">Online</div>
-                    </div><!-- ./col -->
+                    </div>
                     <div class="col-xs-4 text-center">
                       <input type="text" class="knob" data-readonly="true" value="30" data-width="60" data-height="60" data-fgColor="#39CCCC" />
                       <div class="knob-label">In-Store</div>
-                    </div><!-- ./col -->
+                    </div>
+                    -->
                   </div><!-- /.row -->
                 </div><!-- /.box-footer -->
               </div><!-- /.box -->
@@ -115,27 +117,27 @@
                 <div class="box-header">
 
                   <i class="fa fa-map-marker"></i>
-                  <h3 class="box-title">
-                    Visitors
-                  </h3>
+                  <h3 class="box-title">Endpoints</h3>
                 </div>
                 <div class="box-body">
                   <div id="world-map" style="height: 250px; width: 100%;"></div>
                 </div><!-- /.box-body-->
                 <div class="box-footer no-border">
                   <div class="row">
+                  <!--
                     <div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4">
                       <div id="sparkline-1"></div>
                       <div class="knob-label">Visitors</div>
-                    </div><!-- ./col -->
+                    </div>
                     <div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4">
                       <div id="sparkline-2"></div>
                       <div class="knob-label">Online</div>
-                    </div><!-- ./col -->
+                    </div>
                     <div class="col-xs-4 text-center">
                       <div id="sparkline-3"></div>
                       <div class="knob-label">Exists</div>
-                    </div><!-- ./col -->
+                    </div>
+                    -->
                   </div><!-- /.row -->
                 </div>
               </div>
@@ -299,23 +301,16 @@
     },
     onRegionLabelShow: function (e, el, code) {
       if (typeof visitorsData[code] != "undefined")
-        el.html(el.html() + ': ' + visitorsData[code] + ' new visitors');
+        el.html(el.html() + ': ' + visitorsData[code] + ' targeted blob');
     }
   });
   	var line = new Morris.Line({
     element: 'line-chart',
     resize: true,
     data: [
-      {y: '2011 Q1', item1: 2666},
-      {y: '2011 Q2', item1: 2778},
-      {y: '2011 Q3', item1: 4912},
-      {y: '2011 Q4', item1: 3767},
-      {y: '2012 Q1', item1: 6810},
-      {y: '2012 Q2', item1: 5670},
-      {y: '2012 Q3', item1: 4820},
-      {y: '2012 Q4', item1: 15073},
-      {y: '2013 Q1', item1: 10687},
-      {y: '2013 Q2', item1: 8432}
+	<#list totalSize as el>
+      {y: "${el.time}", item1: ${el.value}}<#sep>, </#sep>
+     </#list>
     ],
     xkey: 'y',
     ykeys: ['item1'],

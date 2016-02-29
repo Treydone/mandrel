@@ -266,6 +266,7 @@
 					      <h3 class="box-title">Actions</h3>
 					    </div>
 					    <div class="box-body">
+					      <p>Current status: ${spider.status}</p>
 					      <a class="btn btn-app <#if spider.status != "initiated">disabled</#if>">
 					        <i class="fa fa-edit"></i> Edit
 					      </a>
@@ -281,7 +282,7 @@
 					      <a class="btn btn-app <#if spider.status != "killed" && spider.status != "ended">disabled</#if>" href="/spiders/${spider.id?c}/delete">
 					        <i class="fa fa-eraser"></i> Delete
 					      </a>
-					      <a class="btn btn-app <#if spider.status == "killed" && spider.status == "ended">disabled</#if>" href="/spiders/${spider.id?c}/reinject">
+					      <a class="btn btn-app <#if spider.status != "killed" && spider.status != "ended" || spider.status == "deleted">disabled</#if>" href="/spiders/${spider.id?c}/reinject">
 					        <i class="fa fa-circle-o-notch"></i> Re-source
 					      </a>
 					      <a class="btn btn-app" href="/spiders/${spider.id?c}/fork">
@@ -408,12 +409,12 @@
 	        	<div class="small-box bg-aqua disabled">
 	                <div class="inner">
 	                  <h3>${(metrics.nbPagesTotal)!0}</h3>
-	                  <p>Raw data</p>
+	                  <p>Blobs of raw data</p>
 	                </div>
 	                <div class="icon">
 	                  <i class="ion ion-ios-cloud-download-outline"></i>
 	                </div>
-	                <#if spider.stores.pageStore??>
+	                <#if spider.stores.blobStore?? && spider.status != "deleted">
 	                <div class="margin">
 	                    <div class="btn-group">
 	                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -442,6 +443,7 @@
 		                <div class="icon">
 		                  <i class="ion ion-ios-pricetag-outline"></i>
 		                </div>
+		                <#if spider.status != "deleted">
 		                <div class="margin">
 		                    <div class="btn-group">
 		                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -458,6 +460,7 @@
 		                  <a href="/spiders/${spider.id?c}/data/${extractor.getName()}" class="small-box-footer">
 		                  View data <i class="fa fa-arrow-circle-right"></i>
 		                </a>
+		                </#if>
 		              </div>
 		              </#list>
 	              </#if>

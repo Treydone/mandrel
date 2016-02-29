@@ -57,6 +57,12 @@
 					 							<#assign title = '<a href="/spiders/${event.spider.spiderId?c}">${event.spider.spiderName}</a> has been killed'>
 												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spider.spiderId}">View spider</a>'>
 					 							<#break>
+					 						<#case "SPIDER_DELETED">
+					 							<#assign icon = "fa-tasks">
+					 							<#assign color = "bg-orange">
+					 							<#assign title = '<a href="/spiders/${event.spider.spiderId?c}">${event.spider.spiderName}</a> has been deleted'>
+												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spider.spiderId}">View spider</a>'>
+					 							<#break>
 					 						<#default>
 												<#break>
 										</#switch>
