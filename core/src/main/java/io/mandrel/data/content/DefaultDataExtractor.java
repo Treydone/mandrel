@@ -108,6 +108,7 @@ public class DefaultDataExtractor extends DataExtractor {
 			} else {
 
 				Document document = new Document(fields.size());
+				document.setId(blob.getMetadata().getUri().toString());
 
 				for (FieldExtractor field : fields) {
 

@@ -86,10 +86,10 @@ public class Barrier {
 			bandwidthBucket.consume(consumedSize.longValue());
 		}
 
-		long elapsed = stopwatch.stop().elapsed(TimeUnit.SECONDS);
+		long elapsed = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
 
 		if (politeness.getWait() > 0 && politeness.getWait() > elapsed) {
-			Uninterruptibles.sleepUninterruptibly(politeness.getWait() - elapsed, TimeUnit.SECONDS);
+			Uninterruptibles.sleepUninterruptibly(politeness.getWait() - elapsed, TimeUnit.MILLISECONDS);
 		}
 	}
 }

@@ -70,22 +70,30 @@ public class Loop implements Runnable {
 	private final Barrier barrier;
 
 	private final AtomicBoolean run = new AtomicBoolean(false);
+	private final AtomicBoolean loop = new AtomicBoolean(true);
 
 	public void start() {
 		run.set(true);
+		loop.set(true);
 	}
 
 	public void pause() {
 		run.set(false);
+		loop.set(true);
+	}
+
+	public void stop() {
+		run.set(false);
+		loop.set(false);
 	}
 
 	public boolean isRunning() {
-		return run.get();
+		return run.get() && loop.get();
 	}
 
 	@Override
 	public void run() {
-		while (true) {
+		while (loop.get()) {
 
 			try {
 				if (!run.get()) {

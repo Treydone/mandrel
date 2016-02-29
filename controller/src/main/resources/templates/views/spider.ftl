@@ -282,7 +282,7 @@
 					      <a class="btn btn-app <#if spider.status != "killed" && spider.status != "ended">disabled</#if>" href="/spiders/${spider.id?c}/delete">
 					        <i class="fa fa-eraser"></i> Delete
 					      </a>
-					      <a class="btn btn-app <#if spider.status != "killed" && spider.status != "ended" || spider.status == "deleted">disabled</#if>" href="/spiders/${spider.id?c}/reinject">
+					      <a class="btn btn-app <#if spider.status != "started">disabled</#if>" href="/spiders/${spider.id?c}/reinject">
 					        <i class="fa fa-circle-o-notch"></i> Re-source
 					      </a>
 					      <a class="btn btn-app" href="/spiders/${spider.id?c}/fork">
@@ -437,7 +437,7 @@
 		              <#list spider.extractors.data as extractor>
 		              <div class="small-box bg-orange disabled">
 		                <div class="inner">
-		                  <h3>${(metrics.documentsByExtractor[extractor.getName()])!"0"}</h3>
+		                  <h3>${(metrics.extractors[extractor.getName()])!"0"}</h3>
 		                  <p>Extractor '${extractor.getName()}'</p>
 		                </div>
 		                <div class="icon">

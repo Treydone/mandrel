@@ -164,11 +164,26 @@ public class WorkerContainer extends AbstractContainer {
 		if (monitor.tryEnter()) {
 			try {
 				if (!current.get().equals(ContainerStatus.KILLED)) {
-					loops.forEach(loop -> loop.pause());
+					loops.forEach(loop -> loop.stop());
+
 					try {
-						executor.shutdownNow();
+						executor.shutdown(); // Disable new tasks from being submitted
+						try {
+							// Wait a while for existing tasks to terminate
+							if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+								executor.shutdownNow(); // Cancel currently executing tasks
+								// Wait a while for tasks to respond to being cancelled
+								if (!executor.awaitTermination(60, TimeUnit.SECONDS))
+									log.warn("Pool did not terminate");
+							}
+						} catch (InterruptedException ie) {
+							// (Re-)Cancel if current thread also interrupted
+							executor.shutdownNow();
+							// Preserve interrupt status
+							Thread.currentThread().interrupt();
+						}
 					} catch (Exception e) {
-						log.debug(e.getMessage(), e);
+						log.warn(e.getMessage(), e);
 					}
 
 					try {

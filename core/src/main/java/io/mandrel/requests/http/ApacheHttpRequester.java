@@ -30,6 +30,7 @@ import io.mandrel.requests.Requester;
 import io.mandrel.requests.proxy.ProxyServer;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -50,15 +51,17 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Consts;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -224,7 +227,7 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 
 	public Blob get(Uri uri, Spider spider) throws Exception {
 		HttpUriRequest request = prepareRequest(uri, spider);
-		HttpResponse response;
+		CloseableHttpResponse response;
 		try {
 			response = client.execute(request);
 		} catch (ConnectTimeoutException e) {
@@ -236,7 +239,7 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 	}
 
 	public Blob get(Uri uri) throws Exception {
-		HttpResponse response = client.execute(new HttpGet(uri.toURI()));
+		CloseableHttpResponse response = client.execute(new HttpGet(uri.toURI()));
 		return extractWebPage(uri, response, null);
 	}
 
@@ -282,36 +285,51 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 		return request;
 	}
 
-	public Blob extractWebPage(Uri uri, HttpResponse result, HttpContext localContext) throws MalformedURLException, IOException {
-		Map<String, List<String>> headers = new HashMap<String, List<String>>();
-		if (result.getAllHeaders() != null) {
-			for (Header header : result.getAllHeaders()) {
-				headers.put(header.getName(), Arrays.asList(header.getValue()));
+	public Blob extractWebPage(Uri uri, CloseableHttpResponse result, HttpContext localContext) throws MalformedURLException, IOException {
+		try {
+			Map<String, List<String>> headers = new HashMap<String, List<String>>();
+			if (result.getAllHeaders() != null) {
+				for (Header header : result.getAllHeaders()) {
+					headers.put(header.getName(), Arrays.asList(header.getValue()));
+				}
 			}
-		}
 
-		List<io.mandrel.requests.http.Cookie> cookies = null;
-		if (localContext != null) {
-			CookieStore store = (CookieStore) localContext.getAttribute(HttpClientContext.COOKIE_STORE);
-			if (store.getCookies() != null) {
-				cookies = store
-						.getCookies()
-						.stream()
-						.filter(cookie -> cookie != null)
-						.map(cookie -> new io.mandrel.requests.http.Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie
-								.getExpiryDate() != null ? cookie.getExpiryDate().getTime() : 0, cookie.getExpiryDate() != null ? (int) cookie.getExpiryDate()
-								.getTime() : 0, cookie.isSecure(), false)).collect(Collectors.toList());
+			List<io.mandrel.requests.http.Cookie> cookies = null;
+			if (localContext != null) {
+				CookieStore store = (CookieStore) localContext.getAttribute(HttpClientContext.COOKIE_STORE);
+				if (store.getCookies() != null) {
+					cookies = store
+							.getCookies()
+							.stream()
+							.filter(cookie -> cookie != null)
+							.map(cookie -> new io.mandrel.requests.http.Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(),
+									cookie.getExpiryDate() != null ? cookie.getExpiryDate().getTime() : 0, cookie.getExpiryDate() != null ? (int) cookie
+											.getExpiryDate().getTime() : 0, cookie.isSecure(), false)).collect(Collectors.toList());
+				}
 			}
+
+			HttpFetchMetadata metadata = new HttpFetchMetadata().headers(headers).cookies(cookies);
+			metadata.setUri(uri).setStatusCode(result.getStatusLine() != null ? result.getStatusLine().getStatusCode() : 0)
+					.setStatusText(result.getStatusLine() != null ? result.getStatusLine().getReasonPhrase() : null);
+
+			HttpEntity entity = result.getEntity();
+			InputStream content = entity.getContent();
+			try {
+				long contentLength = entity.getContentLength();
+				Blob blob = new Blob(new BlobMetadata().setUri(uri).setSize(contentLength < 0 ? null : contentLength).setFetchMetadata(metadata))
+						.payload(IOUtils.toByteArray(content));
+				return blob;
+			} catch (IOException ex) {
+				// In case of an IOException the connection will be released
+				// back to the connection manager automatically
+				throw ex;
+			} finally {
+				// Closing the input stream will trigger connection release
+				content.close();
+			}
+		} finally {
+			result.close();
 		}
-
-		HttpFetchMetadata metadata = new HttpFetchMetadata().headers(headers).cookies(cookies);
-		metadata.setUri(uri).setStatusCode(result.getStatusLine() != null ? result.getStatusLine().getStatusCode() : 0)
-				.setStatusText(result.getStatusLine() != null ? result.getStatusLine().getReasonPhrase() : null);
-
-		long contentLength = result.getEntity().getContentLength();
-		Blob blob = new Blob(new BlobMetadata().setUri(uri).setSize(contentLength < 0 ? null : contentLength).setFetchMetadata(metadata)).payload(result
-				.getEntity().getContent());
-		return blob;
 	}
 
 	@Override
