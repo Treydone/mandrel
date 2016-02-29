@@ -173,7 +173,7 @@ You can directly download the deb by using:
 
 === From the sources
 
-Mandrel uses Maven for its build system. Simply run:
+Mandrel uses Maven 3.3+ for its build system. Simply run:
 
 [source]
 mvn clean install -DskipTests
