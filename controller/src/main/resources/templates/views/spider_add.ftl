@@ -49,7 +49,7 @@
 	                  <div class="callout callout-warning">
 	                    <h4>Create a spider with the API</h4>
 	                    <p>Automation is key, have a look on the api</p>
-	                    <a href="/webjars/swagger-ui/2.0.24/index.html?url=/api-docs"><button type="button" class="btn btn-outline"><i class="fa fa-plus"></i> Create one!</button></a>
+	                    <a href="/webjars/swagger-ui/2.1.8-M1/index.html?url=/api-docs"><button type="button" class="btn btn-outline"><i class="fa fa-plus"></i> Create one!</button></a>
 	                  </div>
 	                </div><!-- /.box-body -->
                 </div><!-- /.box -->

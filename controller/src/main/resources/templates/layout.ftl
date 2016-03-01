@@ -135,7 +135,7 @@
               </a>
             </li>
             <li>
-              <a href="/webjars/swagger-ui/2.0.24/index.html?url=/api-docs">
+              <a href="/webjars/swagger-ui/2.1.8-M1/index.html?url=/api-docs">
                 <i class="fa fa-cloud"></i> <span>API</span>
               </a>
             </li>
