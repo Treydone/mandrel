@@ -29,12 +29,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
-@Api("/")
+@Api(value = "/")
 @RequestMapping(value = Apis.PREFIX + "/", produces = MediaType.APPLICATION_JSON_VALUE)
 @RestController
 public class HomeResource {
 
-	@ApiOperation(value = "Home")
+	@ApiOperation(value = "Home", httpMethod = "GET")
 	@RequestMapping(method = RequestMethod.GET)
 	public Map<String, Object> all() {
 		return Collections.singletonMap("ok", "isOk");

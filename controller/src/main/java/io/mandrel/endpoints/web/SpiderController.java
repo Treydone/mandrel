@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -105,8 +106,19 @@ public class SpiderController {
 	}
 
 	@RequestMapping("/add")
-	public String prepare() {
+	public String prepare(Model model) throws JsonProcessingException {
 		return "views/spider_add";
+	}
+
+	@RequestMapping("/add/definition")
+	public String addWithDefinition(Model model) throws JsonProcessingException {
+		return "views/spider_add_with_def";
+	}
+
+	@RequestMapping("/add/form")
+	public String addWithForm(Model model) throws JsonProcessingException {
+		model.addAttribute("defaultValue", mapper.writeValueAsString(new Spider()));
+		return "views/spider_add_with_form";
 	}
 
 	@RequestMapping(value = "/add", method = RequestMethod.POST)

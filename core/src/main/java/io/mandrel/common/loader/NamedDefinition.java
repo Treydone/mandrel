@@ -28,4 +28,5 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
 public interface NamedDefinition {
 
 	String name();
+
 }

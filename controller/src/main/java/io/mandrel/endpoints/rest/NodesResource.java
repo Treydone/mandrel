@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
-@Api("/nodes")
+@Api(value = "/nodes")
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 @RequestMapping(value = Apis.PREFIX + "/nodes", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -45,13 +45,13 @@ public class NodesResource {
 	private final NodeService nodeService;
 
 	@RequestMapping(method = RequestMethod.GET)
-	@ApiOperation(value = "List all the nodes", response = Node.class, responseContainer = "Map")
+	@ApiOperation(value = "List all the nodes", httpMethod = "GET", response = Node.class, responseContainer = "Map")
 	public Map<String, Node> all() {
 		return nodeService.nodes();
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	@ApiOperation(value = "Find a node by its id", response = Node.class)
+	@ApiOperation(value = "Find a node by its id", httpMethod = "GET", response = Node.class)
 	public Node id(@PathVariable String id) {
 		return nodeService.node(id);
 	}

@@ -7,11 +7,13 @@
   <script src="/public/js/jsoneditor.js"></script>
 	<script>
 		JSONEditor.defaults.theme = 'bootstrap3';
-	    JSONEditor.defaults.iconlib = 'fontawesome4';
-	    //JSONEditor.defaults.options.disable_properties = true;
-	    //JSONEditor.defaults.options.disable_edit_json = true;
-	    //JSONEditor.defaults.options.no_additional_properties = false;
-	    //JSONEditor.defaults.options.required_by_default = true;
+	    JSONEditor.defaults.iconlib = 'bootstrap3';
+	    JSONEditor.defaults.options.disable_properties = true;
+	    JSONEditor.defaults.options.disable_edit_json = true;
+	    JSONEditor.defaults.options.no_additional_properties = false;
+	    JSONEditor.defaults.options.required_by_default = true;
+	    JSONEditor.defaults.options.keep_oneof_values = false;
+	    
 	</script>    
 </#macro>
 
@@ -34,30 +36,7 @@
       // This is the starting value for the editor
       // We will use this to seed the initial editor 
       // and to provide a "Restore to Default" button.
-      var starting_value = [
-        {
-          name: "John Smith",
-          age: 35,
-          gender: "male",
-          location: {
-            city: "San Francisco",
-            state: "California",
-            citystate: ""
-          },
-          pets: [
-            {
-              name: "Spot",
-              type: "dog",
-              fixed: true
-            },
-            {
-              name: "Whiskers",
-              type: "cat",
-              fixed: false
-            }
-          ]
-        }
-      ];
+      var starting_value = ${defaultValue};
       
       // Initialize the editor
       var editor = new JSONEditor(document.getElementById('editor_holder'),{
@@ -66,12 +45,11 @@
         
         // The schema for the editor
         schema: {
-          $ref: "/public/schemas/spider.json",
-          format: "grid"
+          $ref: "/public/schemas/spider.json"
         },
         
         // Seed the form with a starting value
-        //startval: starting_value,
+        startval: starting_value,
       });
       
       // Hook up the submit button to log to the console
