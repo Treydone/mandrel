@@ -34,7 +34,7 @@
 	                <div class="box-header with-border">
 	                  <h3 class="box-title">Spider definition</h3>
 	                </div><!-- /.box-header -->
-	                <form role="form" method="POST">
+	                <form role="form" method="POST" action="/spiders/add">
 	                <div class="box-body">
             			<div class="form-group">
 	                      <label>Textarea Disabled</label>
