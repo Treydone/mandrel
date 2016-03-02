@@ -18,14 +18,26 @@
  */
 package io.mandrel.endpoints.web;
 
+import io.mandrel.common.data.Client;
+import io.mandrel.common.data.Extractors;
+import io.mandrel.common.data.Filters;
 import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.StoresDefinition;
+import io.mandrel.data.source.Source;
+import io.mandrel.data.source.Source.SourceDefinition;
+import io.mandrel.frontier.Frontier;
+import io.mandrel.frontier.Frontier.FrontierDefinition;
+import io.mandrel.frontier.SimpleFrontier.SimpleFrontierDefinition;
 import io.mandrel.metrics.MetricsService;
 import io.mandrel.spider.SpiderService;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,6 +51,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -117,7 +130,10 @@ public class SpiderController {
 
 	@RequestMapping("/add/form")
 	public String addWithForm(Model model) throws JsonProcessingException {
-		model.addAttribute("defaultValue", mapper.writeValueAsString(new Spider()));
+		model.addAttribute("baseValue", mapper.writeValueAsString(new BaseValue()));
+		model.addAttribute("frontierValue", mapper.writeValueAsString(new FrontierValue()));
+		model.addAttribute("extractionValue", mapper.writeValueAsString(new Extractors()));
+		model.addAttribute("advancedValue", mapper.writeValueAsString(new AdvancedValue()));
 		return "views/spider_add_with_form";
 	}
 
@@ -137,5 +153,31 @@ public class SpiderController {
 			return "views/spider_add";
 		}
 		return "redirect:/spiders";
+	}
+
+	@Data
+	public static class BaseValue {
+
+		@JsonProperty("sources")
+		private List<SourceDefinition<? extends Source>> sources = new ArrayList<>();
+
+		@JsonProperty("filters")
+		private Filters filters = new Filters();
+
+		@JsonProperty("stores")
+		private StoresDefinition stores = new StoresDefinition();
+	}
+
+	@Data
+	public static class FrontierValue {
+
+		@JsonProperty("frontier")
+		private FrontierDefinition<? extends Frontier> frontier = new SimpleFrontierDefinition();
+	}
+
+	@Data
+	public static class AdvancedValue {
+		@JsonProperty("client")
+		private Client client = new Client();
 	}
 }

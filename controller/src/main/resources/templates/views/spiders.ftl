@@ -30,7 +30,7 @@
                       <th>Name</th>
                       <th>Date</th>
                       <th>Status</th>
-                      <th>Reason</th>
+                      <th>Description</th>
                     </tr>
                     <#list spiders.content as spider>
                 		<tr>
@@ -58,7 +58,13 @@
 									<#break>
 							</#switch>
 	                      <td><span class="label label-${label}">${spider.status}</span></td>
-	                      <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
+	                      <td>Sources:
+	                      <#if spider.sources??>
+	                      <#list spider.sources as source>
+	                      	${source.name()} <#sep>/</#sep>
+	                      </#list>
+	                      </#if>
+	                      </td>
 	                    </tr>
 				    </#list>
                   </tbody></table>

@@ -129,10 +129,10 @@
         <!-- sidebar: style can be found in sidebar.less -->
         <section class="sidebar">
           <!-- Sidebar user panel -->
-          <div class="user-panel">
-            <div class="pull-left info">
-              <p>Cluster: Mandrel</p>
-              <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+          <div class="user-panel" style="height: 60px;">
+            <div class="pull-left info" style="left: 0px;">
+              <p>Cluster status</p>
+              <a><i class="fa fa-circle text-success"></i> Ok</a>
             </div>
           </div>
           <!-- sidebar menu: : style can be found in sidebar.less -->
