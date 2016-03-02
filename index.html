@@ -510,6 +510,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_production_considerations_performance_tuning">Production considerations &amp; performance tuning</a>
 <ul class="sectlevel2">
 <li><a href="#_general_guidelines">General Guidelines</a></li>
+<li><a href="#_firewall">Firewall</a></li>
 <li><a href="#_operating_system">Operating System</a></li>
 <li><a href="#_network">Network</a></li>
 <li><a href="#_java">Java</a></li>
@@ -2044,7 +2045,41 @@ Section pending
 </div>
 <div class="sect2">
 <h3 id="_general_guidelines">General Guidelines</h3>
-
+<div class="paragraph">
+<p>Avoid small machines, because you don’t want to manage a cluster with a thousand nodes, and the overhead of simply running Mandrel is more apparent on such small boxes, prefer medium-sized machines.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_firewall">Firewall</h3>
+<div class="paragraph">
+<p>Unless using one or more known and/or internal proxies for downloading the content from the workers, avoid placing firewall rules between the components consistuing a Mandrel deployment.
+However, if you don&#8217;t have the choice, here are the interactions between the components (assuming the default transport and configuration):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>user &#8594; controllers on TCP for HTTP:8080 or HTTPS:8443</p>
+</li>
+<li>
+<p>worker &#8594; frontier on TCP:8092</p>
+</li>
+<li>
+<p>controller &#8594; worker on TCP:8091</p>
+</li>
+<li>
+<p>controller &#8594; frontier on TCP:8092</p>
+</li>
+<li>
+<p>worker &#8594; engine storage (?)</p>
+</li>
+<li>
+<p>frontier &#8594; messenging storage (?)</p>
+</li>
+<li>
+<p>controller &#8594; application database (?)</p>
+</li>
+</ul>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_operating_system">Operating System</h3>
@@ -2112,7 +2147,12 @@ Sometimes these limits have too low default values that can cause a number of is
 <div class="sect2">
 <h3 id="_network">Network</h3>
 <div class="paragraph">
-<p>In case of a huge web data miner, if possible, prefer hardware with two network cards: one for the internal communication (Mandrel and the engine storages) and an other for the Internet access.</p>
+<p>A fast and reliable network is obviously important to performance in a distributed system.
+Low latency helps ensure that nodes can communicate easily, while high bandwidth helps shard movement and recovery.
+Modern data-center networking (1 GbE, 10 GbE) is sufficient for the vast majority of clusters.</p>
+</div>
+<div class="paragraph">
+<p>In case of a huge web data miner, if possible, prefer machines with two network cards: one for the internal communication (Mandrel and the engine/messaging storages) and an other for the Internet access.</p>
 </div>
 </div>
 <div class="sect2">
@@ -2241,7 +2281,7 @@ the License.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-03-02 12:03:32 +01:00
+Last updated 2016-03-02 14:07:37 +01:00
 </div>
 </div>
 </body>

@@ -917,6 +917,20 @@ For production, we recommand you to deploy at least one controller, one frontier
 
 === General Guidelines
 
+Avoid small machines, because you don’t want to manage a cluster with a thousand nodes, and the overhead of simply running Mandrel is more apparent on such small boxes, prefer medium-sized machines.
+
+=== Firewall
+Unless using one or more known and/or internal proxies for downloading the content from the workers, avoid placing firewall rules between the components consistuing a Mandrel deployment.
+However, if you don't have the choice, here are the interactions between the components (assuming the default transport and configuration):
+
+- user -> controllers on TCP for HTTP:8080 or HTTPS:8443
+- worker -> frontier on TCP:8092
+- controller -> worker on TCP:8091
+- controller -> frontier on TCP:8092
+- worker -> engine storage (?)
+- frontier -> messenging storage (?)
+- controller -> application database (?)
+
 === Operating System
 
 ==== 64-bit
@@ -966,7 +980,11 @@ Every deployment may have unique requirements and settings; however, the followi
 
 === Network
 
-In case of a huge web data miner, if possible, prefer hardware with two network cards: one for the internal communication (Mandrel and the engine storages) and an other for the Internet access.
+A fast and reliable network is obviously important to performance in a distributed system.
+Low latency helps ensure that nodes can communicate easily, while high bandwidth helps shard movement and recovery.
+Modern data-center networking (1 GbE, 10 GbE) is sufficient for the vast majority of clusters.
+
+In case of a huge web data miner, if possible, prefer machines with two network cards: one for the internal communication (Mandrel and the engine/messaging storages) and an other for the Internet access.
 
 === Java
 
