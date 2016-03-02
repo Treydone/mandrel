@@ -507,7 +507,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_client">Client</a></li>
 </ul>
 </li>
-<li><a href="#_security">Security</a></li>
 <li><a href="#_production_considerations_performance_tuning">Production considerations &amp; performance tuning</a>
 <ul class="sectlevel2">
 <li><a href="#_general_guidelines">General Guidelines</a></li>
@@ -515,6 +514,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_network">Network</a></li>
 <li><a href="#_java">Java</a></li>
 <li><a href="#_zookeeper">ZooKeeper</a></li>
+<li><a href="#_cloud">Cloud</a></li>
 <li><a href="#_case_studies">Case studies</a></li>
 </ul>
 </li>
@@ -782,16 +782,22 @@ enabled=1</code></pre>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">RHEL and Fedora 21 or earlier</dt>
-<dd>
-<p>+
- $ sudo yum install mandrel</p>
-</dd>
-<dt class="hdlist1">Fedora 22 or later</dt>
-<dd>
-<p>+
- $ sudo dnf install mandrel</p>
-</dd>
 </dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>  $ sudo yum install mandrel</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Fedora 22 or later</dt>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>  $ sudo dnf install mandrel</code></pre>
+</div>
 </div>
 </li>
 </ol>
@@ -806,6 +812,9 @@ enabled=1</code></pre>
 <div class="content">
 <pre>$ curl -L "https://dl.bintray.com/treydone/rpm/mandrel-XXX.noarch.rpm" -o mandrel.noarch.rpm</pre>
 </div>
+</div>
+<div class="paragraph">
+<p>And install it via the rpm command</p>
 </div>
 <div class="literalblock">
 <div class="content">
@@ -944,7 +953,25 @@ mvn release:clean</code></pre>
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="_controller">Controller</h3>
-
+<div class="paragraph">
+<p>The controller is the main process in a Mandrel deployment and has several roles:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>managing the jobs deployment on the workers and on the frontiers</p>
+</li>
+<li>
+<p>collecting metrics</p>
+</li>
+<li>
+<p>presenting the data for the users</p>
+</li>
+<li>
+<p>exposing the UI and the REST endpoints</p>
+</li>
+</ul>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_frontier">Frontier</h3>
@@ -1059,6 +1086,9 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 </div>
 <div class="title">Figure 2. Standalone Mode</div>
 </div>
+<div class="paragraph">
+<p>Make the discovery is true for local:</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code>discovery:
@@ -1068,14 +1098,20 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
     enabled: false</code></pre>
 </div>
 </div>
-<div class="literalblock">
-<div class="content">
-<pre>$ mandrel-standalone start</pre>
-</div>
+<div class="paragraph">
+<p>Start using:</p>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>$ mandrel-standalone stop</pre>
+<pre>$ ./bin/standaloned start</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Stop using:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ ./bin/standaloned stop</pre>
 </div>
 </div>
 </div>
@@ -1087,6 +1123,9 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 </div>
 <div class="title">Figure 3. Pseudo-distributed Mode</div>
 </div>
+<div class="paragraph">
+<p>Make the discovery is true for zookeeper:</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code>discovery:
@@ -1096,12 +1135,22 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>$ mandrel-standalone start</pre>
+<pre>Start using:</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>$ mandrel-standalone stop</pre>
+<pre>$ ./bin/standaloned start</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>Stop using:</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ ./bin/standaloned stop</pre>
 </div>
 </div>
 </div>
@@ -1115,16 +1164,16 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>$ mandrel-controller start
-$ mandrel-frontier start
-$ mandrel-worker start</code></pre>
+<pre class="highlight"><code>$ ./bin/controllerd start
+$ ./bin/frontierd start
+$ ./bin/workerd start</code></pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>$ mandrel-worker start
-$ mandrel-frontier start
-$ mandrel-controller stop</code></pre>
+<pre class="highlight"><code>$ ./bin/workerd start
+$ ./bin/frontierd start
+$ ./bin/controllerd stop</code></pre>
 </div>
 </div>
 </div>
@@ -1973,12 +2022,6 @@ public class MyNewDiscoveryClient implements DiscoveryClient {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_security">Security</h2>
-<div class="sectionbody">
-
-</div>
-</div>
-<div class="sect1">
 <h2 id="_production_considerations_performance_tuning">Production considerations &amp; performance tuning</h2>
 <div class="sectionbody">
 <div class="admonitionblock note">
@@ -2008,7 +2051,7 @@ Section pending
 <div class="sect3">
 <h4 id="_64_bit">64-bit</h4>
 <div class="paragraph">
-<p>Use a 64-bit platform (and 64-bit JVM).</p>
+<p>Use a 64-bit platform (and 64-bit JVM too).</p>
 </div>
 </div>
 <div class="sect3">
@@ -2017,10 +2060,60 @@ Section pending
 <p>Watch out for swapping. Set swappiness to 0.</p>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_ulimit">Ulimit</h4>
+<div class="paragraph">
+<p>Most UNIX-like operating systems, including Linux and OS X, provide ways to limit and control the usage of system resources such as threads, files, and network connections on a per-process and per-user basis.
+These “ulimits” prevent single users from using too many system resources.
+Sometimes these limits have too low default values that can cause a number of issues in the course of normal Mandrel operation.</p>
+</div>
+<div class="paragraph">
+<p>You can use the ulimit command at the system prompt to check system limits, as in the following example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>$ ulimit -a
+-t: cpu time (seconds)              unlimited
+-f: file size (blocks)              unlimited
+-d: data seg size (kbytes)          unlimited
+-s: stack size (kbytes)             8192
+-c: core file size (blocks)         0
+-m: resident set size (kbytes)      unlimited
+-u: processes                       31423
+-n: file descriptors                65536
+-l: locked-in-memory size (kbytes)  64
+-v: address space (kbytes)          unlimited
+-x: file locks                      unlimited
+-i: pending signals                 31423
+-q: bytes in POSIX msg queues       819200
+-e: max nice                        0
+-r: max rt priority                 0
+-N 15:                              unlimited</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Recommended ulimit settings</strong></p>
+</div>
+<div class="paragraph">
+<p>Every deployment may have unique requirements and settings; however, the following thresholds and settings are particularly important for Mandrel deployments:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>-f (file size): unlimited
+-t (cpu time): unlimited
+-v (virtual memory): unlimited
+-n (open files): 64000
+-m (memory size): unlimited
+-u (processes/threads): 64000</code></pre>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_network">Network</h3>
-
+<div class="paragraph">
+<p>In case of a huge web data miner, if possible, prefer hardware with two network cards: one for the internal communication (Mandrel and the engine storages) and an other for the Internet access.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_java">Java</h3>
@@ -2029,6 +2122,12 @@ Section pending
 <div class="sect2">
 <h3 id="_zookeeper">ZooKeeper</h3>
 
+</div>
+<div class="sect2">
+<h3 id="_cloud">Cloud</h3>
+<div class="paragraph">
+<p>Be aware of the cost introduced by fetching too much data&#8230;&#8203;</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_case_studies">Case studies</h3>
@@ -2142,7 +2241,7 @@ the License.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-02-29 17:21:10 +01:00
+Last updated 2016-03-02 12:03:32 +01:00
 </div>
 </div>
 </body>

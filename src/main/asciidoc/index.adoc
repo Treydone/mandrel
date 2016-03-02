@@ -129,11 +129,13 @@ OR
  . Run the installation command
 
    RHEL and Fedora 21 or earlier::
- +
+
+[source]
   $ sudo yum install mandrel
 
    Fedora 22 or later::
- +
+
+[source]
   $ sudo dnf install mandrel
 
 ==== By downloading
@@ -141,6 +143,8 @@ OR
 You can directly download the rpm by using:
 
  $ curl -L "https://dl.bintray.com/treydone/rpm/mandrel-XXX.noarch.rpm" -o mandrel.noarch.rpm
+
+And install it via the +rpm+ command
 
  $ rpm -Ivh mandrel.noarch.rpm
 
@@ -217,6 +221,13 @@ image::archi.png[Architecture, 800, 200]
 
 === Controller
 
+The controller is the main process in a Mandrel deployment and has several roles:
+
+- managing the jobs deployment on the workers and on the frontiers
+- collecting metrics
+- presenting the data for the users
+- exposing the UI and the REST endpoints
+
 === Frontier
 
 The goal of the frontier is to know which URI to process next, and when.
@@ -266,6 +277,8 @@ The goal of the worker is simple, it download and parse the content of uri given
 .Standalone Mode
 image::standalone.png[Standalone Mode, 350, 200]
 
+Make the discovery is true for +local+:
+
 [source]
 discovery:
   local:
@@ -273,9 +286,13 @@ discovery:
   zookeeper:
     enabled: false
 
- $ mandrel-standalone start
+Start using:
 
- $ mandrel-standalone stop
+ $ ./bin/standaloned start
+
+Stop using:
+
+ $ ./bin/standaloned stop
 
 === Standalone - Pseudo-distributed
 
@@ -283,14 +300,20 @@ discovery:
 .Pseudo-distributed Mode
 image::pseudodistributed.png[Pseudo-distributed Mode, 400, 200]
 
+Make the discovery is true for +zookeeper+:
+
 [source]
 discovery:
   zookeeper:
     enabled: true
 
- $ mandrel-standalone start
+ Start using:
 
- $ mandrel-standalone stop
+  $ ./bin/standaloned start
+
+ Stop using:
+
+  $ ./bin/standaloned stop
 
 === Distributed
 
@@ -299,14 +322,14 @@ discovery:
 image::distributed.png[Distributed Mode, 800, 200]
 
 [source]
-$ mandrel-controller start
-$ mandrel-frontier start
-$ mandrel-worker start
+$ ./bin/controllerd start
+$ ./bin/frontierd start
+$ ./bin/workerd start
 
 [source]
-$ mandrel-worker start
-$ mandrel-frontier start
-$ mandrel-controller stop
+$ ./bin/workerd start
+$ ./bin/frontierd start
+$ ./bin/controllerd stop
 
 == Configuration
 
@@ -884,9 +907,6 @@ Each spider can be configured with a specified client in order to configure:
  }
 }
 
-
-== Security
-
 == Production considerations & performance tuning
 
 NOTE: Section pending
@@ -900,16 +920,61 @@ For production, we recommand you to deploy at least one controller, one frontier
 === Operating System
 
 ==== 64-bit
-Use a 64-bit platform (and 64-bit JVM).
+Use a 64-bit platform (and 64-bit JVM too).
 
 ==== Swapping
 Watch out for swapping. Set swappiness to 0.
 
+==== Ulimit
+
+Most UNIX-like operating systems, including Linux and OS X, provide ways to limit and control the usage of system resources such as threads, files, and network connections on a per-process and per-user basis.
+These “ulimits” prevent single users from using too many system resources.
+Sometimes these limits have too low default values that can cause a number of issues in the course of normal Mandrel operation.
+
+You can use the ulimit command at the system prompt to check system limits, as in the following example:
+
+[source]
+$ ulimit -a
+-t: cpu time (seconds)              unlimited
+-f: file size (blocks)              unlimited
+-d: data seg size (kbytes)          unlimited
+-s: stack size (kbytes)             8192
+-c: core file size (blocks)         0
+-m: resident set size (kbytes)      unlimited
+-u: processes                       31423
+-n: file descriptors                65536
+-l: locked-in-memory size (kbytes)  64
+-v: address space (kbytes)          unlimited
+-x: file locks                      unlimited
+-i: pending signals                 31423
+-q: bytes in POSIX msg queues       819200
+-e: max nice                        0
+-r: max rt priority                 0
+-N 15:                              unlimited
+
+*Recommended ulimit settings*
+
+Every deployment may have unique requirements and settings; however, the following thresholds and settings are particularly important for Mandrel deployments:
+
+[source]
+-f (file size): unlimited
+-t (cpu time): unlimited
+-v (virtual memory): unlimited
+-n (open files): 64000
+-m (memory size): unlimited
+-u (processes/threads): 64000
+
 === Network
+
+In case of a huge web data miner, if possible, prefer hardware with two network cards: one for the internal communication (Mandrel and the engine storages) and an other for the Internet access.
 
 === Java
 
 === ZooKeeper
+
+=== Cloud
+
+Be aware of the cost introduced by fetching too much data...
 
 === Case studies
 
