@@ -4,11 +4,11 @@
 
 	<parent>
 		<groupId>io.mandrel</groupId>
-		<artifactId>parent</artifactId>
+		<artifactId>mandrel</artifactId>
 		<version>0.0.16-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	<artifactId>controller</artifactId>
+	<artifactId>mandrel-controller</artifactId>
 	<name>Controller</name>
 
 	<properties>
@@ -21,7 +21,7 @@
 		<!-- Mandrel -->
 		<dependency>
 			<groupId>io.mandrel</groupId>
-			<artifactId>core</artifactId>
+			<artifactId>mandrel-core</artifactId>
 		</dependency>
 
 		<dependency>

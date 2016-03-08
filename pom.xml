@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.mandrel</groupId>
-	<artifactId>parent</artifactId>
+	<artifactId>mandrel</artifactId>
 	<version>0.0.16-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Mandrel</name>
@@ -36,12 +36,12 @@
 	</issueManagement>
 
 	<modules>
-		<module>core</module>
-		<module>frontier</module>
-		<module>worker</module>
-		<module>controller</module>
-		<module>standalone</module>
-		<module>distribution</module>
+		<module>mandrel-core</module>
+		<module>mandrel-frontier</module>
+		<module>mandrel-worker</module>
+		<module>mandrel-controller</module>
+		<module>mandrel-standalone</module>
+		<module>mandrel-distribution</module>
 	</modules>
 
 	<properties>
@@ -74,27 +74,27 @@
 			<!-- Mandrel -->
 			<dependency>
 				<groupId>io.mandrel</groupId>
-				<artifactId>core</artifactId>
+				<artifactId>mandrel-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.mandrel</groupId>
-				<artifactId>standalone</artifactId>
+				<artifactId>mandrel-standalone</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.mandrel</groupId>
-				<artifactId>frontier</artifactId>
+				<artifactId>mandrel-frontier</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.mandrel</groupId>
-				<artifactId>controller</artifactId>
+				<artifactId>mandrel-controller</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.mandrel</groupId>
-				<artifactId>worker</artifactId>
+				<artifactId>mandrel-worker</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
