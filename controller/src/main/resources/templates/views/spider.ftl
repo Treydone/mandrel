@@ -241,7 +241,7 @@
 	        <span class="info-box-icon bg-yellow"><i class="fa fa-files-o"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Total pages</span>
-	          <span class="info-box-number">${(metrics.nbPages)!0}</span>
+	          <span class="info-box-number">${(metrics.nbPagesTotal)!0}</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
@@ -266,6 +266,7 @@
 					      <h3 class="box-title">Actions</h3>
 					    </div>
 					    <div class="box-body">
+					      <p>Current status: ${spider.status}</p>
 					      <a class="btn btn-app <#if spider.status != "initiated">disabled</#if>">
 					        <i class="fa fa-edit"></i> Edit
 					      </a>
@@ -281,7 +282,7 @@
 					      <a class="btn btn-app <#if spider.status != "killed" && spider.status != "ended">disabled</#if>" href="/spiders/${spider.id?c}/delete">
 					        <i class="fa fa-eraser"></i> Delete
 					      </a>
-					      <a class="btn btn-app" href="/spiders/${spider.id?c}/reinject">
+					      <a class="btn btn-app <#if spider.status != "started">disabled</#if>" href="/spiders/${spider.id?c}/reinject">
 					        <i class="fa fa-circle-o-notch"></i> Re-source
 					      </a>
 					      <a class="btn btn-app" href="/spiders/${spider.id?c}/fork">
@@ -407,13 +408,13 @@
             <div class="col-md-4">
 	        	<div class="small-box bg-aqua disabled">
 	                <div class="inner">
-	                  <h3>${(metrics.nbPages)!0}</h3>
-	                  <p>Raw data</p>
+	                  <h3>${(metrics.nbPagesTotal)!0}</h3>
+	                  <p>Blobs of raw data</p>
 	                </div>
 	                <div class="icon">
 	                  <i class="ion ion-ios-cloud-download-outline"></i>
 	                </div>
-	                <#if spider.stores.pageStore??>
+	                <#if spider.stores.blobStore?? && spider.status != "deleted">
 	                <div class="margin">
 	                    <div class="btn-group">
 	                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -432,16 +433,17 @@
 	                </a>
 		            </#if>
 	              </div>
-	              <#if spider.extractors?? && spider.extractors.pages??>
-		              <#list spider.extractors.pages as extractor>
+	              <#if spider.extractors?? && spider.extractors.data??>
+		              <#list spider.extractors.data as extractor>
 		              <div class="small-box bg-orange disabled">
 		                <div class="inner">
-		                  <h3>${(metrics.documentsByExtractor[extractor.name])!"0"}</h3>
-		                  <p>Extractor '${extractor.name}'</p>
+		                  <h3>${(metrics.extractors[extractor.getName()])!"0"}</h3>
+		                  <p>Extractor '${extractor.getName()}'</p>
 		                </div>
 		                <div class="icon">
 		                  <i class="ion ion-ios-pricetag-outline"></i>
 		                </div>
+		                <#if spider.status != "deleted">
 		                <div class="margin">
 		                    <div class="btn-group">
 		                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -450,14 +452,15 @@
 		                        <span class="sr-only">Toggle Dropdown</span>
 		                      </button>
 		                      <ul class="dropdown-menu" role="menu">
-		                        <li><a href="/api/v1/spiders/${spider.id?c}/export/${extractor.name}?format=json" target="_blank">JSON</a></li>
-		                        <li><a href="/api/v1/spiders/${spider.id?c}/export/${extractor.name}?format=csv" target="_blank">CSV</a></li>
+		                        <li><a href="/api/v1/spiders/${spider.id?c}/export/${extractor.getName()}?format=json" target="_blank">JSON</a></li>
+		                        <li><a href="/api/v1/spiders/${spider.id?c}/export/${extractor.getName()}?format=csv" target="_blank">CSV</a></li>
 		                      </ul>
 		                    </div>
 		                  </div>
-		                  <a href="/spiders/${spider.id?c}/data/${extractor.name}" class="small-box-footer">
+		                  <a href="/spiders/${spider.id?c}/data/${extractor.getName()}" class="small-box-footer">
 		                  View data <i class="fa fa-arrow-circle-right"></i>
 		                </a>
+		                </#if>
 		              </div>
 		              </#list>
 	              </#if>

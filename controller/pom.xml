@@ -5,16 +5,15 @@
 	<parent>
 		<groupId>io.mandrel</groupId>
 		<artifactId>parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.16-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>controller</artifactId>
 	<name>Controller</name>
 
 	<properties>
-		<component.id>${project.artifactId}</component.id>
-		<component.class.main>io.mandrel.bootstrap.Controller</component.class.main>
-		<component.class.wrapper>io.mandrel.bootstrap.WrapperController</component.class.wrapper>
+		<!-- Build resources properties -->
+		<mandrel.tools.directory>../tools</mandrel.tools.directory>
 	</properties>
 
 	<dependencies>
@@ -320,8 +319,12 @@
 			</plugin>
 
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>appassembler-maven-plugin</artifactId>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<configuration>
+					<mainClass>io.mandrel.bootstrap.Controller</mainClass>
+				</configuration>
 			</plugin>
 
 		</plugins>

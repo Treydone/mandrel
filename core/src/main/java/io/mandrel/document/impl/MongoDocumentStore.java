@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -97,7 +98,11 @@ public class MongoDocumentStore extends NavigableDocumentStore {
 	private final static Function<? super org.bson.Document, ? extends Document> fromBson = entry -> {
 		Document document = new Document();
 		for (Entry<String, Object> item : entry.entrySet()) {
-			document.put(item.getKey(), (List<? extends Object>) item.getValue());
+			if (item.getValue() instanceof List) {
+				document.put(item.getKey(), (List<? extends Object>) item.getValue());
+			} else {
+				document.put(item.getKey(), Collections.singletonList(item.getValue()));
+			}
 		}
 		document.setId(entry.getString("_id"));
 		return document;

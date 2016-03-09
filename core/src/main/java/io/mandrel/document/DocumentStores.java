@@ -56,15 +56,17 @@ public class DocumentStores {
 	public static void remove(Long spiderId) {
 		synchronized (stores) {
 			Map<String, DocumentStore> oldDocumentStores = stores.remove(spiderId);
-			oldDocumentStores.forEach((key, oldDocumentStore) -> {
-				if (oldDocumentStore != null) {
-					try {
-						oldDocumentStore.close();
-					} catch (IOException e) {
-						log.warn("Can not close", e);
+			if (oldDocumentStores != null) {
+				oldDocumentStores.forEach((key, oldDocumentStore) -> {
+					if (oldDocumentStore != null) {
+						try {
+							oldDocumentStore.close();
+						} catch (IOException e) {
+							log.warn("Can not close", e);
+						}
 					}
-				}
-			});
+				});
+			}
 		}
 	}
 }

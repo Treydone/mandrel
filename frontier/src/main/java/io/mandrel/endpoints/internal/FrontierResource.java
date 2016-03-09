@@ -154,59 +154,60 @@ public class FrontierResource implements FrontierContract {
 		response.setCreated(created).setKilled(killed).setUpdated(updated).setStarted(started);
 
 		List<Long> existingSpiders = new ArrayList<>();
-		containers.forEach(c -> {
+		if (containers != null)
+			containers.forEach(c -> {
 
-			Spider containerSpider = c.spider();
-			long containerSpiderId = containerSpider.getId();
+				Spider containerSpider = c.spider();
+				long containerSpiderId = containerSpider.getId();
 
-			existingSpiders.add(containerSpiderId);
-			if (!spiderByIdFromController.containsKey(containerSpiderId)) {
-				log.debug("Killing spider {}", containerSpiderId);
-				killFrontierContainer(containerSpiderId);
-				killed.add(containerSpiderId);
-			} else {
-				Spider remoteSpider = spiderByIdFromController.get(containerSpiderId);
-
-				if (remoteSpider.getVersion() != containerSpider.getVersion()) {
-					log.debug("Updating spider {}", containerSpiderId);
+				existingSpiders.add(containerSpiderId);
+				if (!spiderByIdFromController.containsKey(containerSpiderId)) {
+					log.debug("Killing spider {}", containerSpiderId);
 					killFrontierContainer(containerSpiderId);
-					create(remoteSpider);
-					updated.add(containerSpiderId);
+					killed.add(containerSpiderId);
+				} else {
+					Spider remoteSpider = spiderByIdFromController.get(containerSpiderId);
 
-					if (SpiderStatuses.STARTED.equals(remoteSpider.getStatus())) {
-						log.debug("Starting spider {}", containerSpiderId);
-						startFrontierContainer(containerSpiderId);
-						started.add(containerSpiderId);
-					}
-				} else if (!remoteSpider.getStatus().equalsIgnoreCase(c.status().toString())) {
-					log.info("Container for {} is {}, but has to be {}", containerSpider.getId(), c.status(), remoteSpider.getStatus());
+					if (remoteSpider.getVersion() != containerSpider.getVersion()) {
+						log.debug("Updating spider {}", containerSpiderId);
+						killFrontierContainer(containerSpiderId);
+						create(remoteSpider);
+						updated.add(containerSpiderId);
 
-					switch (remoteSpider.getStatus()) {
-					case SpiderStatuses.STARTED:
-						if (!ContainerStatus.STARTED.equals(c.status())) {
+						if (SpiderStatuses.STARTED.equals(remoteSpider.getStatus())) {
 							log.debug("Starting spider {}", containerSpiderId);
 							startFrontierContainer(containerSpiderId);
 							started.add(containerSpiderId);
 						}
-						break;
-					case SpiderStatuses.INITIATED:
-						if (!ContainerStatus.INITIATED.equals(c.status())) {
-							log.debug("Re-init spider {}", containerSpiderId);
-							killFrontierContainer(containerSpiderId);
-							create(remoteSpider);
+					} else if (!remoteSpider.getStatus().equalsIgnoreCase(c.status().toString())) {
+						log.info("Container for {} is {}, but has to be {}", containerSpider.getId(), c.status(), remoteSpider.getStatus());
+
+						switch (remoteSpider.getStatus()) {
+						case SpiderStatuses.STARTED:
+							if (!ContainerStatus.STARTED.equals(c.status())) {
+								log.debug("Starting spider {}", containerSpiderId);
+								startFrontierContainer(containerSpiderId);
+								started.add(containerSpiderId);
+							}
+							break;
+						case SpiderStatuses.INITIATED:
+							if (!ContainerStatus.INITIATED.equals(c.status())) {
+								log.debug("Re-init spider {}", containerSpiderId);
+								killFrontierContainer(containerSpiderId);
+								create(remoteSpider);
+							}
+							break;
+						case SpiderStatuses.PAUSED:
+							if (!ContainerStatus.PAUSED.equals(c.status())) {
+								log.debug("Pausing spider {}", containerSpiderId);
+								pauseFrontierContainer(containerSpiderId);
+								paused.add(containerSpiderId);
+							}
+							break;
 						}
-						break;
-					case SpiderStatuses.PAUSED:
-						if (!ContainerStatus.PAUSED.equals(c.status())) {
-							log.debug("Pausing spider {}", containerSpiderId);
-							pauseFrontierContainer(containerSpiderId);
-							paused.add(containerSpiderId);
-						}
-						break;
 					}
 				}
-			}
-		});
+			});
 
 		spiderByIdFromController.forEach((id, spider) -> {
 			if (!existingSpiders.contains(id)) {

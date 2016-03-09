@@ -5,16 +5,15 @@
 	<parent>
 		<groupId>io.mandrel</groupId>
 		<artifactId>parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.16-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>standalone</artifactId>
-	<packaging>jar</packaging>
+	<name>Standalone</name>
 
 	<properties>
-		<component.id>${project.artifactId}</component.id>
-		<component.class.main>io.mandrel.bootstrap.Standalone</component.class.main>
-		<component.class.wrapper>io.mandrel.bootstrap.WrapperStandalone</component.class.wrapper>
+		<!-- Build resources properties -->
+		<mandrel.tools.directory>../tools</mandrel.tools.directory>
 	</properties>
 
 	<dependencies>
@@ -23,17 +22,14 @@
 		<dependency>
 			<groupId>io.mandrel</groupId>
 			<artifactId>controller</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.mandrel</groupId>
 			<artifactId>frontier</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.mandrel</groupId>
 			<artifactId>worker</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
@@ -63,10 +59,15 @@
 		<plugins>
 
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>appassembler-maven-plugin</artifactId>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<configuration>
+					<mainClass>io.mandrel.bootstrap.Standalone</mainClass>
+				</configuration>
 			</plugin>
 
 		</plugins>
 	</build>
+
 </project>

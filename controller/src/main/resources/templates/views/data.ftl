@@ -32,7 +32,7 @@
                       <th>Extractor</th>
                     </tr>
                     <#list spiders.content as spider>
-                    	<#list spider.extractors.pages as extractor>
+                    	<#list spider.extractors.data as extractor>
                 		<tr>
 	                      <td><a href="/spiders/${spider.id?c}">${spider.name}</a></td>
 	                      <td>${spider.created}</td>
@@ -54,7 +54,7 @@
 									<#break>
 							</#switch>
 	                      <td><span class="label label-${label}">${spider.status}</span></td>
-	                      <td><a href="/spiders/${spider.id?c}/data/${extractor.name}">${extractor.name}</a></td>
+	                      <td><a href="/spiders/${spider.id?c}/data/${extractor.getName()}">${extractor.getName()}</a></td>
 	                    </tr>
 	                    </#list>
 				    </#list>

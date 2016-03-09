@@ -1,4 +1,27 @@
 language: java
-script: mvn clean install -DskipTests
 jdk:
   - oraclejdk8
+
+addons:
+  apt:
+    packages:
+    - rpm
+    
+script: mvn clean install -DskipTests
+
+after_success:
+  #- mvn clean cobertura:cobertura coveralls:report javadoc:jar
+  - test "${TRAVIS_TAG}" != "" && mvn deploy -Prelease -DskipTests --settings travis/travis-settings.xml
+
+branches:
+  only:
+    - master
+    - dev
+    # Build tags that match this regex in addition to building the master and dev branches.
+    - /^v[0-9]+\.[0-9]+\.[0-9]+/
+env:
+  global:
+    # BINTRAY_USER
+    - secure: "n8/EZJ2VKcUY8zHlon6DWZCeY5Wr6Mel7UEEWnjwjBO6rn2OSQjmTZqcmRmkg1kWDZvfifx5F9xvVrjFbs8KRQOjE0Oy8hrKZwn/XprkrvHf5yEkNAR8GN3nMMWhG2MfMG4zQ+oTMPj+TuqsldNMntubDSoC6pyWbrf6EZcpX5E="
+    # BINTRAY_API_KEY
+    - secure: "MGlrO4VrT+mK2Oti2WVLFXJFADSYh/LqDbhjEvw4Z0MxHC5wfuJm+S0Gd8DTjUgR3xhzVD+sRKlmlFaPxu8eO8usy5XbHeCKrhIMnw+nhCYrQYeav0rUYBUX6vk59YIS5iUhLsSW/dhzq9TlHGj7Xsv1TTu/7IjRH7IIEuPxl2o="

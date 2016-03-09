@@ -78,24 +78,9 @@ public class ControllerContainer extends AbstractContainer {
 	public void start() {
 		if (monitor.tryEnter()) {
 			try {
-				try {
-					MetadataStores.remove(spider.getId());
-				} catch (Exception e) {
-					log.debug(e.getMessage(), e);
+				if (!current.get().equals(ContainerStatus.STARTED)) {
+					current.set(ContainerStatus.STARTED);
 				}
-
-				try {
-					BlobStores.remove(spider.getId());
-				} catch (Exception e) {
-					log.debug(e.getMessage(), e);
-				}
-
-				try {
-					DocumentStores.remove(spider.getId());
-				} catch (Exception e) {
-					log.debug(e.getMessage(), e);
-				}
-
 			} finally {
 				monitor.leave();
 			}
@@ -121,6 +106,24 @@ public class ControllerContainer extends AbstractContainer {
 		if (monitor.tryEnter()) {
 			try {
 				if (!current.get().equals(ContainerStatus.KILLED)) {
+					try {
+						MetadataStores.remove(spider.getId());
+					} catch (Exception e) {
+						log.debug(e.getMessage(), e);
+					}
+
+					try {
+						BlobStores.remove(spider.getId());
+					} catch (Exception e) {
+						log.debug(e.getMessage(), e);
+					}
+
+					try {
+						DocumentStores.remove(spider.getId());
+					} catch (Exception e) {
+						log.debug(e.getMessage(), e);
+					}
+					
 					current.set(ContainerStatus.KILLED);
 				}
 			} finally {

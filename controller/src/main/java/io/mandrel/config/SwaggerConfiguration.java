@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Configuration;
 import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
 import com.mangofactory.swagger.models.dto.ApiInfo;
 import com.mangofactory.swagger.models.dto.builder.ApiInfoBuilder;
+import com.mangofactory.swagger.paths.AbsoluteSwaggerPathProvider;
 import com.mangofactory.swagger.plugin.EnableSwagger;
 import com.mangofactory.swagger.plugin.SwaggerSpringMvcPlugin;
 
@@ -44,7 +45,8 @@ public class SwaggerConfiguration {
 	@Bean
 	public SwaggerSpringMvcPlugin customImplementation(InfoSettings settings) {
 		SwaggerSpringMvcPlugin swaggerSpringMvcPlugin = new SwaggerSpringMvcPlugin(this.springSwaggerConfig);
-		return swaggerSpringMvcPlugin.apiInfo(apiInfo(settings)).includePatterns("/logs", "/nodes", "/spiders").apiVersion(settings.getVersion());
+		return swaggerSpringMvcPlugin.pathProvider(swaggerPathProvider()).apiInfo(apiInfo(settings)).includePatterns("/logs", "/nodes", "/spiders")
+				.apiVersion(settings.getVersion());
 	}
 
 	private ApiInfo apiInfo(InfoSettings settings) {
@@ -52,5 +54,10 @@ public class SwaggerConfiguration {
 		apiInfoBuilder.description(settings.getDescription());
 		apiInfoBuilder.title(settings.getName() + "(" + settings.getArtifact() + ")");
 		return apiInfoBuilder.build();
+	}
+
+	@Bean
+	public AbsoluteSwaggerPathProvider swaggerPathProvider() {
+		return new AbsoluteSwaggerPathProvider();
 	}
 }

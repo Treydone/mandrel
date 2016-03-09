@@ -1,13 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.mandrel</groupId>
 	<artifactId>parent</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.16-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Mandrel</name>
-	<description>The crawler at scale</description>
+	<description>The distributed mining engine built for the cloud</description>
 
 	<licenses>
 		<license>
@@ -21,7 +20,15 @@
 		<connection>scm:git:git@github.com:Treydone/mandrel.git</connection>
 		<developerConnection>scm:git:git@github.com:Treydone/mandrel.git</developerConnection>
 		<url>http://github.com/Treydone/mandrel</url>
+		<tag>HEAD</tag>
 	</scm>
+
+	<distributionManagement>
+		<repository>
+			<id>bintray</id>
+			<url>https://api.bintray.com/maven/treydone/maven/mandrel/;publish=1</url>
+		</repository>
+	</distributionManagement>
 
 	<issueManagement>
 		<system>github</system>
@@ -34,7 +41,7 @@
 		<module>worker</module>
 		<module>controller</module>
 		<module>standalone</module>
-		<module>assembly</module>
+		<module>distribution</module>
 	</modules>
 
 	<properties>
@@ -57,7 +64,7 @@
 
 		<!-- Maven Plugin Dependencies -->
 		<maven-source-plugin.version>2.1.2</maven-source-plugin.version>
-		<maven-javadoc-plugin.version>2.9.1</maven-javadoc-plugin.version>
+		<maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
 		<maven-gpg-plugin.version>1.4</maven-gpg-plugin.version>
 	</properties>
 
@@ -68,6 +75,26 @@
 			<dependency>
 				<groupId>io.mandrel</groupId>
 				<artifactId>core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.mandrel</groupId>
+				<artifactId>standalone</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.mandrel</groupId>
+				<artifactId>frontier</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.mandrel</groupId>
+				<artifactId>controller</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.mandrel</groupId>
+				<artifactId>worker</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
@@ -316,11 +343,9 @@
 
 			<!-- Monitoring -->
 			<dependency>
-				<groupId>org.hyperic</groupId>
-				<artifactId>sigar</artifactId>
-				<version>1.6.5.132</version>
-				<scope>system</scope>
-				<systemPath>${project.basedir}/../lib/sigar/sigar-1.6.5.132.jar</systemPath>
+				<groupId>io.kamon</groupId>
+				<artifactId>sigar-loader</artifactId>
+				<version>1.6.6-rev002</version>
 			</dependency>
 			<dependency>
 				<groupId>com.netflix.servo</groupId>
@@ -345,6 +370,14 @@
 					<exclusion>
 						<artifactId>slf4j-log4j12</artifactId>
 						<groupId>org.slf4j</groupId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.springframework</groupId>
+						<artifactId>spring-web</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.springframework</groupId>
+						<artifactId>spring-webmvc</artifactId>
 					</exclusion>
 				</exclusions>
 			</dependency>
@@ -397,7 +430,7 @@
 			<dependency>
 				<groupId>org.webjars</groupId>
 				<artifactId>swagger-ui</artifactId>
-				<version>2.0.24</version>
+				<version>2.1.8-M1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.webjars</groupId>
@@ -597,9 +630,26 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.5.1</version>
 					<configuration>
 						<source>${java.version}</source>
 						<target>${java.version}</target>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.5</version>
+					<configuration>
+						<autoVersionSubmodules>true</autoVersionSubmodules>
+						<useReleaseProfile>false</useReleaseProfile>
+						<releaseProfiles>release</releaseProfiles>
+						<goals />
+						<tagNameFormat>v@{project.version}</tagNameFormat>
+						<arguments>-DskipTests</arguments>
+						<pushChanges>false</pushChanges>
+						<preparationGoals>clean install</preparationGoals>
 					</configuration>
 				</plugin>
 
@@ -663,6 +713,24 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>license-maven-plugin</artifactId>
 					<version>1.8</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.6</version>
+				</plugin>
+
+				<plugin>
+					<groupId>pl.project13.maven</groupId>
+					<artifactId>git-commit-id-plugin</artifactId>
+					<version>2.2.0</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.7</version>
 				</plugin>
 
 				<plugin>
@@ -751,328 +819,6 @@ org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UT
 				</plugin>
 
 				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>appassembler-maven-plugin</artifactId>
-					<version>1.9</version>
-					<executions>
-						<execution>
-							<id>daemons</id>
-							<phase>package</phase>
-							<goals>
-								<goal>generate-daemons</goal>
-							</goals>
-							<configuration>
-								<licenseHeaderFile>${basedir}/license-header.txt</licenseHeaderFile>
-								<useWildcardClassPath>true</useWildcardClassPath>
-								<repositoryLayout>flat</repositoryLayout>
-								<configurationSourceDirectory>src/main/resources</configurationSourceDirectory>
-								<copyConfigurationDirectory>true</copyConfigurationDirectory>
-								<configurationDirectory>conf</configurationDirectory>
-								<logsDirectory>logs</logsDirectory>
-								<daemons>
-									<daemon>
-										<id>${component.id}d</id>
-										<commandLineArguments>
-											<commandLineArgument>--spring.config.location=/usr/share/mandrel/conf/${component.id}.yml</commandLineArgument>
-										</commandLineArguments>
-										<jvmSettings>
-											<initialMemorySize>1024</initialMemorySize>
-											<maxMemorySize>1024</maxMemorySize>
-											<maxStackSize>128</maxStackSize>
-											<extraArguments>
-												<extraArgument>-Dlogback.configurationFile=/usr/share/mandrel/conf/logback.xml</extraArgument>
-												<extraArgument>-Dlogging.file=logs/${component.id}d.log</extraArgument>
-												<extraArgument>-Dlogging.mode=file</extraArgument>
-												<extraArgument>-server</extraArgument>
-												<extraArgument>-XX:+UseConcMarkSweepGC</extraArgument>
-												<extraArgument>-XX:+CMSParallelRemarkEnabled</extraArgument>
-												<extraArgument>-XX:+UseCMSInitiatingOccupancyOnly</extraArgument>
-												<extraArgument>-XX:+ScavengeBeforeFullGC</extraArgument>
-												<extraArgument>-XX:+CMSScavengeBeforeRemark</extraArgument>
-												<extraArgument>-XX:+PrintGCDateStamps</extraArgument>
-												<extraArgument>-verbose:gc</extraArgument>
-												<extraArgument>-XX:+PrintGCDetails</extraArgument>
-												<extraArgument>-Xloggc:logs/gc.%t.%p.log</extraArgument>
-												<extraArgument>-XX:+UseGCLogFileRotation</extraArgument>
-												<extraArgument>-XX:NumberOfGCLogFiles=10</extraArgument>
-												<extraArgument>-XX:GCLogFileSize=100M</extraArgument>
-												<extraArgument>-XX:+HeapDumpOnOutOfMemoryError</extraArgument>
-												<extraArgument>-XX:HeapDumpPath=logs/${component.id}d-heapdump`date`.hprof</extraArgument>
-												<extraArgument>-Djava.net.preferIPv4Stack=true</extraArgument>
-											</extraArguments>
-										</jvmSettings>
-										<wrapperMainClass>${component.class.wrapper}</wrapperMainClass>
-										<platforms>
-											<platform>jsw</platform>
-										</platforms>
-										<generatorConfigurations>
-											<generatorConfiguration>
-												<generator>jsw</generator>
-												<includes>
-													<include>linux-x86-32</include>
-													<include>linux-x86-64</include>
-												</includes>
-												<configuration>
-													<property>
-														<name>wrapper.logfile</name>
-														<value>../logs/${component.id}-wrapper.log</value>
-													</property>
-												</configuration>
-											</generatorConfiguration>
-										</generatorConfigurations>
-									</daemon>
-								</daemons>
-							</configuration>
-						</execution>
-						<execution>
-							<id>programs</id>
-							<phase>package</phase>
-							<goals>
-								<goal>assemble</goal>
-							</goals>
-							<configuration>
-								<programs>
-									<program>
-										<id>${component.id}</id>
-										<mainClass>${component.class.main}</mainClass>
-										<commandLineArguments>
-											<commandLineArgument>--spring.config.location=/usr/share/mandrel/conf/${component.id}.yml</commandLineArgument>
-										</commandLineArguments>
-										<jvmSettings>
-											<initialMemorySize>1024m</initialMemorySize>
-											<maxMemorySize>1024m</maxMemorySize>
-											<maxStackSize>128m</maxStackSize>
-											<extraArguments>
-												<extraArgument>-Dlogback.configurationFile=/usr/share/mandrel/conf/logback.xml</extraArgument>
-												<extraArgument>-Dlogging.file=logs/${component.id}.log</extraArgument>
-												<extraArgument>-Dlogging.mode=file</extraArgument>
-												<extraArgument>-server</extraArgument>
-												<extraArgument>-XX:+UseConcMarkSweepGC</extraArgument>
-												<extraArgument>-XX:+CMSParallelRemarkEnabled</extraArgument>
-												<extraArgument>-XX:+UseCMSInitiatingOccupancyOnly</extraArgument>
-												<extraArgument>-XX:+ScavengeBeforeFullGC</extraArgument>
-												<extraArgument>-XX:+CMSScavengeBeforeRemark</extraArgument>
-												<extraArgument>-XX:+PrintGCDateStamps</extraArgument>
-												<extraArgument>-verbose:gc</extraArgument>
-												<extraArgument>-XX:+PrintGCDetails</extraArgument>
-												<extraArgument>-Xloggc:logs/gc.%t.%p.log</extraArgument>
-												<extraArgument>-XX:+UseGCLogFileRotation</extraArgument>
-												<extraArgument>-XX:NumberOfGCLogFiles=10</extraArgument>
-												<extraArgument>-XX:GCLogFileSize=100M</extraArgument>
-												<extraArgument>-XX:+HeapDumpOnOutOfMemoryError</extraArgument>
-												<extraArgument>-XX:HeapDumpPath=logs/${component.id}-heapdump`date`.hprof</extraArgument>
-												<extraArgument>-Djava.net.preferIPv4Stack=true</extraArgument>
-											</extraArguments>
-										</jvmSettings>
-									</program>
-								</programs>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-
-				<!-- <plugin> -->
-				<!-- <artifactId>maven-resources-plugin</artifactId> -->
-				<!-- <version>2.7</version> -->
-				<!-- <executions> -->
-				<!-- <execution> -->
-				<!-- <id>copy-resources</id> -->
-				<!-- <phase>package</phase> -->
-				<!-- <goals> -->
-				<!-- <goal>copy-resources</goal> -->
-				<!-- </goals> -->
-				<!-- <configuration> -->
-				<!-- <outputDirectory>${project.build.directory}/generated-resources/appassembler/jsw/mandrel/lib</outputDirectory> -->
-				<!-- <resources> -->
-				<!-- <resource> -->
-				<!-- <directory>lib/sigar</directory> -->
-				<!-- </resource> -->
-				<!-- </resources> -->
-				<!-- </configuration> -->
-				<!-- </execution> -->
-				<!-- </executions> -->
-				<!-- </plugin> -->
-
-				<plugin>
-					<artifactId>jdeb</artifactId>
-					<groupId>org.vafer</groupId>
-					<version>1.0.1</version>
-					<executions>
-						<execution>
-							<phase>package</phase>
-							<goals>
-								<goal>jdeb</goal>
-							</goals>
-							<configuration>
-								<verbose>true</verbose>
-								<controlDir>${basedir}/src/deb/control</controlDir>
-								<dataSet>
-									<data>
-										<src>target/generated-resources/appassembler/jsw/mandrel/bin/</src>
-										<type>directory</type>
-										<excludes>*.bat, .DS_Store, *.exe</excludes>
-										<mapper>
-											<type>perm</type>
-											<prefix>/usr/share/mandrel/bin</prefix>
-											<filemode>755</filemode>
-											<user>root</user>
-											<group>root</group>
-										</mapper>
-									</data>
-									<data>
-										<src>target/generated-resources/appassembler/jsw/mandrel/lib/</src>
-										<includes>*</includes>
-										<type>directory</type>
-										<mapper>
-											<type>perm</type>
-											<prefix>/usr/share/mandrel/lib</prefix>
-											<user>root</user>
-											<group>root</group>
-										</mapper>
-									</data>
-									<data>
-										<src>${project.basedir}/src/deb/init.d/</src>
-										<type>directory</type>
-										<excludes>.DS_Store</excludes>
-										<mapper>
-											<type>perm</type>
-											<prefix>/etc/init.d</prefix>
-											<filemode>755</filemode>
-											<user>root</user>
-											<group>root</group>
-										</mapper>
-									</data>
-									<data>
-										<src>target/generated-resources/appassembler/jsw/mandrel/conf/</src>
-										<type>directory</type>
-										<mapper>
-											<type>perm</type>
-											<prefix>/usr/share/mandrel/conf/</prefix>
-											<user>root</user>
-											<group>root</group>
-										</mapper>
-									</data>
-								</dataSet>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>rpm-maven-plugin</artifactId>
-					<version>2.1-alpha-3</version>
-					<executions>
-						<execution>
-							<id>attach-rpm</id>
-							<goals>
-								<goal>attached-rpm</goal>
-							</goals>
-						</execution>
-					</executions>
-					<configuration>
-						<copyright>Apache 2</copyright>
-						<distribution>Apache 2</distribution>
-						<group>Application/Internet</group>
-						<prefix>/usr</prefix>
-						<changelogFile>src/changelog</changelogFile>
-						<defineStatements>
-							<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
-							<defineStatement>_binaries_in_noarch_packages_terminate_build 0</defineStatement>
-						</defineStatements>
-						<defaultFilemode>644</defaultFilemode>
-						<defaultDirmode>755</defaultDirmode>
-						<defaultUsername>root</defaultUsername>
-						<defaultGroupname>root</defaultGroupname>
-						<mappings>
-							<mapping>
-								<directory>/usr/share/mandrel/bin/</directory>
-								<filemode>755</filemode>
-								<sources>
-									<source>
-										<location>target/generated-resources/appassembler/jsw/mandrel/bin/</location>
-										<excludes>
-											<exclude>*.bat</exclude>
-										</excludes>
-									</source>
-								</sources>
-							</mapping>
-							<mapping>
-								<directory>/etc/sysconfig/</directory>
-								<configuration>noreplace</configuration>
-								<sources>
-									<source>
-										<location>src/rpm/sysconfig</location>
-										<includes>
-											<include>mandrel</include>
-										</includes>
-									</source>
-								</sources>
-							</mapping>
-							<mapping>
-								<directory>/etc/rc.d/init.d/</directory>
-								<filemode>755</filemode>
-								<configuration>true</configuration>
-								<sources>
-									<source>
-										<location>src/rpm/init.d/mandrel</location>
-									</source>
-								</sources>
-							</mapping>
-							<mapping>
-								<directory>/usr/share/mandrel/lib/</directory>
-								<sources>
-									<source>
-										<location>target/generated-resources/appassembler/jsw/mandrel/lib/</location>
-									</source>
-								</sources>
-							</mapping>
-							<mapping>
-								<directory>/usr/share/mandrel/conf/</directory>
-								<sources>
-									<source>
-										<location>target/generated-resources/appassembler/jsw/mandrel/conf/</location>
-									</source>
-								</sources>
-							</mapping>
-							<mapping>
-								<directory>/var/log/mandrel/</directory>
-								<filemode>755</filemode>
-								<username>mandrel</username>
-								<groupname>mandrel</groupname>
-							</mapping>
-							<mapping>
-								<directory>/usr/share/mandrel/</directory>
-								<sources>
-									<source>
-										<location>.</location>
-										<includes>
-											<include>README.textile</include>
-										</includes>
-									</source>
-								</sources>
-							</mapping>
-						</mappings>
-						<preinstallScriptlet>
-							<scriptFile>src/rpm/scripts/preinstall</scriptFile>
-							<fileEncoding>utf-8</fileEncoding>
-						</preinstallScriptlet>
-						<postinstallScriptlet>
-							<scriptFile>src/rpm/scripts/postinstall</scriptFile>
-							<fileEncoding>utf-8</fileEncoding>
-						</postinstallScriptlet>
-						<preremoveScriptlet>
-							<scriptFile>src/rpm/scripts/preremove</scriptFile>
-							<fileEncoding>utf-8</fileEncoding>
-						</preremoveScriptlet>
-						<postremoveScriptlet>
-							<scriptFile>src/rpm/scripts/postremove</scriptFile>
-							<fileEncoding>utf-8</fileEncoding>
-						</postremoveScriptlet>
-					</configuration>
-				</plugin>
-
-				<plugin>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<configuration>
 						<!-- need to point the library path to the location of the native libraries -->
@@ -1105,6 +851,24 @@ org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UT
 					</plugin>
 
 					<plugin>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok-maven-plugin</artifactId>
+						<version>1.16.6.1</version>
+						<executions>
+							<execution>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>delombok</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<addOutputDirectory>false</addOutputDirectory>
+							<sourceDirectory>src/main/java</sourceDirectory>
+						</configuration>
+					</plugin>
+
+					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
 						<version>${maven-javadoc-plugin.version}</version>
@@ -1116,25 +880,28 @@ org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UT
 								</goals>
 								<configuration>
 									<quiet>true</quiet>
+									<failOnError>false</failOnError>
+									<defaultVersion>${project.version}</defaultVersion>
+									<sourcepath>target/generated-sources/delombok</sourcepath>
 								</configuration>
 							</execution>
 						</executions>
 					</plugin>
 
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>${maven-gpg-plugin.version}</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
+					<!-- <plugin> -->
+					<!-- <groupId>org.apache.maven.plugins</groupId> -->
+					<!-- <artifactId>maven-gpg-plugin</artifactId> -->
+					<!-- <version>${maven-gpg-plugin.version}</version> -->
+					<!-- <executions> -->
+					<!-- <execution> -->
+					<!-- <id>sign-artifacts</id> -->
+					<!-- <phase>verify</phase> -->
+					<!-- <goals> -->
+					<!-- <goal>sign</goal> -->
+					<!-- </goals> -->
+					<!-- </execution> -->
+					<!-- </executions> -->
+					<!-- </plugin> -->
 
 				</plugins>
 			</build>
@@ -1143,28 +910,17 @@ org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UT
 
 	<repositories>
 		<repository>
-			<id>spring-snapshots</id>
-			<name>Spring Snapshots</name>
-			<url>http://repo.spring.io/libs-snapshot-local</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>http://repo.spring.io/libs-milestone-local</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
 			<id>spring-releases</id>
 			<name>Spring Releases</name>
-			<url>http://repo.spring.io/release</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
+			<url>https://repo.spring.io/libs-release</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>jcenter-release</id>
+			<name>jcenter</name>
+			<url>http://oss.jfrog.org/artifactory/oss-release-local/</url>
 		</repository>
 		<repository>
 			<id>cloudera</id>
@@ -1188,11 +944,16 @@ org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UT
 				<updatePolicy>never</updatePolicy>
 			</snapshots>
 		</repository>
-		<repository>
-			<id>jcenter-release</id>
-			<name>jcenter</name>
-			<url>http://oss.jfrog.org/artifactory/oss-release-local/</url>
-		</repository>
 	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-releases</id>
+			<name>Spring Releases</name>
+			<url>https://repo.spring.io/libs-release</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</pluginRepository>
+	</pluginRepositories>
 
 </project>

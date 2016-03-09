@@ -103,6 +103,9 @@
 				    </#list>
                   </tbody></table>
                 </div><!-- /.box-body -->
+                <div class="box-footer clearfix">
+                  <a class="btn btn-sm btn-default btn-flat pull-right" href="/nodes">View All</a>
+                </div>
               </div>
 		</div>
 		<div class="col-md-6">
@@ -150,23 +153,27 @@
 	                      <td>Sources:
 	                      <#if spider.sources??>
 	                      <#list spider.sources as source>
-	                      	${source.name()} /
+	                      	${source.name()} <#sep>/</#sep>
 	                      </#list>
 	                      </#if>
 	                      </td>
 	                    </tr>
 				    </#list>
-                  </tbody></table>
+                  </tbody>
+                  </table>
                 </div>
                 <#if spiders?size < 1>
                 <div class="box-body">
                   <div class="callout callout-success">
                     <h4>There is not running spider!</h4>
                     <p>It is time to work now, create a new spider.</p>
-                    <a href="/spiders/add"><button type="button" class="btn btn-outline"><i class="fa fa-plus"></i> Create one!</button></a>
+                    <button type="button" class="btn btn-outline" data-toggle="modal" data-target="#add-spider"><i class="fa fa-plus"></i> Create one!</button>
                   </div>
                 </div><!-- /.box-body -->
                 </#if>
+                <div class="box-footer clearfix">
+                  <a class="btn btn-sm btn-default btn-flat pull-right" href="/spiders">View All</a>
+                </div>
               </div>
 		</div>
 	</div>

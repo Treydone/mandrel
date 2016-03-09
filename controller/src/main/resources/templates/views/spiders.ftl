@@ -30,7 +30,7 @@
                       <th>Name</th>
                       <th>Date</th>
                       <th>Status</th>
-                      <th>Reason</th>
+                      <th>Description</th>
                     </tr>
                     <#list spiders.content as spider>
                 		<tr>
@@ -58,7 +58,13 @@
 									<#break>
 							</#switch>
 	                      <td><span class="label label-${label}">${spider.status}</span></td>
-	                      <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
+	                      <td>Sources:
+	                      <#if spider.sources??>
+	                      <#list spider.sources as source>
+	                      	${source.name()} <#sep>/</#sep>
+	                      </#list>
+	                      </#if>
+	                      </td>
 	                    </tr>
 				    </#list>
                   </tbody></table>
@@ -68,7 +74,7 @@
                   <div class="callout callout-success">
                     <h4>There is not running spider!</h4>
                     <p>It is time to work now, create a new spider.</p>
-                    <a href="/spiders/add"><button type="button" class="btn btn-outline"><i class="fa fa-plus"></i> Create one!</button></a>
+                    <button type="button" class="btn btn-outline" data-toggle="modal" data-target="#add-spider"><i class="fa fa-plus"></i> Create one!</button>
                   </div>
                 </div><!-- /.box-body -->
                 </#if>
@@ -77,7 +83,7 @@
                   <div class="callout callout-success">
                     <h4>Add spider!</h4>
                     <p>Create a new spider.</p>
-                    <a href="/spiders/add"><button type="button" class="btn btn-outline"><i class="fa fa-plus"></i> Add new!</button></a>
+                    <button type="button" class="btn btn-outline" data-toggle="modal" data-target="#add-spider"><i class="fa fa-plus"></i> Create one!</button>
                   </div>
                 </div><!-- /.box-body -->
                 </#if>

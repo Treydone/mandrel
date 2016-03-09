@@ -49,7 +49,7 @@ import com.google.common.base.Charsets;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
-@Api("/spiders")
+@Api(basePath = Apis.PREFIX, value = "/spiders")
 @RequestMapping(value = Apis.PREFIX + "/spiders")
 @Controller
 @RequiredArgsConstructor(onConstructor = @__(@Inject))

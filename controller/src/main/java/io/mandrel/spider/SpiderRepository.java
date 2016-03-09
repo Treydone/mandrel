@@ -44,4 +44,6 @@ public interface SpiderRepository {
 
 	Page<Spider> page(Pageable pageable);
 
+	Page<Spider> pageForActive(Pageable pageable);
+
 }

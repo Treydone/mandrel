@@ -32,6 +32,8 @@ import io.mandrel.endpoints.contracts.WorkerContract;
 import io.mandrel.transport.Clients;
 import io.mandrel.transport.Pooled;
 import io.mandrel.transport.TransportProperties;
+import io.mandrel.transport.thrift.nifty.NiftyClient;
+import io.mandrel.transport.thrift.nifty.ThriftClientManager;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -45,11 +47,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import com.facebook.nifty.client.NettyClientConfig;
-import com.facebook.nifty.client.NiftyClient;
 import com.facebook.swift.codec.ThriftCodecManager;
 import com.facebook.swift.codec.internal.compiler.CompilerThriftCodecFactory;
 import com.facebook.swift.codec.metadata.ThriftCatalog;
-import com.facebook.swift.service.ThriftClientManager;
 import com.google.common.base.Throwables;
 import com.google.common.net.HostAndPort;
 
