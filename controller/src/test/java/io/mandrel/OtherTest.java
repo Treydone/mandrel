@@ -19,12 +19,14 @@
 package io.mandrel;
 
 import io.mandrel.common.bson.JsonBsonCodec;
-import io.mandrel.common.data.HttpStrategy.HttpStrategyDefinition;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.schema.SchemaGenerator;
 import io.mandrel.config.BindConfiguration;
 import io.mandrel.data.filters.link.LinkFilter;
+import io.mandrel.frontier.revisit.NoRevisitStrategy.NoRevisitStrategyDefinition;
+import io.mandrel.frontier.revisit.SimpleRevisitStrategy.SimpleRevisitStrategyDefinition;
+import io.mandrel.frontier.store.impl.KafkaFrontierStore.KafkaFrontierStoreDefinition;
 import io.mandrel.requests.ftp.FtpRequester.FtpRequesterDefinition;
 import io.mandrel.requests.http.ApacheHttpRequester.ApacheHttpRequesterDefinition;
 import io.mandrel.timeline.Event;
@@ -59,7 +61,11 @@ import com.facebook.swift.codec.metadata.ThriftCatalog;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
+import com.fasterxml.jackson.module.jsonSchema.factories.WrapperFactory;
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
@@ -72,6 +78,17 @@ import com.mongodb.client.MongoCollection;
  *
  */
 public class OtherTest {
+
+	@Test
+	@SneakyThrows
+	public void whut3() {
+		ObjectMapper mapper = new ObjectMapper();
+		BindConfiguration.configure(mapper);
+		ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
+
+		JsonSchemaGenerator generator = new JsonSchemaGenerator(mapper, new WrapperFactory());
+		System.err.println(writer.writeValueAsString(generator.generateSchema(KafkaFrontierStoreDefinition.class)));
+	}
 
 	@Test
 	@SneakyThrows
@@ -181,10 +198,9 @@ public class OtherTest {
 		}).first();
 		// System.err.println(System.currentTimeMillis());
 		System.err.println(((ApacheHttpRequesterDefinition) result.getClient().getRequesters().get(0)));
-		System.err.println(((HttpStrategyDefinition) ((ApacheHttpRequesterDefinition) result.getClient().getRequesters().get(0)).getStrategy())
-				.getMaxRedirects());
+		System.err.println(((ApacheHttpRequesterDefinition) result.getClient().getRequesters().get(0)).getMaxRedirects());
 		System.err.println(((FtpRequesterDefinition) result.getClient().getRequesters().get(1)));
-		System.err.println(((FtpRequesterDefinition) result.getClient().getRequesters().get(1)).getStrategy().getNameResolver());
+		System.err.println(((FtpRequesterDefinition) result.getClient().getRequesters().get(1)).getNameResolver());
 	}
 
 	@Test

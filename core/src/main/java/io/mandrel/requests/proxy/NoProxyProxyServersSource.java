@@ -20,15 +20,9 @@ package io.mandrel.requests.proxy;
 
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.service.TaskContext;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 @Accessors(chain = true, fluent = true)
@@ -40,9 +34,6 @@ public class NoProxyProxyServersSource extends ProxyServersSource {
 	@EqualsAndHashCode(callSuper = false)
 	public static class NoProxyProxyServersSourceDefinition extends ProxyServersSourceDefinition<NoProxyProxyServersSource> {
 		private static final long serialVersionUID = 4179034020754804054L;
-
-		@JsonProperty("addresses")
-		private Map<String, String> addresses = new HashMap<>();
 
 		@Override
 		public NoProxyProxyServersSource build(TaskContext context) {

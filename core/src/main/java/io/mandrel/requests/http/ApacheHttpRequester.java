@@ -20,13 +20,15 @@ package io.mandrel.requests.http;
 
 import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobMetadata;
-import io.mandrel.common.data.HttpStrategy;
-import io.mandrel.common.data.HttpStrategy.HttpStrategyDefinition;
+import io.mandrel.common.data.Param;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.requests.RequestException;
 import io.mandrel.requests.Requester;
+import io.mandrel.requests.http.ua.FixedUserAgentProvisionner.FixedUserAgentProvisionnerDefinition;
+import io.mandrel.requests.http.ua.UserAgentProvisionner;
+import io.mandrel.requests.http.ua.UserAgentProvisionner.UserAgentProvisionnerDefinition;
 import io.mandrel.requests.proxy.ProxyServer;
 
 import java.io.IOException;
@@ -95,12 +97,12 @@ import com.google.common.net.HttpHeaders;
 @Data
 @Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
-public class ApacheHttpRequester extends Requester<HttpStrategy> {
+public class ApacheHttpRequester extends Requester {
 
 	@Data
 	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
-	public static class ApacheHttpRequesterDefinition extends RequesterDefinition<HttpStrategy, ApacheHttpRequester> {
+	public static class ApacheHttpRequesterDefinition extends RequesterDefinition<ApacheHttpRequester> {
 
 		private static final long serialVersionUID = -9205125497698919267L;
 
@@ -113,9 +115,23 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 		@JsonProperty("io_thread_count")
 		private int ioThreadCount = Runtime.getRuntime().availableProcessors();
 
-		public ApacheHttpRequesterDefinition() {
-			setStrategy(new HttpStrategyDefinition());
-		}
+		@JsonProperty("max_redirects")
+		private int maxRedirects = 3;
+
+		@JsonProperty("follow_redirects")
+		private boolean followRedirects = true;
+
+		@JsonProperty("headers")
+		private Set<Header> headers;
+
+		@JsonProperty("params")
+		private Set<Param> params;
+
+		@JsonProperty("cookies")
+		private List<Cookie> cookies;
+
+		@JsonProperty("user_agent_provisionner")
+		private UserAgentProvisionnerDefinition userAgentProvisionner = new FixedUserAgentProvisionnerDefinition();
 
 		@Override
 		public String name() {
@@ -124,7 +140,9 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 
 		@Override
 		public ApacheHttpRequester build(TaskContext context) {
-			return build(new ApacheHttpRequester(context).maxLineLength(maxLineLength).maxHeaderCount(maxHeaderCount), context);
+			ApacheHttpRequester apacheHttpRequester = new ApacheHttpRequester(context);
+			return build(apacheHttpRequester.maxLineLength(maxLineLength).maxHeaderCount(maxHeaderCount).cookies(cookies).followRedirects(followRedirects)
+					.headers(headers).maxRedirects(maxRedirects).params(params).userAgentProvisionner(userAgentProvisionner.build(context)), context);
 		}
 
 	}
@@ -139,6 +157,12 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 
 	private int maxLineLength = -1;
 	private int maxHeaderCount = -1;
+	private int maxRedirects;
+	private boolean followRedirects;
+	private Set<Header> headers;
+	private Set<Param> params;
+	private List<Cookie> cookies;
+	private UserAgentProvisionner userAgentProvisionner;
 
 	// //////////////////////////////////////
 	private CloseableHttpClient client;
@@ -153,7 +177,7 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 
 	public void init() {
 
-		available = new Semaphore(strategy().maxParallel(), true);
+		available = new Semaphore(maxParallel(), true);
 
 		SSLContext sslContext = SSLContexts.createSystemDefault();
 		HostnameVerifier hostnameVerifier = new DefaultHostnameVerifier();
@@ -168,7 +192,7 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 				if (host.equalsIgnoreCase("localhost")) {
 					return new InetAddress[] { InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }) };
 				} else {
-					return new InetAddress[] { strategy().nameResolver().resolve(host) };
+					return new InetAddress[] { nameResolver().resolve(host) };
 				}
 			}
 		};
@@ -186,8 +210,8 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 
 		// Configure total max or per route limits for persistent connections
 		// that can be kept in the pool or leased by the connection manager.
-		connManager.setMaxTotal(strategy().maxPersistentConnections());
-		connManager.setDefaultMaxPerRoute(strategy().maxPersistentConnections());
+		connManager.setMaxTotal(maxPersistentConnections());
+		connManager.setDefaultMaxPerRoute(maxPersistentConnections());
 
 		// TODO
 		// Use custom credentials provider if necessary.
@@ -197,9 +221,8 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 		// Create global request configuration
 		defaultRequestConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.DEFAULT).setExpectContinueEnabled(true).setStaleConnectionCheckEnabled(true)
 				.setTargetPreferredAuthSchemes(Arrays.asList(AuthSchemes.NTLM, AuthSchemes.DIGEST))
-				.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC)).setMaxRedirects(strategy().maxRedirects())
-				.setSocketTimeout(strategy().socketTimeout()).setConnectTimeout(strategy().connectTimeout())
-				.setConnectionRequestTimeout(strategy().requestTimeOut()).setRedirectsEnabled(strategy().followRedirects()).build();
+				.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC)).setMaxRedirects(maxRedirects()).setSocketTimeout(socketTimeout())
+				.setConnectTimeout(connectTimeout()).setConnectionRequestTimeout(requestTimeOut()).setRedirectsEnabled(followRedirects()).build();
 
 		// Create an HttpClient with the given custom dependencies and
 		// configuration.
@@ -210,8 +233,8 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 
 	public HttpContext prepareContext(Spider spider) {
 		CookieStore store = new BasicCookieStore();
-		if (strategy().cookies() != null)
-			strategy().cookies().forEach(cookie -> {
+		if (cookies() != null)
+			cookies().forEach(cookie -> {
 				BasicClientCookie theCookie = new BasicClientCookie(cookie.name(), cookie.value());
 				theCookie.setDomain(cookie.domain());
 				theCookie.setPath(cookie.path());
@@ -249,8 +272,8 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 		HttpGet request = new HttpGet(uri.toURI());
 
 		// Add headers, cookies and ohter stuff
-		if (strategy().headers() != null) {
-			strategy().headers().forEach(header -> {
+		if (headers() != null) {
+			headers().forEach(header -> {
 				if (header != null) {
 					request.addHeader(header.getName(), header.getValue());
 				}
@@ -258,8 +281,8 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 		}
 
 		HttpParams params = new BasicHttpParams();
-		if (strategy().params() != null) {
-			strategy().params().forEach(param -> {
+		if (params() != null) {
+			params().forEach(param -> {
 				if (param != null) {
 					params.setParameter(param.getName(), param.getValue());
 				}
@@ -268,13 +291,13 @@ public class ApacheHttpRequester extends Requester<HttpStrategy> {
 		request.setParams(params);
 
 		// Configure the user -agent
-		String userAgent = strategy().userAgentProvisionner().get(uri.toString(), spider);
+		String userAgent = userAgentProvisionner().get(uri.toString(), spider);
 		if (Strings.isNullOrEmpty(userAgent)) {
 			request.addHeader(HttpHeaders.USER_AGENT, userAgent);
 		}
 
 		// Configure the proxy
-		ProxyServer proxy = strategy().proxyServersSource().findProxy(spider);
+		ProxyServer proxy = proxyServersSource().findProxy(spider);
 		if (proxy != null) {
 			// TODO Auth!
 			HttpHost proxyHost = new HttpHost(proxy.getHost(), proxy.getPort(), proxy.getProtocol().getProtocol());

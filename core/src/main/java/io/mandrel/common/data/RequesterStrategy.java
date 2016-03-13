@@ -40,16 +40,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 @Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
-public class Strategy extends TaskContextAware {
+public class RequesterStrategy extends TaskContextAware {
 
-	public Strategy(TaskContext context) {
+	public RequesterStrategy(TaskContext context) {
 		super(context);
 	}
 
 	@Data
 	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
-	public static abstract class StrategyDefinition<STRATEGY extends Strategy> implements NamedDefinition, ObjectFactory<STRATEGY>, Serializable {
+	public static abstract class RequesterStrategyDefinition<STRATEGY extends RequesterStrategy> implements NamedDefinition, ObjectFactory<STRATEGY>,
+			Serializable {
 
 		private static final long serialVersionUID = -5847753994653490966L;
 

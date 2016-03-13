@@ -79,7 +79,7 @@ public class WorkerContainer extends AbstractContainer {
 		executor = Executors.newScheduledThreadPool(parallel + 1, threadFactory);
 
 		// Prepare the barrier
-		Barrier barrier = new Barrier(spider.getFrontier().getPoliteness(), discoveryClient);
+		Barrier barrier = new Barrier(spider.getPoliteness(), discoveryClient);
 		executor.scheduleAtFixedRate(() -> barrier.updateBuckets(), 10, 10, TimeUnit.SECONDS);
 
 		// Create loop
@@ -109,14 +109,14 @@ public class WorkerContainer extends AbstractContainer {
 
 		// Init requesters
 		spider.getClient().getRequesters().forEach(r -> {
-			Requester<?> requester = r.build(context);
+			Requester requester = r.build(context);
 
 			// Prepare client
-				if (requester.strategy().nameResolver() != null) {
-					requester.strategy().nameResolver().init();
+				if (requester.nameResolver() != null) {
+					requester.nameResolver().init();
 				}
-				if (requester.strategy().proxyServersSource() != null) {
-					requester.strategy().proxyServersSource().init();
+				if (requester.proxyServersSource() != null) {
+					requester.proxyServersSource().init();
 				}
 				requester.init();
 

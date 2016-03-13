@@ -20,7 +20,7 @@ package io.mandrel.worker;
 
 import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.discovery.ServiceIds;
-import io.mandrel.frontier.Politeness;
+import io.mandrel.common.data.Politeness;
 
 import java.util.concurrent.TimeUnit;
 

@@ -19,8 +19,6 @@
 package io.mandrel.requests.ftp;
 
 import io.mandrel.blob.Blob;
-import io.mandrel.common.data.FtpStrategy;
-import io.mandrel.common.data.FtpStrategy.FtpStrategyDefinition;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
@@ -38,22 +36,18 @@ import com.google.common.collect.Sets;
 @Data
 @Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
-public class FtpRequester extends Requester<FtpStrategy> {
+public class FtpRequester extends Requester {
 
 	@Data
 	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
-	public static class FtpRequesterDefinition extends RequesterDefinition<FtpStrategy, FtpRequester> {
+	public static class FtpRequesterDefinition extends RequesterDefinition<FtpRequester> {
 
 		private static final long serialVersionUID = -9205125497698919267L;
 
 		@Override
 		public String name() {
 			return "ftp";
-		}
-
-		public FtpRequesterDefinition() {
-			setStrategy(new FtpStrategyDefinition());
 		}
 
 		@Override
@@ -69,8 +63,6 @@ public class FtpRequester extends Requester<FtpStrategy> {
 	public FtpRequester() {
 		super(null);
 	}
-
-	private FtpStrategy strategy;
 
 	@Override
 	public void init() {

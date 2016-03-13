@@ -18,34 +18,33 @@
  */
 package io.mandrel.common.data;
 
-import io.mandrel.common.service.TaskContext;
+import java.io.Serializable;
+
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-@EqualsAndHashCode(callSuper = false)
-public class FtpStrategy extends Strategy {
+public class Politeness implements Serializable {
 
-	public FtpStrategy(TaskContext context) {
-		super(context);
-	}
+	private static final long serialVersionUID = -3487435400772289245L;
 
-	@Data
-	@Accessors(chain = false, fluent = false)
-	@EqualsAndHashCode(callSuper = false)
-	public static class FtpStrategyDefinition extends StrategyDefinition<FtpStrategy> {
+	@JsonProperty("page_mean_rate")
+	private long pageMeanRate = 20;
 
-		private static final long serialVersionUID = 252540570641044928L;
+	@JsonProperty("page_peek_rate")
+	private long pagePeekRate = 50;
 
-		@Override
-		public String name() {
-			return "ftp";
-		}
+	@JsonProperty("max_bandwith")
+	private long maxBandwith = 8 * 1024 * 1024;
 
-		@Override
-		public FtpStrategy build(TaskContext context) {
-			return build(new FtpStrategy(context), context);
-		}
-	}
+	@JsonProperty("max_peek_bandwith")
+	private long maxPeekBandwith = 20 * 1024 * 1024;
+
+	@JsonProperty("max_uris")
+	private long maxUris = 100;
+
+	@JsonProperty("wait")
+	private long wait = 100;
+
 }
