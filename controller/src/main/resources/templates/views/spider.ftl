@@ -534,7 +534,7 @@
                     <!-- textarea -->
                     <div class="form-group">
                       <label>JSON</label>
-                      <textarea class="form-control" rows="20">${json}</textarea>
+                      <textarea class="form-control" rows="20" disabled>${json}</textarea>
                     </div>
 
                   </form>

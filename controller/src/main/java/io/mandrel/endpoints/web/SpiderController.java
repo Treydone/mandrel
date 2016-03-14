@@ -76,18 +76,8 @@ public class SpiderController {
 		Spider spider = spiderService.get(id);
 		model.addAttribute("spider", spider);
 		model.addAttribute("metrics", metricsService.spider(id));
-		
-		model.addAttribute("json", mapper.writer(new DefaultPrettyPrinter()).writeValueAsString(spider));
-		BaseValue value = new BaseValue();
-		value.setName(spider.getName());
-		value.setSources(spider.getSources());
-		value.setFilters(spider.getFilters());
-		model.addAttribute("baseValue", mapper.writeValueAsString(value));
-		model.addAttribute("storesValue", mapper.writeValueAsString(spider.getStores()));
-		model.addAttribute("frontierValue", mapper.writeValueAsString(spider.getFrontier()));
-		model.addAttribute("extractionValue", mapper.writeValueAsString(spider.getExtractors()));
-		model.addAttribute("politenessValue", mapper.writeValueAsString(spider.getPoliteness()));
-		model.addAttribute("advancedValue", mapper.writeValueAsString(spider.getClient()));
+
+		refill(model, spider);
 		return "views/spider";
 	}
 
@@ -135,11 +125,12 @@ public class SpiderController {
 
 	@RequestMapping("/add/definition")
 	public String addWithDefinition(Model model) throws JsonProcessingException {
+		prepareModel(model);
 		return "views/spider_add_with_def";
 	}
 
 	@RequestMapping(value = "/add/definition", method = RequestMethod.POST)
-	public String createWithDefinition(Model model, @RequestParam String definition) {
+	public String createWithDefinition(Model model, @RequestParam String definition) throws JsonProcessingException {
 		Spider spider;
 		try {
 			spider = mapper.readValue(definition, Spider.class);
@@ -152,6 +143,7 @@ public class SpiderController {
 			spiderService.add(spider);
 		} catch (BindException e) {
 			model.addAttribute("errors", e.getAllErrors());
+			refill(model, spider);
 			log.debug("Can not add spider", e);
 			return "views/spider_add_with_def";
 		}
@@ -160,16 +152,7 @@ public class SpiderController {
 
 	@RequestMapping("/add/form")
 	public String addWithForm(Model model) throws JsonProcessingException {
-		return prepareForm(model);
-	}
-
-	public String prepareForm(Model model) throws JsonProcessingException {
-		model.addAttribute("baseValue", mapper.writeValueAsString(new BaseValue()));
-		model.addAttribute("storesValue", mapper.writeValueAsString(new StoresDefinition()));
-		model.addAttribute("frontierValue", mapper.writeValueAsString(new FrontierDefinition()));
-		model.addAttribute("extractionValue", mapper.writeValueAsString(new Extractors()));
-		model.addAttribute("politenessValue", mapper.writeValueAsString(new Politeness()));
-		model.addAttribute("advancedValue", mapper.writeValueAsString(new Client()));
+		prepareModel(model);
 		return "views/spider_add_with_form";
 	}
 
@@ -187,10 +170,34 @@ public class SpiderController {
 			spiderService.add(spider);
 		} catch (BindException e) {
 			model.addAttribute("errors", e.getAllErrors());
+			refill(model, spider);
 			log.debug("Can not add spider", e);
-			return prepareForm(model);
+			return "views/spider_add_with_form";
 		}
 		return "redirect:/spiders";
+	}
+
+	private void prepareModel(Model model) throws JsonProcessingException {
+		model.addAttribute("baseValue", mapper.writeValueAsString(new BaseValue()));
+		model.addAttribute("storesValue", mapper.writeValueAsString(new StoresDefinition()));
+		model.addAttribute("frontierValue", mapper.writeValueAsString(new FrontierDefinition()));
+		model.addAttribute("extractionValue", mapper.writeValueAsString(new Extractors()));
+		model.addAttribute("politenessValue", mapper.writeValueAsString(new Politeness()));
+		model.addAttribute("advancedValue", mapper.writeValueAsString(new Client()));
+	}
+
+	private void refill(Model model, Spider spider) throws JsonProcessingException {
+		model.addAttribute("json", mapper.writer(new DefaultPrettyPrinter()).writeValueAsString(spider));
+		BaseValue value = new BaseValue();
+		value.setName(spider.getName());
+		value.setSources(spider.getSources());
+		value.setFilters(spider.getFilters());
+		model.addAttribute("baseValue", mapper.writeValueAsString(value));
+		model.addAttribute("storesValue", mapper.writeValueAsString(spider.getStores()));
+		model.addAttribute("frontierValue", mapper.writeValueAsString(spider.getFrontier()));
+		model.addAttribute("extractionValue", mapper.writeValueAsString(spider.getExtractors()));
+		model.addAttribute("politenessValue", mapper.writeValueAsString(spider.getPoliteness()));
+		model.addAttribute("advancedValue", mapper.writeValueAsString(spider.getClient()));
 	}
 
 	@Data
