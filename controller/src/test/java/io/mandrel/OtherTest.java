@@ -19,14 +19,15 @@
 package io.mandrel;
 
 import io.mandrel.common.bson.JsonBsonCodec;
+import io.mandrel.common.data.Client;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.schema.SchemaGenerator;
 import io.mandrel.config.BindConfiguration;
 import io.mandrel.data.filters.link.LinkFilter;
-import io.mandrel.frontier.revisit.NoRevisitStrategy.NoRevisitStrategyDefinition;
-import io.mandrel.frontier.revisit.SimpleRevisitStrategy.SimpleRevisitStrategyDefinition;
 import io.mandrel.frontier.store.impl.KafkaFrontierStore.KafkaFrontierStoreDefinition;
+import io.mandrel.requests.Requester;
+import io.mandrel.requests.Requester.RequesterDefinition;
 import io.mandrel.requests.ftp.FtpRequester.FtpRequesterDefinition;
 import io.mandrel.requests.http.ApacheHttpRequester.ApacheHttpRequesterDefinition;
 import io.mandrel.timeline.Event;
@@ -41,6 +42,7 @@ import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +87,10 @@ public class OtherTest {
 		ObjectMapper mapper = new ObjectMapper();
 		BindConfiguration.configure(mapper);
 		ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
+		
+		List<? extends RequesterDefinition<? extends Requester>> requesters = Arrays.asList(new ApacheHttpRequesterDefinition(), new FtpRequesterDefinition());
+		System.err.println(writer.writeValueAsString(requesters));
+		System.err.println(writer.writeValueAsString(new Client()));
 
 		JsonSchemaGenerator generator = new JsonSchemaGenerator(mapper, new WrapperFactory());
 		System.err.println(writer.writeValueAsString(generator.generateSchema(KafkaFrontierStoreDefinition.class)));

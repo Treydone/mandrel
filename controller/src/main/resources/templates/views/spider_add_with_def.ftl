@@ -37,7 +37,7 @@
 	                <form role="form" method="POST" action="/spiders/add">
 	                <div class="box-body">
             			<div class="form-group">
-	                      <label>Textarea Disabled</label>
+	                      <label>JSON</label>
 	                      <textarea id='output' class="form-control" rows="20" name="definition" id="definition"></textarea>
 	                    </div>
                      </div><!-- /.box-body -->

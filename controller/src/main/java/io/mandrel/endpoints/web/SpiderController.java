@@ -18,6 +18,7 @@
  */
 package io.mandrel.endpoints.web;
 
+import io.mandrel.common.data.Client;
 import io.mandrel.common.data.Extractors;
 import io.mandrel.common.data.Filters;
 import io.mandrel.common.data.Politeness;
@@ -27,13 +28,10 @@ import io.mandrel.data.source.Source;
 import io.mandrel.data.source.Source.SourceDefinition;
 import io.mandrel.frontier.Frontier.FrontierDefinition;
 import io.mandrel.metrics.MetricsService;
-import io.mandrel.requests.ftp.FtpRequester.FtpRequesterDefinition;
-import io.mandrel.requests.http.ApacheHttpRequester.ApacheHttpRequesterDefinition;
 import io.mandrel.spider.SpiderService;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -129,31 +127,57 @@ public class SpiderController {
 		return "views/spider_add_with_def";
 	}
 
+	@RequestMapping(value = "/add/definition", method = RequestMethod.POST)
+	public String createWithDefinition(Model model, @RequestParam String definition) {
+		Spider spider;
+		try {
+			spider = mapper.readValue(definition, Spider.class);
+		} catch (IOException e) {
+			model.addAttribute("errors", "JSON invalid");
+			log.debug("Spider definition is invalid", e);
+			return "redirect:/add/definition";
+		}
+		try {
+			spiderService.add(spider);
+		} catch (BindException e) {
+			model.addAttribute("errors", e.getAllErrors());
+			log.debug("Can not add spider", e);
+			return "views/spider_add_with_def";
+		}
+		return "redirect:/spiders";
+	}
+
 	@RequestMapping("/add/form")
 	public String addWithForm(Model model) throws JsonProcessingException {
+		return prepareForm(model);
+	}
+
+	public String prepareForm(Model model) throws JsonProcessingException {
 		model.addAttribute("baseValue", mapper.writeValueAsString(new BaseValue()));
 		model.addAttribute("storesValue", mapper.writeValueAsString(new StoresDefinition()));
 		model.addAttribute("frontierValue", mapper.writeValueAsString(new FrontierDefinition()));
 		model.addAttribute("extractionValue", mapper.writeValueAsString(new Extractors()));
 		model.addAttribute("politenessValue", mapper.writeValueAsString(new Politeness()));
-		model.addAttribute("advancedValue", mapper.writeValueAsString(Arrays.asList(new ApacheHttpRequesterDefinition(), new FtpRequesterDefinition())));
+		model.addAttribute("advancedValue", mapper.writeValueAsString(new Client()));
 		return "views/spider_add_with_form";
 	}
 
-	@RequestMapping(value = "/add", method = RequestMethod.POST)
-	public String create(Model model, @RequestParam String definition) {
+	@RequestMapping(value = "/add/form", method = RequestMethod.POST)
+	public String create(Model model, @RequestParam String definition) throws JsonProcessingException {
 		Spider spider;
 		try {
 			spider = mapper.readValue(definition, Spider.class);
 		} catch (IOException e) {
+			model.addAttribute("errors", "JSON invalid");
 			log.debug("Spider definition is invalid", e);
-			return "redirect:/spiders";
+			return "redirect:/add/form";
 		}
 		try {
 			spiderService.add(spider);
 		} catch (BindException e) {
+			model.addAttribute("errors", e.getAllErrors());
 			log.debug("Can not add spider", e);
-			return "views/spider_add";
+			return prepareForm(model);
 		}
 		return "redirect:/spiders";
 	}
