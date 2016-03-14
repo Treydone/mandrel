@@ -75,8 +75,19 @@ public class SpiderController {
 	public String spider(@PathVariable long id, Model model) throws Exception {
 		Spider spider = spiderService.get(id);
 		model.addAttribute("spider", spider);
-		model.addAttribute("json", mapper.writer(new DefaultPrettyPrinter()).writeValueAsString(spider));
 		model.addAttribute("metrics", metricsService.spider(id));
+		
+		model.addAttribute("json", mapper.writer(new DefaultPrettyPrinter()).writeValueAsString(spider));
+		BaseValue value = new BaseValue();
+		value.setName(spider.getName());
+		value.setSources(spider.getSources());
+		value.setFilters(spider.getFilters());
+		model.addAttribute("baseValue", mapper.writeValueAsString(value));
+		model.addAttribute("storesValue", mapper.writeValueAsString(spider.getStores()));
+		model.addAttribute("frontierValue", mapper.writeValueAsString(spider.getFrontier()));
+		model.addAttribute("extractionValue", mapper.writeValueAsString(spider.getExtractors()));
+		model.addAttribute("politenessValue", mapper.writeValueAsString(spider.getPoliteness()));
+		model.addAttribute("advancedValue", mapper.writeValueAsString(spider.getClient()));
 		return "views/spider";
 	}
 

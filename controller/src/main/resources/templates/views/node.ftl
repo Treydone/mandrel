@@ -63,7 +63,7 @@
           <div class="box box-solid">
             <div class="box-header with-border">
               <i class="fa fa-text-width"></i>
-              <h3 class="box-title">Headlines</h3>
+              <h3 class="box-title">Configuration</h3>
             </div><!-- /.box-header -->
             <div class="box-body">
             	<dl class="dl-horizontal">
@@ -80,9 +80,9 @@
 			        <dt>Heap</dt>
 			        <dd>${node.infos.jvmInfo.mem.heapInit.printableValue}/${node.infos.jvmInfo.mem.heapMax.printableValue} (${node.infos.jvmInfo.mem.nonHeapInit.printableValue}/${node.infos.jvmInfo.mem.nonHeapMax.printableValue})</li>
 			        <dt>Network interfaces</dt>
-			        <dd><#list node.infos.interfaces as interface>
-			         ${interface.name} (${interface.type}): ${interface.address}<#sep>; </#sep>
-			         </#list></dd>
+			        <dd><ul><#list node.infos.interfaces as interface>
+			         <li>${interface.name} (${interface.type}): ${interface.address}</li>
+			         </#list></ul></dd>
                 </dl>
             </div><!-- /.box-body -->
           </div><!-- /.box -->
