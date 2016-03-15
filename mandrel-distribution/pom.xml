@@ -1,0 +1,655 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>io.mandrel</groupId>
+		<artifactId>mandrel</artifactId>
+		<version>0.0.16-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<artifactId>mandrel-distribution</artifactId>
+	<packaging>pom</packaging>
+	<name>Distribution</name>
+
+	<profiles>
+
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.4.0</version>
+						<executions>
+							<execution>
+								<id>standalone</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>package</phase>
+								<configuration>
+									<executable>mvn</executable>
+									<arguments>
+										<argument>package</argument>
+										<argument>-Pstandalone</argument>
+										<argument>-DskipDeploy=true</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>controller</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>package</phase>
+								<configuration>
+									<executable>mvn</executable>
+									<arguments>
+										<argument>package</argument>
+										<argument>-Pcontroller</argument>
+										<argument>-DskipDeploy=true</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>frontier</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>package</phase>
+								<configuration>
+									<executable>mvn</executable>
+									<arguments>
+										<argument>package</argument>
+										<argument>-Pfrontier</argument>
+										<argument>-DskipDeploy=true</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>worker</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>package</phase>
+								<configuration>
+									<executable>mvn</executable>
+									<arguments>
+										<argument>package</argument>
+										<argument>-Pworker</argument>
+										<argument>-DskipDeploy=true</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<version>2.4</version>
+						<executions>
+							<execution>
+								<id>make-final</id>
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<phase>package</phase>
+								<configuration>
+									<appendAssemblyId>false</appendAssemblyId>
+									<descriptors>
+										<descriptor>assembly/zip.xml</descriptor>
+									</descriptors>
+									<attach>false</attach>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<artifactId>jdeb</artifactId>
+						<groupId>org.vafer</groupId>
+						<version>1.0.1</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>jdeb</goal>
+								</goals>
+								<phase>package</phase>
+								<configuration>
+									<verbose>true</verbose>
+									<attach>false</attach>
+									<controlDir>${basedir}/deb/control</controlDir>
+									<dataSet>
+										<data>
+											<src>target/appassembler/bin/</src>
+											<type>directory</type>
+											<excludes>*.bat, .DS_Store, *.exe</excludes>
+											<mapper>
+												<type>perm</type>
+												<prefix>/usr/share/mandrel/bin</prefix>
+												<filemode>755</filemode>
+												<user>root</user>
+												<group>root</group>
+											</mapper>
+										</data>
+										<data>
+											<src>target/appassembler/lib/</src>
+											<includes>*</includes>
+											<type>directory</type>
+											<mapper>
+												<type>perm</type>
+												<prefix>/usr/share/mandrel/lib</prefix>
+												<user>root</user>
+												<group>root</group>
+											</mapper>
+										</data>
+										<data>
+											<src>${project.basedir}/deb/init.d/</src>
+											<type>directory</type>
+											<excludes>.DS_Store</excludes>
+											<mapper>
+												<type>perm</type>
+												<prefix>/etc/init.d</prefix>
+												<filemode>755</filemode>
+												<user>root</user>
+												<group>root</group>
+											</mapper>
+										</data>
+										<data>
+											<src>target/appassembler/conf/</src>
+											<type>directory</type>
+											<mapper>
+												<type>perm</type>
+												<prefix>/usr/share/mandrel/conf/</prefix>
+												<user>root</user>
+												<group>root</group>
+											</mapper>
+										</data>
+									</dataSet>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>rpm-maven-plugin</artifactId>
+						<version>2.1-alpha-3</version>
+						<executions>
+							<execution>
+								<id>rpm</id>
+								<goals>
+									<goal>rpm</goal>
+								</goals>
+								<phase>package</phase>
+							</execution>
+						</executions>
+						<configuration>
+							<copyright>Apache 2</copyright>
+							<distribution>Apache 2</distribution>
+							<group>Application/Internet</group>
+							<prefix>/usr</prefix>
+							<changelogFile>changelog</changelogFile>
+							<defineStatements>
+								<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+								<defineStatement>_binaries_in_noarch_packages_terminate_build 0</defineStatement>
+							</defineStatements>
+							<defaultFilemode>644</defaultFilemode>
+							<defaultDirmode>755</defaultDirmode>
+							<defaultUsername>root</defaultUsername>
+							<defaultGroupname>root</defaultGroupname>
+							<mappings>
+								<mapping>
+									<directory>/usr/share/mandrel/bin/</directory>
+									<filemode>755</filemode>
+									<sources>
+										<source>
+											<location>target/appassembler/bin/</location>
+											<excludes>
+												<exclude>*.bat</exclude>
+											</excludes>
+										</source>
+									</sources>
+								</mapping>
+								<mapping>
+									<directory>/etc/sysconfig/</directory>
+									<configuration>noreplace</configuration>
+									<sources>
+										<source>
+											<location>rpm/sysconfig</location>
+											<includes>
+												<include>mandrel</include>
+											</includes>
+										</source>
+									</sources>
+								</mapping>
+								<mapping>
+									<directory>/etc/rc.d/init.d/</directory>
+									<filemode>755</filemode>
+									<configuration>true</configuration>
+									<sources>
+										<source>
+											<location>rpm/init.d/mandrel</location>
+										</source>
+									</sources>
+								</mapping>
+								<mapping>
+									<directory>/usr/share/mandrel/lib/</directory>
+									<sources>
+										<source>
+											<location>target/appassembler/lib/</location>
+										</source>
+									</sources>
+								</mapping>
+								<mapping>
+									<directory>/usr/share/mandrel/conf/</directory>
+									<sources>
+										<source>
+											<location>target/appassembler/conf/</location>
+										</source>
+									</sources>
+								</mapping>
+								<mapping>
+									<directory>/usr/share/mandrel/</directory>
+									<sources>
+										<source>
+											<location>..</location>
+											<includes>
+												<include>README.md</include>
+											</includes>
+										</source>
+									</sources>
+								</mapping>
+								<mapping>
+									<directory>/var/log/mandrel/</directory>
+									<filemode>755</filemode>
+									<username>mandrel</username>
+									<groupname>mandrel</groupname>
+								</mapping>
+							</mappings>
+							<preinstallScriptlet>
+								<scriptFile>rpm/scripts/preinstall</scriptFile>
+								<fileEncoding>utf-8</fileEncoding>
+							</preinstallScriptlet>
+							<postinstallScriptlet>
+								<scriptFile>rpm/scripts/postinstall</scriptFile>
+								<fileEncoding>utf-8</fileEncoding>
+							</postinstallScriptlet>
+							<preremoveScriptlet>
+								<scriptFile>rpm/scripts/preremove</scriptFile>
+								<fileEncoding>utf-8</fileEncoding>
+							</preremoveScriptlet>
+							<postremoveScriptlet>
+								<scriptFile>rpm/scripts/postremove</scriptFile>
+								<fileEncoding>utf-8</fileEncoding>
+							</postremoveScriptlet>
+						</configuration>
+					</plugin>
+
+					<plugin>
+						<groupId>org.codehaus.groovy.maven</groupId>
+						<artifactId>gmaven-plugin</artifactId>
+						<dependencies>
+							<dependency>
+								<groupId>org.apache.httpcomponents</groupId>
+								<artifactId>httpclient</artifactId>
+								<version>4.4.1</version>
+							</dependency>
+						</dependencies>
+						<executions>
+							<execution>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<phase>package</phase>
+								<configuration>
+									<source><![CDATA[
+										import org.apache.http.HttpHost;
+										import org.apache.http.auth.AuthScope;
+										import org.apache.http.impl.auth.BasicScheme;
+										import org.apache.http.auth.UsernamePasswordCredentials;
+										import org.apache.http.client.CredentialsProvider;
+										import org.apache.http.impl.client.BasicCredentialsProvider;
+					                    import org.apache.http.client.methods.CloseableHttpResponse;
+					                    import org.apache.http.client.methods.HttpPut;
+					                    import org.apache.http.impl.client.BasicAuthCache;
+					                    import org.apache.http.client.protocol.HttpClientContext;
+					                    import org.apache.http.client.AuthCache;
+					                    import org.apache.http.impl.client.CloseableHttpClient;
+										import org.apache.http.impl.client.HttpClients;
+					                    import org.apache.http.entity.InputStreamEntity;
+										
+					                    def server = settings.getServer("bintray");
+					                    
+					                    HttpHost target = new HttpHost("api.bintray.com", 443, "https");
+										CredentialsProvider credsProvider = new BasicCredentialsProvider();
+								        credsProvider.setCredentials(
+								                new AuthScope(target.getHostName(), target.getPort()),
+								                new UsernamePasswordCredentials(server.username, server.password));
+								        CloseableHttpClient client = HttpClients.custom()
+								                .setDefaultCredentialsProvider(credsProvider)
+								                .build();
+								                
+								        // Create AuthCache instance
+							            AuthCache authCache = new BasicAuthCache();
+							            // Generate BASIC scheme object and add it to the local auth cache
+							            BasicScheme basicAuth = new BasicScheme();
+							            authCache.put(target, basicAuth);
+							
+							            // Add AuthCache to the execution context
+							            HttpClientContext localContext = HttpClientContext.create();
+							            localContext.setAuthCache(authCache);
+								        
+								        CloseableHttpResponse response = null;
+					                    try {
+						                    
+						                    String url = "https://api.bintray.com/content/treydone/generic/mandrel-${project.version}.zip;bt_package=mandrel;bt_version=${project.version};publish=1;override=1;explode=0";
+						                    File file = new File("${project.build.directory}/${project.artifactId}-${project.version}.zip");
+						                    HttpPut put = new HttpPut(url);
+						                    InputStreamEntity entity = new InputStreamEntity(file.newInputStream());
+						                    put.setEntity entity;
+						                    response = client.execute(target, put, localContext);
+						                    println "Response: " + response;
+						                    response.close();
+						                    
+					                		url = "https://api.bintray.com/content/treydone/deb/mandrel/${project.version}/mandrel-${project.version}.deb;deb_distribution=:distributions;deb_component=main;deb_architecture=noarch;publish=1;override=1";
+						                    file = new File("${project.build.directory}/${project.artifactId}_${project.version}_all.deb");
+						                    put = new HttpPut(url);
+						                    entity = new InputStreamEntity(file.newInputStream());
+						                    put.setEntity entity;
+						                    response = client.execute(target, put, localContext);
+						                    println "Response: " + response;
+						                    response.close();
+						                    
+						                    url = "https://api.bintray.com/content/treydone/rpm/mandrel/${project.version}/mandrel-${project.version}.noarch.rpm;publish=1;override=1";
+						                    file = new File("${project.build.directory}/rpm/distribution/RPMS/noarch/${project.artifactId}-${project.version}-1.noarch.rpm");
+						                    put = new HttpPut(url);
+						                    entity = new InputStreamEntity(file.newInputStream());
+						                    put.setEntity entity;
+						                    response = client.execute(target, put, localContext);
+						                    println "Response: " + response;
+						                    response.close();
+					                    	
+					                    } catch(Exception e) {
+					                    	if(response != null) {
+					                    		println "Response: " + response;
+					                    	}
+					                    	println "Error: " + e;
+					                    	e.printStackTrace();
+					                    } finally {
+					                    	if(response != null) {
+					                    		response.close();	
+					                    	}
+					                    	client.close();
+					                    }
+					
+					                ]]></source>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>standalone</id>
+			<properties>
+				<component.id>standalone</component.id>
+				<component.class.main>io.mandrel.bootstrap.Standalone</component.class.main>
+				<component.class.wrapper>io.mandrel.bootstrap.WrapperStandalone</component.class.wrapper>
+			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>io.mandrel</groupId>
+					<artifactId>standalone</artifactId>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>appassembler-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>controller</id>
+			<properties>
+				<component.id>controller</component.id>
+				<component.class.main>io.mandrel.bootstrap.Controller</component.class.main>
+				<component.class.wrapper>io.mandrel.bootstrap.WrapperController</component.class.wrapper>
+			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>io.mandrel</groupId>
+					<artifactId>controller</artifactId>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>appassembler-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>frontier</id>
+			<properties>
+				<component.id>frontier</component.id>
+				<component.class.main>io.mandrel.bootstrap.Frontier</component.class.main>
+				<component.class.wrapper>io.mandrel.bootstrap.WrapperFrontier</component.class.wrapper>
+			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>io.mandrel</groupId>
+					<artifactId>frontier</artifactId>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>appassembler-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>worker</id>
+			<properties>
+				<component.id>worker</component.id>
+				<component.class.main>io.mandrel.bootstrap.Worker</component.class.main>
+				<component.class.wrapper>io.mandrel.bootstrap.WrapperWorker</component.class.wrapper>
+			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>io.mandrel</groupId>
+					<artifactId>worker</artifactId>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>appassembler-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+	</profiles>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>appassembler-maven-plugin</artifactId>
+					<version>1.10</version>
+					<executions>
+						<execution>
+							<id>daemon-${component.id}</id>
+							<phase>package</phase>
+							<goals>
+								<goal>generate-daemons</goal>
+							</goals>
+							<configuration>
+								<!-- <licenseHeaderFile>${basedir}/license-header.txt</licenseHeaderFile> -->
+								<repositoryLayout>flat</repositoryLayout>
+								<repositoryName>lib</repositoryName>
+								<configurationSourceDirectory>../${component.id}/src/main/resources</configurationSourceDirectory>
+								<copyConfigurationDirectory>true</copyConfigurationDirectory>
+								<configurationDirectory>conf</configurationDirectory>
+								<logsDirectory>logs</logsDirectory>
+								<useDaemonIdAsWrapperConfName>true</useDaemonIdAsWrapperConfName>
+								<daemons>
+									<daemon>
+										<id>${component.id}d</id>
+										<jvmSettings>
+											<initialMemorySize>1024</initialMemorySize>
+											<maxMemorySize>1024</maxMemorySize>
+											<maxStackSize>128</maxStackSize>
+											<extraArguments>
+												<extraArgument>-Dlogback.configurationFile=../conf/logback.xml</extraArgument>
+												<extraArgument>-Dlogging.file=../logs/${component.id}d.log</extraArgument>
+												<extraArgument>-Dlogging.mode=file</extraArgument>
+												<extraArgument>-server</extraArgument>
+												<extraArgument>-XX:+UseConcMarkSweepGC</extraArgument>
+												<extraArgument>-XX:+CMSParallelRemarkEnabled</extraArgument>
+												<extraArgument>-XX:+UseCMSInitiatingOccupancyOnly</extraArgument>
+												<extraArgument>-XX:+ScavengeBeforeFullGC</extraArgument>
+												<extraArgument>-XX:+CMSScavengeBeforeRemark</extraArgument>
+												<extraArgument>-XX:+PrintGCDateStamps</extraArgument>
+												<extraArgument>-verbose:gc</extraArgument>
+												<extraArgument>-XX:+PrintGCDetails</extraArgument>
+												<extraArgument>-Xloggc:../logs/${component.id}.gc.%t.%p.log</extraArgument>
+												<extraArgument>-XX:+UseGCLogFileRotation</extraArgument>
+												<extraArgument>-XX:NumberOfGCLogFiles=10</extraArgument>
+												<extraArgument>-XX:GCLogFileSize=100M</extraArgument>
+												<!-- <extraArgument>-XX:+HeapDumpOnOutOfMemoryError</extraArgument> -->
+												<!-- <extraArgument>-XX:HeapDumpPath=../logs/${component.id}d-heapdump`date`.hprof</extraArgument> -->
+												<extraArgument>-Djava.net.preferIPv4Stack=true</extraArgument>
+											</extraArguments>
+										</jvmSettings>
+										<wrapperMainClass>${component.class.wrapper}</wrapperMainClass>
+										<platforms>
+											<platform>jsw</platform>
+										</platforms>
+										<generatorConfigurations>
+											<generatorConfiguration>
+												<generator>jsw</generator>
+												<includes>
+													<include>linux-x86-32</include>
+													<include>linux-x86-64</include>
+												</includes>
+												<configuration>
+													<property>
+														<name>wrapper.logfile</name>
+														<value>../logs/${component.id}-wrapper.log</value>
+													</property>
+												</configuration>
+											</generatorConfiguration>
+										</generatorConfigurations>
+									</daemon>
+								</daemons>
+							</configuration>
+						</execution>
+						<execution>
+							<id>program-${component.id}</id>
+							<phase>package</phase>
+							<goals>
+								<goal>assemble</goal>
+							</goals>
+							<configuration>
+								<!-- <licenseHeaderFile>${basedir}/license-header.txt</licenseHeaderFile> -->
+								<repositoryLayout>flat</repositoryLayout>
+								<repositoryName>lib</repositoryName>
+								<configurationSourceDirectory>../${component.id}/src/main/resources</configurationSourceDirectory>
+								<copyConfigurationDirectory>true</copyConfigurationDirectory>
+								<configurationDirectory>conf</configurationDirectory>
+								<logsDirectory>logs</logsDirectory>
+								<programs>
+									<program>
+										<id>${component.id}</id>
+										<mainClass>${component.class.main}</mainClass>
+										<jvmSettings>
+											<initialMemorySize>1024m</initialMemorySize>
+											<maxMemorySize>1024m</maxMemorySize>
+											<maxStackSize>128m</maxStackSize>
+											<extraArguments>
+												<extraArgument>-Dlogback.configurationFile=../conf/logback.xml</extraArgument>
+												<extraArgument>-Dlogging.file=../logs/${component.id}.log</extraArgument>
+												<extraArgument>-Dlogging.mode=file</extraArgument>
+												<extraArgument>-server</extraArgument>
+												<extraArgument>-XX:+UseConcMarkSweepGC</extraArgument>
+												<extraArgument>-XX:+CMSParallelRemarkEnabled</extraArgument>
+												<extraArgument>-XX:+UseCMSInitiatingOccupancyOnly</extraArgument>
+												<extraArgument>-XX:+ScavengeBeforeFullGC</extraArgument>
+												<extraArgument>-XX:+CMSScavengeBeforeRemark</extraArgument>
+												<extraArgument>-XX:+PrintGCDateStamps</extraArgument>
+												<extraArgument>-verbose:gc</extraArgument>
+												<extraArgument>-XX:+PrintGCDetails</extraArgument>
+												<extraArgument>-Xloggc:../logs/${component.id}.gc.%t.%p.log</extraArgument>
+												<extraArgument>-XX:+UseGCLogFileRotation</extraArgument>
+												<extraArgument>-XX:NumberOfGCLogFiles=10</extraArgument>
+												<extraArgument>-XX:GCLogFileSize=100M</extraArgument>
+												<!-- <extraArgument>-XX:+HeapDumpOnOutOfMemoryError</extraArgument> -->
+												<!-- <extraArgument>-XX:HeapDumpPath=../logs/${component.id}-heapdump`date`.hprof</extraArgument> -->
+												<extraArgument>-Djava.net.preferIPv4Stack=true</extraArgument>
+											</extraArguments>
+										</jvmSettings>
+									</program>
+								</programs>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.7</version>
+					<executions>
+						<execution>
+							<id>copy-resources</id>
+							<phase>package</phase>
+							<goals>
+								<goal>copy-resources</goal>
+							</goals>
+							<configuration>
+								<outputDirectory>${project.build.directory}/appassembler</outputDirectory>
+								<resources>
+									<resource>
+										<directory>${project.build.directory}/generated-resources/appassembler/jsw/${component.id}d</directory>
+									</resource>
+								</resources>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+	</build>
+
+</project>

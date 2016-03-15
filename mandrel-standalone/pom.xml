@@ -1,0 +1,73 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>io.mandrel</groupId>
+		<artifactId>mandrel</artifactId>
+		<version>0.0.16-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<artifactId>mandrel-standalone</artifactId>
+	<name>Standalone</name>
+
+	<properties>
+		<!-- Build resources properties -->
+		<mandrel.tools.directory>../tools</mandrel.tools.directory>
+	</properties>
+
+	<dependencies>
+
+		<!-- Mandrel -->
+		<dependency>
+			<groupId>io.mandrel</groupId>
+			<artifactId>mandrel-controller</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.mandrel</groupId>
+			<artifactId>mandrel-frontier</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.mandrel</groupId>
+			<artifactId>mandrel-worker</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>tanukisoft</groupId>
+			<artifactId>wrapper</artifactId>
+		</dependency>
+
+	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<configuration>
+					<mainClass>io.mandrel.bootstrap.Standalone</mainClass>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+</project>
