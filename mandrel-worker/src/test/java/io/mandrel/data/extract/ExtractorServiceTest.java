@@ -189,6 +189,7 @@ public class ExtractorServiceTest {
 
 		// Asserts
 		Document data = new Document();
+		data.setId("http://localhost");
 		data.put("date", Arrays.asList("value1", "value2"));
 		Mockito.verify(documentStore).save(Arrays.asList(data));
 	}
@@ -227,6 +228,7 @@ public class ExtractorServiceTest {
 
 		// Asserts
 		Document data = new Document();
+		data.setId("http://localhost");
 		data.put("date", Arrays.asList("value1", "value2"));
 		data.put("key", Arrays.asList("key1"));
 		Mockito.verify(documentStore).save(Arrays.asList(data));
