@@ -39,7 +39,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @Api(value = "/nodes")
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-@RequestMapping(value = Apis.PREFIX + "/nodes", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = Apis.PREFIX + "/nodes", produces = MediaType.APPLICATION_JSON_VALUE)
 public class NodesResource {
 
 	private final NodeService nodeService;
