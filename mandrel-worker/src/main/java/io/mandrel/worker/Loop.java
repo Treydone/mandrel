@@ -21,7 +21,6 @@ package io.mandrel.worker;
 import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobStores;
 import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.Strategy;
 import io.mandrel.common.net.Uri;
 import io.mandrel.data.Link;
 import io.mandrel.data.content.selector.Selector.Instance;
@@ -120,9 +119,9 @@ public class Loop implements Runnable {
 					watch.start();
 
 					//
-					Optional<Requester<? extends Strategy>> requester = Requesters.of(spider.getId(), uri.getScheme());
+					Optional<Requester> requester = Requesters.of(spider.getId(), uri.getScheme());
 					if (requester.isPresent()) {
-						Requester<? extends Strategy> r = requester.get();
+						Requester r = requester.get();
 
 						Blob blob = null;
 						try {
@@ -177,7 +176,7 @@ public class Loop implements Runnable {
 		}
 	}
 
-	protected Blob processBlob(Uri uri, StopWatch watch, Requester<? extends Strategy> r) throws Exception {
+	protected Blob processBlob(Uri uri, StopWatch watch, Requester r) throws Exception {
 		Blob blob;
 		blob = r.get(uri);
 

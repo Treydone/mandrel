@@ -16,13 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.frontier;
+package io.mandrel.frontier.strategy;
 
 import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
-import io.mandrel.frontier.store.FetchRequest;
+import io.mandrel.common.service.TaskContextAware;
+import io.mandrel.frontier.PoolCallback;
+import io.mandrel.frontier.revisit.RevisitStrategy;
+import io.mandrel.frontier.store.FrontierStore;
+import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -30,66 +34,34 @@ import java.util.Set;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Data
+@Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
-public class SimpleFrontier extends Frontier {
-
-	private static final String DEFAULT_QUEUE = "default";
+public abstract class FrontierStrategy extends TaskContextAware implements Checkable {
 
 	@Data
 	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
-	public static class SimpleFrontierDefinition extends FrontierDefinition<SimpleFrontier> implements NamedDefinition, ObjectFactory<SimpleFrontier>,
-			Serializable {
+	public static abstract class FrontierStrategyDefinition<FRONTIERSTRATEGY extends FrontierStrategy> implements NamedDefinition,
+			ObjectFactory<FRONTIERSTRATEGY>, Serializable {
 		private static final long serialVersionUID = -4024901085285125948L;
-
-		@Override
-		public SimpleFrontier build(TaskContext context) {
-			return build(new SimpleFrontier(context), context);
-		}
-
-		@Override
-		public String name() {
-			return "simple";
-		}
 	}
 
-	public SimpleFrontier(TaskContext context) {
+	protected RevisitStrategy revisit;
+	protected FrontierStore store;
+
+	public FrontierStrategy(TaskContext context) {
 		super(context);
 	}
 
-	public void init() {
-		store().create(DEFAULT_QUEUE);
-	}
+	public abstract void init();
 
-	public void destroy() {
-		try {
-			store().destroy(DEFAULT_QUEUE);
-		} catch (Exception e) {
-			log.warn("Unable to destory queue", e);
-		}
-	}
+	public abstract void destroy();
 
-	@Override
-	public void pool(PoolCallback<Uri> poolCallback) {
-		store.pool(FetchRequest.of(DEFAULT_QUEUE, poolCallback));
-	}
+	public abstract void pool(PoolCallback<Uri> poolCallback);
 
-	@Override
-	public void schedule(Uri uri) {
-		store.schedule(DEFAULT_QUEUE, uri);
-	}
+	public abstract void schedule(Uri uri);
 
-	@Override
-	public void schedule(Set<Uri> uris) {
-		store.schedule(DEFAULT_QUEUE, uris);
-	}
-
-	@Override
-	public boolean check() {
-		return true;
-	}
+	public abstract void schedule(Set<Uri> uris);
 }

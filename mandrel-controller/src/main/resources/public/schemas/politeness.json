@@ -1,0 +1,24 @@
+{
+   "type":"object",
+   "title":"Politeness",
+   "properties":{
+      "page_peek_rate":{
+         "type":"integer"
+      },
+      "wait":{
+         "type":"integer"
+      },
+      "page_mean_rate":{
+         "type":"integer"
+      },
+      "max_bandwith":{
+         "type":"integer"
+      },
+      "max_peek_bandwith":{
+         "type":"integer"
+      },
+      "max_uris":{
+         "type":"integer"
+      }
+   }
+}

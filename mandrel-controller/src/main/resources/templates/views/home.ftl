@@ -47,7 +47,7 @@
 	    </div><!-- /.col -->
 	    <div class="col-md-3 col-sm-6 col-xs-12">
 	      <div class="info-box">
-	        <span class="info-box-icon bg-green"><i class="fa fa-download"></i></span>
+	        <span class="info-box-icon bg-aqua"><i class="fa fa-download"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Total size</span>
 	          <span class="info-box-number">${printBytesSize(metrics.totalSizeTotal)}</span>
@@ -56,7 +56,7 @@
 	    </div><!-- /.col -->
 	    <div class="col-md-3 col-sm-6 col-xs-12">
 	      <div class="info-box">
-	        <span class="info-box-icon bg-yellow"><i class="fa fa-files-o"></i></span>
+	        <span class="info-box-icon bg-aqua"><i class="fa fa-files-o"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Total pages</span>
 	          <span class="info-box-number">${metrics.nbPagesTotal}</span>
@@ -65,7 +65,7 @@
 	    </div><!-- /.col -->
 	    <div class="col-md-3 col-sm-6 col-xs-12">
 	      <div class="info-box">
-	        <span class="info-box-icon bg-red"><i class="fa fa-star-o"></i></span>
+	        <span class="info-box-icon bg-aqua"><i class="fa fa-star-o"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Spiders completed</span>
 	          <span class="info-box-number">0</span>
@@ -165,7 +165,7 @@
                 <#if spiders?size < 1>
                 <div class="box-body">
                   <div class="callout callout-success">
-                    <h4>There is not running spider!</h4>
+                    <h4>There is no running spider!</h4>
                     <p>It is time to work now, create a new spider.</p>
                     <button type="button" class="btn btn-outline" data-toggle="modal" data-target="#add-spider"><i class="fa fa-plus"></i> Create one!</button>
                   </div>

@@ -16,13 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.frontier;
+package io.mandrel.frontier.strategy;
 
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.Link;
 import io.mandrel.data.filters.link.BooleanLinkFilters;
 import io.mandrel.data.filters.link.LinkFilter;
+import io.mandrel.frontier.PoolCallback;
 import io.mandrel.frontier.store.FetchRequest;
 
 import java.io.Serializable;
@@ -45,20 +46,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 @Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
-public class FixedPrioritizedFrontier extends Frontier {
+public class FixedPrioritizedFrontierStrategy extends FrontierStrategy {
 
 	@Data
 	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
-	public static class FixedPrioritizedFrontierDefinition extends FrontierDefinition<FixedPrioritizedFrontier> {
+	public static class FixedPrioritizedFrontierStrategyDefinition extends FrontierStrategyDefinition<FixedPrioritizedFrontierStrategy> {
 		private static final long serialVersionUID = -4024901085285125948L;
 
 		@JsonProperty("priorities")
 		private List<Priority> priorities = new ArrayList<Priority>();
 
 		@Override
-		public FixedPrioritizedFrontier build(TaskContext context) {
-			return build(new FixedPrioritizedFrontier(context).priorities(priorities), context);
+		public FixedPrioritizedFrontierStrategy build(TaskContext context) {
+			return new FixedPrioritizedFrontierStrategy(context).priorities(priorities);
 		}
 
 		@Override
@@ -94,7 +95,7 @@ public class FixedPrioritizedFrontier extends Frontier {
 		});
 	}
 
-	public FixedPrioritizedFrontier(TaskContext context) {
+	public FixedPrioritizedFrontierStrategy(TaskContext context) {
 		super(context);
 	}
 

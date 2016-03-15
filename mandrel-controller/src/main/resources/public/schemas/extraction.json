@@ -2,194 +2,238 @@
    "type":"object",
    "title":"extractors",
    "properties":{
-            "data":{
-               "type":"array",
-               "title":"data",
-               "format":"tabs",
-               "items":{
+      "data":{
+         "type":"array",
+         "title":"data",
+         "format":"tabs",
+         "items":{
+            "type":"object",
+            "headerTemplate":"{{i}} - {{self.name}}",
+            "title":"data",
+            "properties":{
+               "name":{
+                  "type":"string",
+                  "title":"name"
+               },
+               "links":{
+                  "title":"links",
                   "type":"object",
-                  "headerTemplate":"{{i}} - {{self.name}}",
-                  "title":"data",
                   "properties":{
-                     "key_field":{
+                     "type":{
                         "type":"string",
-                        "title":"key_field"
-                     },
-                     "name":{
-                        "type":"string",
-                        "title":"name"
-                     },
-                     "multiple":{
-                        "title":"multiple",
-                        "type":"object",
-                        "properties":{
-                           "source":{
-                              "type":"string",
-                              "title":"source",
-                              "enum":[
-                                 "EMPTY",
-                                 "BODY",
-                                 "HEADERS",
-                                 "URL",
-                                 "COOKIE"
-                              ]
-                           },
-                           "type":{
-                              "type":"string",
-                              "title":"type"
-                           },
-                           "value":{
-                              "type":"string",
-                              "title":"value"
-                           }
+                        "title":"type",
+                        "default":"query",
+                        "options":{
+                           "hidden":true
                         }
                      },
-                     "store":{
-                        "title":"store",
-                        "oneOf":[
-                           {
-                              "title":"Mongo Store",
-                              "type":"object",
-                              "properties":{
-                                 "type":{
-                                    "type":"string",
-                                    "title":"type",
-                                    "default":"mongo",
-                                    "options":{
-                                       "hidden":true
-                                    }
-                                 },
-                                 "uri":{
-                                    "type":"string",
-                                    "title":"uri"
-                                 },
-                                 "database":{
-                                    "type":"string",
-                                    "title":"database"
-                                 },
-                                 "bucket":{
-                                    "type":"string",
-                                    "title":"bucket"
-                                 },
-                                 "batch_size":{
-                                    "type":"number",
-                                    "title":"batch_size"
-                                 }
+                     "value":{
+                        "type":"string",
+                        "title":"value"
+                     }
+                  }
+               },
+               "fields":{
+                  "type":"array",
+                  "title":"fields",
+                  "items":{
+                     "type":"object",
+                     "title":"field",
+                     "properties":{
+                        "first_only":{
+                           "type":"boolean",
+                           "title":"first_only",
+                           "default":true
+                        },
+                        "name":{
+                           "type":"string",
+                           "title":"name"
+                        },
+                        "extractor":{
+                           "title":"extractor",
+                           "type":"object",
+                           "properties":{
+                              "source":{
+                                 "type":"string",
+                                 "title":"source",
+                                 "enum":[
+                                    "EMPTY",
+                                    "BODY",
+                                    "HEADERS",
+                                    "URL",
+                                    "COOKIE"
+                                 ]
+                              },
+                              "type":{
+                                 "type":"string",
+                                 "title":"type"
+                              },
+                              "value":{
+                                 "type":"string",
+                                 "title":"value"
                               }
                            }
-                        ]
-                     },
-                     "links":{
-                        "title":"links",
+                        },
+                        "use_multiple":{
+                           "type":"boolean",
+                           "title":"use_multiple",
+                           "default":false
+                        }
+                     }
+                  }
+               },
+               "store":{
+                  "title":"store",
+                  "oneOf":[
+                     {
+                        "title":"Mongo Store",
                         "type":"object",
                         "properties":{
                            "type":{
                               "type":"string",
                               "title":"type",
-                              "default":"query",
+                              "default":"mongo",
                               "options":{
                                  "hidden":true
                               }
                            },
-                           "value":{
+                           "uri":{
                               "type":"string",
-                              "title":"value"
+                              "title":"uri"
+                           },
+                           "database":{
+                              "type":"string",
+                              "title":"database"
+                           },
+                           "bucket":{
+                              "type":"string",
+                              "title":"bucket"
+                           },
+                           "batch_size":{
+                              "type":"number",
+                              "title":"batch_size"
                            }
                         }
                      },
-                     "fields":{
-                        "type":"array",
-                        "title":"fields",
-                        "items":{
-                           "type":"object",
-                           "title":"field",
-                           "properties":{
-                              "first_only":{
-                                 "type":"boolean",
-                                 "title":"first_only",
-                                 "default":true
-                              },
-                              "name":{
-                                 "type":"string",
-                                 "title":"name"
-                              },
-                              "extractor":{
-                                 "title":"extractor",
-                                 "type":"object",
-                                 "properties":{
-                                    "source":{
-                                       "type":"string",
-                                       "title":"source",
-                                       "enum":[
-                                          "EMPTY",
-                                          "BODY",
-                                          "HEADERS",
-                                          "URL",
-                                          "COOKIE"
-                                       ]
-                                    },
-                                    "type":{
-                                       "type":"string",
-                                       "title":"type"
-                                    },
-                                    "value":{
-                                       "type":"string",
-                                       "title":"value"
-                                    }
-                                 }
-                              },
-                              "use_multiple":{
-                                 "type":"boolean",
-                                 "title":"use_multiple",
-                                 "default":false
+                     {
+                        "title":"Elasticsearch",
+                        "type":"object",
+                        "properties":{
+                           "type":{
+                              "type":"string",
+                              "title":"type",
+                              "default":"elasticsearch",
+                              "options":{
+                                 "hidden":true
                               }
+                           },
+                           "uri":{
+                              "type":"string",
+                              "title":"uri"
+                           },
+                           "index":{
+                              "type":"string",
+                              "title":"index"
                            }
                         }
                      }
-                  }
-               }
-            },
-            "outlinks":{
-               "type":"array",
-               "title":"outlinks",
-               "format":"tabs",
-               "items":{
+                  ]
+               },
+               "key_field":{
+                  "type":"string",
+                  "title":"key_field"
+               },
+               "multiple":{
+                  "title":"multiple",
                   "type":"object",
-                  "headerTemplate":"{{i}} - {{self.name}}",
-                  "title":"outlink",
                   "properties":{
-                     "name":{
+                     "source":{
                         "type":"string",
-                        "title":"name"
+                        "title":"source",
+                        "enum":[
+                           "EMPTY",
+                           "BODY",
+                           "HEADERS",
+                           "URL",
+                           "COOKIE"
+                        ]
                      },
-                     "extractor":{
-                        "title":"extractor",
-                        "type":"object",
-                        "properties":{
-                           "source":{
-                              "type":"string",
-                              "title":"source",
-                              "enum":[
-                                 "EMPTY",
-                                 "BODY",
-                                 "HEADERS",
-                                 "URL",
-                                 "COOKIE"
-                              ]
-                           },
-                           "type":{
-                              "type":"string",
-                              "title":"type"
-                           },
-                           "value":{
-                              "type":"string",
-                              "title":"value"
-                           }
-                        }
+                     "type":{
+                        "type":"string",
+                        "title":"type"
+                     },
+                     "value":{
+                        "type":"string",
+                        "title":"value"
                      }
                   }
                }
             }
          }
-
+      },
+      "outlinks":{
+         "type":"array",
+         "title":"outlinks",
+         "format":"tabs",
+         "items":{
+            "type":"object",
+            "headerTemplate":"{{i}} - {{self.name}}",
+            "title":"outlink",
+            "properties":{
+               "name":{
+                  "type":"string",
+                  "title":"name"
+               },
+               "extractor":{
+                  "title":"extractor",
+                  "type":"object",
+                  "properties":{
+                     "source":{
+                        "type":"string",
+                        "title":"source",
+                        "enum":[
+                           "EMPTY",
+                           "BODY",
+                           "HEADERS",
+                           "URL",
+                           "COOKIE"
+                        ]
+                     },
+                     "type":{
+                        "type":"string",
+                        "title":"type"
+                     },
+                     "value":{
+                        "type":"string",
+                        "title":"value"
+                     }
+                  }
+               },
+               "formatter":{
+                  "title":"Formatter",
+                  "oneOf": [
+                  	{
+	                  "title":"Script formatter",
+	                  "type":"object",
+	                  "properties":{
+	                     "type":{
+	                        "type":"string",
+	                        "title":"type"
+	                     },
+	                     "value":{
+	                        "type":"string",
+	                        "title":"value"
+	                     }
+	                    }
+                  	},
+		            {
+		            	"title": "None",
+		            	"type": "null"
+		            }
+                  ]
+               }
+            }
+         }
+      }
+   }
 }

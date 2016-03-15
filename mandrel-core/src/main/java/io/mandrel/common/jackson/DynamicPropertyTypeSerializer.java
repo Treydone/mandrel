@@ -28,5 +28,4 @@ public class DynamicPropertyTypeSerializer extends AsExistingPropertyTypeSeriali
 		super(idRes, property, propName);
 	}
 
-	
 }

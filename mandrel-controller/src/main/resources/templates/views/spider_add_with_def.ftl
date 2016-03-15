@@ -4,15 +4,8 @@
   <@common_page_head/>
   <title>New spider</title>
   
-  <script src="/public/js/jsoneditor.js"></script>
-	<script>
-		JSONEditor.defaults.theme = 'bootstrap3';
-	    JSONEditor.defaults.iconlib = 'fontawesome4';
-	    //JSONEditor.defaults.options.disable_properties = true;
-	    //JSONEditor.defaults.options.disable_edit_json = true;
-	    //JSONEditor.defaults.options.no_additional_properties = false;
-	    //JSONEditor.defaults.options.required_by_default = true;
-	</script>    
+  <link href="/webjars/jsoneditor/5.0.1/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
+  
 </#macro>
 
 <#macro content_header>
@@ -27,6 +20,48 @@
           </ol>
 </#macro>
 
+
+<#macro js>
+<script src="/webjars/jsoneditor/5.0.1/dist/jsoneditor.min.js"></script>
+<script>
+    // create the editor
+      var container = document.getElementById("definition");
+    
+      var options = {
+	    mode: 'code',
+	    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+	    onError: function (err) {
+	      alert(err.toString());
+	    }
+	  };
+	  
+	  var json = ${baseValue};
+	  json.stores = ${storesValue};
+	  json.frontier = ${frontierValue};
+	  json.extractors = ${extractionValue};
+	  json.politeness = ${politenessValue};
+	  json.client = ${advancedValue};
+	  
+      var editor = new JSONEditor(container, options, json);
+      
+	  document.getElementById('submit').addEventListener('click',function() {
+	     var form = document.createElement("form");
+		form.setAttribute("method", "post");
+		form.setAttribute("action", "/spiders/add/definition");
+		
+		var hiddenField = document.createElement("input");              
+		hiddenField.setAttribute("type", "hidden");
+        hiddenField.setAttribute("name", "definition");
+        hiddenField.setAttribute("value", JSON.stringify(editor.get()));
+		form.appendChild(hiddenField);
+		document.body.appendChild(form);
+		
+		form.submit();
+      });
+
+</script>
+</#macro>
+
 <#macro page_body>
 		<div class="row">		
             <div class="col-md-12">
@@ -34,17 +69,24 @@
 	                <div class="box-header with-border">
 	                  <h3 class="box-title">Spider definition</h3>
 	                </div><!-- /.box-header -->
-	                <form role="form" method="POST" action="/spiders/add">
-	                <div class="box-body">
-            			<div class="form-group">
-	                      <label>Textarea Disabled</label>
-	                      <textarea id='output' class="form-control" rows="20" name="definition" id="definition"></textarea>
-	                    </div>
-                     </div><!-- /.box-body -->
+	             
+	             <div class="box-body">
+	             <#if errors??>
+                  <div class="alert alert-warning">
+		            <h4><i class="icon fa fa-warning"></i> Alert!</h4>
+		            <ul>
+	                  <#list errors as error>
+		            	<li>${error}</li>
+			          </#list>
+		            </ul>
+		          </div>
+		          </div>
+		          
+		          </#if>
+	                 <div class="form-control" name="definition" id="definition" style="height: 800px;"></div>
                      <div class="box-footer">
-                      <button type="submit" class="btn btn-info pull-right">Go</button>
+                      <button id="submit" type="submit" class="btn btn-info pull-right">Go</button>
                      </div><!-- /.box-footer -->
-                    </form>
                 </div><!-- /.box -->
              </div>
 		</div>

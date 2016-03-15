@@ -4,11 +4,13 @@
    "properties":{
       "name":{
          "type":"string",
-         "title":"name"
+         "title":"Name",
+         "description": "The name of the spider"
       },
       "sources":{
          "type":"array",
-         "title":"sources",
+         "title":"Sources",
+         "description": "The various sources of URI",
          "format":"tabs",
          "items":{
             "title":"source",
@@ -122,103 +124,63 @@
             ]
          }
       },
-      "stores":{
-         "type":"object",
-         "title":"stores",
-         "properties":{
-            "metadata":{
-               "title":"metadata",
-               "oneOf":[
-                  {
-                     "title":"Mongo Store",
-                     "type":"object",
-                     "properties":{
-                        "type":{
-                           "type":"string",
-                           "title":"type",
-                           "default":"mongo",
-                           "options":{
-                              "hidden":true
-                           }
-                        },
-                        "uri":{
-                           "type":"string",
-                           "title":"uri"
-                        },
-                        "database":{
-                           "type":"string",
-                           "title":"database"
-                        },
-                        "bucket":{
-                           "type":"string",
-                           "title":"bucket"
-                        },
-                        "batch_size":{
-                           "type":"number",
-                           "title":"batch_size"
-                        }
-                     }
-                  }
-               ]
-            },
-            "blob":{
-               "title":"Data store",
-               "oneOf":[
-                  {
-                     "title":"Mongo Store",
-                     "type":"object",
-                     "properties":{
-                        "type":{
-                           "type":"string",
-                           "title":"type",
-                           "default":"mongo",
-                           "options":{
-                              "hidden":true
-                           }
-                        },
-                        "uri":{
-                           "type":"string",
-                           "title":"uri"
-                        },
-                        "database":{
-                           "type":"string",
-                           "title":"database"
-                        },
-                        "bucket":{
-                           "type":"string",
-                           "title":"bucket"
-                        },
-                        "batch_size":{
-                           "type":"number",
-                           "title":"batch_size"
-                        }
-                     }
-                  }
-               ]
-            }
-         }
-      },
       "filters":{
          "type":"object",
          "title":"filters",
          "properties":{
             "links":{
-               "title":"links",
-               "type":"object",
-               "properties":{
-                  "type":{
-                     "type":"string",
-                     "title":"type",
-                     "default":"query",
-                     "options":{
-                        "hidden":true
-                     }
-                  },
-                  "value":{
-                     "type":"string",
-                     "title":"value"
-                  }
-               }
+               "title":"Links filter",
+               "oneOf": [
+                   {
+                       "title":"Expression filter",
+		               "type":"object",
+		               "properties":{
+		                  "type":{
+		                     "type":"string",
+		                     "title":"type",
+		                     "default":"query",
+		                     "options":{
+		                        "hidden":true
+		                     }
+		                  },
+		                  "value":{
+		                     "type":"string",
+		                     "title":"value"
+		                  }
+		               }
+                   },
+		            {
+		            	"title": "None",
+		            	"type": "null"
+		            }
+               ]
+            },
+            "blobs":{
+               "title": "Blobs filter",
+               "oneOf": [
+                   {
+                       "title":"Expression filter",
+		               "type":"object",
+		               "properties":{
+		                  "type":{
+		                     "type":"string",
+		                     "title":"type",
+		                     "default":"query",
+		                     "options":{
+		                        "hidden":true
+		                     }
+		                  },
+		                  "value":{
+		                     "type":"string",
+		                     "title":"value"
+		                  }
+		               }
+                   },
+		            {
+		            	"title": "None",
+		            	"type": "null"
+		            }
+               ]
             }
          }
       }

@@ -18,7 +18,6 @@
  */
 package io.mandrel.frontier;
 
-import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
@@ -29,6 +28,9 @@ import io.mandrel.frontier.revisit.SimpleRevisitStrategy.SimpleRevisitStrategyDe
 import io.mandrel.frontier.store.FrontierStore;
 import io.mandrel.frontier.store.FrontierStore.FrontierStoreDefinition;
 import io.mandrel.frontier.store.impl.RedisFrontierStore.RedisFrontierStoreDefinition;
+import io.mandrel.frontier.strategy.FrontierStrategy;
+import io.mandrel.frontier.strategy.FrontierStrategy.FrontierStrategyDefinition;
+import io.mandrel.frontier.strategy.SimpleFrontierStrategy.SimpleFrontierStrategyDefinition;
 import io.mandrel.monitor.health.Checkable;
 
 import java.io.Serializable;
@@ -43,7 +45,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 @Accessors(chain = true, fluent = true)
 @EqualsAndHashCode(callSuper = false)
-public abstract class Frontier extends TaskContextAware implements Checkable {
+public class Frontier extends TaskContextAware implements Checkable {
 
 	public Frontier(TaskContext context) {
 		super(context);
@@ -52,37 +54,56 @@ public abstract class Frontier extends TaskContextAware implements Checkable {
 	@Data
 	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
-	public static abstract class FrontierDefinition<FRONTIER extends Frontier> implements NamedDefinition, ObjectFactory<FRONTIER>, Serializable {
+	public static class FrontierDefinition implements ObjectFactory<Frontier>, Serializable {
 
 		private static final long serialVersionUID = 7103095906121624004L;
 
-		@JsonProperty("politeness")
-		protected Politeness politeness = new Politeness();
-
-		@JsonProperty("revist")
+		@JsonProperty("revisit")
 		protected RevisitStrategyDefinition<? extends RevisitStrategy> revisit = new SimpleRevisitStrategyDefinition();
 
 		@JsonProperty("store")
 		protected FrontierStoreDefinition<? extends FrontierStore> store = new RedisFrontierStoreDefinition();
 
-		public FRONTIER build(FRONTIER frontier, TaskContext context) {
-			frontier.store(store.build(context)).politeness(politeness).revisit(revisit.build(context));
+		@JsonProperty("strategy")
+		private FrontierStrategyDefinition<? extends FrontierStrategy> strategy = new SimpleFrontierStrategyDefinition();
+
+		public Frontier build(TaskContext context) {
+			FrontierStrategy buildStrategy = strategy.build(context);
+			FrontierStore buildStore = store.build(context);
+			RevisitStrategy buildRevisit = revisit.build(context);
+			buildStrategy.store(buildStore).revisit(buildRevisit);
+			Frontier frontier = new Frontier(context).store(buildStore).revisit(buildRevisit).strategy(buildStrategy);
 			return frontier;
 		}
 	}
 
-	protected Politeness politeness;
-	protected RevisitStrategy revisit;
-	protected FrontierStore store;
+	private RevisitStrategy revisit;
+	private FrontierStore store;
+	private FrontierStrategy strategy;
 
-	public abstract void init();
+	public void init() {
+		strategy.init();
+	};
 
-	public abstract void destroy();
+	public void destroy() {
+		strategy.destroy();
+	};
 
-	public abstract void pool(PoolCallback<Uri> poolCallback);
+	public void pool(PoolCallback<Uri> poolCallback) {
+		strategy.pool(poolCallback);
+	};
 
-	public abstract void schedule(Uri uri);
+	public void schedule(Uri uri) {
+		strategy.schedule(uri);
+	};
 
-	public abstract void schedule(Set<Uri> uris);
+	public void schedule(Set<Uri> uris) {
+		strategy.schedule(uris);
+	};
 
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

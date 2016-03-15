@@ -37,6 +37,6 @@ public class Client implements Serializable {
 	private static final long serialVersionUID = -4242505953994309024L;
 
 	@JsonProperty("requesters")
-	private List<RequesterDefinition<? extends Strategy, ? extends Requester<?>>> requesters = Arrays.asList(new ApacheHttpRequesterDefinition(), new FtpRequesterDefinition());
+	private List<RequesterDefinition<? extends Requester>> requesters = Arrays.asList(new ApacheHttpRequesterDefinition(), new FtpRequesterDefinition());
 
 }

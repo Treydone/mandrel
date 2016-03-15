@@ -19,7 +19,6 @@
 package io.mandrel;
 
 import io.mandrel.common.bson.JsonBsonCodec;
-import io.mandrel.common.data.HttpStrategy.HttpStrategyDefinition;
 import io.mandrel.common.data.Spider;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.schema.SchemaGenerator;
@@ -181,10 +180,9 @@ public class OtherTest {
 		}).first();
 		// System.err.println(System.currentTimeMillis());
 		System.err.println(((ApacheHttpRequesterDefinition) result.getClient().getRequesters().get(0)));
-		System.err.println(((HttpStrategyDefinition) ((ApacheHttpRequesterDefinition) result.getClient().getRequesters().get(0)).getStrategy())
-				.getMaxRedirects());
+		System.err.println(((ApacheHttpRequesterDefinition) result.getClient().getRequesters().get(0)).getMaxRedirects());
 		System.err.println(((FtpRequesterDefinition) result.getClient().getRequesters().get(1)));
-		System.err.println(((FtpRequesterDefinition) result.getClient().getRequesters().get(1)).getStrategy().getNameResolver());
+		System.err.println(((FtpRequesterDefinition) result.getClient().getRequesters().get(1)).getNameResolver());
 	}
 
 	@Test
