@@ -21,9 +21,29 @@
 </#macro>
 
 <#macro content_header>
+		<#switch spider.status>
+			<#case "created">
+				<#assign label = "primary">
+				<#break>
+			<#case "started">
+				<#assign label = "info">
+				<#break>
+			<#case "paused">
+				<#assign label = "warning">
+				<#break>
+			<#case "ended">
+				<#assign label = "success">
+				<#break>
+			<#case "killed">
+				<#assign label = "danger">
+				<#break>
+			<#default>
+				<#assign label = "warning">
+				<#break>
+		</#switch>
 		<h1>
             Spider '${spider.name}'
-            <small>how the job is done</small>
+            <small>status</small> <span class="label label-${label}"> ${spider.status}</span>
           </h1>
           <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -320,7 +340,7 @@
 	    </div><!-- /.col -->
 	    <div class="col-md-3 col-sm-6 col-xs-12">
 	      <div class="info-box">
-	        <span class="info-box-icon bg-green"><i class="fa fa-download"></i></span>
+	        <span class="info-box-icon bg-aqua"><i class="fa fa-download"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Total size</span>
 	          <span class="info-box-number">${printBytesSize(metrics.totalSize)}</span>
@@ -329,7 +349,7 @@
 	    </div><!-- /.col -->
 	    <div class="col-md-3 col-sm-6 col-xs-12">
 	      <div class="info-box">
-	        <span class="info-box-icon bg-yellow"><i class="fa fa-files-o"></i></span>
+	        <span class="info-box-icon bg-aqua"><i class="fa fa-files-o"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Total pages</span>
 	          <span class="info-box-number">${(metrics.nbPagesTotal)!0}</span>
@@ -338,7 +358,7 @@
 	    </div><!-- /.col -->
 	    <div class="col-md-3 col-sm-6 col-xs-12">
 	      <div class="info-box">
-	        <span class="info-box-icon bg-red"><i class="fa fa-star-o"></i></span>
+	        <span class="info-box-icon bg-aqua"><i class="fa fa-star-o"></i></span>
 	        <div class="info-box-content">
 	          <span class="info-box-text">Timeout</span>
 	          <span class="info-box-number">${(metrics.connectTimeout)!0 + (metrics.readTimeout)!0}</span>
@@ -346,6 +366,54 @@
 	      </div><!-- /.info-box -->
 	    </div><!-- /.col -->
 	  </div>
+	  
+	  <div class="row">
+	  		<div class="col-md-3 col-sm-6 col-xs-12">
+              <div class="info-box">
+                <span class="info-box-icon bg-aqua"><i class="fa fa-cogs"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Remaining URIs</span>
+                  <span class="info-box-number">?</span>
+                  <div class="progress blue">
+                    <div class="progress-bar bg-blue" style="width: 70%"></div>
+                  </div>
+                  <span class="progress-description">
+                    70% fetched
+                  </span>
+                </div><!-- /.info-box-content -->
+              </div><!-- /.info-box -->
+            </div>
+	  		<div class="col-md-3 col-sm-6 col-xs-12">
+              <div class="info-box">
+                <span class="info-box-icon bg-aqua"><i class="fa fa-calendar"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Estimated end date</span>
+                  <span class="info-box-number">?</span>
+                  <div class="progress blue">
+                    <div class="progress-bar bg-blue" style="width: 70%"></div>
+                  </div>
+                  <span class="progress-description">
+                    70% done
+                  </span>
+                </div><!-- /.info-box-content -->
+              </div><!-- /.info-box -->
+            </div>
+            <div class="col-md-3 col-sm-6 col-xs-12">
+              <div class="info-box">
+                <span class="info-box-icon bg-aqua"><i class="fa fa-exchange"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Estimated remaining size to download</span>
+                  <span class="info-box-number">?</span>
+                  <div class="progress blue">
+                    <div class="progress-bar bg-blue" style="width: 70%"></div>
+                  </div>
+                  <span class="progress-description">
+                    70% done
+                  </span>
+                </div><!-- /.info-box-content -->
+              </div><!-- /.info-box -->
+            </div>
+        </div>
 	  
 		<div class="row">
             <!-- Left col -->
@@ -357,7 +425,6 @@
 					      <h3 class="box-title">Actions</h3>
 					    </div>
 					    <div class="box-body">
-					      <p>Current status: ${spider.status}</p>
 					      <a class="btn btn-app <#if spider.status != "initiated" && spider.status != "started">disabled</#if>" href="#configuration">
 					        <i class="fa fa-edit"></i> Edit
 					      </a>

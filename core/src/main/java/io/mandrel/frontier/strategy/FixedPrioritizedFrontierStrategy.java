@@ -51,7 +51,7 @@ public class FixedPrioritizedFrontierStrategy extends FrontierStrategy {
 	@Data
 	@Accessors(chain = false, fluent = false)
 	@EqualsAndHashCode(callSuper = false)
-	public static class FixedPrioritizedFrontierDefinition extends FrontierStrategyDefinition<FixedPrioritizedFrontierStrategy> {
+	public static class FixedPrioritizedFrontierStrategyDefinition extends FrontierStrategyDefinition<FixedPrioritizedFrontierStrategy> {
 		private static final long serialVersionUID = -4024901085285125948L;
 
 		@JsonProperty("priorities")
