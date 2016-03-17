@@ -19,6 +19,7 @@
 package io.mandrel.transport.thrift.nifty;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +44,6 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory;
 import org.jboss.netty.channel.local.LocalAddress;
-import org.jboss.netty.channel.local.LocalServerChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerBossPool;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioWorkerPool;
@@ -141,7 +141,8 @@ public class NettyServerTransport {
 		bootstrap = new ServerBootstrap(serverChannelFactory);
 		bootstrap.setOptions(nettyServerConfig.getBootstrapOptions());
 		bootstrap.setPipelineFactory(pipelineFactory);
-		serverChannel = bootstrap.bind(local ? new LocalAddress(requestedPort) : new InetSocketAddress(requestedPort));
+		SocketAddress address = local ? new LocalAddress("mandrel") : new InetSocketAddress(requestedPort);
+		serverChannel = bootstrap.bind(address);
 	}
 
 	public void stop() throws InterruptedException {

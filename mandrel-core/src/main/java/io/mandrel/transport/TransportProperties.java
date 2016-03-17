@@ -47,4 +47,5 @@ public class TransportProperties {
 	// Default max frame size of 16 MB
 	private int maxFrameSize = 16777216;
 
+	private boolean local = false;
 }

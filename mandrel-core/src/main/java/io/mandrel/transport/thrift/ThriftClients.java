@@ -42,7 +42,6 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -68,9 +67,6 @@ public class ThriftClients implements Clients {
 	@Autowired
 	private TransportProperties transportProperties;
 
-	@Value("${standalone:false}")
-	private boolean local;
-
 	@PostConstruct
 	public void init() {
 
@@ -84,27 +80,27 @@ public class ThriftClients implements Clients {
 				Collections.emptySet());
 
 		NettyClientConfig config = NettyClientConfig.newBuilder().build();
-		NiftyClient niftyClient = new NiftyClient(config, local);
+		NiftyClient niftyClient = new NiftyClient(config, transportProperties.isLocal());
 		ThriftClientManager clientManager = new ThriftClientManager(codecManager, niftyClient, Collections.emptySet());
 
 		frontiers = new KeyedClientPool<>(FrontierContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED
-				null, clientManager);
+				null, clientManager, transportProperties.isLocal());
 		prepare(frontiers);
 
 		controllers = new KeyedClientPool<>(ControllerContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED
-				null, clientManager);
+				null, clientManager, transportProperties.isLocal());
 		prepare(controllers);
 
 		workers = new KeyedClientPool<>(WorkerContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED
-				null, clientManager);
+				null, clientManager, transportProperties.isLocal());
 		prepare(workers);
 
 		nodes = new KeyedClientPool<>(NodeContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED
-				null, clientManager);
+				null, clientManager, transportProperties.isLocal());
 		prepare(nodes);
 	}
 
