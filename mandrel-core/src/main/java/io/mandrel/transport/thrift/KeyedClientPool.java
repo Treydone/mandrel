@@ -23,6 +23,8 @@ import io.mandrel.endpoints.contracts.Contract;
 import io.mandrel.transport.Pooled;
 import io.mandrel.transport.thrift.nifty.ThriftClientManager;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.Deflater;
 
@@ -38,8 +40,9 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TZlibTransport;
+import org.jboss.netty.channel.local.LocalAddress;
 
-import com.facebook.nifty.client.FramedClientConnector;
+import com.facebook.nifty.client.GenericFramedClientConnector;
 import com.facebook.nifty.client.NiftyClientChannel;
 import com.facebook.nifty.client.NiftyClientConnector;
 import com.facebook.nifty.duplex.TDuplexProtocolFactory;
@@ -72,19 +75,20 @@ public class KeyedClientPool<T extends Contract & AutoCloseable> implements Auto
 	private final ThriftClientManager clientManager;
 
 	public KeyedClientPool(Class<T> clazz) {
-		this(clazz, new GenericKeyedObjectPoolConfig(), DEFAULT_PORT, DEFAULT_DEFLATE_LEVEL, new ThriftClientManager());
+		this(clazz, new GenericKeyedObjectPoolConfig(), DEFAULT_PORT, DEFAULT_DEFLATE_LEVEL, new ThriftClientManager(), false);
 	}
 
 	public KeyedClientPool(Class<T> clazz, GenericKeyedObjectPoolConfig poolConfig) {
-		this(clazz, poolConfig, DEFAULT_PORT, DEFAULT_DEFLATE_LEVEL, new ThriftClientManager());
+		this(clazz, poolConfig, DEFAULT_PORT, DEFAULT_DEFLATE_LEVEL, new ThriftClientManager(), false);
 	}
 
 	public KeyedClientPool(Class<T> clazz, GenericKeyedObjectPoolConfig poolConfig, ThriftClientManager clientManager) {
-		this(clazz, poolConfig, DEFAULT_PORT, DEFAULT_DEFLATE_LEVEL, clientManager);
+		this(clazz, poolConfig, DEFAULT_PORT, DEFAULT_DEFLATE_LEVEL, clientManager, false);
 	}
 
-	public KeyedClientPool(Class<T> clazz, GenericKeyedObjectPoolConfig poolConfig, int defaultPort, Integer deflateLevel, ThriftClientManager clientManager) {
-		this(clazz, new FramedClientConnectorFactory(defaultPort, deflateLevel), poolConfig, clientManager);
+	public KeyedClientPool(Class<T> clazz, GenericKeyedObjectPoolConfig poolConfig, int defaultPort, Integer deflateLevel, ThriftClientManager clientManager,
+			boolean local) {
+		this(clazz, new FramedClientConnectorFactory(defaultPort, deflateLevel, local), poolConfig, clientManager);
 	}
 
 	public KeyedClientPool(Class<T> clazz, ClientConnectorFactory clientConnectorFactory, GenericKeyedObjectPoolConfig poolConfig,
@@ -124,7 +128,7 @@ public class KeyedClientPool<T extends Contract & AutoCloseable> implements Auto
 		public T create(HostAndPort hostAndPort) throws Exception {
 			NiftyClientConnector<? extends NiftyClientChannel> connector = clientConnectorFactory.make(hostAndPort);
 			return clientManager.createClient(connector, clazz, connectTimeout, receiveTimeout, readTimeout, writeTimeout, maxFrameSize, clazz.getSimpleName(),
-					ImmutableList.<ThriftClientEventHandler> of(), clientManager.getDefaultSocksProxy()).get();
+					ImmutableList.<ThriftClientEventHandler> of(), clientManager.getDefaultSocksProxy()).get(10000, TimeUnit.MILLISECONDS);
 		}
 
 		@Override
@@ -159,10 +163,13 @@ public class KeyedClientPool<T extends Contract & AutoCloseable> implements Auto
 
 		private final int defaultPort;
 		private final Integer deflateLevel;
+		private final boolean local;
 
 		public NiftyClientConnector<? extends NiftyClientChannel> make(HostAndPort hostAndPort) {
 			TDuplexProtocolFactory duplexProtocolFactory = protocolFactory(deflateLevel);
-			return new FramedClientConnector(HostAndPort.fromParts(hostAndPort.getHostText(), hostAndPort.getPortOrDefault(defaultPort)), duplexProtocolFactory);
+			SocketAddress address = local ? new LocalAddress("mandrel") : new InetSocketAddress(hostAndPort.getHostText(),
+					hostAndPort.getPortOrDefault(defaultPort));
+			return new GenericFramedClientConnector(address, duplexProtocolFactory);
 		}
 	}
 

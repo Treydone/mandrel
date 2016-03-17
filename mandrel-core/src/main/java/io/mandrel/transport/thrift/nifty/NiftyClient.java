@@ -178,7 +178,9 @@ public class NiftyClient implements Closeable {
 		// Stop the timer thread first, so no timeouts can fire during the rest
 		// of the
 		// shutdown process
-		timer.stop();
+		if (timer != null) {
+			timer.stop();
+		}
 
 		ShutdownUtil.shutdownChannelFactory(channelFactory, bossExecutor, workerExecutor, allChannels);
 	}

@@ -37,7 +37,6 @@ import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -67,9 +66,6 @@ public class ThriftTransportService implements TransportService {
 	@Autowired
 	private TransportProperties transportProperties;
 
-	@Value("${standalone:false}")
-	private boolean local;
-
 	private ThriftServer server;
 
 	@PostConstruct
@@ -89,7 +85,8 @@ public class ThriftTransportService implements TransportService {
 		properties.setTaskExpirationTimeout(Duration.valueOf("10s"));
 
 		server = new ThriftServer(processor, properties, new NiftyTimer("thrift"), ThriftServer.DEFAULT_FRAME_CODEC_FACTORIES,
-				ThriftServer.DEFAULT_PROTOCOL_FACTORIES, ThriftServer.DEFAULT_WORKER_EXECUTORS, ThriftServer.DEFAULT_SECURITY_FACTORY, local);
+				ThriftServer.DEFAULT_PROTOCOL_FACTORIES, ThriftServer.DEFAULT_WORKER_EXECUTORS, ThriftServer.DEFAULT_SECURITY_FACTORY,
+				transportProperties.isLocal());
 		server.start();
 
 		resources.forEach(resource -> {
