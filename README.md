@@ -1,6 +1,7 @@
 # Mandrel
 [![Join the chat at https://gitter.im/Treydone/mandrel](https://badges.gitter.im/Treydone/mandrel.svg)](https://gitter.im/Treydone/mandrel?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://api.travis-ci.org/Treydone/mandrel.svg?branch=master)](https://travis-ci.org/Treydone/mandrel)
+[![Dependency Status](https://www.versioneye.com/user/projects/56f00aab35630e0034fd99fe/badge.svg?style=flat)](https://www.versioneye.com/user/projects/56f00aab35630e0034fd99fe)
 [![Download](https://api.bintray.com/packages/treydone/maven/mandrel/images/download.svg)](https://bintray.com/treydone/maven/mandrel/_latestVersion)
 
 # Introduction
