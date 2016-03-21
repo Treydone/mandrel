@@ -28,6 +28,7 @@ discovery:
 transport:
   port: 8090
   bindAddress: localhost
+  local: true
                                 
 logging:
   console:
