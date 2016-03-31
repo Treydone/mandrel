@@ -461,22 +461,23 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_overview">Overview</a></li>
 <li><a href="#_components">Components</a>
 <ul class="sectlevel2">
-<li><a href="#_controller">Controller</a></li>
-<li><a href="#_frontier">Frontier</a></li>
+<li><a href="#_ui">UI</a></li>
+<li><a href="#_coordinator">Coordinator</a></li>
 <li><a href="#_worker">Worker</a></li>
+<li><a href="#_frontier">Frontier</a></li>
 </ul>
 </li>
 <li><a href="#_running_modes">Running modes</a>
 <ul class="sectlevel2">
 <li><a href="#_standalone_single_jvm">Standalone - Single-JVM</a></li>
-<li><a href="#_standalone_pseudo_distributed">Standalone - Pseudo-distributed</a></li>
 <li><a href="#_distributed">Distributed</a></li>
 </ul>
 </li>
 <li><a href="#_configuration">Configuration</a>
 <ul class="sectlevel2">
 <li><a href="#_common">Common</a></li>
-<li><a href="#_controller_yml">controller.yml</a></li>
+<li><a href="#_ui_yml">ui.yml</a></li>
+<li><a href="#_coordinator_yml">coordinator.yml</a></li>
 <li><a href="#_frontier_yml">frontier.yml</a></li>
 <li><a href="#_worker_yml">worker.yml</a></li>
 <li><a href="#_standalone_yml">standalone.yml</a></li>
@@ -494,12 +495,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_endpoints">Endpoints</a></li>
 </ul>
 </li>
-<li><a href="#_spider_definition">Spider definition</a>
+<li><a href="#_job_definition">Job definition</a>
 <ul class="sectlevel2">
 <li><a href="#_introduction_2">Introduction</a></li>
 <li><a href="#_examples">Examples</a></li>
 <li><a href="#_filtering">Filtering</a></li>
 <li><a href="#_raw_exporting">Raw exporting</a></li>
+<li><a href="#_frontier_2">Frontier</a></li>
 <li><a href="#_extracting">Extracting</a></li>
 <li><a href="#_data_exporting">Data exporting</a></li>
 <li><a href="#_blob_metadata_stores">Blob &amp; metadata stores</a></li>
@@ -509,12 +511,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_production_considerations_performance_tuning">Production considerations &amp; performance tuning</a>
 <ul class="sectlevel2">
+<li><a href="#_high_availability">High Availability</a></li>
 <li><a href="#_general_guidelines">General Guidelines</a></li>
 <li><a href="#_firewall">Firewall</a></li>
 <li><a href="#_operating_system">Operating System</a></li>
 <li><a href="#_network">Network</a></li>
 <li><a href="#_java">Java</a></li>
-<li><a href="#_zookeeper">ZooKeeper</a></li>
 <li><a href="#_cloud">Cloud</a></li>
 <li><a href="#_case_studies">Case studies</a></li>
 </ul>
@@ -671,7 +673,7 @@ Politness is respected, but only one process can download on one host at a time.
 <div class="sect2">
 <h3 id="_internals">Internals</h3>
 <div class="paragraph">
-<p>Mandrel uses Zookeeper, Thrift, Netty, Undertow and Spring. It can be connected to:</p>
+<p>Mandrel uses Atomix, Thrift, Netty, Undertow and Spring. It can be connected to:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -702,6 +704,11 @@ Politness is respected, but only one process can download on one host at a time.
 <div class="sect1">
 <h2 id="_getting_started">Getting Started</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_system_requirements">System Requirements</h3>
+<div class="paragraph">
+<p>Mandrel works on Linux, Mac and Windows. All you need is Java 8+ and a running instance of Mongo 3.0+.</p>
+</div>
 <div class="admonitionblock tip">
 <table>
 <tr>
@@ -709,15 +716,11 @@ Politness is respected, but only one process can download on one host at a time.
 <div class="title">Tip</div>
 </td>
 <td class="content">
-A useful tip
+If you want to quickly setup a running Mongo instance, use Docker:
+  docker run -p 27017:27017 --name mongo-mandrel -d mongo
 </td>
 </tr>
 </table>
-</div>
-<div class="sect2">
-<h3 id="_system_requirements">System Requirements</h3>
-<div class="paragraph">
-<p>Mandrel works on Linux, Mac and Windows. All you need is Java 8+ and a running instance of Mongo 3.0+.</p>
 </div>
 </div>
 </div>
@@ -896,6 +899,14 @@ mvn spring-boot:run -DskipTests</code></pre>
 <div class="sect2">
 <h3 id="_with_docker">With Docker</h3>
 <div class="paragraph">
+<p>Be sure to have Docker on your machine. If not:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ curl -fsSL https://get.docker.com/ | sh</pre>
+</div>
+</div>
+<div class="paragraph">
 <p>Coming soon&#8230;&#8203;</p>
 </div>
 </div>
@@ -953,9 +964,15 @@ mvn release:clean</code></pre>
 <h2 id="_components">Components</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_controller">Controller</h3>
+<h3 id="_ui">UI</h3>
 <div class="paragraph">
-<p>The controller is the main process in a Mandrel deployment and has several roles:</p>
+<p>The UI is just a web frontend for presenting the data for the users and allowing the users to manage the jobs.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_coordinator">Coordinator</h3>
+<div class="paragraph">
+<p>The coordinator is the main process in a Mandrel deployment and has several roles:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -966,12 +983,120 @@ mvn release:clean</code></pre>
 <p>collecting metrics</p>
 </li>
 <li>
-<p>presenting the data for the users</p>
-</li>
-<li>
-<p>exposing the UI and the REST endpoints</p>
+<p>exposing the REST endpoints</p>
 </li>
 </ul>
+</div>
+<div id="img-coordinator" class="imageblock">
+<div class="content">
+<img src="images/coordinator.png" alt="Coordinator" width="500" height="200">
+</div>
+<div class="title">Figure 2. Coordinator</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_worker">Worker</h3>
+<div class="paragraph">
+<p>The goal of the worker is simple, it download and parse the content of uri given by the frontiers. Its workflow is more or less the following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Pick out a uri from the frontier</p>
+</li>
+<li>
+<p>Fetch the content</p>
+</li>
+<li>
+<p>Store raw results in blobstore</p>
+</li>
+<li>
+<p>Find links in the content</p>
+</li>
+<li>
+<p>Store metadata in metadatastore</p>
+</li>
+<li>
+<p>If extraction needed, parse the content and store the results in documentstore</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A worker consists of:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>fetchers: the fetchers dowload the remote content designated by a URI. There is one fetcher by protocol. By default there are three fetchers started in each worker: one for http/https, an other for ftp/ftps and a last for file.</p>
+</li>
+<li>
+<p>chains: each active Jobs results in a chain of processors</p>
+</li>
+</ul>
+</div>
+<div id="img-worker" class="imageblock">
+<div class="content">
+<img src="images/worker.png" alt="Worker" width="500" height="200">
+</div>
+<div class="title">Figure 3. Worker</div>
+</div>
+<div class="sect3">
+<h4 id="_processors">Processors</h4>
+<div class="paragraph">
+<p>Processors are components that affect the mining.</p>
+</div>
+<div class="paragraph">
+<p>Common processors:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>link extraction by content-type</p>
+</li>
+<li>
+<p>size-limiter/OOM prevent</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For HTTP fetchers:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>user-agent</p>
+</li>
+<li>
+<p>headers</p>
+</li>
+<li>
+<p>cookies</p>
+</li>
+<li>
+<p>proxies</p>
+</li>
+<li>
+<p>more&#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For FTP fetchers:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>proxies</p>
+</li>
+<li>
+<p>more&#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For HTML content-type responses:
+- HTML full interpretation</p>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -1006,7 +1131,7 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 <p>Priorizer: from a set of URIs, schedule the priority of the URIs and push them in the internal queues</p>
 </li>
 <li>
-<p>Revister: revist a page, when and how</p>
+<p>Revisiter: revisit a page, when and how</p>
 </li>
 </ul>
 </div>
@@ -1046,34 +1171,6 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_worker">Worker</h3>
-<div class="paragraph">
-<p>The goal of the worker is simple, it download and parse the content of uri given by the frontiers. Its workflow is more or less the following:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Pick out a uri from the frontier</p>
-</li>
-<li>
-<p>Fetch the content</p>
-</li>
-<li>
-<p>Store raw results in blobstore</p>
-</li>
-<li>
-<p>Find links in the content</p>
-</li>
-<li>
-<p>Store metadata in metadatastore</p>
-</li>
-<li>
-<p>If extraction needed, parse the content and store the results in documentstore</p>
-</li>
-</ul>
-</div>
-</div>
 </div>
 </div>
 <div class="sect1">
@@ -1083,21 +1180,9 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 <h3 id="_standalone_single_jvm">Standalone - Single-JVM</h3>
 <div id="img-standalone" class="imageblock">
 <div class="content">
-<img src="images/standalone.png" alt="Standalone Mode" width="350" height="200">
+<img src="images/standalone.png" alt="Standalone Mode" width="250" height="200">
 </div>
-<div class="title">Figure 2. Standalone Mode</div>
-</div>
-<div class="paragraph">
-<p>Make the discovery is true for local:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>discovery:
-  local:
-    enabled: true
-  zookeeper:
-    enabled: false</code></pre>
-</div>
+<div class="title">Figure 4. Standalone Mode</div>
 </div>
 <div class="paragraph">
 <p>Start using:</p>
@@ -1117,64 +1202,27 @@ It keeps the state of the crawl. This includes, but is not limited to:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_standalone_pseudo_distributed">Standalone - Pseudo-distributed</h3>
-<div id="img-pseudodistributed" class="imageblock">
-<div class="content">
-<img src="images/pseudodistributed.png" alt="Pseudo-distributed Mode" width="400" height="200">
-</div>
-<div class="title">Figure 3. Pseudo-distributed Mode</div>
-</div>
-<div class="paragraph">
-<p>Make the discovery is true for zookeeper:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>discovery:
-  zookeeper:
-    enabled: true</code></pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>Start using:</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>$ ./bin/standaloned start</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>Stop using:</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>$ ./bin/standaloned stop</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
 <h3 id="_distributed">Distributed</h3>
 <div id="img-distributed" class="imageblock">
 <div class="content">
 <img src="images/distributed.png" alt="Distributed Mode" width="800" height="200">
 </div>
-<div class="title">Figure 4. Distributed Mode</div>
+<div class="title">Figure 5. Distributed Mode</div>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>$ ./bin/controllerd start
+<pre class="highlight"><code>$ ./bin/coordinatord start
 $ ./bin/frontierd start
-$ ./bin/workerd start</code></pre>
+$ ./bin/workerd start
+$ ./bin/ui-serverd start</code></pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code>$ ./bin/workerd start
 $ ./bin/frontierd start
-$ ./bin/controllerd stop</code></pre>
+$ ./bin/coordinatord stop
+$ ./bin/ui-serverd stop</code></pre>
 </div>
 </div>
 </div>
@@ -1191,10 +1239,7 @@ $ ./bin/controllerd stop</code></pre>
 <div class="content">
 <pre class="highlight"><code>discovery:
   instanceHost: localhost
-  zookeeper:
-    enabled: true
-    connectString: localhost:2181
-    root: /mandrel</code></pre>
+  servers: localhost:50000</code></pre>
 </div>
 </div>
 <div id="discovery.instanceHost" class="dlist">
@@ -1212,36 +1257,21 @@ $ ./bin/controllerd stop</code></pre>
 </dd>
 </dl>
 </div>
-<div id="discovery.zookeeper.connectString" class="dlist">
+<div id="discovery.servers" class="dlist">
 <dl>
-<dt class="hdlist1"><strong><code>discovery.zookeeper.connectString</code></strong></dt>
+<dt class="hdlist1"><strong><code>discovery.servers</code></strong></dt>
 <dd>
 <div class="paragraph">
 <div class="title">Description</div>
-<p>Comma separated list of servers in the ZooKeeper ensemble.
+<p>Comma separated list of servers in the Coordinator ensemble.
     For example, "host1.mydomain.com,host2.mydomain.com,host3.mydomain.com".
     By default this is set to localhost for local and pseudo-distributed modes
     of operation. For a fully-distributed setup, this should be set to a full
-    list of ZooKeeper ensemble servers.</p>
+    list of Coordinator ensemble servers.</p>
 </div>
 <div class="paragraph">
 <div class="title">Default</div>
-<p><code>localhost:2181</code></p>
-</div>
-</dd>
-</dl>
-</div>
-<div id="discovery.zookeeper.root" class="dlist">
-<dl>
-<dt class="hdlist1"><strong><code>discovery.zookeeper.root</code></strong></dt>
-<dd>
-<div class="paragraph">
-<div class="title">Description</div>
-<p>The root path in Zookeeper where the services will be registered.</p>
-</div>
-<div class="paragraph">
-<div class="title">Default</div>
-<p><code>/mandrel</code></p>
+<p><code>localhost:50000</code></p>
 </div>
 </dd>
 </dl>
@@ -1274,7 +1304,11 @@ $ ./bin/controllerd stop</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_controller_yml">controller.yml</h3>
+<h3 id="_ui_yml">ui.yml</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_coordinator_yml">coordinator.yml</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code>server:
@@ -1325,11 +1359,6 @@ $ ./bin/controllerd stop</code></pre>
     mongodb:
       uri: mongodb://localhost:27017/mandrel
   jmx:
-    enabled: false
-discovery:
-  local:
-    enabled: true
-  zookeeper:
     enabled: false</code></pre>
 </div>
 </div>
@@ -1345,7 +1374,7 @@ discovery:
 <div class="ulist">
 <ul>
 <li>
-<p>Multiple controllers for high-availibility on the main component in Mandrel deployment</p>
+<p>Multiple coordinators for high-availibility on the main component in Mandrel deployment</p>
 </li>
 <li>
 <p>Multiple  frontiers in order to dsitribute the heavy job of priorization and reschedule</p>
@@ -1356,50 +1385,7 @@ discovery:
 </ul>
 </div>
 <div class="paragraph">
-<p>All these instances are registered in a discovery service. By default, Mandrel uses Zookeeper as a discovery service.
-An other discovery service, 'local', is present but only used by the standalone mode.
-Other discovery services caneasily be added by implementing these interfaces:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>import java.util.List;
-public interface DiscoveryClient {
-	ServiceInstance register(ServiceInstance instance);
-	void unregister(String serviceId);
-	List&lt;ServiceInstance&gt; getInstances(String serviceId);
-	List&lt;String&gt; getServices();
-	String getInstanceHost();
-	ServiceInstance getLocalInstance(String serviceId);
-	ServiceInstance getInstance(String id, String serviceId);
-	String getInstanceId();
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>@ConditionalOnProperty(value = "discovery.mynewdiscovery.enabled", matchIfMissing = false)
-@Component
-public class MyNewDiscoveryClient implements DiscoveryClient {
-        ...
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>And finally by enabling the new discovery service in the properties:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>discovery:
-  local:
-    enabled: false
-  zookeeper:
-    enabled: false
-  mynewdiscovery:
-    enabled: true</code></pre>
-</div>
+<p>All these instances are registered in the Coordinator ensemble.</p>
 </div>
 </div>
 </div>
@@ -1407,7 +1393,9 @@ public class MyNewDiscoveryClient implements DiscoveryClient {
 <div class="sect1">
 <h2 id="_web_ui">Web UI</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>The Web UI is the simpliest way for using Mandrel, it is available on each coordinator. By default the HTTP port is 8080.</p>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1423,32 +1411,32 @@ public class MyNewDiscoveryClient implements DiscoveryClient {
 <div class="sect2">
 <h3 id="_endpoints">Endpoints</h3>
 <div class="sect3">
-<h4 id="_spiders">Spiders</h4>
-<div id="spiders" class="dlist">
+<h4 id="_jobs">Jobs</h4>
+<div id="Jobs" class="dlist">
 <dl>
-<dt class="hdlist1"><strong>GET <code>/spiders</code></strong></dt>
+<dt class="hdlist1"><strong>GET <code>/Jobs</code></strong></dt>
 <dd>
 <div class="paragraph">
 <div class="title">Description</div>
-<p>List all the spider</p>
+<p>List all the Job</p>
 </div>
 </dd>
 </dl>
 </div>
-<div id="spiders_id" class="dlist">
+<div id="Jobs_id" class="dlist">
 <dl>
-<dt class="hdlist1"><strong>GET <code>/spiders/{id}</code></strong></dt>
+<dt class="hdlist1"><strong>GET <code>/Jobs/{id}</code></strong></dt>
 <dd>
 <div class="paragraph">
 <div class="title">Description</div>
-<p>Return a spider</p>
+<p>Return a Job</p>
 </div>
 </dd>
 </dl>
 </div>
-<div id="spiders_start" class="dlist">
+<div id="Jobs_start" class="dlist">
 <dl>
-<dt class="hdlist1"><strong>GET <code>/spiders/{id}/start</code></strong></dt>
+<dt class="hdlist1"><strong>GET <code>/Jobs/{id}/start</code></strong></dt>
 <dd>
 <div class="paragraph">
 <div class="title">Description</div>
@@ -1457,9 +1445,9 @@ public class MyNewDiscoveryClient implements DiscoveryClient {
 </dd>
 </dl>
 </div>
-<div id="spiders_stop" class="dlist">
+<div id="Jobs_stop" class="dlist">
 <dl>
-<dt class="hdlist1"><strong>GET <code>/spiders/{id}/stop</code></strong></dt>
+<dt class="hdlist1"><strong>GET <code>/Jobs/{id}/stop</code></strong></dt>
 <dd>
 <div class="paragraph">
 <div class="title">Description</div>
@@ -1506,12 +1494,12 @@ public class MyNewDiscoveryClient implements DiscoveryClient {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_spider_definition">Spider definition</h2>
+<h2 id="_job_definition">Job definition</h2>
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="_introduction_2">Introduction</h3>
 <div class="paragraph">
-<p>A spider is at least composed by:</p>
+<p>A Job is at least composed by:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1560,7 +1548,7 @@ public class MyNewDiscoveryClient implements DiscoveryClient {
 <div class="sect2">
 <h3 id="_filtering">Filtering</h3>
 <div class="paragraph">
-<p>You can add filters to your spider. There are two types of filters:</p>
+<p>You can add filters to your Job. There are two types of filters:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1573,7 +1561,7 @@ public class MyNewDiscoveryClient implements DiscoveryClient {
 </ul>
 </div>
 <div class="paragraph">
-<p>Link filters apply conditions only on the link whereas blob filters apply conditions on the downloaded blob. This means also that link filters are applied BEFORE the crawling and blob filters AFTER. Take this in consideration when developping new spiders</p>
+<p>Link filters apply conditions only on the link whereas blob filters apply conditions on the downloaded blob. This means also that link filters are applied BEFORE the crawling and blob filters AFTER. Take this in consideration when developping new Jobs</p>
 </div>
 <div class="sect3">
 <h4 id="_link_filters">Link filters</h4>
@@ -1711,7 +1699,7 @@ public class MyNewDiscoveryClient implements DiscoveryClient {
 <div class="sect2">
 <h3 id="_raw_exporting">Raw exporting</h3>
 <div class="paragraph">
-<p>Your spider is now done. Or not. We don&#8217;t care, we just want to export the raw data of the pages/documents. You have to two ways to do this:</p>
+<p>Your Job is now done. Or not. We don&#8217;t care, we just want to export the raw data of the pages/documents. You have to two ways to do this:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1725,7 +1713,7 @@ public class MyNewDiscoveryClient implements DiscoveryClient {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>$ curl -X GET http://localhost:8080/spiders/wikipedia/raw/export?format=csv|json</code></pre>
+<pre class="highlight"><code>$ curl -X GET http://localhost:8080/Jobs/wikipedia/raw/export?format=csv|json</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1746,13 +1734,17 @@ public class MyNewDiscoveryClient implements DiscoveryClient {
 </div>
 </div>
 <div class="sect2">
+<h3 id="_frontier_2">Frontier</h3>
+
+</div>
+<div class="sect2">
 <h3 id="_extracting">Extracting</h3>
 <div class="paragraph">
 <p>Somethimes we want to crawl pages. But what we really want is the data INSIDE the pages.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>$ curl -X POST http://localhost:8080/spiders/imdb -d '
+<pre class="highlight"><code>$ curl -X POST http://localhost:8080/Jobs/imdb -d '
 {
    "sources":[
       {
@@ -1819,7 +1811,7 @@ public class MyNewDiscoveryClient implements DiscoveryClient {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>$ curl -X POST http://localhost:8080/spiders/export/movie_extractor?format=csv|json</code></pre>
+<pre class="highlight"><code>$ curl -X POST http://localhost:8080/Jobs/export/movie_extractor?format=csv|json</code></pre>
 </div>
 </div>
 <div class="sect3">
@@ -1968,7 +1960,7 @@ public class MyNewDiscoveryClient implements DiscoveryClient {
 <div class="sect2">
 <h3 id="_client">Client</h3>
 <div class="paragraph">
-<p>Each spider can be configured with a specified client in order to configure:</p>
+<p>Each Job can be configured with a specified client in order to configure:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -2041,7 +2033,14 @@ Section pending
 <p>By default, Mandrel is started in a standalone mode. In this mode, the 3 main components are started in the same JVM. Altought this may be useful for testing purposes, the standalone mode does not allow you to scale your deployment.</p>
 </div>
 <div class="paragraph">
-<p>For production, we recommand you to deploy at least one controller, one frontier and one worker, each in separate JVM on a dedicated serveur.</p>
+<p>For production, we recommand you to deploy at least one coordinator, one frontier and one worker, each in separate JVM on a dedicated serveur.</p>
+</div>
+<div class="sect2">
+<h3 id="_high_availability">High Availability</h3>
+<div class="paragraph">
+<p>The Coordinator is the main component and can be multi-instanced. For solid production deployment, use 3 or 5 coordinators.
+The coordinator is a low resource component, you can colocate a coordinator with a worker or a frontier, but you should not share the same server for a worker AND a frontier.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_general_guidelines">General Guidelines</h3>
@@ -2058,16 +2057,16 @@ However, if you don&#8217;t have the choice, here are the interactions between t
 <div class="ulist">
 <ul>
 <li>
-<p>user &#8594; controllers on TCP for HTTP:8080 or HTTPS:8443</p>
+<p>user &#8594; coordinators on TCP for HTTP:8080 or HTTPS:8443</p>
 </li>
 <li>
 <p>worker &#8594; frontier on TCP:8092</p>
 </li>
 <li>
-<p>controller &#8594; worker on TCP:8091</p>
+<p>coordinator &#8594; worker on TCP:8091</p>
 </li>
 <li>
-<p>controller &#8594; frontier on TCP:8092</p>
+<p>coordinator &#8594; frontier on TCP:8092</p>
 </li>
 <li>
 <p>worker &#8594; engine storage (?)</p>
@@ -2076,7 +2075,7 @@ However, if you don&#8217;t have the choice, here are the interactions between t
 <p>frontier &#8594; messenging storage (?)</p>
 </li>
 <li>
-<p>controller &#8594; application database (?)</p>
+<p>coordinator &#8594; application database (?)</p>
 </li>
 </ul>
 </div>
@@ -2160,10 +2159,6 @@ Modern data-center networking (1 GbE, 10 GbE) is sufficient for the vast majorit
 
 </div>
 <div class="sect2">
-<h3 id="_zookeeper">ZooKeeper</h3>
-
-</div>
-<div class="sect2">
 <h3 id="_cloud">Cloud</h3>
 <div class="paragraph">
 <p>Be aware of the cost introduced by fetching too much data&#8230;&#8203;</p>
@@ -2209,7 +2204,7 @@ Section pending
 </div>
 <div class="dlist glossary">
 <dl>
-<dt>controller</dt>
+<dt>coordinator</dt>
 <dd>
 <p>is the main process for a Mandrel infrastructure.</p>
 </dd>
@@ -2281,7 +2276,7 @@ the License.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-03-02 14:07:37 +01:00
+Last updated 2016-03-30 09:19:39 +02:00
 </div>
 </div>
 </body>

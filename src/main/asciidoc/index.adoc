@@ -71,7 +71,7 @@ Some initiatives aimed to add cluster features (Distributed Frontera and Scrapy 
 Politness is respected, but only one process can download on one host at a time.
 
 === Internals
-Mandrel uses Zookeeper, Thrift, Netty, Undertow and Spring. It can be connected to:
+Mandrel uses Atomix, Thrift, Netty, Undertow and Spring. It can be connected to:
 
 - Mongo
 - Elasticsearch
@@ -84,12 +84,11 @@ Mandrel uses Zookeeper, Thrift, Netty, Undertow and Spring. It can be connected 
 
 == Getting Started
 
-TIP: A useful tip
-
-
 === System Requirements
 Mandrel works on Linux, Mac and Windows. All you need is Java 8+ and a running instance of Mongo 3.0+.
 
+TIP: If you want to quickly setup a running Mongo instance, use Docker:
+  docker run -p 27017:27017 --name mongo-mandrel -d mongo
 
 = Setup
 
@@ -186,6 +185,10 @@ mvn spring-boot:run -DskipTests
 
 === With Docker
 
+Be sure to have Docker on your machine. If not:
+
+ $ curl -fsSL https://get.docker.com/ | sh
+
 Coming soon...
 
 === On Windows
@@ -219,14 +222,66 @@ image::archi.png[Architecture, 800, 200]
 
 == Components
 
-=== Controller
+=== UI
 
-The controller is the main process in a Mandrel deployment and has several roles:
+The UI is just a web frontend for presenting the data for the users and allowing the users to manage the jobs.
+
+=== Coordinator
+
+The coordinator is the main process in a Mandrel deployment and has several roles:
 
 - managing the jobs deployment on the workers and on the frontiers
 - collecting metrics
-- presenting the data for the users
-- exposing the UI and the REST endpoints
+- exposing the REST endpoints
+
+[[img-coordinator]]
+.Coordinator
+image::coordinator.png[Coordinator, 500, 200]
+
+=== Worker
+
+The goal of the worker is simple, it download and parse the content of uri given by the frontiers. Its workflow is more or less the following:
+
+- Pick out a uri from the frontier
+- Fetch the content
+- Store raw results in blobstore
+- Find links in the content
+- Store metadata in metadatastore
+- If extraction needed, parse the content and store the results in documentstore
+
+A worker consists of:
+
+- fetchers: the fetchers dowload the remote content designated by a URI. There is one fetcher by protocol. By default there are three fetchers started in each worker: one for http/https, an other for ftp/ftps and a last for file.
+- chains: each active jobs results in a chain of processors
+
+[[img-worker]]
+.Worker
+image::worker.png[Worker, 500, 200]
+
+==== Processors
+
+Processors are components that affect the mining.
+
+Common processors:
+
+- link extraction by content-type
+- size-limiter/OOM prevent
+
+For HTTP fetchers:
+
+- user-agent
+- headers
+- cookies
+- proxies
+- more...
+
+For FTP fetchers:
+
+- proxies
+- more...
+
+For HTML content-type responses:
+- HTML full interpretation
 
 === Frontier
 
@@ -243,7 +298,7 @@ The frontier garanties the respect of the politeness like the bandwidth limits o
 The frontier is set of various background tasks:
 
 - Priorizer: from a set of URIs, schedule the priority of the URIs and push them in the internal queues
-- Revister: revist a page, when and how
+- Revisiter: revisit a page, when and how
 
 ==== Revisit policies
 
@@ -258,33 +313,13 @@ The frontier is set of various background tasks:
 - Max pages per second
 - Max bytes per second/bandwidth
 
-=== Worker
-
-The goal of the worker is simple, it download and parse the content of uri given by the frontiers. Its workflow is more or less the following:
-
-- Pick out a uri from the frontier
-- Fetch the content
-- Store raw results in blobstore
-- Find links in the content
-- Store metadata in metadatastore
-- If extraction needed, parse the content and store the results in documentstore
-
 == Running modes
 
 === Standalone - Single-JVM
 
 [[img-standalone]]
 .Standalone Mode
-image::standalone.png[Standalone Mode, 350, 200]
-
-Make the discovery is true for +local+:
-
-[source]
-discovery:
-  local:
-    enabled: true
-  zookeeper:
-    enabled: false
+image::standalone.png[Standalone Mode, 250, 200]
 
 Start using:
 
@@ -294,27 +329,6 @@ Stop using:
 
  $ ./bin/standaloned stop
 
-=== Standalone - Pseudo-distributed
-
-[[img-pseudodistributed]]
-.Pseudo-distributed Mode
-image::pseudodistributed.png[Pseudo-distributed Mode, 400, 200]
-
-Make the discovery is true for +zookeeper+:
-
-[source]
-discovery:
-  zookeeper:
-    enabled: true
-
- Start using:
-
-  $ ./bin/standaloned start
-
- Stop using:
-
-  $ ./bin/standaloned stop
-
 === Distributed
 
 [[img-distributed]]
@@ -322,14 +336,16 @@ discovery:
 image::distributed.png[Distributed Mode, 800, 200]
 
 [source]
-$ ./bin/controllerd start
+$ ./bin/coordinatord start
 $ ./bin/frontierd start
 $ ./bin/workerd start
+$ ./bin/ui-serverd start
 
 [source]
 $ ./bin/workerd start
 $ ./bin/frontierd start
-$ ./bin/controllerd stop
+$ ./bin/coordinatord stop
+$ ./bin/ui-serverd stop
 
 == Configuration
 
@@ -340,10 +356,7 @@ $ ./bin/controllerd stop
 [source]
 discovery:
   instanceHost: localhost
-  zookeeper:
-    enabled: true
-    connectString: localhost:2181
-    root: /mandrel
+  servers: localhost:50000
 
 [[discovery.instanceHost]]
 *`discovery.instanceHost`*::
@@ -354,27 +367,18 @@ The address what will be registered in the discovery.
 .Default
 `localhost`
 
-[[discovery.zookeeper.connectString]]
-*`discovery.zookeeper.connectString`*::
+[[discovery.servers]]
+*`discovery.servers`*::
 +
 .Description
-Comma separated list of servers in the ZooKeeper ensemble.
+Comma separated list of servers in the Coordinator ensemble.
     For example, "host1.mydomain.com,host2.mydomain.com,host3.mydomain.com".
     By default this is set to localhost for local and pseudo-distributed modes
     of operation. For a fully-distributed setup, this should be set to a full
-    list of ZooKeeper ensemble servers.
+    list of Coordinator ensemble servers.
 +
 .Default
-`localhost:2181`
-
-[[discovery.zookeeper.root]]
-*`discovery.zookeeper.root`*::
-+
-.Description
-The root path in Zookeeper where the services will be registered.
-+
-.Default
-`/mandrel`
+`localhost:50000`
 
 ==== Transport
 
@@ -395,7 +399,9 @@ logging:
     io.mandrel: DEBUG
     io.mandrel.messaging: DEBUG
 
-=== controller.yml
+=== ui.yml
+
+=== coordinator.yml
 
 [source]
 server:
@@ -435,60 +441,22 @@ spring:
       uri: mongodb://localhost:27017/mandrel
   jmx:
     enabled: false
-discovery:
-  local:
-    enabled: true
-  zookeeper:
-    enabled: false
 
 == Scalabilty
 
 All the components in Mandrel can have multiple instances:
 
-- Multiple controllers for high-availibility on the main component in Mandrel deployment
+- Multiple coordinators for high-availibility on the main component in Mandrel deployment
 - Multiple  frontiers in order to dsitribute the heavy job of priorization and reschedule
 - Multiple  workers in order to grow up the bandwidth
 
-All these instances are registered in a discovery service. By default, Mandrel uses Zookeeper as a discovery service.
-An other discovery service, 'local', is present but only used by the standalone mode.
-Other discovery services caneasily be added by implementing these interfaces:
-
-[source]
-import java.util.List;
-public interface DiscoveryClient {
-	ServiceInstance register(ServiceInstance instance);
-	void unregister(String serviceId);
-	List<ServiceInstance> getInstances(String serviceId);
-	List<String> getServices();
-	String getInstanceHost();
-	ServiceInstance getLocalInstance(String serviceId);
-	ServiceInstance getInstance(String id, String serviceId);
-	String getInstanceId();
-}
-
-Example:
-
-[source]
-@ConditionalOnProperty(value = "discovery.mynewdiscovery.enabled", matchIfMissing = false)
-@Component
-public class MyNewDiscoveryClient implements DiscoveryClient {
-        ...
-}
-
-And finally by enabling the new discovery service in the properties:
-
-[source]
-discovery:
-  local:
-    enabled: false
-  zookeeper:
-    enabled: false
-  mynewdiscovery:
-    enabled: true
+All these instances are registered in the Coordinator ensemble.
 
 = Using Mandrel
 
 == Web UI
+
+The Web UI is the simpliest way for using Mandrel, it is available on each coordinator. By default the HTTP port is 8080.
 
 == API REST
 
@@ -498,28 +466,28 @@ All the documentation can be found on the Swagger endpoint at:  //TODO
 
 === Endpoints
 
-==== Spiders
+==== Jobs
 
-[[spiders]]
-*GET `/spiders`*::
+[[Jobs]]
+*GET `/jobs`*::
 +
 .Description
-List all the spider
+List all the jobs
 
-[[spiders_id]]
-*GET `/spiders/{id}`*::
+[[Jobs_id]]
+*GET `/jobs/{id}`*::
 +
 .Description
-Return a spider
+Return a job
 
-[[spiders_start]]
-*GET `/spiders/{id}/start`*::
+[[Jobs_start]]
+*GET `/jobs/{id}/start`*::
 +
 .Description
 Start
 
-[[spiders_stop]]
-*GET `/spiders/{id}/stop`*::
+[[Jobs_stop]]
+*GET `/jobs/{id}/stop`*::
 +
 .Description
 Stop
@@ -543,11 +511,11 @@ Find a node by its id
 
 ==== Cluster
 
-== Spider definition
+== Job definition
 
 === Introduction
 
-A spider is at least composed by:
+A job is at least composed by:
 
 - sources: a set of sources (static list of uris, files, endpoint...) containing uris
 - stores: where to stores the raw data and their metadata
@@ -569,12 +537,12 @@ Let's see some examples!
 
 === Filtering
 
-You can add filters to your spider. There are two types of filters:
+You can add filters to your job. There are two types of filters:
 
 * link filters
 * blob filters
 
-Link filters apply conditions only on the link whereas blob filters apply conditions on the downloaded blob. This means also that link filters are applied BEFORE the crawling and blob filters AFTER. Take this in consideration when developping new spiders
+Link filters apply conditions only on the link whereas blob filters apply conditions on the downloaded blob. This means also that link filters are applied BEFORE the crawling and blob filters AFTER. Take this in consideration when developping new jobs
 
 ==== Link filters
 
@@ -672,13 +640,13 @@ To be continued...
 
 === Raw exporting
 
-Your spider is now done. Or not. We don't care, we just want to export the raw data of the pages/documents. You have to two ways to do this:
+Your job is now done. Or not. We don't care, we just want to export the raw data of the pages/documents. You have to two ways to do this:
 
 - Extract the data from the page store if you have specified one during the creation (SQL, Cassandra...)
 - Use the dedicated endpoint
 
 [source]
-$ curl -X GET http://localhost:8080/spiders/wikipedia/raw/export?format=csv|json
+$ curl -X GET http://localhost:8080/jobs/wikipedia/raw/export?format=csv|json
 
 To be continued...
 
@@ -686,12 +654,16 @@ To be continued...
 - Add formats for parquet
 - Support compression
 
+=== Frontier
+
+
+
 === Extracting
 
 Somethimes we want to crawl pages. But what we really want is the data INSIDE the pages.
 
 [source]
-$ curl -X POST http://localhost:8080/spiders/imdb -d '
+$ curl -X POST http://localhost:8080/jobs/imdb -d '
 {
    "sources":[
       {
@@ -753,7 +725,7 @@ This will extract the fields 'title', 'description' and 'actors' from the page.
 Ok, now we got some data, we can export them by calling:
 
 [source]
-$ curl -X POST http://localhost:8080/spiders/export/movie_extractor?format=csv|json
+$ curl -X POST http://localhost:8080/jobs/export/movie_extractor?format=csv|json
 
 ==== JSON
 
@@ -871,7 +843,7 @@ Document
 
 === Client
 
-Each spider can be configured with a specified client in order to configure:
+Each job can be configured with a specified client in order to configure:
 
 * Proxies
 * Request and connection timeouts
@@ -913,7 +885,12 @@ NOTE: Section pending
 
 By default, Mandrel is started in a standalone mode. In this mode, the 3 main components are started in the same JVM. Altought this may be useful for testing purposes, the standalone mode does not allow you to scale your deployment.
 
-For production, we recommand you to deploy at least one controller, one frontier and one worker, each in separate JVM on a dedicated serveur.
+For production, we recommand you to deploy at least one coordinator, one frontier and one worker, each in separate JVM on a dedicated serveur.
+
+=== High Availability
+
+The Coordinator is the main component and can be multi-instanced. For solid production deployment, use 3 or 5 coordinators.
+The coordinator is a low resource component, you can colocate a coordinator with a worker or a frontier, but you should not share the same server for a worker AND a frontier.
 
 === General Guidelines
 
@@ -923,13 +900,14 @@ Avoid small machines, because you don’t want to manage a cluster with a thousa
 Unless using one or more known and/or internal proxies for downloading the content from the workers, avoid placing firewall rules between the components consistuing a Mandrel deployment.
 However, if you don't have the choice, here are the interactions between the components (assuming the default transport and configuration):
 
-- user -> controllers on TCP for HTTP:8080 or HTTPS:8443
+- user -> UI-server on TCP for HTTP:8080 or HTTPS:8443
+- UI-server -> coordinators on TCP:8090
 - worker -> frontier on TCP:8092
-- controller -> worker on TCP:8091
-- controller -> frontier on TCP:8092
+- coordinator -> worker on TCP:8091
+- coordinator -> frontier on TCP:8092
 - worker -> engine storage (?)
 - frontier -> messenging storage (?)
-- controller -> application database (?)
+- coordinator -> application database (?)
 
 === Operating System
 
@@ -988,8 +966,6 @@ In case of a huge web data miner, if possible, prefer machines with two network 
 
 === Java
 
-=== ZooKeeper
-
 === Cloud
 
 Be aware of the cost introduced by fetching too much data...
@@ -1006,7 +982,7 @@ NOTE: Section pending
 NOTE: Section pending
 
 [glossary]
-controller::
+coordinator::
 is the main process for a Mandrel infrastructure.
 worker::
 is the process collecting the data from the source.
