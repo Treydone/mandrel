@@ -216,9 +216,13 @@ Bintray: https://bintray.com/treydone/maven/mandrel/view
 
 == Overview
 
+Mandrel is designed as a distributed system with dedicated/specialized components. In contrast to some projects or architecture like Mercator, Mandrel is composed by 4 types of instances: a UI, a coordinator, a frontier and a worker.
+
 [[img-archi]]
 .Architecture
 image::archi.png[Architecture, 800, 200]
+
+// TODO insert world wide map
 
 == Components
 
@@ -299,19 +303,6 @@ The frontier is set of various background tasks:
 
 - Priorizer: from a set of URIs, schedule the priority of the URIs and push them in the internal queues
 - Revisiter: revisit a page, when and how
-
-==== Revisit policies
-
-- Freshness: This is a binary measure that indicates whether the local copy is accurate or not.
-- Age: This is a measure that indicates how outdated the local copy is.
-- Uniform policy: This involves re-visiting all pages in the collection with the same frequency, regardless of their rates of change.
-- Proportional policy: This involves re-visiting more often the pages that change more frequently. The visiting frequency is directly proportional to the (estimated) change frequency.
-
-==== Politeness
-
-- Parallel connections
-- Max pages per second
-- Max bytes per second/bandwidth
 
 == Running modes
 
@@ -401,6 +392,26 @@ logging:
 
 === ui.yml
 
+[source]
+server:
+  port: 8080
+  undertow:
+    buffer-size: 16000
+    buffers-per-region: 20
+    direct-buffers: true
+    io-threads: 4
+    worker-threads: 32
+
+
+[[server.port]]
+*`server.port`*::
++
+.Description
+The port used for all HTTP incoming traffic.
++
+.Default
+`8080`
+
 === coordinator.yml
 
 [source]
@@ -451,6 +462,98 @@ All the components in Mandrel can have multiple instances:
 - Multiple  workers in order to grow up the bandwidth
 
 All these instances are registered in the Coordinator ensemble.
+
+== Data mining
+
+=== Content
+
+==== Redundant Content
+
+// TODO
+
+==== Cloaked Content
+
+// TODO
+
+==== Traps
+
+Some websites install honeypots or traps to detect web spiders. These traps usually are links that normal user can’t see but a spider can.
+Mandrel takes care that the link has proper visibility with no nofollow tag or can have the CSS style display:none or will be color disguised to blend in with the page’s background color.
+
+=== Fetching
+
+==== DNS resolution
+
+// TODO
+
+=== URIs
+
+==== Extraction and canonicalization
+
+* convert the protocol and hostname to lowercase. For example, HTTP://www.DUMMY.com is converted to http://www.dummy.com.
+* remove the ‘anchor’ or ‘reference’ part of the URI. Hence, http://dummy.com/faq.html#ancor is reduced to http://dummy.com/faq.html.
+* perform URI encoding for some characters and preventing the crawler from treating http://dummy.com/~page/ as a different URI from http://dummy.com/~%7Epage/.
+* use heuristics to recognize default Web pages. File names such as index.html or index.htm may be removed from the URI with the assumption that they are the default files. If that is true, they would be retrieved by simply using the base URI.
+• remove ‘..’ and its parent directory from the URL path. Therefore, URI path /%7Epage/sub1/sub2/../file.zip is reduced to /%7Epage/sub1/file.zip.
+* Add port 80 when no port number is specified for HTTP request.
+
+==== Exploration
+
+* Path-ascending crawling
+Mandrel is configured to download as many resources as possible and ascend to every path in each URI that it intends to fetch. For example, when the URI of http://dummy.com/a/b/page.html is found during extraction, Mandrel will attempt to crawl /a/b/, /a/, and /.
+Path-ascending crawlers are very effective in finding isolated resources, or resources for which no inbound link would have been found in regular crawling.
+
+* Focused/topical crawling
+Mandrel can also be intended to download sources that are similar to each other.
+
+// TODO
+
+=== Revisit policies
+
+- Freshness: This is a binary measure that indicates whether the local copy is accurate or not.
+- Age: This is a measure that indicates how outdated the local copy is.
+- Uniform policy: This involves re-visiting all pages in the collection with the same frequency, regardless of their rates of change.
+- Proportional policy: This involves re-visiting more often the pages that change more frequently. The visiting frequency is directly proportional to the (estimated) change frequency.
+
+=== Politeness
+
+==== Good citizens
+
+Mandrel is a “good citizens” as it will not impose too much traffic on the sources it will crawl. It includes safety mechanisms in order to avoid to inadvertently carry out a denial-of-service attack.
+Mandrel can be configured to obey various policies on:
+
+- Max parallel connections
+- Max pages per second
+- Max bytes per second (bandwidth)
+
+==== User-agent spoofing
+
+Since every HTTP request made from a client may contains a user-agent header,
+using the same user-agent multiple times leads to the detection of a bot.
+User agent spoofing is one of the available solution for this. Mandrel allows you to specify a static user-agent or a list of user agents and pick a random one for each request.
+Don't cheat with user-agents, do not pretend to be the Google Bot: Googlebot/2.1 (http://www.google.com/bot.html)
+
+==== Rotating IPs and Proxies
+
+// TODO
+
+==== Blocked and banned miners
+
+If any of the following symptoms appear on the sources that you are crawling/fetching, it is usually a sign of being blocked or banned.
+
+- CAPTCHA pages for HTTP fetchers
+- Frequent response with HTTP 404, 301 or 50x errors, also for HTTP fetchers
+- Unusual content delivery delay
+- Frequent appearance of status codes indication of blocking:
+* 301 Moved Temporarily
+* 401 Unauthorized
+* 403 Forbidden
+* 404 Not Found
+* 408 Request Timeout
+* 429 Too Many Requests
+* 503 Service Unavailable
+
+// TODO
 
 = Using Mandrel
 
@@ -970,7 +1073,7 @@ In case of a huge web data miner, if possible, prefer machines with two network 
 
 Be aware of the cost introduced by fetching too much data...
 
-=== Case studies
+== Case studies
 
 == Troubleshooting
 
@@ -982,12 +1085,18 @@ NOTE: Section pending
 NOTE: Section pending
 
 [glossary]
+
 coordinator::
 is the main process for a Mandrel infrastructure.
-worker::
-is the process collecting the data from the source.
+
 frontier::
 is the process keeping the state of the jobs.
+
+standalone::
+a all-in-one process composed by the ui, worker, frontier and coordinator
+
+worker::
+is the process collecting the data from the source.
 
 [appendix]
 == Bibliography
@@ -995,6 +1104,9 @@ is the process keeping the state of the jobs.
 [bibliography]
 - [[[ctheweb]]] Gautam Pant, Padmini Srinivasan, and Filippo Menczer.
 Crawling the Web
+
+- [[[webcrawling]]] Christopher Olston and Marc Najork
+Web Crawling
 
 [appendix]
 == Copyright and License
