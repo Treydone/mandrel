@@ -34,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 @Accessors(chain = true)
-public class Spider implements Serializable {
+public class Job implements Serializable {
 
 	private static final long serialVersionUID = 7577967853566572778L;
 

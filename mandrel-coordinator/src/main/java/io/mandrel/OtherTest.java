@@ -19,7 +19,7 @@
 package io.mandrel;
 
 import io.mandrel.common.bson.JsonBsonCodec;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.schema.SchemaGenerator;
 import io.mandrel.config.BindConfiguration;
@@ -27,7 +27,7 @@ import io.mandrel.data.filters.link.LinkFilter;
 import io.mandrel.requests.ftp.FtpRequester.FtpRequesterDefinition;
 import io.mandrel.requests.http.ApacheHttpRequester.ApacheHttpRequesterDefinition;
 import io.mandrel.timeline.Event;
-import io.mandrel.timeline.Event.SpiderInfo.SpiderEventType;
+import io.mandrel.timeline.Event.JobInfo.JobEventType;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -100,11 +100,11 @@ public class OtherTest {
 	@Test
 	@SneakyThrows
 	public void dummy() {
-		Event event = Event.forSpider();
+		Event event = Event.forJob();
 		event.setText("pouet");
-		event.getSpider().setSpiderId(1);
-		event.getSpider().setSpiderName("tesss");
-		event.getSpider().setType(SpiderEventType.SPIDER_CREATED);
+		event.getJob().setJobId(1);
+		event.getJob().setJobName("tesss");
+		event.getJob().setType(JobEventType.SPIDER_CREATED);
 
 		ObjectMapper mapper = new ObjectMapper();
 		BindConfiguration.configure(mapper);
@@ -153,7 +153,7 @@ public class OtherTest {
 		ObjectMapper mapper = new ObjectMapper();
 		BindConfiguration.configure(mapper);
 
-		Spider value = new Spider();
+		Job value = new Job();
 		value.setId(12);
 		String res = mapper.writeValueAsString(value);
 		System.err.println(res);
@@ -165,13 +165,13 @@ public class OtherTest {
 		MongoCollection<Document> collection = mongo.getDatabase("mandrel").getCollection("test");
 		// collection.insertOne(doc);
 
-		Spider result = collection.find().map(el -> {
+		Job result = collection.find().map(el -> {
 			try {
 				// System.err.println(System.currentTimeMillis());
 				String json = el.toJson();
 				System.err.println(json);
 				// System.err.println(System.currentTimeMillis());
-				Spider readValue = JsonBsonCodec.fromBson(mapper, doc, Spider.class);
+				Job readValue = JsonBsonCodec.fromBson(mapper, doc, Job.class);
 				// System.err.println(System.currentTimeMillis());
 				return readValue;
 			} catch (Exception e) {
@@ -201,7 +201,7 @@ public class OtherTest {
 	public void test1() {
 
 		int level = 0;
-		Class<Spider> clazz = Spider.class;
+		Class<Job> clazz = Job.class;
 
 		inspect(level, clazz, "root");
 

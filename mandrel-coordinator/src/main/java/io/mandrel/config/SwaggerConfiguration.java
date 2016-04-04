@@ -45,7 +45,7 @@ public class SwaggerConfiguration {
 	@Bean
 	public SwaggerSpringMvcPlugin customImplementation(InfoSettings settings) {
 		SwaggerSpringMvcPlugin swaggerSpringMvcPlugin = new SwaggerSpringMvcPlugin(this.springSwaggerConfig);
-		return swaggerSpringMvcPlugin.pathProvider(swaggerPathProvider()).apiInfo(apiInfo(settings)).includePatterns("/logs", "/nodes", "/spiders")
+		return swaggerSpringMvcPlugin.pathProvider(swaggerPathProvider()).apiInfo(apiInfo(settings)).includePatterns("/logs", "/nodes", "/jobs")
 				.apiVersion(settings.getVersion());
 	}
 

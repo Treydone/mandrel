@@ -1,6 +1,6 @@
 {
         "type" : "object",
-        "title" : "spider",
+        "title" : "job",
         "properties" : {
                 "name" : {
                         "type" : "string",

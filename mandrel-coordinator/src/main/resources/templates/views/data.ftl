@@ -26,17 +26,17 @@
                 <div class="box-body table-responsive no-padding">
                   <table class="table table-hover">
                     <tbody><tr>
-                      <th>Spider</th>
+                      <th>Job</th>
                       <th>Added</th>
                       <th>State</th>
                       <th>Extractor</th>
                     </tr>
-                    <#list spiders.content as spider>
-                    	<#list spider.extractors.data as extractor>
+                    <#list jobs.content as job>
+                    	<#list job.extractors.data as extractor>
                 		<tr>
-	                      <td><a href="/spiders/${spider.id?c}">${spider.name}</a></td>
-	                      <td>${spider.created}</td>
-	                      <#switch spider.status>
+	                      <td><a href="/jobs/${job.id?c}">${job.name}</a></td>
+	                      <td>${job.created}</td>
+	                      <#switch job.status>
 								<#case "CREATED">
 									<#assign label = "primary">
 									<#break>
@@ -53,8 +53,8 @@
 									<#assign label = "warning">
 									<#break>
 							</#switch>
-	                      <td><span class="label label-${label}">${spider.status}</span></td>
-	                      <td><a href="/spiders/${spider.id?c}/data/${extractor.getName()}">${extractor.getName()}</a></td>
+	                      <td><span class="label label-${label}">${job.status}</span></td>
+	                      <td><a href="/jobs/${job.id?c}/data/${extractor.getName()}">${extractor.getName()}</a></td>
 	                    </tr>
 	                    </#list>
 				    </#list>

@@ -2,7 +2,7 @@
 
 <#macro page_head>
   <@common_page_head/>
-  <title>New spider</title>
+  <title>New job</title>
   
   <script src="/public/js/jsoneditor.js"></script>
   <script src="/public/js/jsoneditor-theme.js"></script>
@@ -21,12 +21,12 @@
 
 <#macro content_header>
 		<h1>
-            New spider
+            New job
             <small>a new one please!</small>
           </h1>
           <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li><a href="/spiders"><i class="fa fa-tasks"></i> Spiders</a></li>
+            <li><a href="/jobs"><i class="fa fa-tasks"></i> Jobs</a></li>
             <li class="active">Create</li>
           </ol>
 </#macro>
@@ -37,7 +37,7 @@
 	  document.getElementById('submit').addEventListener('click',function() {
 	     var form = document.createElement("form");
 		form.setAttribute("method", "post");
-		form.setAttribute("action", "/spiders/add/form");
+		form.setAttribute("action", "/jobs/add/form");
 		
 		var hiddenField = document.createElement("input");              
 		hiddenField.setAttribute("type", "hidden");

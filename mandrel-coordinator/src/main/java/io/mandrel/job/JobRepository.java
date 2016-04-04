@@ -16,25 +16,34 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.metrics;
+package io.mandrel.job;
 
-import java.util.Map;
+import io.mandrel.common.data.Job;
 
-import lombok.Data;
+import java.util.List;
+import java.util.Optional;
 
-@Data
-public class SpiderMetrics {
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-	private Long nbPagesTotal;
-	private Long totalSize = Long.valueOf(0);
-	private Long totalTimeToFetch = Long.valueOf(0);
+public interface JobRepository {
 
-	private Long readTimeout;
-	private Long connectTimeout;
-	private Long connectException;
+	Job add(Job job);
 
-	private Map<String, Long> extractors;
-	private Map<String, Long> statuses;
-	private Map<String, Long> hosts;
-	private Map<String, Long> contentTypes;
+	Job update(Job job);
+
+	void updateStatus(long jobId, String status);
+
+	void delete(long id);
+
+	Optional<Job> get(long id);
+
+	List<Job> listActive();
+
+	List<Job> listLastActive(int limit);
+
+	Page<Job> page(Pageable pageable);
+
+	Page<Job> pageForActive(Pageable pageable);
+
 }

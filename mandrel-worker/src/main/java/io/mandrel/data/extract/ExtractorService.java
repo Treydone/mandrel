@@ -19,7 +19,7 @@
 package io.mandrel.data.extract;
 
 import io.mandrel.blob.Blob;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.net.Uri;
 import io.mandrel.data.Link;
 import io.mandrel.data.content.DataExtractor;
@@ -62,7 +62,7 @@ public class ExtractorService {
 		this.scriptingService = scriptingService;
 	}
 
-	public Pair<Set<Link>, Set<Link>> extractAndFilterOutlinks(Spider spider, Uri uri, Map<String, Instance<?>> cachedSelectors, Blob blob, OutlinkExtractor ol) {
+	public Pair<Set<Link>, Set<Link>> extractAndFilterOutlinks(Job job, Uri uri, Map<String, Instance<?>> cachedSelectors, Blob blob, OutlinkExtractor ol) {
 		// Find outlinks in page
 		Set<Link> outlinks = extractOutlinks(cachedSelectors, blob, ol);
 		log.trace("Finding outlinks for url {}: {}", uri, outlinks);
@@ -71,15 +71,15 @@ public class ExtractorService {
 		Set<Link> filteredOutlinks = null;
 		if (outlinks != null) {
 			Stream<Link> stream = outlinks.stream().filter(l -> l != null && l.getUri() != null);
-			if (spider.getFilters() != null && CollectionUtils.isNotEmpty(spider.getFilters().getLinks())) {
-				stream = stream.filter(link -> spider.getFilters().getLinks().stream().allMatch(f -> f.isValid(link)));
+			if (job.getFilters() != null && CollectionUtils.isNotEmpty(job.getFilters().getLinks())) {
+				stream = stream.filter(link -> job.getFilters().getLinks().stream().allMatch(f -> f.isValid(link)));
 			}
 			filteredOutlinks = stream.collect(Collectors.toSet());
 		}
 
 		Set<Link> allFilteredOutlinks = null;
 		if (filteredOutlinks != null) {
-			Set<Uri> res = MetadataStores.get(spider.getId()).deduplicate(filteredOutlinks.stream().map(l -> l.getUri()).collect(Collectors.toList()));
+			Set<Uri> res = MetadataStores.get(job.getId()).deduplicate(filteredOutlinks.stream().map(l -> l.getUri()).collect(Collectors.toList()));
 			allFilteredOutlinks = filteredOutlinks.stream().filter(f -> res.contains(f.getUri())).collect(Collectors.toSet());
 		}
 
@@ -115,13 +115,13 @@ public class ExtractorService {
 		return new HashSet<>(outlinks);
 	}
 
-	public List<Document> extractThenFormatThenStore(long spiderId, Map<String, Instance<?>> cachedSelectors, Blob blob, DataExtractor extractor) {
+	public List<Document> extractThenFormatThenStore(long jobId, Map<String, Instance<?>> cachedSelectors, Blob blob, DataExtractor extractor) {
 
 		List<Document> documents = extractThenFormat(cachedSelectors, blob, extractor);
 
 		// Store the result
 		if (documents != null) {
-			DocumentStores.get(spiderId, extractor.getName()).get().save(documents);
+			DocumentStores.get(jobId, extractor.getName()).get().save(documents);
 		}
 
 		return documents;

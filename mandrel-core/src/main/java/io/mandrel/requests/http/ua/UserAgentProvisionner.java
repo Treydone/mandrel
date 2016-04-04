@@ -18,7 +18,7 @@
  */
 package io.mandrel.requests.http.ua;
 
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.service.ObjectFactory;
 import io.mandrel.common.service.TaskContext;
@@ -36,5 +36,5 @@ public abstract class UserAgentProvisionner extends TaskContextAware {
 
 	}
 
-	public abstract String get(String url, Spider spider);
+	public abstract String get(String url, Job job);
 }

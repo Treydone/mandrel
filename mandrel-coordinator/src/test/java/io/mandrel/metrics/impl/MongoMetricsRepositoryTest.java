@@ -63,8 +63,8 @@ public class MongoMetricsRepositoryTest {
 		Map<String, Long> accumulators = Maps.newHashMap();
 		accumulators.put("global.hosts.www.leboncoin.com", 1l);
 		accumulators.put("global.nbPagesTotal", 1l);
-		accumulators.put("spider_1.hosts.www.leboncoin.com", 1l);
-		accumulators.put("spider_1.statuses.200", 5l);
+		accumulators.put("job_1.hosts.www.leboncoin.com", 1l);
+		accumulators.put("job_1.statuses.200", 5l);
 		accumulators.put("node_1.hosts.www.leboncoin.com", 1l);
 		accumulators.put("node_1.statuses.200", 5l);
 		mongoMetricsRepository.sync(accumulators);

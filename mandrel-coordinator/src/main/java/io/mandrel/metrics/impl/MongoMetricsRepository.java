@@ -24,7 +24,7 @@ import io.mandrel.metrics.GlobalMetrics;
 import io.mandrel.metrics.MetricKeys;
 import io.mandrel.metrics.MetricsRepository;
 import io.mandrel.metrics.NodeMetrics;
-import io.mandrel.metrics.SpiderMetrics;
+import io.mandrel.metrics.JobMetrics;
 import io.mandrel.metrics.Timeserie;
 import io.mandrel.metrics.Timeserie.Data;
 
@@ -248,14 +248,14 @@ public class MongoMetricsRepository implements MetricsRepository {
 	}
 
 	@Override
-	public SpiderMetrics spider(long spiderId) {
-		Document document = counters.find(Filters.eq("_id", MetricKeys.spider(spiderId))).first();
-		return document != null ? JsonBsonCodec.fromBson(mapper, document, SpiderMetrics.class) : new SpiderMetrics();
+	public JobMetrics job(long jobId) {
+		Document document = counters.find(Filters.eq("_id", MetricKeys.job(jobId))).first();
+		return document != null ? JsonBsonCodec.fromBson(mapper, document, JobMetrics.class) : new JobMetrics();
 	}
 
 	@Override
-	public void delete(long spiderId) {
-		counters.deleteOne(Filters.eq("_id", spiderId));
+	public void delete(long jobId) {
+		counters.deleteOne(Filters.eq("_id", jobId));
 	}
 
 	@Override

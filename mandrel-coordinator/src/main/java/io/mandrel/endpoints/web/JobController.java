@@ -21,14 +21,14 @@ package io.mandrel.endpoints.web;
 import io.mandrel.common.data.Client;
 import io.mandrel.common.data.Extractors;
 import io.mandrel.common.data.Filters;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.data.Politeness;
-import io.mandrel.common.data.Spider;
 import io.mandrel.common.data.StoresDefinition;
 import io.mandrel.data.source.Source;
 import io.mandrel.data.source.Source.SourceDefinition;
 import io.mandrel.frontier.Frontier.FrontierDefinition;
+import io.mandrel.job.JobService;
 import io.mandrel.metrics.MetricsService;
-import io.mandrel.spider.SpiderService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,126 +55,126 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@RequestMapping(value = "/spiders")
+@RequestMapping(value = "/jobs")
 @Controller
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 @Slf4j
-public class SpiderController {
+public class JobController {
 
-	private final SpiderService spiderService;
+	private final JobService jobService;
 	private final MetricsService metricsService;
 	private final ObjectMapper mapper;
 
 	@RequestMapping
-	public String spiders(Model model, @PageableDefault(page = 0, size = 20) Pageable pageable) {
-		model.addAttribute("spiders", spiderService.page(pageable));
-		return "views/spiders";
+	public String jobs(Model model, @PageableDefault(page = 0, size = 20) Pageable pageable) {
+		model.addAttribute("jobs", jobService.page(pageable));
+		return "views/jobs";
 	}
 
 	@RequestMapping("/{id}")
-	public String spider(@PathVariable long id, Model model) throws Exception {
-		Spider spider = spiderService.get(id);
-		model.addAttribute("spider", spider);
-		model.addAttribute("metrics", metricsService.spider(id));
+	public String job(@PathVariable long id, Model model) throws Exception {
+		Job job = jobService.get(id);
+		model.addAttribute("job", job);
+		model.addAttribute("metrics", metricsService.job(id));
 
-		refill(model, spider);
-		return "views/spider";
+		refill(model, job);
+		return "views/job";
 	}
 
 	@RequestMapping(value = "/{id}/start")
 	public String start(@PathVariable Long id) {
-		spiderService.start(id);
-		return "redirect:/spiders/{id}";
+		jobService.start(id);
+		return "redirect:/jobs/{id}";
 	}
 
 	@RequestMapping(value = "/{id}/fork")
 	public String fork(@PathVariable Long id, Model model) throws BindException {
-		long newId = spiderService.fork(id);
+		long newId = jobService.fork(id);
 		model.addAttribute("newId", newId);
-		return "redirect:/spiders/{newId}";
+		return "redirect:/jobs/{newId}";
 	}
 
 	@RequestMapping(value = "/{id}/pause")
 	public String pause(@PathVariable Long id) {
-		spiderService.pause(id);
-		return "redirect:/spiders/{id}";
+		jobService.pause(id);
+		return "redirect:/jobs/{id}";
 	}
 
 	@RequestMapping(value = "/{id}/cancel")
 	public String cancel(@PathVariable Long id) {
-		spiderService.kill(id);
-		return "redirect:/spiders/{id}";
+		jobService.kill(id);
+		return "redirect:/jobs/{id}";
 	}
 
 	@RequestMapping(value = "/{id}/delete")
 	public String delete(@PathVariable Long id) {
-		spiderService.delete(id);
-		return "redirect:/spiders/{id}";
+		jobService.delete(id);
+		return "redirect:/jobs/{id}";
 	}
 
 	@RequestMapping(value = "/{id}/reinject")
 	public String reinject(@PathVariable Long id) {
-		spiderService.reinject(id);
-		return "redirect:/spiders/{id}";
+		jobService.reinject(id);
+		return "redirect:/jobs/{id}";
 	}
 
 	@RequestMapping("/add")
 	public String prepare(Model model) throws JsonProcessingException {
-		return "views/spider_add";
+		return "views/job_add";
 	}
 
 	@RequestMapping("/add/definition")
 	public String addWithDefinition(Model model) throws JsonProcessingException {
 		prepareModel(model);
-		return "views/spider_add_with_def";
+		return "views/job_add_with_def";
 	}
 
 	@RequestMapping(value = "/add/definition", method = RequestMethod.POST)
 	public String createWithDefinition(Model model, @RequestParam String definition) throws JsonProcessingException {
-		Spider spider;
+		Job job;
 		try {
-			spider = mapper.readValue(definition, Spider.class);
+			job = mapper.readValue(definition, Job.class);
 		} catch (IOException e) {
 			model.addAttribute("errors", "JSON invalid");
-			log.debug("Spider definition is invalid", e);
+			log.debug("Job definition is invalid", e);
 			return "redirect:/add/definition";
 		}
 		try {
-			spiderService.add(spider);
+			jobService.add(job);
 		} catch (BindException e) {
 			model.addAttribute("errors", e.getAllErrors());
-			refill(model, spider);
-			log.debug("Can not add spider", e);
-			return "views/spider_add_with_def";
+			refill(model, job);
+			log.debug("Can not add job", e);
+			return "views/job_add_with_def";
 		}
-		return "redirect:/spiders";
+		return "redirect:/jobs";
 	}
 
 	@RequestMapping("/add/form")
 	public String addWithForm(Model model) throws JsonProcessingException {
 		prepareModel(model);
-		return "views/spider_add_with_form";
+		return "views/job_add_with_form";
 	}
 
 	@RequestMapping(value = "/add/form", method = RequestMethod.POST)
 	public String create(Model model, @RequestParam String definition) throws JsonProcessingException {
-		Spider spider;
+		Job job;
 		try {
-			spider = mapper.readValue(definition, Spider.class);
+			job = mapper.readValue(definition, Job.class);
 		} catch (IOException e) {
 			model.addAttribute("errors", "JSON invalid");
-			log.debug("Spider definition is invalid", e);
+			log.debug("Job definition is invalid", e);
 			return "redirect:/add/form";
 		}
 		try {
-			spiderService.add(spider);
+			jobService.add(job);
 		} catch (BindException e) {
 			model.addAttribute("errors", e.getAllErrors());
-			refill(model, spider);
-			log.debug("Can not add spider", e);
-			return "views/spider_add_with_form";
+			refill(model, job);
+			log.debug("Can not add job", e);
+			return "views/job_add_with_form";
 		}
-		return "redirect:/spiders";
+		return "redirect:/jobs";
 	}
 
 	private void prepareModel(Model model) throws JsonProcessingException {
@@ -186,18 +186,18 @@ public class SpiderController {
 		model.addAttribute("advancedValue", mapper.writeValueAsString(new Client()));
 	}
 
-	private void refill(Model model, Spider spider) throws JsonProcessingException {
-		model.addAttribute("json", mapper.writer(new DefaultPrettyPrinter()).writeValueAsString(spider));
+	private void refill(Model model, Job job) throws JsonProcessingException {
+		model.addAttribute("json", mapper.writer(new DefaultPrettyPrinter()).writeValueAsString(job));
 		BaseValue value = new BaseValue();
-		value.setName(spider.getName());
-		value.setSources(spider.getSources());
-		value.setFilters(spider.getFilters());
+		value.setName(job.getName());
+		value.setSources(job.getSources());
+		value.setFilters(job.getFilters());
 		model.addAttribute("baseValue", mapper.writeValueAsString(value));
-		model.addAttribute("storesValue", mapper.writeValueAsString(spider.getStores()));
-		model.addAttribute("frontierValue", mapper.writeValueAsString(spider.getFrontier()));
-		model.addAttribute("extractionValue", mapper.writeValueAsString(spider.getExtractors()));
-		model.addAttribute("politenessValue", mapper.writeValueAsString(spider.getPoliteness()));
-		model.addAttribute("advancedValue", mapper.writeValueAsString(spider.getClient()));
+		model.addAttribute("storesValue", mapper.writeValueAsString(job.getStores()));
+		model.addAttribute("frontierValue", mapper.writeValueAsString(job.getFrontier()));
+		model.addAttribute("extractionValue", mapper.writeValueAsString(job.getExtractors()));
+		model.addAttribute("politenessValue", mapper.writeValueAsString(job.getPoliteness()));
+		model.addAttribute("advancedValue", mapper.writeValueAsString(job.getClient()));
 	}
 
 	@Data

@@ -102,7 +102,7 @@ public class RedisFrontierStore extends FrontierStore {
 	}
 
 	private String getTopicName(String name) {
-		return "topic_" + context.getSpiderId() + "_" + name;
+		return "topic_" + context.getJobId() + "_" + name;
 	}
 
 	@Override

@@ -75,12 +75,12 @@ public class MetricsService {
 
 	}
 
-	public SpiderMetrics spider(long spiderId) {
-		return metricsRepository.spider(spiderId);
+	public JobMetrics job(long jobId) {
+		return metricsRepository.job(jobId);
 	}
 
-	public void delete(long spiderId) {
-		metricsRepository.delete(spiderId);
+	public void delete(long jobId) {
+		metricsRepository.delete(jobId);
 	}
 
 }

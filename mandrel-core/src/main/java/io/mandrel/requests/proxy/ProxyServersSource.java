@@ -18,7 +18,7 @@
  */
 package io.mandrel.requests.proxy;
 
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.lifecycle.Initializable;
 import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.service.ObjectFactory;
@@ -39,5 +39,5 @@ public abstract class ProxyServersSource extends TaskContextAware implements Ini
 
 	}
 
-	public abstract ProxyServer findProxy(Spider spider);
+	public abstract ProxyServer findProxy(Job job);
 }

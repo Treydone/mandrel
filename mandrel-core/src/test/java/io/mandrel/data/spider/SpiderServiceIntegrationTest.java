@@ -34,11 +34,11 @@
 // * specific language governing permissions and limitations
 // * under the License.
 // */
-//package io.mandrel.data.spider;
+//package io.mandrel.data.job;
 //
 //import io.mandrel.blob.BlobStore;
 //import io.mandrel.common.data.Constants;
-//import io.mandrel.common.data.Spider;
+//import io.mandrel.common.data.Job;
 //import io.mandrel.coordinator.CoordinatorRepository;
 //import io.mandrel.coordinator.CoordinatorService;
 //import io.mandrel.data.Link;
@@ -73,10 +73,10 @@
 //import org.springframework.core.io.ClassPathResource;
 //
 //@RunWith(MockitoJUnitRunner.class)
-//public class SpiderServiceIntegrationTest {
+//public class JobServiceIntegrationTest {
 //
 //	@Mock
-//	private CoordinatorRepository spiderRepository;
+//	private CoordinatorRepository jobRepository;
 //
 //	@Mock
 //	private BlobStore pageStore;
@@ -93,23 +93,23 @@
 //	@Test
 //	public void no_filtering() throws IOException {
 //
-//		CoordinatorService spiderService = new CoordinatorService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
+//		CoordinatorService jobService = new CoordinatorService(jobRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
 //				new ApacheHttpRequester(), null, timelineService);
 //
-//		Spider spider = new Spider();
-//		spider.setName("wikipedia");
+//		Job job = new Job();
+//		job.setName("wikipedia");
 //
-//		spider.getStores().setPageMetadataStore(metadataStore);
-//		spider.getStores().setPageStore(pageStore);
+//		job.getStores().setPageMetadataStore(metadataStore);
+//		job.getStores().setPageStore(pageStore);
 //
-//		spiderService.validate(spider);
+//		jobService.validate(job);
 //
 //		Set<String> temp = new HashSet<>();
 //		Mockito.when(metadataStore.filter(Mockito.anyLong(), captor.capture(), Mockito.any(Politeness.class))).thenReturn(temp);
 //
 //		InputStream body = new ClassPathResource("/data/wikipedia.html").getInputStream();
 //		WebPage webPage = new WebPage(new URL("http://fr.wikipedia.org/wiki/Wikip%C3%A9dia"), 200, "", null, null, IOUtils.toByteArray(body));
-//		Analysis report = spiderService.buildReport(spider, webPage);
+//		Analysis report = jobService.buildReport(job, webPage);
 //
 //		Mockito.verify(metadataStore).filter(Mockito.anyLong(), Mockito.anySetOf(Link.class), Mockito.any(Politeness.class));
 //		temp.addAll(captor.getValue().stream().map(l -> l.getUri()).collect(Collectors.toSet()));
@@ -124,26 +124,26 @@
 //	@Test
 //	public void same_domain() throws IOException {
 //
-//		CoordinatorService spiderService = new CoordinatorService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
+//		CoordinatorService jobService = new CoordinatorService(jobRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
 //				new ApacheHttpRequester(), null, timelineService);
 //
-//		Spider spider = new Spider();
-//		spider.setName("wikipedia");
+//		Job job = new Job();
+//		job.setName("wikipedia");
 //		AllowedForDomainsFilter filter = new AllowedForDomainsFilter();
 //		filter.setDomains(Arrays.asList(".wikipedia.org"));
-//		spider.getFilters().getForLinks().add(filter);
+//		job.getFilters().getForLinks().add(filter);
 //
-//		spider.getStores().setPageMetadataStore(metadataStore);
-//		spider.getStores().setPageStore(pageStore);
+//		job.getStores().setPageMetadataStore(metadataStore);
+//		job.getStores().setPageStore(pageStore);
 //
-//		spiderService.validate(spider);
+//		jobService.validate(job);
 //
 //		Set<String> temp = new HashSet<>();
 //		Mockito.when(metadataStore.filter(Mockito.anyLong(), captor.capture(), Mockito.any(Politeness.class))).thenReturn(temp);
 //
 //		InputStream body = new ClassPathResource("/data/wikipedia.html").getInputStream();
 //		WebPage webPage = new WebPage(new URL("http://fr.wikipedia.org/wiki/Wikip%C3%A9dia"), 200, "", null, null, IOUtils.toByteArray(body));
-//		Analysis report = spiderService.buildReport(spider, webPage);
+//		Analysis report = jobService.buildReport(job, webPage);
 //
 //		Mockito.verify(metadataStore).filter(Mockito.anyLong(), Mockito.anySetOf(Link.class), Mockito.any(Politeness.class));
 //		temp.addAll(captor.getValue().stream().map(l -> l.getUri()).collect(Collectors.toSet()));

@@ -30,7 +30,7 @@ public interface MetricsRepository {
 
 	GlobalMetrics global();
 
-	SpiderMetrics spider(long spiderId);
+	JobMetrics job(long jobId);
 
-	void delete(long spiderId);
+	void delete(long jobId);
 }

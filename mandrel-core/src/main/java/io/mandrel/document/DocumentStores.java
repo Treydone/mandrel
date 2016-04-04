@@ -30,10 +30,10 @@ public class DocumentStores {
 
 	private final static Map<Long, Map<String, DocumentStore>> stores = new HashMap<>();
 
-	public static void add(long spiderId, String name, DocumentStore documentStore) {
+	public static void add(long jobId, String name, DocumentStore documentStore) {
 		synchronized (stores) {
-			stores.putIfAbsent(spiderId, new HashMap<>());
-			DocumentStore oldDocumentStore = stores.get(spiderId).put(name, documentStore);
+			stores.putIfAbsent(jobId, new HashMap<>());
+			DocumentStore oldDocumentStore = stores.get(jobId).put(name, documentStore);
 			if (oldDocumentStore != null) {
 				try {
 					oldDocumentStore.close();
@@ -44,18 +44,18 @@ public class DocumentStores {
 		}
 	}
 
-	public static Optional<Map<String, DocumentStore>> get(Long spiderId) {
-		return stores.get(spiderId) != null ? Optional.of(stores.get(spiderId)) : Optional.empty();
+	public static Optional<Map<String, DocumentStore>> get(Long jobId) {
+		return stores.get(jobId) != null ? Optional.of(stores.get(jobId)) : Optional.empty();
 	}
 
-	public static Optional<DocumentStore> get(Long spiderId, String name) {
-		return stores.get(spiderId) != null ? (stores.get(spiderId).get(name) != null ? Optional.of(stores.get(spiderId).get(name)) : Optional.empty())
+	public static Optional<DocumentStore> get(Long jobId, String name) {
+		return stores.get(jobId) != null ? (stores.get(jobId).get(name) != null ? Optional.of(stores.get(jobId).get(name)) : Optional.empty())
 				: Optional.empty();
 	}
 
-	public static void remove(Long spiderId) {
+	public static void remove(Long jobId) {
 		synchronized (stores) {
-			Map<String, DocumentStore> oldDocumentStores = stores.remove(spiderId);
+			Map<String, DocumentStore> oldDocumentStores = stores.remove(jobId);
 			if (oldDocumentStores != null) {
 				oldDocumentStores.forEach((key, oldDocumentStore) -> {
 					if (oldDocumentStore != null) {

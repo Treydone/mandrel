@@ -16,8 +16,8 @@
           </h1>
           <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li><a href="/spiders"><i class="fa fa-tasks"></i> Spiders</a></li>
-            <li><a href="/spiders/${spider.id?c}"><i class="fa fa-database"></i> ${spider.name}</a></li>
+            <li><a href="/jobs"><i class="fa fa-tasks"></i> Jobs</a></li>
+            <li><a href="/jobs/${job.id?c}"><i class="fa fa-database"></i> ${job.name}</a></li>
             <li class="active">Data</li>
           </ol>
 </#macro>
@@ -34,7 +34,7 @@
 		        "scrollX": true,
 		        "searching": false,
 		        "ajax": {
-		            "url": "/spiders/${spider.id?c}/data/${extractor.getName()}",
+		            "url": "/jobs/${job.id?c}/data/${extractor.getName()}",
 		            "type": "POST"
 		        },
 		        "columns": [

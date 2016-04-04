@@ -114,7 +114,7 @@ public class ElasticsearchDocumentStore extends NavigableDocumentStore {
 					throw Throwables.propagate(e);
 				}
 			});
-			return new ElasticsearchDocumentStore(context, dataExtractor, client, MessageFormat.format(index, context.getSpiderId()), type, batchSize);
+			return new ElasticsearchDocumentStore(context, dataExtractor, client, MessageFormat.format(index, context.getJobId()), type, batchSize);
 		}
 	}
 

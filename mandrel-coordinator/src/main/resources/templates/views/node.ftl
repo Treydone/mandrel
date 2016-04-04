@@ -95,7 +95,7 @@
             <div class="box-body table-responsive no-padding">
               <table class="table table-hover">
                 <tbody><tr>
-                  <th>Spider</th>
+                  <th>Job</th>
                   <th>Version</th>
                   <th>Status</th>
                   <th>Type</th>
@@ -104,7 +104,7 @@
 					<#assign containers = containersByType?values[key_index]>
                 	<#list containers as container> 
 			         <tr>
-                      <td><a href="/spiders/${container.spiderId?c}">${container.spiderId?c}</a></td>
+                      <td><a href="/jobs/${container.jobId?c}">${container.jobId?c}</a></td>
                       <td>${container.version?c}</td>
                       <td>${container.status}</td>
                       <td>${key}</td>

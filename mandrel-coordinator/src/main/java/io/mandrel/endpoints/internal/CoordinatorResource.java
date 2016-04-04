@@ -21,8 +21,8 @@ package io.mandrel.endpoints.internal;
 import io.mandrel.cluster.node.NodeRepository;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.container.ContainerStatus;
-import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.SpiderStatuses;
+import io.mandrel.common.data.Job;
+import io.mandrel.common.data.JobStatuses;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
@@ -77,17 +77,17 @@ public class CoordinatorResource implements CoordinatorContract {
 
 	@Override
 	public void createCoordinatorContainer(byte[] definition) {
-		Spider spider;
+		Job job;
 		try {
-			spider = objectMapper.readValue(definition, Spider.class);
+			job = objectMapper.readValue(definition, Job.class);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
-		create(spider);
+		create(job);
 	}
 
-	public void create(Spider spider) {
-		CoordinatorContainer container = new CoordinatorContainer(spider, null, null);
+	public void create(Job job) {
+		CoordinatorContainer container = new CoordinatorContainer(job, null, null);
 		container.register();
 	}
 
@@ -111,22 +111,22 @@ public class CoordinatorResource implements CoordinatorContract {
 	@Override
 	public List<Container> listRunningCoordinatorContainers() {
 		return CoordinatorContainers.list().stream()
-				.map(f -> new Container().setSpiderId(f.spider().getId()).setVersion(f.spider().getVersion()).setStatus(f.status()))
+				.map(f -> new Container().setJobId(f.job().getId()).setVersion(f.job().getVersion()).setStatus(f.status()))
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public SyncResponse syncCoordinators(SyncRequest sync) throws RemoteException {
 		Collection<? extends io.mandrel.common.container.Container> containers = CoordinatorContainers.list();
-		final Map<Long, Spider> spiderByIdFromCoordinator = new HashMap<>();
+		final Map<Long, Job> jobByIdFromCoordinator = new HashMap<>();
 		if (sync.getDefinitions() != null) {
-			spiderByIdFromCoordinator.putAll(sync.getDefinitions().stream().map(def -> {
+			jobByIdFromCoordinator.putAll(sync.getDefinitions().stream().map(def -> {
 				try {
-					return objectMapper.readValue(def, Spider.class);
+					return objectMapper.readValue(def, Job.class);
 				} catch (Exception e) {
 					throw Throwables.propagate(e);
 				}
-			}).collect(Collectors.toMap(spider -> spider.getId(), spider -> spider)));
+			}).collect(Collectors.toMap(job -> job.getId(), job -> job)));
 		}
 
 		SyncResponse response = new SyncResponse();
@@ -137,54 +137,54 @@ public class CoordinatorResource implements CoordinatorContract {
 		List<Long> paused = new ArrayList<>();
 		response.setCreated(created).setKilled(killed).setUpdated(updated).setStarted(started);
 
-		List<Long> existingSpiders = new ArrayList<>();
+		List<Long> existingJobs = new ArrayList<>();
 		containers.forEach(c -> {
 
-			Spider containerSpider = c.spider();
-			long containerSpiderId = containerSpider.getId();
+			Job containerJob = c.job();
+			long containerJobId = containerJob.getId();
 
-			existingSpiders.add(containerSpiderId);
-			if (!spiderByIdFromCoordinator.containsKey(containerSpiderId)) {
-				log.debug("Killing spider {}", containerSpiderId);
-				killCoordinatorContainer(containerSpiderId);
-				killed.add(containerSpiderId);
+			existingJobs.add(containerJobId);
+			if (!jobByIdFromCoordinator.containsKey(containerJobId)) {
+				log.debug("Killing job {}", containerJobId);
+				killCoordinatorContainer(containerJobId);
+				killed.add(containerJobId);
 			} else {
-				Spider remoteSpider = spiderByIdFromCoordinator.get(containerSpiderId);
+				Job remoteJob = jobByIdFromCoordinator.get(containerJobId);
 
-				if (remoteSpider.getVersion() != containerSpider.getVersion()) {
-					log.debug("Updating spider {}", containerSpiderId);
-					killCoordinatorContainer(containerSpiderId);
-					create(remoteSpider);
-					updated.add(containerSpiderId);
+				if (remoteJob.getVersion() != containerJob.getVersion()) {
+					log.debug("Updating job {}", containerJobId);
+					killCoordinatorContainer(containerJobId);
+					create(remoteJob);
+					updated.add(containerJobId);
 
-					if (SpiderStatuses.STARTED.equals(remoteSpider.getStatus())) {
-						log.debug("Starting spider {}", containerSpiderId);
-						startCoordinatorContainer(containerSpiderId);
-						started.add(containerSpiderId);
+					if (JobStatuses.STARTED.equals(remoteJob.getStatus())) {
+						log.debug("Starting job {}", containerJobId);
+						startCoordinatorContainer(containerJobId);
+						started.add(containerJobId);
 					}
-				} else if (!remoteSpider.getStatus().equalsIgnoreCase(c.status().toString())) {
-					log.info("Container for {} is {}, but has to be {}", containerSpider.getId(), c.status(), remoteSpider.getStatus());
+				} else if (!remoteJob.getStatus().equalsIgnoreCase(c.status().toString())) {
+					log.info("Container for {} is {}, but has to be {}", containerJob.getId(), c.status(), remoteJob.getStatus());
 
-					switch (remoteSpider.getStatus()) {
-					case SpiderStatuses.STARTED:
+					switch (remoteJob.getStatus()) {
+					case JobStatuses.STARTED:
 						if (!ContainerStatus.STARTED.equals(c.status())) {
-							log.debug("Starting spider {}", containerSpiderId);
-							startCoordinatorContainer(containerSpiderId);
-							started.add(containerSpiderId);
+							log.debug("Starting job {}", containerJobId);
+							startCoordinatorContainer(containerJobId);
+							started.add(containerJobId);
 						}
 						break;
-					case SpiderStatuses.INITIATED:
+					case JobStatuses.INITIATED:
 						if (!ContainerStatus.INITIATED.equals(c.status())) {
-							log.debug("Re-init spider {}", containerSpiderId);
-							killCoordinatorContainer(containerSpiderId);
-							create(remoteSpider);
+							log.debug("Re-init job {}", containerJobId);
+							killCoordinatorContainer(containerJobId);
+							create(remoteJob);
 						}
 						break;
-					case SpiderStatuses.PAUSED:
+					case JobStatuses.PAUSED:
 						if (!ContainerStatus.PAUSED.equals(c.status())) {
-							log.debug("Pausing spider {}", containerSpiderId);
-							pauseCoordinatorContainer(containerSpiderId);
-							paused.add(containerSpiderId);
+							log.debug("Pausing job {}", containerJobId);
+							pauseCoordinatorContainer(containerJobId);
+							paused.add(containerJobId);
 						}
 						break;
 					}
@@ -192,20 +192,20 @@ public class CoordinatorResource implements CoordinatorContract {
 			}
 		});
 
-		spiderByIdFromCoordinator.forEach((id, spider) -> {
-			if (!existingSpiders.contains(id)) {
-				log.debug("Creating spider {}...", id);
-				create(spider);
-				created.add(spider.getId());
+		jobByIdFromCoordinator.forEach((id, job) -> {
+			if (!existingJobs.contains(id)) {
+				log.debug("Creating job {}...", id);
+				create(job);
+				created.add(job.getId());
 
-				if (SpiderStatuses.STARTED.equals(spider.getStatus())) {
-					log.debug("Starting spider {}", id);
-					startCoordinatorContainer(spider.getId());
-					started.add(spider.getId());
-				} else if (SpiderStatuses.PAUSED.equals(spider.getStatus())) {
-					log.debug("Pausing spider {}", id);
-					pauseCoordinatorContainer(spider.getId());
-					paused.add(spider.getId());
+				if (JobStatuses.STARTED.equals(job.getStatus())) {
+					log.debug("Starting job {}", id);
+					startCoordinatorContainer(job.getId());
+					started.add(job.getId());
+				} else if (JobStatuses.PAUSED.equals(job.getStatus())) {
+					log.debug("Pausing job {}", id);
+					pauseCoordinatorContainer(job.getId());
+					paused.add(job.getId());
 				}
 			}
 		});

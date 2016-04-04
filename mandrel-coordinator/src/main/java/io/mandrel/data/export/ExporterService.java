@@ -20,13 +20,13 @@ package io.mandrel.data.export;
 
 import io.mandrel.blob.BlobStores;
 import io.mandrel.common.NotFoundException;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.data.content.DataExtractor;
 import io.mandrel.data.content.DefaultDataExtractor;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.document.DocumentStores;
 import io.mandrel.document.NavigableDocumentStore;
-import io.mandrel.spider.SpiderService;
+import io.mandrel.job.JobService;
 
 import java.io.BufferedWriter;
 import java.io.Writer;
@@ -46,12 +46,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ExporterService {
 
-	private final SpiderService spiderService;
+	private final JobService jobService;
 
 	public void export(Long id, String extractorName, Exporter exporter, Writer writer) {
-		Spider spider = spiderService.get(id);
+		Job job = jobService.get(id);
 
-		Optional<? extends DataExtractor> oExtractor = spider.getExtractors().getData().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
+		Optional<? extends DataExtractor> oExtractor = job.getExtractors().getData().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
 		if (oExtractor.isPresent()) {
 
 			DataExtractor theExtractor = oExtractor.get();
@@ -88,7 +88,7 @@ public class ExporterService {
 			}
 		} else {
 			notFound("Extractor not found");
-			log.debug("Extract {} not found for spider {}", extractorName, id);
+			log.debug("Extract {} not found for job {}", extractorName, id);
 		}
 	}
 

@@ -29,7 +29,7 @@ public class Accumulators {
 
 	private final GlobalAccumulator global = new GlobalAccumulator();
 	private final NodeAccumulator node = new NodeAccumulator();
-	private final ConcurrentMap<Long, SpiderAccumulator> spiders = new ConcurrentHashMap<>();
+	private final ConcurrentMap<Long, JobAccumulator> jobs = new ConcurrentHashMap<>();
 
 	public GlobalAccumulator globalAccumulator() {
 		return global;
@@ -39,15 +39,15 @@ public class Accumulators {
 		return node;
 	}
 
-	public Map<Long, SpiderAccumulator> spiderAccumulators() {
-		return spiders;
+	public Map<Long, JobAccumulator> jobAccumulators() {
+		return jobs;
 	}
 
-	public SpiderAccumulator spiderAccumulator(long spiderId) {
-		return spiders.computeIfAbsent(spiderId, id -> new SpiderAccumulator(id));
+	public JobAccumulator jobAccumulator(long jobId) {
+		return jobs.computeIfAbsent(jobId, id -> new JobAccumulator(id));
 	}
 
-	public void destroy(long spiderId) {
-		spiders.remove(spiderId);
+	public void destroy(long jobId) {
+		jobs.remove(jobId);
 	}
 }

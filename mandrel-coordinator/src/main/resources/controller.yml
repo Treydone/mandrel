@@ -96,7 +96,7 @@ client:
 #        <<: *default_strategy
 
 chain:
-  #- spider_traps_detector
+  #- job_traps_detector
     # - creation of indefinitely deep directory structures like
     # - huge params value
     # - too many params

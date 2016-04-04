@@ -67,7 +67,7 @@
 	      <div class="info-box">
 	        <span class="info-box-icon bg-aqua"><i class="fa fa-star-o"></i></span>
 	        <div class="info-box-content">
-	          <span class="info-box-text">Spiders completed</span>
+	          <span class="info-box-text">Jobs completed</span>
 	          <span class="info-box-number">0</span>
 	        </div><!-- /.info-box-content -->
 	      </div><!-- /.info-box -->
@@ -111,7 +111,7 @@
 		<div class="col-md-6">
 			<div class="box">
                 <div class="box-header">
-                  <h3 class="box-title">Spiders</h3>
+                  <h3 class="box-title">Jobs</h3>
                 </div><!-- /.box-header -->
                 <div class="box-body table-responsive no-padding">
                   <table class="table table-hover">
@@ -123,13 +123,13 @@
                       <th>Status</th>
                       <th>Description</th>
                     </tr>
-                    <#list spiders as spider>
+                    <#list jobs as job>
                 		<tr>
-	                      <td><a href="/spiders/${spider.id?c}">#${spider.id?c}</a></td>
-	                      <td><a href="/spiders/${spider.id?c}">${spider.name}</a></td>
-	                      <td>${spider.created}</td>
-	                      <td>${(spider.started)!"not started"}</td>
-	                      <#switch spider.status>
+	                      <td><a href="/jobs/${job.id?c}">#${job.id?c}</a></td>
+	                      <td><a href="/jobs/${job.id?c}">${job.name}</a></td>
+	                      <td>${job.created}</td>
+	                      <td>${(job.started)!"not started"}</td>
+	                      <#switch job.status>
 								<#case "created">
 									<#assign label = "primary">
 									<#break>
@@ -149,10 +149,10 @@
 									<#assign label = "warning">
 									<#break>
 							</#switch>
-	                      <td><span class="label label-${label}">${spider.status}</span></td>
+	                      <td><span class="label label-${label}">${job.status}</span></td>
 	                      <td>Sources:
-	                      <#if spider.sources??>
-	                      <#list spider.sources as source>
+	                      <#if job.sources??>
+	                      <#list job.sources as source>
 	                      	${source.name()} <#sep>/</#sep>
 	                      </#list>
 	                      </#if>
@@ -162,17 +162,17 @@
                   </tbody>
                   </table>
                 </div>
-                <#if spiders?size < 1>
+                <#if jobs?size < 1>
                 <div class="box-body">
                   <div class="callout callout-success">
-                    <h4>There is no running spider!</h4>
-                    <p>It is time to work now, create a new spider.</p>
-                    <button type="button" class="btn btn-outline" data-toggle="modal" data-target="#add-spider"><i class="fa fa-plus"></i> Create one!</button>
+                    <h4>There is no running job!</h4>
+                    <p>It is time to work now, create a new job.</p>
+                    <button type="button" class="btn btn-outline" data-toggle="modal" data-target="#add-job"><i class="fa fa-plus"></i> Create one!</button>
                   </div>
                 </div><!-- /.box-body -->
                 </#if>
                 <div class="box-footer clearfix">
-                  <a class="btn btn-sm btn-default btn-flat pull-right" href="/spiders">View All</a>
+                  <a class="btn btn-sm btn-default btn-flat pull-right" href="/jobs">View All</a>
                 </div>
               </div>
 		</div>

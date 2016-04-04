@@ -65,30 +65,30 @@
   </head>
   <body class="sidebar-mini skin-black-light">
   
-    <div class="modal" id="add-spider">
+    <div class="modal" id="add-job">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title">Add a new spider</h4>
+            <h4 class="modal-title">Add a new job</h4>
           </div>
           <div class="modal-body">
     	     <div class="callout callout-success">
-                <h4>Create a spider with the form</h4>
-                <p>The easiest method to create a new spider.</p>
-                <a href="/spiders/add/form"><button type="button" class="btn btn-outline"><i class="fa fa-plus"></i> Create one!</button></a>
+                <h4>Create a job with the form</h4>
+                <p>The easiest method to create a new job.</p>
+                <a href="/jobs/add/form"><button type="button" class="btn btn-outline"><i class="fa fa-plus"></i> Create one!</button></a>
               </div>
             </div><!-- /.box-body -->
             <div class="box-body">
               <div class="callout callout-info">
-                <h4>Create a spider with a JSON definition</h4>
+                <h4>Create a job with a JSON definition</h4>
                 <p>For fine tuning and advanced users.</p>
-                <a href="/spiders/add/definition"><button type="button" class="btn btn-outline"><i class="fa fa-plus"></i> Create one!</button></a>
+                <a href="/jobs/add/definition"><button type="button" class="btn btn-outline"><i class="fa fa-plus"></i> Create one!</button></a>
               </div>
             </div><!-- /.box-body -->
             <div class="box-body">
               <div class="callout callout-warning">
-                <h4>Create a spider with the API</h4>
+                <h4>Create a job with the API</h4>
                 <p>Automation is key, have a look on the api</p>
                 <a href="/webjars/swagger-ui/2.1.8-M1/index.html?url=/api-docs"><button type="button" class="btn btn-outline"><i class="fa fa-plus"></i> Create one!</button></a>
               </div>
@@ -149,8 +149,8 @@
               </a>
             </li>
             <li>
-              <a href="/spiders">
-                <i class="fa fa-tasks"></i> <span>Spiders</span>
+              <a href="/jobs">
+                <i class="fa fa-tasks"></i> <span>Jobs</span>
               </a>
             </li>
             <li>

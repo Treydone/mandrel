@@ -78,7 +78,7 @@ public class MongoDocumentStore extends NavigableDocumentStore {
 			MongoClientOptions.Builder options = MongoClientOptions.builder();
 			// TODO options.description("");
 			MongoClientURI uri = new MongoClientURI(this.uri, options);
-			return new MongoDocumentStore(context, dataExtractor, new MongoClient(uri), database, MessageFormat.format(collection, context.getSpiderId()),
+			return new MongoDocumentStore(context, dataExtractor, new MongoClient(uri), database, MessageFormat.format(collection, context.getJobId()),
 					batchSize);
 		}
 	}

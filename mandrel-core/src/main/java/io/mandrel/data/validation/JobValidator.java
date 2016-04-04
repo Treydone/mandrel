@@ -18,7 +18,7 @@
  */
 package io.mandrel.data.validation;
 
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.data.StoresDefinition;
 import io.mandrel.data.content.DataExtractor;
 import io.mandrel.data.content.DefaultDataExtractor;
@@ -29,26 +29,26 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
-public class SpiderValidator implements Validator {
+public class JobValidator implements Validator {
 
 	@Override
 	public void validate(Object target, Errors errors) {
 
 		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "name", "field.required", "Can not be null");
 
-		Spider spider = (Spider) target;
+		Job job = (Job) target;
 
 		// Stores
-		StoresDefinition stores = spider.getStores();
+		StoresDefinition stores = job.getStores();
 
 		if (stores.getMetadataStore() == null) {
 			errors.rejectValue("stores.pageMetadataStore", "stores.pageMetadataStore.not.null", null, "Can not be null.");
 		}
 
 		// Sources
-		if (spider.getSources() != null) {
+		if (job.getSources() != null) {
 			int i = 0;
-			for (SourceDefinition<? extends Source> source : spider.getSources()) {
+			for (SourceDefinition<? extends Source> source : job.getSources()) {
 				if (source.name() == null) {
 					errors.rejectValue("sources[" + i + "].name", "sources.name.not.null", null, "Can not be null.");
 				}
@@ -58,18 +58,18 @@ public class SpiderValidator implements Validator {
 		}
 
 		// Client
-		if (spider.getClient() == null) {
+		if (job.getClient() == null) {
 			errors.rejectValue("client", "client.not.null", null, "Can not be null.");
-			// if (spider.getClient().getRequester() == null) {
+			// if (job.getClient().getRequester() == null) {
 			// errors.rejectValue("client.requester",
 			// "client.requester.not.null", null, "Can not be null.");
 			// }
 		}
 
 		// Extractors
-		if (spider.getExtractors() != null && spider.getExtractors().getData() != null) {
+		if (job.getExtractors() != null && job.getExtractors().getData() != null) {
 			int i = 0;
-			for (DataExtractor ex : spider.getExtractors().getData()) {
+			for (DataExtractor ex : job.getExtractors().getData()) {
 				if (ex.getName() == null) {
 					errors.rejectValue("extractors.pages[" + i + "].name", "extractors.name.not.null", null, "Can not be null.");
 				}
@@ -107,6 +107,6 @@ public class SpiderValidator implements Validator {
 
 	@Override
 	public boolean supports(Class<?> clazz) {
-		return Spider.class.isAssignableFrom(clazz);
+		return Job.class.isAssignableFrom(clazz);
 	}
 }

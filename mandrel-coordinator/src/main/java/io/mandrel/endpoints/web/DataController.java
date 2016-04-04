@@ -19,14 +19,14 @@
 package io.mandrel.endpoints.web;
 
 import io.mandrel.common.NotFoundException;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.data.content.DataExtractor;
 import io.mandrel.data.content.DefaultDataExtractor;
 import io.mandrel.document.Document;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.document.DocumentStores;
 import io.mandrel.document.NavigableDocumentStore;
-import io.mandrel.spider.SpiderService;
+import io.mandrel.job.JobService;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -49,20 +49,20 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class DataController {
 
-	private final SpiderService spiderService;
+	private final JobService jobService;
 
 	@RequestMapping("/data")
 	public String data(Model model, @PageableDefault(page = 0, size = 20) Pageable pageable) {
-		model.addAttribute("spiders", spiderService.pageForActive(pageable));
+		model.addAttribute("jobs", jobService.pageForActive(pageable));
 		return "views/data";
 	}
 
-	@RequestMapping("/spiders/{id}/data/{extractorName}")
+	@RequestMapping("/jobs/{id}/data/{extractorName}")
 	public String view(@PathVariable Long id, @PathVariable String extractorName, Model model) {
-		Spider spider = spiderService.get(id);
-		model.addAttribute("spider", spider);
+		Job job = jobService.get(id);
+		model.addAttribute("job", job);
 
-		DataExtractor extractor = spider.getExtractors().getData().stream().filter(ex -> extractorName.equals(ex.getName())).findFirst()
+		DataExtractor extractor = job.getExtractors().getData().stream().filter(ex -> extractorName.equals(ex.getName())).findFirst()
 				.orElseThrow(() -> new NotFoundException(""));
 
 		DocumentStore theStore = DocumentStores.get(id, extractorName).orElseThrow(() -> new NotFoundException(""));
@@ -71,13 +71,13 @@ public class DataController {
 		}
 
 		model.addAttribute("extractor", extractor);
-		return "views/data_spider";
+		return "views/data_job";
 	}
 
-	@RequestMapping(value = "/spiders/{id}/data/{extractor}", method = RequestMethod.POST)
+	@RequestMapping(value = "/jobs/{id}/data/{extractor}", method = RequestMethod.POST)
 	@ResponseBody
 	public PageResponse data(@PathVariable Long id, @PathVariable String extractor, PageRequest request, Model model) {
-		Spider spider = spiderService.get(id);
+		Job job = jobService.get(id);
 
 		DocumentStore theStore = DocumentStores.get(id, extractor).orElseThrow(() -> new NotFoundException(""));
 
@@ -86,7 +86,7 @@ public class DataController {
 		}
 		NavigableDocumentStore store = (NavigableDocumentStore) theStore;
 
-		DataExtractor theExtractor = spider.getExtractors().getData().stream().filter(ex -> extractor.equals(ex.getName())).findFirst()
+		DataExtractor theExtractor = job.getExtractors().getData().stream().filter(ex -> extractor.equals(ex.getName())).findFirst()
 				.orElseThrow(() -> new NotFoundException(""));
 
 		if (!(theExtractor instanceof DefaultDataExtractor)) {

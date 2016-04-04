@@ -2,7 +2,7 @@
 
 <#macro page_head>
   <@common_page_head/>
-  <title>New spider</title>
+  <title>New job</title>
   
   <link href="/webjars/jsoneditor/5.0.1/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
   
@@ -10,12 +10,12 @@
 
 <#macro content_header>
 		<h1>
-            New spider
+            New job
             <small>a new one please!</small>
           </h1>
           <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li><a href="/spiders"><i class="fa fa-tasks"></i> Spiders</a></li>
+            <li><a href="/jobs"><i class="fa fa-tasks"></i> Jobs</a></li>
             <li class="active">Create</li>
           </ol>
 </#macro>
@@ -47,7 +47,7 @@
 	  document.getElementById('submit').addEventListener('click',function() {
 	     var form = document.createElement("form");
 		form.setAttribute("method", "post");
-		form.setAttribute("action", "/spiders/add/definition");
+		form.setAttribute("action", "/jobs/add/definition");
 		
 		var hiddenField = document.createElement("input");              
 		hiddenField.setAttribute("type", "hidden");
@@ -67,7 +67,7 @@
             <div class="col-md-12">
             	<div class="box box-warning">
 	                <div class="box-header with-border">
-	                  <h3 class="box-title">Spider definition</h3>
+	                  <h3 class="box-title">Job definition</h3>
 	                </div><!-- /.box-header -->
 	             
 	             <div class="box-body">

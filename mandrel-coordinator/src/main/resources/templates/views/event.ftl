@@ -27,41 +27,41 @@
 										</#switch>
 									</#if>
 								<#case "SPIDER">
-									<#if (event.spider??) && (event.spider.type??)>
-										<#switch event.spider.type>
+									<#if (event.job??) && (event.job.type??)>
+										<#switch event.job.type>
 											<#case "SPIDER_CREATED">
 					 							<#assign icon = "fa-tasks">
 					 							<#assign color = "bg-blue">
-					 							<#assign title = '<a href="/spiders/${event.spider.spiderId?c}">${event.spider.spiderName}</a> has been added to the spiders'>
-												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spider.spiderId}">View spider</a>'>
+					 							<#assign title = '<a href="/jobs/${event.job.jobId?c}">${event.job.jobName}</a> has been added to the jobs'>
+												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/jobs/${event.job.jobId}">View job</a>'>
 					 							<#break>
 					 						<#case "SPIDER_STARTED">
 					 							<#assign icon = "fa-tasks">
-					 							<#assign title = '<a href="/spiders/${event.spider.spiderId?c}">${event.spider.spiderName}</a> has been started'>
-												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spider.spiderId}">View spider</a>'>
+					 							<#assign title = '<a href="/jobs/${event.job.jobId?c}">${event.job.jobName}</a> has been started'>
+												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/jobs/${event.job.jobId}">View job</a>'>
 					 							<#break>
 					 						<#case "SPIDER_PAUSED">
 					 							<#assign icon = "fa-tasks">
 					 							<#assign color = "bg-orange">
-					 							<#assign title = '<a href="/spiders/${event.spider.spiderId?c}">${event.spider.spiderName}</a> has been paused'>
-												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spider.spiderId}">View spider</a>'>
+					 							<#assign title = '<a href="/jobs/${event.job.jobId?c}">${event.job.jobName}</a> has been paused'>
+												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/jobs/${event.job.jobId}">View job</a>'>
 					 							<#break>
 					 						<#case "SPIDER_ENDED">
 					 							<#assign icon = "fa-tasks">
-					 							<#assign title = '<a href="/spiders/${event.spider.spiderId?c}">${event.spider.spiderName}</a> just ended!'>
-												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spider.spiderId}">View spider</a>'>
+					 							<#assign title = '<a href="/jobs/${event.job.jobId?c}">${event.job.jobName}</a> just ended!'>
+												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/jobs/${event.job.jobId}">View job</a>'>
 					 							<#break>
 					 						<#case "SPIDER_KILLED">
 					 							<#assign icon = "fa-tasks">
 					 							<#assign color = "bg-red">
-					 							<#assign title = '<a href="/spiders/${event.spider.spiderId?c}">${event.spider.spiderName}</a> has been killed'>
-												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spider.spiderId}">View spider</a>'>
+					 							<#assign title = '<a href="/jobs/${event.job.jobId?c}">${event.job.jobName}</a> has been killed'>
+												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/jobs/${event.job.jobId}">View job</a>'>
 					 							<#break>
 					 						<#case "SPIDER_DELETED">
 					 							<#assign icon = "fa-tasks">
 					 							<#assign color = "bg-orange">
-					 							<#assign title = '<a href="/spiders/${event.spider.spiderId?c}">${event.spider.spiderName}</a> has been deleted'>
-												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/spiders/${event.spider.spiderId}">View spider</a>'>
+					 							<#assign title = '<a href="/jobs/${event.job.jobId?c}">${event.job.jobName}</a> has been deleted'>
+												<#assign footer = '<a class="btn btn-warning btn-flat btn-xs" "/jobs/${event.job.jobId}">View job</a>'>
 					 							<#break>
 					 						<#default>
 												<#break>

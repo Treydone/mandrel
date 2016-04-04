@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.spider;
+package io.mandrel.job;
 
 import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.discovery.ServiceIds;
@@ -24,8 +24,8 @@ import io.mandrel.cluster.discovery.ServiceInstance;
 import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.MandrelException;
 import io.mandrel.common.NotFoundException;
-import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.SpiderStatuses;
+import io.mandrel.common.data.Job;
+import io.mandrel.common.data.JobStatuses;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
@@ -38,7 +38,7 @@ import io.mandrel.data.validation.Validators;
 import io.mandrel.metrics.Accumulators;
 import io.mandrel.metrics.MetricsService;
 import io.mandrel.timeline.Event;
-import io.mandrel.timeline.Event.SpiderInfo.SpiderEventType;
+import io.mandrel.timeline.Event.JobInfo.JobEventType;
 import io.mandrel.timeline.TimelineService;
 import io.mandrel.transport.Clients;
 
@@ -68,10 +68,10 @@ import com.google.common.util.concurrent.Monitor;
 
 @Component
 @Slf4j
-public class SpiderService {
+public class JobService {
 
 	@Autowired
-	private SpiderRepository spiderRepository;
+	private JobRepository jobRepository;
 	@Autowired
 	private TimelineService timelineService;
 	@Autowired
@@ -106,12 +106,12 @@ public class SpiderService {
 
 					SyncRequest sync = new SyncRequest();
 
-					// Load the existing spiders from the database
-					List<Spider> spiders = spiderRepository.listActive();
-					if (CollectionUtils.isNotEmpty(spiders)) {
-						sync.setDefinitions(spiders.stream().map(spider -> {
+					// Load the existing jobs from the database
+					List<Job> jobs = jobRepository.listActive();
+					if (CollectionUtils.isNotEmpty(jobs)) {
+						sync.setDefinitions(jobs.stream().map(job -> {
 							try {
-								return objectMapper.writeValueAsBytes(spider);
+								return objectMapper.writeValueAsBytes(job);
 							} catch (Exception e) {
 								throw Throwables.propagate(e);
 							}
@@ -177,151 +177,151 @@ public class SpiderService {
 		}
 	}
 
-	public Spider update(Spider spider) throws BindException {
-		BindingResult errors = Validators.validate(spider);
+	public Job update(Job job) throws BindException {
+		BindingResult errors = Validators.validate(job);
 
 		if (errors.hasErrors()) {
 			errors.getAllErrors().stream().forEach(oe -> log.info(oe.toString()));
 			throw new BindException(errors);
 		}
 
-		updateTimeline(spider, SpiderEventType.SPIDER_UPDATED);
+		updateTimeline(job, JobEventType.SPIDER_UPDATED);
 
-		return spiderRepository.update(spider);
+		return jobRepository.update(job);
 	}
 
-	public void updateTimeline(Spider spider, SpiderEventType status) {
-		Event event = Event.forSpider();
-		event.getSpider().setSpiderId(spider.getId()).setSpiderName(spider.getName()).setType(status);
+	public void updateTimeline(Job job, JobEventType status) {
+		Event event = Event.forJob();
+		event.getJob().setJobId(job.getId()).setJobName(job.getName()).setType(status);
 		timelineService.add(event);
 	}
 
 	/**
-	 * Create a new spider from a fixed list of urls.
+	 * Create a new job from a fixed list of urls.
 	 * 
 	 * @param urls
 	 * @return
 	 */
-	public Spider add(List<String> urls) throws BindException {
-		Spider spider = new Spider();
-		spider.setName(generator.next());
+	public Job add(List<String> urls) throws BindException {
+		Job job = new Job();
+		job.setName(generator.next());
 
 		// Add source
 		FixedSourceDefinition source = new FixedSourceDefinition();
 		source.setUrls(urls);
-		spider.setSources(Arrays.asList(source));
+		job.setSources(Arrays.asList(source));
 
 		// Add filters
-		spider.getFilters().getLinks().add(new AllowedForDomainsFilter().domains(urls.stream().map(url -> {
+		job.getFilters().getLinks().add(new AllowedForDomainsFilter().domains(urls.stream().map(url -> {
 			return URI.create(url).getHost();
 		}).collect(Collectors.toList())));
-		spider.getFilters().getLinks().add(new SkipAncorFilter());
-		spider.getFilters().getLinks().add(UrlPatternFilter.STATIC);
+		job.getFilters().getLinks().add(new SkipAncorFilter());
+		job.getFilters().getLinks().add(UrlPatternFilter.STATIC);
 
-		return add(spider);
+		return add(job);
 	}
 
 	public long fork(long id) throws BindException {
-		Spider spider = get(id);
-		spider.setId(0);
-		spider.setName(generator.next());
+		Job job = get(id);
+		job.setId(0);
+		job.setName(generator.next());
 
-		cleanDates(spider);
+		cleanDates(job);
 
-		BindingResult errors = Validators.validate(spider);
-
-		if (errors.hasErrors()) {
-			errors.getAllErrors().stream().forEach(oe -> log.info(oe.toString()));
-			throw new BindException(errors);
-		}
-
-		spider.setStatus(SpiderStatuses.INITIATED);
-		spider.setCreated(LocalDateTime.now());
-
-		spider = spiderRepository.add(spider);
-
-		return spider.getId();
-	}
-
-	public void cleanDates(Spider spider) {
-		spider.setCreated(null);
-		spider.setDeleted(null);
-		spider.setEnded(null);
-		spider.setKilled(null);
-		spider.setPaused(null);
-		spider.setStarted(null);
-	}
-
-	public Spider add(Spider spider) throws BindException {
-		BindingResult errors = Validators.validate(spider);
+		BindingResult errors = Validators.validate(job);
 
 		if (errors.hasErrors()) {
 			errors.getAllErrors().stream().forEach(oe -> log.info(oe.toString()));
 			throw new BindException(errors);
 		}
 
-		spider.setStatus(SpiderStatuses.INITIATED);
-		spider.setCreated(LocalDateTime.now());
-		spider = spiderRepository.add(spider);
+		job.setStatus(JobStatuses.INITIATED);
+		job.setCreated(LocalDateTime.now());
 
-		updateTimeline(spider, SpiderEventType.SPIDER_CREATED);
+		job = jobRepository.add(job);
 
-		return spider;
+		return job.getId();
 	}
 
-	public Spider get(long id) {
-		return spiderRepository.get(id).orElseThrow(() -> new NotFoundException("Spider not found"));
+	public void cleanDates(Job job) {
+		job.setCreated(null);
+		job.setDeleted(null);
+		job.setEnded(null);
+		job.setKilled(null);
+		job.setPaused(null);
+		job.setStarted(null);
 	}
 
-	public Page<Spider> page(Pageable pageable) {
-		return spiderRepository.page(pageable);
+	public Job add(Job job) throws BindException {
+		BindingResult errors = Validators.validate(job);
+
+		if (errors.hasErrors()) {
+			errors.getAllErrors().stream().forEach(oe -> log.info(oe.toString()));
+			throw new BindException(errors);
+		}
+
+		job.setStatus(JobStatuses.INITIATED);
+		job.setCreated(LocalDateTime.now());
+		job = jobRepository.add(job);
+
+		updateTimeline(job, JobEventType.SPIDER_CREATED);
+
+		return job;
 	}
 
-	public Page<Spider> pageForActive(Pageable pageable) {
-		return spiderRepository.pageForActive(pageable);
+	public Job get(long id) {
+		return jobRepository.get(id).orElseThrow(() -> new NotFoundException("Job not found"));
 	}
 
-	public List<Spider> listLastActive(int limit) {
-		return spiderRepository.listLastActive(limit);
+	public Page<Job> page(Pageable pageable) {
+		return jobRepository.page(pageable);
 	}
 
-	public void reinject(long spiderId) {
-		Spider spider = get(spiderId);
-		injectSingletonSources(spider);
+	public Page<Job> pageForActive(Pageable pageable) {
+		return jobRepository.pageForActive(pageable);
 	}
 
-	public void start(long spiderId) {
-		Spider spider = get(spiderId);
+	public List<Job> listLastActive(int limit) {
+		return jobRepository.listLastActive(limit);
+	}
 
-		if (SpiderStatuses.STARTED.equals(spider.getStatus())) {
+	public void reinject(long jobId) {
+		Job job = get(jobId);
+		injectSingletonSources(job);
+	}
+
+	public void start(long jobId) {
+		Job job = get(jobId);
+
+		if (JobStatuses.STARTED.equals(job.getStatus())) {
 			return;
 		}
 
-		if (SpiderStatuses.KILLED.equals(spider.getStatus())) {
-			throw new MandrelException("Spider cancelled!");
+		if (JobStatuses.KILLED.equals(job.getStatus())) {
+			throw new MandrelException("Job cancelled!");
 		}
 
-		// Can not start a spider if there no frontier started
+		// Can not start a job if there no frontier started
 		if (discoveryClient.getInstances(ServiceIds.frontier()).size() < 1) {
-			throw new MandrelException("Can not start spider, you need a least a frontier instance!");
+			throw new MandrelException("Can not start job, you need a least a frontier instance!");
 		}
 
-		if (SpiderStatuses.INITIATED.equals(spider.getStatus())) {
-			// injectSingletonSources(spider);
+		if (JobStatuses.INITIATED.equals(job.getStatus())) {
+			// injectSingletonSources(job);
 		}
 
-		spiderRepository.updateStatus(spiderId, SpiderStatuses.STARTED);
+		jobRepository.updateStatus(jobId, JobStatuses.STARTED);
 
-		updateTimeline(spider, SpiderEventType.SPIDER_CREATED);
+		updateTimeline(job, JobEventType.SPIDER_CREATED);
 
 	}
 
-	public void injectSingletonSources(Spider spider) {
+	public void injectSingletonSources(Job job) {
 		// Deploy singleton sources on a random frontier
 		TaskContext context = new TaskContext();
-		context.setDefinition(spider);
+		context.setDefinition(job);
 
-		spider.getSources().forEach(s -> {
+		job.getSources().forEach(s -> {
 			Source source = s.build(context);
 
 			if (source.singleton() && source.check()) {
@@ -331,7 +331,7 @@ public class SpiderService {
 				source.register(uri -> {
 					try {
 						log.trace("Adding uri '{}'", uri);
-						clients.onFrontier(instance.getHostAndPort()).with(frontier -> frontier.schedule(spider.getId(), uri));
+						clients.onFrontier(instance.getHostAndPort()).with(frontier -> frontier.schedule(job.getId(), uri));
 					} catch (Exception e) {
 						log.warn("Can not sync due to", e);
 					}
@@ -340,34 +340,34 @@ public class SpiderService {
 		});
 	}
 
-	public void pause(long spiderId) {
-		Spider spider = get(spiderId);
+	public void pause(long jobId) {
+		Job job = get(jobId);
 
 		// Update status
-		spiderRepository.updateStatus(spiderId, SpiderStatuses.PAUSED);
+		jobRepository.updateStatus(jobId, JobStatuses.PAUSED);
 
-		updateTimeline(spider, SpiderEventType.SPIDER_PAUSED);
+		updateTimeline(job, JobEventType.SPIDER_PAUSED);
 
 	}
 
-	public void kill(long spiderId) {
-		Spider spider = get(spiderId);
+	public void kill(long jobId) {
+		Job job = get(jobId);
 
 		// Update status
-		spiderRepository.updateStatus(spiderId, SpiderStatuses.KILLED);
+		jobRepository.updateStatus(jobId, JobStatuses.KILLED);
 
-		updateTimeline(spider, SpiderEventType.SPIDER_KILLED);
+		updateTimeline(job, JobEventType.SPIDER_KILLED);
 	}
 
-	public void delete(long spiderId) {
-		Spider spider = get(spiderId);
+	public void delete(long jobId) {
+		Job job = get(jobId);
 
 		// Update status
-		spiderRepository.updateStatus(spiderId, SpiderStatuses.DELETED);
+		jobRepository.updateStatus(jobId, JobStatuses.DELETED);
 
-		updateTimeline(spider, SpiderEventType.SPIDER_DELETED);
+		updateTimeline(job, JobEventType.SPIDER_DELETED);
 
-		metricsService.delete(spiderId);
+		metricsService.delete(jobId);
 
 	}
 }

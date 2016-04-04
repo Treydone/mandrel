@@ -33,9 +33,9 @@ public class MetadataStores {
 		return stores.values();
 	}
 
-	public static void add(long spiderId, MetadataStore metadataStore) {
+	public static void add(long jobId, MetadataStore metadataStore) {
 		synchronized (stores) {
-			MetadataStore oldMetadataStore = stores.put(spiderId, metadataStore);
+			MetadataStore oldMetadataStore = stores.put(jobId, metadataStore);
 			if (oldMetadataStore != null) {
 				try {
 					oldMetadataStore.close();
@@ -46,13 +46,13 @@ public class MetadataStores {
 		}
 	}
 
-	public static MetadataStore get(Long spiderId) {
-		return stores.get(spiderId);
+	public static MetadataStore get(Long jobId) {
+		return stores.get(jobId);
 	}
 
-	public static void remove(Long spiderId) {
+	public static void remove(Long jobId) {
 		synchronized (stores) {
-			MetadataStore oldMetadataStore = stores.remove(spiderId);
+			MetadataStore oldMetadataStore = stores.remove(jobId);
 			if (oldMetadataStore != null) {
 				try {
 					oldMetadataStore.close();

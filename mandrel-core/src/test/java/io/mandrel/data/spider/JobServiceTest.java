@@ -21,7 +21,7 @@ package io.mandrel.data.spider;
 import static org.junit.Assert.assertEquals;
 import io.mandrel.common.data.Client;
 import io.mandrel.common.data.Filters;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.data.StoresDefinition;
 import io.mandrel.config.BindConfiguration;
 import io.mandrel.data.filters.blob.BlobFilter;
@@ -29,7 +29,7 @@ import io.mandrel.data.filters.blob.LargeBlobFilter;
 import io.mandrel.data.filters.link.AllowedForDomainsFilter;
 import io.mandrel.data.filters.link.LinkFilter;
 import io.mandrel.data.filters.link.UrlPatternFilter;
-import io.mandrel.data.spider.SpiderServiceTest.LocalConfiguration;
+import io.mandrel.data.spider.JobServiceTest.LocalConfiguration;
 import io.mandrel.data.validation.Validators;
 
 import java.io.IOException;
@@ -51,7 +51,7 @@ import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 
 @ContextConfiguration(classes = LocalConfiguration.class)
 @RunWith(SpringJUnit4ClassRunner.class)
-public class SpiderServiceTest {
+public class JobServiceTest {
 
 	@Configuration
 	@Import(BindConfiguration.class)
@@ -134,22 +134,22 @@ public class SpiderServiceTest {
 	}
 
 	@Test
-	public void spider() throws IOException {
+	public void job() throws IOException {
 
-		Spider spider = new Spider();
+		Job job = new Job();
 
-		String json = objectMapper.writeValueAsString(spider);
+		String json = objectMapper.writeValueAsString(job);
 		System.err.println(json);
-		Spider read = objectMapper.readValue(json, Spider.class);
-		assertEquals(spider, read);
+		Job read = objectMapper.readValue(json, Job.class);
+		assertEquals(job, read);
 	}
 
 	@Test
 	public void validate() throws IOException {
 
-		Spider spider = new Spider();
+		Job job = new Job();
 
-		Errors errors = Validators.validate(spider);
+		Errors errors = Validators.validate(job);
 
 		System.err.println(errors);
 
@@ -159,7 +159,7 @@ public class SpiderServiceTest {
 	public void schema() throws IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
-		objectMapper.acceptJsonFormatVisitor(objectMapper.constructType(Spider.class), visitor);
+		objectMapper.acceptJsonFormatVisitor(objectMapper.constructType(Job.class), visitor);
 		JsonSchema jsonSchema = visitor.finalSchema();
 
 		System.err.println(objectMapper.writeValueAsString(jsonSchema));

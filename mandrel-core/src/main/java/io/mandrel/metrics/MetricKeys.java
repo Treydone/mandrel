@@ -25,7 +25,7 @@ public interface MetricKeys {
 
 	String GLOBAL = "global";
 	String NODE = "node";
-	String SPIDER = "spider";
+	String SPIDER = "job";
 
 	String NB_PAGES_TOTAL = "nbPagesTotal";
 	String TOTAL_SIZE_TOTAL = "totalSizeTotal";
@@ -85,31 +85,31 @@ public interface MetricKeys {
 	}
 
 	// SPIDER
-	public static String spider(long spiderId) {
-		return SPIDER + TYPE_DELIM + spiderId;
+	public static String job(long jobId) {
+		return SPIDER + TYPE_DELIM + jobId;
 	}
 
-	public static String spiderNbPages(long spiderId) {
-		return SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + NB_PAGES_TOTAL;
+	public static String jobNbPages(long jobId) {
+		return SPIDER + TYPE_DELIM + jobId + METRIC_DELIM + NB_PAGES_TOTAL;
 	}
 
-	public static String spiderTotalSize(long spiderId) {
-		return SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + TOTAL_SIZE_TOTAL;
+	public static String jobTotalSize(long jobId) {
+		return SPIDER + TYPE_DELIM + jobId + METRIC_DELIM + TOTAL_SIZE_TOTAL;
 	}
 
-	public static String spiderPageForStatus(long spiderId, int httpStatus) {
-		return SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + STATUSES + METRIC_DELIM + httpStatus;
+	public static String jobPageForStatus(long jobId, int httpStatus) {
+		return SPIDER + TYPE_DELIM + jobId + METRIC_DELIM + STATUSES + METRIC_DELIM + httpStatus;
 	}
 
-	public static String spiderPageForHost(long spiderId, String host) {
-		return SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + HOSTS + METRIC_DELIM + host;
+	public static String jobPageForHost(long jobId, String host) {
+		return SPIDER + TYPE_DELIM + jobId + METRIC_DELIM + HOSTS + METRIC_DELIM + host;
 	}
 
-	public static String spiderPageForContentType(long spiderId, String contentType) {
-		return SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + CONTENT_TYPES + METRIC_DELIM + contentType;
+	public static String jobPageForContentType(long jobId, String contentType) {
+		return SPIDER + TYPE_DELIM + jobId + METRIC_DELIM + CONTENT_TYPES + METRIC_DELIM + contentType;
 	}
 
-	public static String spiderPageForExtractor(long spiderId, String extractor) {
-		return SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + EXTRACTORS + METRIC_DELIM + extractor;
+	public static String jobPageForExtractor(long jobId, String extractor) {
+		return SPIDER + TYPE_DELIM + jobId + METRIC_DELIM + EXTRACTORS + METRIC_DELIM + extractor;
 	}
 }

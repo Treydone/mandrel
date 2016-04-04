@@ -18,7 +18,7 @@
  */
 package io.mandrel.common.data;
 
-public interface SpiderStatuses {
+public interface JobStatuses {
 	String INITIATED = "initiated";
 	String STARTED = "started";
 	String PAUSED = "paused";

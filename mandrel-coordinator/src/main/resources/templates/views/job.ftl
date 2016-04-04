@@ -2,7 +2,7 @@
 
 <#macro page_head>
   <@common_page_head/>
-  <title>Spider</title>
+  <title>Job</title>
   
   <script src="/public/js/jsoneditor.js"></script>
   <script src="/public/js/jsoneditor-theme.js"></script>
@@ -21,7 +21,7 @@
 </#macro>
 
 <#macro content_header>
-		<#switch spider.status>
+		<#switch job.status>
 			<#case "created">
 				<#assign label = "primary">
 				<#break>
@@ -42,13 +42,13 @@
 				<#break>
 		</#switch>
 		<h1>
-            Spider '${spider.name}'
-            <small>status</small> <span class="label label-${label}"> ${spider.status}</span>
+            Job '${job.name}'
+            <small>status</small> <span class="label label-${label}"> ${job.status}</span>
           </h1>
           <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li><a href="/spiders"><i class="fa fa-tasks"></i> Spiders</a></li>
-            <li class="active">${spider.name}</li>
+            <li><a href="/jobs"><i class="fa fa-tasks"></i> Jobs</a></li>
+            <li class="active">${job.name}</li>
           </ol>
 </#macro>
 
@@ -253,7 +253,7 @@
 	  document.getElementById('submit').addEventListener('click',function() {
 	    var form = document.createElement("form");
 		form.setAttribute("method", "post");
-		form.setAttribute("action", "/spiders/${spider.id?c}/edit");
+		form.setAttribute("action", "/jobs/${job.id?c}/edit");
 		
 		var hiddenField = document.createElement("input");              
 		hiddenField.setAttribute("type", "hidden");
@@ -425,25 +425,25 @@
 					      <h3 class="box-title">Actions</h3>
 					    </div>
 					    <div class="box-body">
-					      <a class="btn btn-app <#if spider.status != "initiated">disabled</#if>">
+					      <a class="btn btn-app <#if job.status != "initiated">disabled</#if>">
 					        <i class="fa fa-edit"></i> Edit
 					      </a>
-					      <a class="btn btn-app <#if !(spider.status == "initiated" || spider.status == "paused")>disabled</#if>" href="/spiders/${spider.id?c}/start">
+					      <a class="btn btn-app <#if !(job.status == "initiated" || job.status == "paused")>disabled</#if>" href="/jobs/${job.id?c}/start">
 					        <i class="fa fa-play"></i> Start
 					      </a>
-					      <a class="btn btn-app <#if !(spider.status == "started")>disabled</#if>" href="/spiders/${spider.id?c}/pause">
+					      <a class="btn btn-app <#if !(job.status == "started")>disabled</#if>" href="/jobs/${job.id?c}/pause">
 					        <i class="fa fa-pause"></i> Pause
 					      </a>
-					      <a class="btn btn-app <#if !(spider.status == "initiated" || spider.status == "started" || spider.status == "paused")>disabled</#if>" href="/spiders/${spider.id?c}/cancel">
+					      <a class="btn btn-app <#if !(job.status == "initiated" || job.status == "started" || job.status == "paused")>disabled</#if>" href="/jobs/${job.id?c}/cancel">
 					        <i class="fa fa-exclamation-triangle"></i> Cancel
 					      </a>
-					      <a class="btn btn-app <#if !(spider.status == "killed" || spider.status == "ended")>disabled</#if>" href="/spiders/${spider.id?c}/delete">
+					      <a class="btn btn-app <#if !(job.status == "killed" || job.status == "ended")>disabled</#if>" href="/jobs/${job.id?c}/delete">
 					        <i class="fa fa-eraser"></i> Delete
 					      </a>
-					      <a class="btn btn-app <#if !(spider.status == "started" || spider.status == "paused")>disabled</#if>" href="/spiders/${spider.id?c}/reinject">
+					      <a class="btn btn-app <#if !(job.status == "started" || job.status == "paused")>disabled</#if>" href="/jobs/${job.id?c}/reinject">
 					        <i class="fa fa-circle-o-notch"></i> Re-source
 					      </a>
-					      <a class="btn btn-app" href="/spiders/${spider.id?c}/fork">
+					      <a class="btn btn-app" href="/jobs/${job.id?c}/fork">
 					        <i class="fa fa-code-fork"></i> Duplicate
 					      </a>
 					    </div><!-- /.box-body -->
@@ -586,7 +586,7 @@
 	              </div><!-- nav-tabs-custom -->
 	           </div>
 	              <div class="box-footer">
-	                    <button id="submit" type="submit" class="btn btn-info pull-right <#if spider.status != "initiated" && spider.status != "paused">disabled</#if>">Submit</button>
+	                    <button id="submit" type="submit" class="btn btn-info pull-right <#if job.status != "initiated" && job.status != "paused">disabled</#if>">Submit</button>
 	                  </div>
 	           </div>
 	               
@@ -658,7 +658,7 @@
 	                <div class="icon">
 	                  <i class="ion ion-ios-cloud-download-outline"></i>
 	                </div>
-	                <#if spider.stores.blobStore?? && spider.status != "deleted">
+	                <#if job.stores.blobStore?? && job.status != "deleted">
 	                <div class="margin">
 	                    <div class="btn-group">
 	                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -667,8 +667,8 @@
 	                        <span class="sr-only">Toggle Dropdown</span>
 	                      </button>
 	                      <ul class="dropdown-menu" role="menu">
-	                        <li><a href="/api/v1/spiders/${spider.id?c}/raw/export?format=json" target="_blank">JSON</a></li>
-	                        <li><a href="/api/v1/spiders/${spider.id?c}/raw/export?format=csv" target="_blank">CSV</a></li>
+	                        <li><a href="/api/v1/jobs/${job.id?c}/raw/export?format=json" target="_blank">JSON</a></li>
+	                        <li><a href="/api/v1/jobs/${job.id?c}/raw/export?format=csv" target="_blank">CSV</a></li>
 	                      </ul>
 	                    </div>
 	                  </div>
@@ -677,8 +677,8 @@
 	                </a>
 		            </#if>
 	              </div>
-	              <#if spider.extractors?? && spider.extractors.data??>
-		              <#list spider.extractors.data as extractor>
+	              <#if job.extractors?? && job.extractors.data??>
+		              <#list job.extractors.data as extractor>
 		              <div class="small-box bg-orange disabled">
 		                <div class="inner">
 		                  <h3>${(metrics.extractors[extractor.getName()])!"0"}</h3>
@@ -687,7 +687,7 @@
 		                <div class="icon">
 		                  <i class="ion ion-ios-pricetag-outline"></i>
 		                </div>
-		                <#if spider.status != "deleted">
+		                <#if job.status != "deleted">
 		                <div class="margin">
 		                    <div class="btn-group">
 		                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -696,12 +696,12 @@
 		                        <span class="sr-only">Toggle Dropdown</span>
 		                      </button>
 		                      <ul class="dropdown-menu" role="menu">
-		                        <li><a href="/api/v1/spiders/${spider.id?c}/export/${extractor.getName()}?format=json" target="_blank">JSON</a></li>
-		                        <li><a href="/api/v1/spiders/${spider.id?c}/export/${extractor.getName()}?format=csv" target="_blank">CSV</a></li>
+		                        <li><a href="/api/v1/jobs/${job.id?c}/export/${extractor.getName()}?format=json" target="_blank">JSON</a></li>
+		                        <li><a href="/api/v1/jobs/${job.id?c}/export/${extractor.getName()}?format=csv" target="_blank">CSV</a></li>
 		                      </ul>
 		                    </div>
 		                  </div>
-		                  <a href="/spiders/${spider.id?c}/data/${extractor.getName()}" class="small-box-footer">
+		                  <a href="/jobs/${job.id?c}/data/${extractor.getName()}" class="small-box-footer">
 		                  View data <i class="fa fa-arrow-circle-right"></i>
 		                </a>
 		                </#if>

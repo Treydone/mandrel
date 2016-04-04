@@ -22,10 +22,10 @@ import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobStore;
 import io.mandrel.blob.BlobStore.Callback;
 import io.mandrel.blob.BlobStores;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.data.content.FieldExtractor;
 import io.mandrel.document.Document;
-import io.mandrel.spider.SpiderService;
+import io.mandrel.job.JobService;
 
 import java.io.Writer;
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ExporterServiceTest {
 
 	@Mock
-	private SpiderService spiderService;
+	private JobService jobService;
 
 	@Mock
 	private Writer writer;
@@ -62,7 +62,7 @@ public class ExporterServiceTest {
 
 	@Before
 	public void before() {
-		service = new ExporterService(spiderService);
+		service = new ExporterService(jobService);
 	}
 
 	@Test
@@ -96,7 +96,7 @@ public class ExporterServiceTest {
 
 		BlobStores.add(0, store);
 
-		Mockito.when(spiderService.get(0)).thenReturn(new Spider());
+		Mockito.when(jobService.get(0)).thenReturn(new Job());
 		// Mockito.when(store.byPages(0L, 1000, captor.capture()));
 
 		// Actions

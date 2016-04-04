@@ -57,7 +57,7 @@ public class MetricsSyncer {
 					Map<String, Long> total = Maps.newHashMap();
 					total.putAll(accumulators.globalAccumulator().tick());
 					total.putAll(accumulators.nodeAccumulator().tick());
-					accumulators.spiderAccumulators().forEach((spiderId, acc) -> total.putAll(acc.tick()));
+					accumulators.jobAccumulators().forEach((jobId, acc) -> total.putAll(acc.tick()));
 
 					if (MapUtils.isNotEmpty(total)) {
 						try {

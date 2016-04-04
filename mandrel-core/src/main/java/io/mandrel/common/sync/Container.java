@@ -34,7 +34,7 @@ public class Container {
 
 	@Getter(onMethod = @__(@ThriftField(1)))
 	@Setter(onMethod = @__(@ThriftField))
-	private long spiderId;
+	private long jobId;
 	@Getter(onMethod = @__(@ThriftField(2)))
 	@Setter(onMethod = @__(@ThriftField))
 	private long version;

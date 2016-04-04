@@ -26,47 +26,47 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class SpiderAccumulator extends Accumulator {
+public class JobAccumulator extends Accumulator {
 
-	private final long spiderId;
+	private final long jobId;
 
 	public void incNbPages() {
-		add(MetricKeys.spiderNbPages(spiderId), 1);
+		add(MetricKeys.jobNbPages(jobId), 1);
 	}
 
 	public void incTotalSize(long size) {
-		add(MetricKeys.spiderTotalSize(spiderId), size);
+		add(MetricKeys.jobTotalSize(jobId), size);
 	}
 
 	public void incPageForStatus(int httpStatus) {
-		add(MetricKeys.spiderPageForStatus(spiderId, httpStatus), 1);
+		add(MetricKeys.jobPageForStatus(jobId, httpStatus), 1);
 	}
 
 	public void incPageForHost(String host) {
-		add(MetricKeys.spiderPageForHost(spiderId, host), 1);
+		add(MetricKeys.jobPageForHost(jobId, host), 1);
 	}
 
 	public void incPageForContentType(String contentType) {
-		add(MetricKeys.spiderPageForContentType(spiderId, contentType), 1);
+		add(MetricKeys.jobPageForContentType(jobId, contentType), 1);
 	}
 
 	public void incDocumentForExtractor(String extractor, int number) {
-		add(MetricKeys.spiderPageForExtractor(spiderId, extractor), number);
+		add(MetricKeys.jobPageForExtractor(jobId, extractor), number);
 	}
 
 	public void incConnectException() {
-		add(SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + "connectException", 1);
+		add(SPIDER + TYPE_DELIM + jobId + METRIC_DELIM + "connectException", 1);
 	}
 
 	public void incReadTimeout() {
-		add(SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + "readTimeout", 1);
+		add(SPIDER + TYPE_DELIM + jobId + METRIC_DELIM + "readTimeout", 1);
 	}
 
 	public void incConnectTimeout() {
-		add(SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + "connectTimeout", 1);
+		add(SPIDER + TYPE_DELIM + jobId + METRIC_DELIM + "connectTimeout", 1);
 	}
 
 	public void incTotalTimeToFetch(long time) {
-		add(SPIDER + TYPE_DELIM + spiderId + METRIC_DELIM + "totalTimeToFetch", 1);
+		add(SPIDER + TYPE_DELIM + jobId + METRIC_DELIM + "totalTimeToFetch", 1);
 	}
 }

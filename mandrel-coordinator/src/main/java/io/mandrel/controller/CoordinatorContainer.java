@@ -22,7 +22,7 @@ import io.mandrel.blob.BlobStore;
 import io.mandrel.blob.BlobStores;
 import io.mandrel.common.container.AbstractContainer;
 import io.mandrel.common.container.ContainerStatus;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.document.DocumentStore;
 import io.mandrel.document.DocumentStores;
@@ -46,23 +46,23 @@ public class CoordinatorContainer extends AbstractContainer {
 	private final Monitor monitor = new Monitor();
 	private final TaskContext context = new TaskContext();
 
-	public CoordinatorContainer(Spider spider, Accumulators accumulators, Clients clients) {
-		super(accumulators, spider, clients);
-		context.setDefinition(spider);
+	public CoordinatorContainer(Job job, Accumulators accumulators, Clients clients) {
+		super(accumulators, job, clients);
+		context.setDefinition(job);
 
 		// Init stores
-		MetadataStore metadatastore = spider.getStores().getMetadataStore().build(context);
+		MetadataStore metadatastore = job.getStores().getMetadataStore().build(context);
 		metadatastore.init();
-		MetadataStores.add(spider.getId(), metadatastore);
+		MetadataStores.add(job.getId(), metadatastore);
 
-		BlobStore blobStore = spider.getStores().getBlobStore().build(context);
+		BlobStore blobStore = job.getStores().getBlobStore().build(context);
 		blobStore.init();
-		BlobStores.add(spider.getId(), blobStore);
+		BlobStores.add(job.getId(), blobStore);
 
-		spider.getExtractors().getData().forEach(ex -> {
+		job.getExtractors().getData().forEach(ex -> {
 			DocumentStore documentStore = ex.getDocumentStore().metadataExtractor(ex).build(context);
 			documentStore.init();
-			DocumentStores.add(spider.getId(), ex.getName(), documentStore);
+			DocumentStores.add(job.getId(), ex.getName(), documentStore);
 		});
 
 		current.set(ContainerStatus.INITIATED);
@@ -107,19 +107,19 @@ public class CoordinatorContainer extends AbstractContainer {
 			try {
 				if (!current.get().equals(ContainerStatus.KILLED)) {
 					try {
-						MetadataStores.remove(spider.getId());
+						MetadataStores.remove(job.getId());
 					} catch (Exception e) {
 						log.debug(e.getMessage(), e);
 					}
 
 					try {
-						BlobStores.remove(spider.getId());
+						BlobStores.remove(job.getId());
 					} catch (Exception e) {
 						log.debug(e.getMessage(), e);
 					}
 
 					try {
-						DocumentStores.remove(spider.getId());
+						DocumentStores.remove(job.getId());
 					} catch (Exception e) {
 						log.debug(e.getMessage(), e);
 					}
@@ -134,11 +134,11 @@ public class CoordinatorContainer extends AbstractContainer {
 
 	@Override
 	public void register() {
-		CoordinatorContainers.add(spider.getId(), this);
+		CoordinatorContainers.add(job.getId(), this);
 	}
 
 	@Override
 	public void unregister() {
-		CoordinatorContainers.remove(spider.getId());
+		CoordinatorContainers.remove(job.getId());
 	}
 }

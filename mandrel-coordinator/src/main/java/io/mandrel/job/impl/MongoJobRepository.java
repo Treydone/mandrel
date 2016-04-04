@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.spider.impl;
+package io.mandrel.job.impl;
 
 import io.mandrel.cluster.idgenerator.IdGenerator;
 import io.mandrel.cluster.idgenerator.MongoIdGenerator;
 import io.mandrel.common.bson.JsonBsonCodec;
-import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.SpiderStatuses;
-import io.mandrel.spider.SpiderRepository;
+import io.mandrel.common.data.Job;
+import io.mandrel.common.data.JobStatuses;
+import io.mandrel.job.JobRepository;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -54,7 +54,7 @@ import com.mongodb.client.model.Sorts;
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 @ConditionalOnProperty(value = "engine.mongodb.enabled", matchIfMissing = true)
-public class MongoSpiderRepository implements SpiderRepository {
+public class MongoJobRepository implements JobRepository {
 
 	private final IdGenerator idGenerator = new MongoIdGenerator();
 	private final MongoClient client;
@@ -65,23 +65,23 @@ public class MongoSpiderRepository implements SpiderRepository {
 
 	@PostConstruct
 	public void init() {
-		collection = client.getDatabase(properties.getMongoClientDatabase()).getCollection("spiders");
+		collection = client.getDatabase(properties.getMongoClientDatabase()).getCollection("jobs");
 	}
 
-	public Spider add(Spider spider) {
-		long id = idGenerator.generateId("spiders");
-		spider.setId(id);
-		collection.insertOne(JsonBsonCodec.toBson(mapper, spider));
-		return spider;
+	public Job add(Job job) {
+		long id = idGenerator.generateId("jobs");
+		job.setId(id);
+		collection.insertOne(JsonBsonCodec.toBson(mapper, job));
+		return job;
 	}
 
-	public Spider update(Spider spider) {
-		collection.replaceOne(new Document("_id", spider.getId()), JsonBsonCodec.toBson(mapper, spider));
-		return spider;
+	public Job update(Job job) {
+		collection.replaceOne(new Document("_id", job.getId()), JsonBsonCodec.toBson(mapper, job));
+		return job;
 	}
 
-	public void updateStatus(long spiderId, String status) {
-		collection.updateOne(new Document("_id", spiderId),
+	public void updateStatus(long jobId, String status) {
+		collection.updateOne(new Document("_id", jobId),
 				new Document("$set", new Document("status", status).append(status, LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli())));
 	}
 
@@ -89,41 +89,41 @@ public class MongoSpiderRepository implements SpiderRepository {
 		collection.deleteOne(Filters.eq("_id", id));
 	}
 
-	public Optional<Spider> get(long id) {
+	public Optional<Job> get(long id) {
 		Document doc = collection.find(Filters.eq("_id", id)).first();
-		return doc == null ? Optional.empty() : Optional.of(JsonBsonCodec.fromBson(mapper, doc, Spider.class));
+		return doc == null ? Optional.empty() : Optional.of(JsonBsonCodec.fromBson(mapper, doc, Job.class));
 	}
 
-	public List<Spider> listActive() {
+	public List<Job> listActive() {
 		Bson filter = activeFilter();
-		List<Spider> content = Lists.newArrayList(collection.find(filter).map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)));
+		List<Job> content = Lists.newArrayList(collection.find(filter).map(doc -> JsonBsonCodec.fromBson(mapper, doc, Job.class)));
 		return content;
 	}
 
-	public List<Spider> listLastActive(int size) {
+	public List<Job> listLastActive(int size) {
 		Bson filter = activeFilter();
-		List<Spider> content = Lists.newArrayList(collection.find(filter).sort(Sorts.descending("created")).limit(size)
-				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)));
+		List<Job> content = Lists.newArrayList(collection.find(filter).sort(Sorts.descending("created")).limit(size)
+				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Job.class)));
 		return content;
 	}
 
 	@Override
-	public Page<Spider> page(Pageable pageable) {
-		List<Spider> content = Lists.newArrayList(collection.find().limit(pageable.getPageSize()).skip(pageable.getOffset())
-				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)));
+	public Page<Job> page(Pageable pageable) {
+		List<Job> content = Lists.newArrayList(collection.find().limit(pageable.getPageSize()).skip(pageable.getOffset())
+				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Job.class)));
 		return new PageImpl<>(content, pageable, collection.count());
 	}
 
 	@Override
-	public Page<Spider> pageForActive(Pageable pageable) {
-		Bson filter = Filters.ne("status", SpiderStatuses.DELETED);
-		List<Spider> content = Lists.newArrayList(collection.find(filter).limit(pageable.getPageSize()).skip(pageable.getOffset())
-				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Spider.class)));
+	public Page<Job> pageForActive(Pageable pageable) {
+		Bson filter = Filters.ne("status", JobStatuses.DELETED);
+		List<Job> content = Lists.newArrayList(collection.find(filter).limit(pageable.getPageSize()).skip(pageable.getOffset())
+				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Job.class)));
 		return new PageImpl<>(content, pageable, collection.count());
 	}
 
 	protected Bson activeFilter() {
-		return Filters.or(Filters.eq("status", SpiderStatuses.STARTED), Filters.eq("status", SpiderStatuses.PAUSED),
-				Filters.eq("status", SpiderStatuses.INITIATED));
+		return Filters.or(Filters.eq("status", JobStatuses.STARTED), Filters.eq("status", JobStatuses.PAUSED),
+				Filters.eq("status", JobStatuses.INITIATED));
 	}
 }

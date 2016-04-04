@@ -38,7 +38,7 @@ logging:
     org.springframework: INFO
     io.mandrel: DEBUG
     io.mandrel.worker.Loop: DEBUG
-    io.mandrel.spider.SpiderService : DEBUG
+    io.mandrel.job.JobService : DEBUG
     
 management:
   context-path: /admin

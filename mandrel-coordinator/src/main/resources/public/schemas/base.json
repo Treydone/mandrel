@@ -1,11 +1,11 @@
 {
    "type":"object",
-   "title":"spider",
+   "title":"job",
    "properties":{
       "name":{
          "type":"string",
          "title":"Name",
-         "description": "The name of the spider"
+         "description": "The name of the job"
       },
       "sources":{
          "type":"array",

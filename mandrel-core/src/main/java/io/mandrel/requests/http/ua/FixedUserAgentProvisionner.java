@@ -18,7 +18,7 @@
  */
 package io.mandrel.requests.http.ua;
 
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.service.TaskContext;
 
@@ -61,7 +61,7 @@ public class FixedUserAgentProvisionner extends UserAgentProvisionner {
 
 	private String ua;
 
-	public String get(String url, Spider spider) {
+	public String get(String url, Job job) {
 		return ua;
 	}
 }

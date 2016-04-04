@@ -19,7 +19,7 @@
 package io.mandrel.metadata.impl;
 
 import io.mandrel.blob.BlobMetadata;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.metadata.impl.MongoMetadataStore.MongoMetadataStoreDefinition;
@@ -37,9 +37,9 @@ public class MongoMetadataStoreTest {
 	@Test
 	public void test() {
 
-		Spider spider = new Spider().setId(30);
+		Job job = new Job().setId(30);
 		TaskContext taskContext = new TaskContext();
-		taskContext.setDefinition(spider);
+		taskContext.setDefinition(job);
 
 		MongoMetadataStoreDefinition definition = new MongoMetadataStoreDefinition();
 		MongoMetadataStore store = definition.build(taskContext);

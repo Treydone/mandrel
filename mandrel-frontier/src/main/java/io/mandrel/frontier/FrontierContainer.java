@@ -20,7 +20,7 @@ package io.mandrel.frontier;
 
 import io.mandrel.common.container.AbstractContainer;
 import io.mandrel.common.container.ContainerStatus;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.source.Source;
 import io.mandrel.metadata.MetadataStore;
@@ -52,20 +52,20 @@ public class FrontierContainer extends AbstractContainer {
 	private final Frontier frontier;
 	private final Revisitor revisitor;
 
-	public FrontierContainer(Spider spider, Accumulators accumulators, Clients clients) {
-		super(accumulators, spider, clients);
-		context.setDefinition(spider);
+	public FrontierContainer(Job job, Accumulators accumulators, Clients clients) {
+		super(accumulators, job, clients);
+		context.setDefinition(job);
 
 		// Init stores
-		MetadataStore metadatastore = spider.getStores().getMetadataStore().build(context);
+		MetadataStore metadatastore = job.getStores().getMetadataStore().build(context);
 		metadatastore.init();
-		MetadataStores.add(spider.getId(), metadatastore);
+		MetadataStores.add(job.getId(), metadatastore);
 
 		// Init frontier
-		frontier = spider.getFrontier().build(context);
+		frontier = job.getFrontier().build(context);
 
 		// Revisitor
-		BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("frontier-" + spider.getId() + "-%d").daemon(true)
+		BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("frontier-" + job.getId() + "-%d").daemon(true)
 				.priority(Thread.MAX_PRIORITY).build();
 		executor = Executors.newFixedThreadPool(1, threadFactory);
 		revisitor = new Revisitor(frontier, metadatastore);
@@ -90,7 +90,7 @@ public class FrontierContainer extends AbstractContainer {
 
 					// Init sources
 					log.debug("Initializing the sources");
-					spider.getSources().forEach(s -> {
+					job.getSources().forEach(s -> {
 						Source source = s.build(context);
 						if (!source.singleton() && source.check()) {
 							source.register(uri -> {
@@ -144,7 +144,7 @@ public class FrontierContainer extends AbstractContainer {
 					}
 
 					try {
-						accumulators.destroy(spider.getId());
+						accumulators.destroy(job.getId());
 					} catch (Exception e) {
 						log.warn("Can not destroy the accumulators");
 					}
@@ -159,11 +159,11 @@ public class FrontierContainer extends AbstractContainer {
 
 	@Override
 	public void register() {
-		FrontierContainers.add(spider.getId(), this);
+		FrontierContainers.add(job.getId(), this);
 	}
 
 	@Override
 	public void unregister() {
-		FrontierContainers.remove(spider.getId());
+		FrontierContainers.remove(job.getId());
 	}
 }

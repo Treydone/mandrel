@@ -49,22 +49,22 @@ import com.google.common.base.Charsets;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
-@Api(basePath = Apis.PREFIX, value = "/spiders")
-@RequestMapping(value = Apis.PREFIX + "/spiders")
+@Api(basePath = Apis.PREFIX, value = "/jobs")
+@RequestMapping(value = Apis.PREFIX + "/jobs")
 @Controller
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ExportResource {
 
 	private final ExporterService exporterService;
 
-	@ApiOperation(value = "Export the data of the extractor of a spider using a custom exporter in the classpath")
+	@ApiOperation(value = "Export the data of the extractor of a job using a custom exporter in the classpath")
 	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public void export(@PathVariable Long id, @PathVariable String extractorName, @RequestBody ExporterDefinition<? extends Exporter> exporter,
 			@RequestParam(defaultValue = "true") boolean compress, HttpServletResponse response) throws IOException {
 		internalExport(id, extractorName, exporter.build(null), response, compress);
 	}
 
-	@ApiOperation(value = "Export the data of the extractor of a spider in a format specified in the parameter")
+	@ApiOperation(value = "Export the data of the extractor of a job in a format specified in the parameter")
 	@RequestMapping(value = "/{id}/export/{extractorName}", method = RequestMethod.GET, params = "format")
 	public void export(@PathVariable Long id, @PathVariable String extractorName, @RequestParam(required = true) String format,
 			@RequestParam(defaultValue = "true") boolean compress, HttpServletResponse response) throws IOException {
@@ -80,14 +80,14 @@ public class ExportResource {
 		internalExport(id, extractorName, exporter, response, compress);
 	}
 
-	@ApiOperation(value = "Export the raw data of a spider using a custom exporter in the classpath")
+	@ApiOperation(value = "Export the raw data of a job using a custom exporter in the classpath")
 	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public void rawExport(@PathVariable Long id, @RequestBody ExporterDefinition<? extends Exporter> exporter,
 			@RequestParam(defaultValue = "true") boolean compress, HttpServletResponse response) throws IOException {
 		internalRawExport(id, exporter.build(null), response, compress);
 	}
 
-	@ApiOperation(value = "Export the raw data of a spider in a format specified in the parameter")
+	@ApiOperation(value = "Export the raw data of a job in a format specified in the parameter")
 	@RequestMapping(value = "/{id}/raw/export", method = RequestMethod.GET, params = "format")
 	public void rawExport(@PathVariable Long id, @RequestParam(required = true) String format, @RequestParam(defaultValue = "true") boolean compress,
 			HttpServletResponse response) throws IOException {

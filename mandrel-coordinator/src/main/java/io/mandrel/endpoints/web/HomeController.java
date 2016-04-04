@@ -19,9 +19,9 @@
 package io.mandrel.endpoints.web;
 
 import io.mandrel.cluster.node.NodeService;
+import io.mandrel.job.JobService;
 import io.mandrel.messaging.StompService;
 import io.mandrel.metrics.MetricsService;
-import io.mandrel.spider.SpiderService;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.TimelineService;
 
@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class HomeController {
 
-	private final SpiderService spiderService;
+	private final JobService jobService;
 
 	private final NodeService nodeService;
 
@@ -54,7 +54,7 @@ public class HomeController {
 	@RequestMapping
 	public String home(Model model) {
 		model.addAttribute("metrics", metricsService.global());
-		model.addAttribute("spiders", spiderService.listLastActive(10));
+		model.addAttribute("jobs", jobService.listLastActive(10));
 		model.addAttribute("nodes", nodeService.nodes());
 		model.addAttribute("events", timelineService.pageByDate(0, 10));
 		return "views/home";

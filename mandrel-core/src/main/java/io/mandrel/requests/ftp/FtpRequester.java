@@ -19,7 +19,7 @@
 package io.mandrel.requests.ftp;
 
 import io.mandrel.blob.Blob;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.requests.Requester;
@@ -69,7 +69,7 @@ public class FtpRequester extends Requester {
 	}
 
 	@Override
-	public Blob get(Uri uri, Spider spider) throws Exception {
+	public Blob get(Uri uri, Job job) throws Exception {
 		return null;
 	}
 

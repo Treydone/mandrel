@@ -18,8 +18,8 @@
  */
 package io.mandrel.endpoints.rest;
 
-import io.mandrel.common.data.Spider;
-import io.mandrel.spider.SpiderService;
+import io.mandrel.common.data.Job;
+import io.mandrel.job.JobService;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,16 +43,16 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SpiderResourceTest {
+public class JobResourceTest {
 
 	@Mock
-	private SpiderService spiderService;
+	private JobService jobService;
 
 	private MockMvc mockMvc;
 
 	@Before
 	public void setUp() throws Exception {
-		mockMvc = MockMvcBuilders.standaloneSetup(new SpiderResource(null, spiderService, null))
+		mockMvc = MockMvcBuilders.standaloneSetup(new JobResource(null, jobService, null))
 				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver()).addFilter(new ApiOriginFilter(), "/*").build();
 	}
 
@@ -61,10 +61,10 @@ public class SpiderResourceTest {
 
 		// Arrange
 		Pageable pageable = new PageRequest(0, 20);
-		Mockito.when(spiderService.page(pageable)).thenReturn(new PageImpl<>(Collections.emptyList()));
+		Mockito.when(jobService.page(pageable)).thenReturn(new PageImpl<>(Collections.emptyList()));
 
 		// Actions
-		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(Apis.PREFIX + "/spiders").accept(MediaType.APPLICATION_JSON));
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(Apis.PREFIX + "/jobs").accept(MediaType.APPLICATION_JSON));
 
 		// Asserts
 		result.andDo(res -> {
@@ -77,14 +77,14 @@ public class SpiderResourceTest {
 	}
 
 	@Test
-	public void all_one_spider() throws Exception {
+	public void all_one_job() throws Exception {
 
 		// Arrange
 		Pageable pageable = new PageRequest(0, 20);
-		Mockito.when(spiderService.page(pageable)).thenReturn(new PageImpl<>(Collections.singletonList(new Spider().setName("generated")), pageable, 1));
+		Mockito.when(jobService.page(pageable)).thenReturn(new PageImpl<>(Collections.singletonList(new Job().setName("generated")), pageable, 1));
 
 		// Actions
-		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(Apis.PREFIX + "/spiders").accept(MediaType.APPLICATION_JSON));
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(Apis.PREFIX + "/jobs").accept(MediaType.APPLICATION_JSON));
 
 		// Asserts
 		result.andDo(res -> {
@@ -101,52 +101,52 @@ public class SpiderResourceTest {
 
 		// Arrange
 		List<String> urls = Arrays.asList("http://toto");
-		Spider spider = new Spider().setName("generated");
-		Mockito.when(spiderService.add(urls)).thenReturn(spider);
+		Job job = new Job().setName("generated");
+		Mockito.when(jobService.add(urls)).thenReturn(job);
 
 		// Actions
-		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(Apis.PREFIX + "/spiders").param("urls", urls.toArray(new String[] {}))
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(Apis.PREFIX + "/jobs").param("urls", urls.toArray(new String[] {}))
 				.accept(MediaType.APPLICATION_JSON));
 
 		// Asserts
-		Mockito.verify(spiderService).add(urls);
-		Mockito.verifyNoMoreInteractions(spiderService);
+		Mockito.verify(jobService).add(urls);
+		Mockito.verifyNoMoreInteractions(jobService);
 		result.andExpect(MockMvcResultMatchers.content().json("{\"name\":\"generated\"}"));
 
 	}
 
 	@Test
-	public void add_valid_spider() throws Exception {
+	public void add_valid_job() throws Exception {
 
 		// Arrange
-		Spider spider = new Spider().setName("test");
-		Mockito.when(spiderService.add(spider)).thenReturn(spider);
+		Job job = new Job().setName("test");
+		Mockito.when(jobService.add(job)).thenReturn(job);
 
 		// Actions
-		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(Apis.PREFIX + "/spiders").content("{\"name\":\"test\"}")
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(Apis.PREFIX + "/jobs").content("{\"name\":\"test\"}")
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON));
 
 		// Asserts
-		Mockito.verify(spiderService).add(spider);
-		Mockito.verifyNoMoreInteractions(spiderService);
+		Mockito.verify(jobService).add(job);
+		Mockito.verifyNoMoreInteractions(jobService);
 		result.andExpect(MockMvcResultMatchers.content().json("{\"name\":\"test\"}"));
 
 	}
 
 	@Test
-	public void update_spider() throws Exception {
+	public void update_job() throws Exception {
 
 		// Arrange
-		Spider spider = new Spider().setName("test");
-		Mockito.when(spiderService.update(spider)).thenReturn(spider);
+		Job job = new Job().setName("test");
+		Mockito.when(jobService.update(job)).thenReturn(job);
 
 		// Actions
-		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(Apis.PREFIX + "/spiders/0").content("{\"name\":\"test\"}")
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(Apis.PREFIX + "/jobs/0").content("{\"name\":\"test\"}")
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON));
 
 		// Asserts
-		Mockito.verify(spiderService).update(spider);
-		Mockito.verifyNoMoreInteractions(spiderService);
+		Mockito.verify(jobService).update(job);
+		Mockito.verifyNoMoreInteractions(jobService);
 		result.andExpect(MockMvcResultMatchers.content().json("{\"name\":\"test\"}"));
 
 	}
