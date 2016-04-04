@@ -40,7 +40,7 @@
 		<module>mandrel-core</module>
 		<module>mandrel-frontier</module>
 		<module>mandrel-worker</module>
-		<module>mandrel-controller</module>
+		<module>mandrel-coordinator</module>
 		<module>mandrel-standalone</module>
 		<module>mandrel-distribution</module>
 	</modules>
@@ -90,7 +90,7 @@
 			</dependency>
 			<dependency>
 				<groupId>io.mandrel</groupId>
-				<artifactId>mandrel-controller</artifactId>
+				<artifactId>mandrel-coordinator</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

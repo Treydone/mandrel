@@ -134,9 +134,9 @@ public class FrontierResource implements FrontierContract {
 	@Override
 	public SyncResponse syncFrontiers(SyncRequest sync) {
 		Collection<? extends io.mandrel.common.container.Container> containers = FrontierContainers.list();
-		final Map<Long, Spider> spiderByIdFromController = new HashMap<>();
+		final Map<Long, Spider> spiderByIdFromCoordinator = new HashMap<>();
 		if (sync.getDefinitions() != null) {
-			spiderByIdFromController.putAll(sync.getDefinitions().stream().map(def -> {
+			spiderByIdFromCoordinator.putAll(sync.getDefinitions().stream().map(def -> {
 				try {
 					return objectMapper.readValue(def, Spider.class);
 				} catch (Exception e) {
@@ -161,12 +161,12 @@ public class FrontierResource implements FrontierContract {
 				long containerSpiderId = containerSpider.getId();
 
 				existingSpiders.add(containerSpiderId);
-				if (!spiderByIdFromController.containsKey(containerSpiderId)) {
+				if (!spiderByIdFromCoordinator.containsKey(containerSpiderId)) {
 					log.debug("Killing spider {}", containerSpiderId);
 					killFrontierContainer(containerSpiderId);
 					killed.add(containerSpiderId);
 				} else {
-					Spider remoteSpider = spiderByIdFromController.get(containerSpiderId);
+					Spider remoteSpider = spiderByIdFromCoordinator.get(containerSpiderId);
 
 					if (remoteSpider.getVersion() != containerSpider.getVersion()) {
 						log.debug("Updating spider {}", containerSpiderId);
@@ -209,7 +209,7 @@ public class FrontierResource implements FrontierContract {
 				}
 			});
 
-		spiderByIdFromController.forEach((id, spider) -> {
+		spiderByIdFromCoordinator.forEach((id, spider) -> {
 			if (!existingSpiders.contains(id)) {
 				log.debug("Creating spider {}", id);
 				create(spider);

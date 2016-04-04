@@ -62,7 +62,7 @@ public class MetricsSyncer {
 					if (MapUtils.isNotEmpty(total)) {
 						try {
 							log.debug("Updating metrics");
-							clients.onRandomController().with(controller -> controller.updateMetrics(total));
+							clients.onRandomCoordinator().with(coordinator -> coordinator.updateMetrics(total));
 						} catch (Exception e) {
 							log.info("Can not update metrics {} due to", total, e);
 						}

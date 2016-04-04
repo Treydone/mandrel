@@ -22,10 +22,10 @@ import io.airlift.units.Duration;
 import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.discovery.ServiceInstance;
-import io.mandrel.common.ControllerNotFoundException;
+import io.mandrel.common.CoordinatorNotFoundException;
 import io.mandrel.common.FrontierNotFoundException;
 import io.mandrel.common.WorkerNotFoundException;
-import io.mandrel.endpoints.contracts.ControllerContract;
+import io.mandrel.endpoints.contracts.CoordinatorContract;
 import io.mandrel.endpoints.contracts.FrontierContract;
 import io.mandrel.endpoints.contracts.NodeContract;
 import io.mandrel.endpoints.contracts.WorkerContract;
@@ -57,7 +57,7 @@ import com.google.common.net.HostAndPort;
 public class ThriftClients implements Clients {
 
 	private KeyedClientPool<FrontierContract> frontiers;
-	private KeyedClientPool<ControllerContract> controllers;
+	private KeyedClientPool<CoordinatorContract> coordinators;
 	private KeyedClientPool<WorkerContract> workers;
 	private KeyedClientPool<NodeContract> nodes;
 
@@ -88,10 +88,10 @@ public class ThriftClients implements Clients {
 				null, clientManager, transportProperties.isLocal());
 		prepare(frontiers);
 
-		controllers = new KeyedClientPool<>(ControllerContract.class, poolConfig, 9090,
+		coordinators = new KeyedClientPool<>(CoordinatorContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED
 				null, clientManager, transportProperties.isLocal());
-		prepare(controllers);
+		prepare(coordinators);
 
 		workers = new KeyedClientPool<>(WorkerContract.class, poolConfig, 9090,
 		// Deflater.BEST_SPEED
@@ -117,10 +117,10 @@ public class ThriftClients implements Clients {
 	}
 
 	public Pooled<FrontierContract> onRandomFrontier() {
-		Optional<ServiceInstance> opController = discoveryClient.getInstances(ServiceIds.frontier()).stream().findFirst();
-		if (opController.isPresent()) {
+		Optional<ServiceInstance> opCoordinator = discoveryClient.getInstances(ServiceIds.frontier()).stream().findFirst();
+		if (opCoordinator.isPresent()) {
 			try {
-				ServiceInstance instance = opController.get();
+				ServiceInstance instance = opCoordinator.get();
 				return frontiers.get(instance.getHostAndPort());
 			} catch (Exception e) {
 				throw Throwables.propagate(e);
@@ -130,16 +130,16 @@ public class ThriftClients implements Clients {
 		}
 	}
 
-	public Pooled<ControllerContract> onController(HostAndPort hostAndPort) {
-		return controllers.get(hostAndPort);
+	public Pooled<CoordinatorContract> onCoordinator(HostAndPort hostAndPort) {
+		return coordinators.get(hostAndPort);
 	}
 
-	public Pooled<ControllerContract> onRandomController() {
-		Optional<ServiceInstance> opController = discoveryClient.getInstances(ServiceIds.controller()).stream().findFirst();
-		if (opController.isPresent()) {
+	public Pooled<CoordinatorContract> onRandomCoordinator() {
+		Optional<ServiceInstance> opCoordinator = discoveryClient.getInstances(ServiceIds.coordinator()).stream().findFirst();
+		if (opCoordinator.isPresent()) {
 			try {
-				ServiceInstance instance = opController.get();
-				return controllers.get(instance.getHostAndPort());
+				ServiceInstance instance = opCoordinator.get();
+				return coordinators.get(instance.getHostAndPort());
 			} catch (Exception e) {
 				throw Throwables.propagate(e);
 			}
@@ -153,16 +153,16 @@ public class ThriftClients implements Clients {
 	}
 
 	public Pooled<WorkerContract> onRandomWorker() {
-		Optional<ServiceInstance> opController = discoveryClient.getInstances(ServiceIds.worker()).stream().findFirst();
-		if (opController.isPresent()) {
+		Optional<ServiceInstance> opCoordinator = discoveryClient.getInstances(ServiceIds.worker()).stream().findFirst();
+		if (opCoordinator.isPresent()) {
 			try {
-				ServiceInstance instance = opController.get();
+				ServiceInstance instance = opCoordinator.get();
 				return workers.get(instance.getHostAndPort());
 			} catch (Exception e) {
 				throw Throwables.propagate(e);
 			}
 		} else {
-			throw new ControllerNotFoundException("No controller found");
+			throw new CoordinatorNotFoundException("No coordinator found");
 		}
 	}
 

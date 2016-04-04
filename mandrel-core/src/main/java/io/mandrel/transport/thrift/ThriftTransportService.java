@@ -120,7 +120,7 @@ public class ThriftTransportService implements TransportService {
 
 	public void send(Event event) {
 		try {
-			clients.onRandomController().with(service -> service.addEvent(event));
+			clients.onRandomCoordinator().with(service -> service.addEvent(event));
 		} catch (Exception e) {
 			log.warn("Can not send event", e);
 		}

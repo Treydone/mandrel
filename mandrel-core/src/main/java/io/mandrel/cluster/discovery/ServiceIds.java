@@ -22,7 +22,7 @@ public abstract class ServiceIds {
 
 	private final static String FRONTIER = "frontier";
 	private final static String WORKER = "worker";
-	private final static String CONTROLLER = "controller";
+	private final static String CONTROLLER = "coordinator";
 	private final static String NODE = "node";
 
 	public static String frontier() {
@@ -33,7 +33,7 @@ public abstract class ServiceIds {
 		return WORKER;
 	}
 
-	public static String controller() {
+	public static String coordinator() {
 		return CONTROLLER;
 	}
 

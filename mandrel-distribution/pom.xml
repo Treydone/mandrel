@@ -38,7 +38,7 @@
 								</configuration>
 							</execution>
 							<execution>
-								<id>controller</id>
+								<id>coordinator</id>
 								<goals>
 									<goal>exec</goal>
 								</goals>
@@ -47,7 +47,7 @@
 									<executable>mvn</executable>
 									<arguments>
 										<argument>package</argument>
-										<argument>-Pcontroller</argument>
+										<argument>-Pcoordinator</argument>
 										<argument>-DskipDeploy=true</argument>
 									</arguments>
 								</configuration>
@@ -421,16 +421,16 @@
 		</profile>
 
 		<profile>
-			<id>controller</id>
+			<id>coordinator</id>
 			<properties>
-				<component.id>controller</component.id>
-				<component.class.main>io.mandrel.bootstrap.Controller</component.class.main>
-				<component.class.wrapper>io.mandrel.bootstrap.WrapperController</component.class.wrapper>
+				<component.id>coordinator</component.id>
+				<component.class.main>io.mandrel.bootstrap.Coordinator</component.class.main>
+				<component.class.wrapper>io.mandrel.bootstrap.WrapperCoordinator</component.class.wrapper>
 			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>io.mandrel</groupId>
-					<artifactId>controller</artifactId>
+					<artifactId>coordinator</artifactId>
 				</dependency>
 			</dependencies>
 			<build>

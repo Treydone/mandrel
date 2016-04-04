@@ -16,28 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.transport;
+package io.mandrel.common;
 
-import io.mandrel.endpoints.contracts.CoordinatorContract;
-import io.mandrel.endpoints.contracts.FrontierContract;
-import io.mandrel.endpoints.contracts.NodeContract;
-import io.mandrel.endpoints.contracts.WorkerContract;
+public class CoordinatorNotFoundException extends MandrelException {
 
-import com.google.common.net.HostAndPort;
+	private static final long serialVersionUID = 2505067367451885390L;
 
-public interface Clients {
-
-	Pooled<FrontierContract> onFrontier(HostAndPort hostAndPort);
-
-	Pooled<FrontierContract> onRandomFrontier();
-
-	Pooled<CoordinatorContract> onCoordinator(HostAndPort hostAndPort);
-
-	Pooled<CoordinatorContract> onRandomCoordinator();
-
-	Pooled<WorkerContract> onWorker(HostAndPort hostAndPort);
-
-	Pooled<WorkerContract> onRandomWorker();
-
-	Pooled<NodeContract> onNode(HostAndPort hostAndPort);
+	public CoordinatorNotFoundException(String message) {
+		super(message);
+	}
 }

@@ -16,28 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.transport;
+package io.mandrel.bootstrap;
 
-import io.mandrel.endpoints.contracts.CoordinatorContract;
-import io.mandrel.endpoints.contracts.FrontierContract;
-import io.mandrel.endpoints.contracts.NodeContract;
-import io.mandrel.endpoints.contracts.WorkerContract;
+import org.tanukisoftware.wrapper.WrapperManager;
 
-import com.google.common.net.HostAndPort;
+public class CoordinatorWrapper extends Wrapper {
 
-public interface Clients {
+	public CoordinatorWrapper() {
+		super(new Coordinator());
+	}
 
-	Pooled<FrontierContract> onFrontier(HostAndPort hostAndPort);
-
-	Pooled<FrontierContract> onRandomFrontier();
-
-	Pooled<CoordinatorContract> onCoordinator(HostAndPort hostAndPort);
-
-	Pooled<CoordinatorContract> onRandomCoordinator();
-
-	Pooled<WorkerContract> onWorker(HostAndPort hostAndPort);
-
-	Pooled<WorkerContract> onRandomWorker();
-
-	Pooled<NodeContract> onNode(HostAndPort hostAndPort);
+	public static void main(String[] args) {
+		WrapperManager.start(new CoordinatorWrapper(), args);
+	}
 }

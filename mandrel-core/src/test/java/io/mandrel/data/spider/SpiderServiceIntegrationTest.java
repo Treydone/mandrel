@@ -39,8 +39,8 @@
 //import io.mandrel.blob.BlobStore;
 //import io.mandrel.common.data.Constants;
 //import io.mandrel.common.data.Spider;
-//import io.mandrel.controller.ControllerRepository;
-//import io.mandrel.controller.ControllerService;
+//import io.mandrel.coordinator.CoordinatorRepository;
+//import io.mandrel.coordinator.CoordinatorService;
 //import io.mandrel.data.Link;
 //import io.mandrel.data.analysis.Analysis;
 //import io.mandrel.data.content.selector.SelectorService;
@@ -76,7 +76,7 @@
 //public class SpiderServiceIntegrationTest {
 //
 //	@Mock
-//	private ControllerRepository spiderRepository;
+//	private CoordinatorRepository spiderRepository;
 //
 //	@Mock
 //	private BlobStore pageStore;
@@ -93,7 +93,7 @@
 //	@Test
 //	public void no_filtering() throws IOException {
 //
-//		ControllerService spiderService = new ControllerService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
+//		CoordinatorService spiderService = new CoordinatorService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
 //				new ApacheHttpRequester(), null, timelineService);
 //
 //		Spider spider = new Spider();
@@ -124,7 +124,7 @@
 //	@Test
 //	public void same_domain() throws IOException {
 //
-//		ControllerService spiderService = new ControllerService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
+//		CoordinatorService spiderService = new CoordinatorService(spiderRepository, null, new ExtractorService(new ScriptingService(), new SelectorService()),
 //				new ApacheHttpRequester(), null, timelineService);
 //
 //		Spider spider = new Spider();

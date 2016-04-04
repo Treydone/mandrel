@@ -16,28 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.transport;
+package io.mandrel.config;
 
-import io.mandrel.endpoints.contracts.CoordinatorContract;
-import io.mandrel.endpoints.contracts.FrontierContract;
-import io.mandrel.endpoints.contracts.NodeContract;
-import io.mandrel.endpoints.contracts.WorkerContract;
+import org.springframework.context.annotation.Configuration;
 
-import com.google.common.net.HostAndPort;
+@Configuration
+public class CoordinatorConfiguration {
 
-public interface Clients {
-
-	Pooled<FrontierContract> onFrontier(HostAndPort hostAndPort);
-
-	Pooled<FrontierContract> onRandomFrontier();
-
-	Pooled<CoordinatorContract> onCoordinator(HostAndPort hostAndPort);
-
-	Pooled<CoordinatorContract> onRandomCoordinator();
-
-	Pooled<WorkerContract> onWorker(HostAndPort hostAndPort);
-
-	Pooled<WorkerContract> onRandomWorker();
-
-	Pooled<NodeContract> onNode(HostAndPort hostAndPort);
 }
