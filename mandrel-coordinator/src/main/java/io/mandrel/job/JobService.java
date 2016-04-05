@@ -35,12 +35,12 @@ import io.mandrel.data.filters.link.UrlPatternFilter;
 import io.mandrel.data.source.FixedSource.FixedSourceDefinition;
 import io.mandrel.data.source.Source;
 import io.mandrel.data.validation.Validators;
-import io.mandrel.metrics.Accumulators;
+import io.mandrel.endpoints.contracts.coordinator.JobsContract;
 import io.mandrel.metrics.MetricsService;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.Event.JobInfo.JobEventType;
 import io.mandrel.timeline.TimelineService;
-import io.mandrel.transport.Clients;
+import io.mandrel.transport.MandrelClient;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -48,13 +48,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.kohsuke.randname.RandomNameGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -68,32 +68,19 @@ import com.google.common.util.concurrent.Monitor;
 
 @Component
 @Slf4j
-public class JobService {
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+public class JobService implements JobsContract {
 
-	@Autowired
-	private JobRepository jobRepository;
-	@Autowired
-	private TimelineService timelineService;
-	@Autowired
-	private Clients clients;
-	@Autowired
-	private DiscoveryClient discoveryClient;
-	@Autowired
-	private StateService stateService;
-	@Autowired
-	private Accumulators accumulators;
-	@Autowired
-	private MetricsService metricsService;
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final JobRepository jobRepository;
+	private final TimelineService timelineService;
+	private final MandrelClient client;
+	private final DiscoveryClient discoveryClient;
+	private final StateService stateService;
+	private final MetricsService metricsService;
+	private final ObjectMapper objectMapper;
 
 	private final RandomNameGenerator generator = new RandomNameGenerator();
 	private final Monitor monitor = new Monitor();
-
-	@PostConstruct
-	public void init() {
-		// TODO Load the journal of commands
-	}
 
 	@Scheduled(fixedRate = 2000)
 	public void sync() {
@@ -118,30 +105,30 @@ public class JobService {
 						}).collect(Collectors.toList()));
 					}
 					// Sync first the coordinators
-					discoveryClient.getInstances(ServiceIds.coordinator())
-							.forEach(
-									instance -> {
-										log.trace("Syncing coordinator {}", instance);
-										try {
-											SyncResponse response = clients.onCoordinator(instance.getHostAndPort()).map(
-													coordinator -> coordinator.syncCoordinators(sync));
+					discoveryClient.getInstances(ServiceIds.coordinator()).forEach(
+							instance -> {
+								log.trace("Syncing coordinator {}", instance);
+								try {
+									SyncResponse response = client.coordinator().admin().on(instance.getHostAndPort())
+											.map(coordinator -> coordinator.syncCoordinators(sync));
 
-											if (response.anyAction()) {
-												log.debug("On coordinator {}:{}, after sync: {} created, {} updated, {} killed, {} started, {} paused",
-														instance.getHost(), instance.getPort(), response.getCreated(), response.getUpdated(),
-														response.getKilled(), response.getPaused());
-											}
-										} catch (Exception e) {
-											log.warn("Can not sync coordinator {}:{} due to: {}", instance.getHost(), instance.getPort(), e.getMessage());
-										}
-									});
+									if (response.anyAction()) {
+										log.debug("On coordinator {}:{}, after sync: {} created, {} updated, {} killed, {} started, {} paused",
+												instance.getHost(), instance.getPort(), response.getCreated(), response.getUpdated(), response.getKilled(),
+												response.getPaused());
+									}
+								} catch (Exception e) {
+									log.warn("Can not sync coordinator {}:{} due to: {}", instance.getHost(), instance.getPort(), e.getMessage());
+								}
+							});
 
 					// And then the frontiers
 					discoveryClient.getInstances(ServiceIds.frontier()).forEach(
 							instance -> {
 								log.trace("Syncing frontier {}", instance);
 								try {
-									SyncResponse response = clients.onFrontier(instance.getHostAndPort()).map(frontier -> frontier.syncFrontiers(sync));
+									SyncResponse response = client.frontier().admin().on(instance.getHostAndPort())
+											.map(frontier -> frontier.syncFrontiers(sync));
 
 									if (response.anyAction()) {
 										log.debug("On frontier {}:{}, after sync: {} created, {} updated, {} killed, {} started, {} paused",
@@ -158,7 +145,7 @@ public class JobService {
 							instance -> {
 								log.trace("Syncing worker {}", instance);
 								try {
-									SyncResponse response = clients.onWorker(instance.getHostAndPort()).map(worker -> worker.syncWorkers(sync));
+									SyncResponse response = client.worker().admin().on(instance.getHostAndPort()).map(worker -> worker.syncWorkers(sync));
 
 									if (response.anyAction()) {
 										log.debug("On frontier {}:{}, after sync: {} created, {} updated, {} killed, {} started, {} paused",
@@ -193,7 +180,7 @@ public class JobService {
 	public void updateTimeline(Job job, JobEventType status) {
 		Event event = Event.forJob();
 		event.getJob().setJobId(job.getId()).setJobName(job.getName()).setType(status);
-		timelineService.add(event);
+		timelineService.addEvent(event);
 	}
 
 	/**
@@ -221,7 +208,13 @@ public class JobService {
 		return add(job);
 	}
 
-	public long fork(long id) throws BindException {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see io.mandrel.job.JobContract#fork(long)
+	 */
+	@Override
+	public long fork(long id) {
 		Job job = get(id);
 		job.setId(0);
 		job.setName(generator.next());
@@ -232,7 +225,7 @@ public class JobService {
 
 		if (errors.hasErrors()) {
 			errors.getAllErrors().stream().forEach(oe -> log.info(oe.toString()));
-			throw new BindException(errors);
+			throw Throwables.propagate(new BindException(errors));
 		}
 
 		job.setStatus(JobStatuses.INITIATED);
@@ -269,27 +262,63 @@ public class JobService {
 		return job;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see io.mandrel.job.JobContract#get(long)
+	 */
+	@Override
 	public Job get(long id) {
 		return jobRepository.get(id).orElseThrow(() -> new NotFoundException("Job not found"));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see io.mandrel.job.JobContract#page(org.springframework.data.domain.Pageable)
+	 */
+	@Override
 	public Page<Job> page(Pageable pageable) {
 		return jobRepository.page(pageable);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see io.mandrel.job.JobContract#pageForActive(org.springframework.data.domain.Pageable)
+	 */
+	@Override
 	public Page<Job> pageForActive(Pageable pageable) {
 		return jobRepository.pageForActive(pageable);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see io.mandrel.job.JobContract#listLastActive(int)
+	 */
+	@Override
 	public List<Job> listLastActive(int limit) {
 		return jobRepository.listLastActive(limit);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see io.mandrel.job.JobContract#reinject(long)
+	 */
+	@Override
 	public void reinject(long jobId) {
 		Job job = get(jobId);
 		injectSingletonSources(job);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see io.mandrel.job.JobContract#start(long)
+	 */
+	@Override
 	public void start(long jobId) {
 		Job job = get(jobId);
 
@@ -331,7 +360,7 @@ public class JobService {
 				source.register(uri -> {
 					try {
 						log.trace("Adding uri '{}'", uri);
-						clients.onFrontier(instance.getHostAndPort()).with(frontier -> frontier.schedule(job.getId(), uri));
+						client.frontier().client().on(instance.getHostAndPort()).with(frontier -> frontier.schedule(job.getId(), uri));
 					} catch (Exception e) {
 						log.warn("Can not sync due to", e);
 					}
@@ -340,6 +369,12 @@ public class JobService {
 		});
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see io.mandrel.job.JobContract#pause(long)
+	 */
+	@Override
 	public void pause(long jobId) {
 		Job job = get(jobId);
 
@@ -350,6 +385,12 @@ public class JobService {
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see io.mandrel.job.JobContract#kill(long)
+	 */
+	@Override
 	public void kill(long jobId) {
 		Job job = get(jobId);
 
@@ -359,6 +400,12 @@ public class JobService {
 		updateTimeline(job, JobEventType.SPIDER_KILLED);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see io.mandrel.job.JobContract#delete(long)
+	 */
+	@Override
 	public void delete(long jobId) {
 		Job job = get(jobId);
 
@@ -367,7 +414,12 @@ public class JobService {
 
 		updateTimeline(job, JobEventType.SPIDER_DELETED);
 
-		metricsService.delete(jobId);
+		metricsService.deleteJobMetrics(jobId);
+
+	}
+
+	@Override
+	public void close() throws Exception {
 
 	}
 }

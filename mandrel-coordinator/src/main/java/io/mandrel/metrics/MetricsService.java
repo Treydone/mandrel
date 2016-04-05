@@ -18,6 +18,7 @@
  */
 package io.mandrel.metrics;
 
+import io.mandrel.endpoints.contracts.coordinator.MetricsContract;
 import io.mandrel.metrics.Timeserie.Data;
 
 import java.time.Duration;
@@ -36,15 +37,15 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class MetricsService {
+public class MetricsService implements MetricsContract {
 
 	private final MetricsRepository metricsRepository;
 
-	public void sync(Map<String, Long> accumulators) {
+	public void updateMetrics(Map<String, Long> accumulators) {
 		metricsRepository.sync(accumulators);
 	}
 
-	public Timeserie serie(String name) {
+	public Timeserie getTimeserie(String name) {
 		Timeserie serie = metricsRepository.serie(name);
 
 		LocalDateTime now = LocalDateTime.now();
@@ -66,21 +67,25 @@ public class MetricsService {
 		return serieWithBlank;
 	}
 
-	public NodeMetrics node(String nodeId) {
+	public NodeMetrics getNodeMetrics(String nodeId) {
 		return metricsRepository.node(nodeId);
 	}
 
-	public GlobalMetrics global() {
+	public GlobalMetrics getGlobalMetrics() {
 		return metricsRepository.global();
 
 	}
 
-	public JobMetrics job(long jobId) {
+	public JobMetrics getJobMetrics(long jobId) {
 		return metricsRepository.job(jobId);
 	}
 
-	public void delete(long jobId) {
+	public void deleteJobMetrics(long jobId) {
 		metricsRepository.delete(jobId);
 	}
 
+	@Override
+	public void close() throws Exception {
+
+	}
 }

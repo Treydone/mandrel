@@ -22,7 +22,7 @@ import io.mandrel.common.data.Job;
 import io.mandrel.job.JobService;
 import io.mandrel.metrics.JobMetrics;
 import io.mandrel.metrics.MetricsService;
-import io.mandrel.transport.Clients;
+import io.mandrel.transport.MandrelClient;
 
 import java.util.List;
 
@@ -51,7 +51,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class JobResource {
 
-	private final Clients clients;
+	private final MandrelClient client;
 	private final JobService jobService;
 	private final MetricsService metricsService;
 
@@ -94,7 +94,7 @@ public class JobResource {
 	@ApiOperation(value = "Analyze a source against a job", httpMethod = "GET")
 	@RequestMapping(value = "/{id}/analyze", method = RequestMethod.GET)
 	public byte[] analyze(@PathVariable Long id, @RequestParam String source) {
-		return clients.onRandomWorker().map(w -> w.analyse(id, source));
+		return client.worker().client().onAny().map(w -> w.analyse(id, source));
 	}
 
 	@ApiOperation(value = "Pause a job", httpMethod = "GET")
@@ -119,6 +119,6 @@ public class JobResource {
 	@RequestMapping(value = "/{id}/stats", method = RequestMethod.GET)
 	public JobMetrics stats(@PathVariable Long id) {
 		Job job = jobService.get(id);
-		return metricsService.job(job.getId());
+		return metricsService.getJobMetrics(job.getId());
 	}
 }

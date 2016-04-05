@@ -18,7 +18,6 @@
  */
 package io.mandrel.bootstrap;
 
-import io.mandrel.common.NotFoundException;
 import io.mandrel.endpoints.rest.ApiOriginFilter;
 import io.mandrel.endpoints.rest.Apis;
 
@@ -29,10 +28,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.ErrorMvcAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
-import org.springframework.boot.context.embedded.ErrorPage;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
-import org.springframework.boot.context.embedded.MimeMappings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
@@ -48,22 +44,6 @@ public class Coordinator extends Application {
 		filterRegistrationBean.setFilter(new ApiOriginFilter());
 		filterRegistrationBean.setUrlPatterns(Arrays.asList(Apis.PREFIX + "/*"));
 		return filterRegistrationBean;
-	}
-
-	@Bean
-	public EmbeddedServletContainerCustomizer containerCustomizer() {
-		return container -> {
-			container.addErrorPages(new ErrorPage(NotFoundException.class, "/404"), new ErrorPage("/error"));
-
-			MimeMappings mappings = new MimeMappings(MimeMappings.DEFAULT);
-			mappings.add("eot", "application/vnd.ms-fontobject");
-			mappings.add("otf", "application/x-font-opentype");
-			mappings.add("ttf", "application/x-font-truetype");
-			mappings.add("woff", "application/font-woff");
-			mappings.add("woff2", "application/font-woff2");
-			mappings.add("svg", "image/svg+xml");
-			container.setMimeMappings(mappings);
-		};
 	}
 
 	public static void main(String[] args) {

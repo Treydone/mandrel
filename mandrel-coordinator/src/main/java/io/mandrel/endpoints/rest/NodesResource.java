@@ -47,12 +47,12 @@ public class NodesResource {
 	@RequestMapping(method = RequestMethod.GET)
 	@ApiOperation(value = "List all the nodes", httpMethod = "GET", response = Node.class, responseContainer = "Map")
 	public Map<String, Node> all() {
-		return nodeService.nodes();
+		return nodeService.getNodes();
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ApiOperation(value = "Find a node by its id", httpMethod = "GET", response = Node.class)
 	public Node id(@PathVariable String id) {
-		return nodeService.node(id);
+		return nodeService.getNode(id);
 	}
 }

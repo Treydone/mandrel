@@ -31,6 +31,10 @@
 			<groupId>io.mandrel</groupId>
 			<artifactId>mandrel-worker</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.mandrel</groupId>
+			<artifactId>mandrel-ui-server</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.codehaus.janino</groupId>

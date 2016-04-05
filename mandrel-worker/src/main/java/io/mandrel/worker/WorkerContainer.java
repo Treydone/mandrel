@@ -33,7 +33,7 @@ import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.Accumulators;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.Requesters;
-import io.mandrel.transport.Clients;
+import io.mandrel.transport.MandrelClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,8 +63,8 @@ public class WorkerContainer extends AbstractContainer {
 	private final ScheduledExecutorService executor;
 	private final List<Loop> loops;
 
-	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Job job, Clients clients, DiscoveryClient discoveryClient) {
-		super(accumulators, job, clients);
+	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Job job, MandrelClient client, DiscoveryClient discoveryClient) {
+		super(accumulators, job, client);
 		context.setDefinition(job);
 
 		this.extractorService = extractorService;
@@ -85,7 +85,7 @@ public class WorkerContainer extends AbstractContainer {
 		// Create loop
 		loops = new ArrayList<>(parallel);
 		IntStream.range(0, parallel).forEach(idx -> {
-			Loop loop = new Loop(extractorService, job, clients, accumulators.jobAccumulator(job.getId()), accumulators.globalAccumulator(), barrier);
+			Loop loop = new Loop(extractorService, job, client, accumulators.jobAccumulator(job.getId()), accumulators.globalAccumulator(), barrier);
 			loops.add(loop);
 			executor.submit(loop);
 		});

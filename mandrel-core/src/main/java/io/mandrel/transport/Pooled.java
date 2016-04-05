@@ -26,7 +26,7 @@ import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
+import org.apache.commons.pool2.KeyedObjectPool;
 
 import com.facebook.swift.service.RuntimeTTransportException;
 import com.google.common.base.Throwables;
@@ -36,7 +36,7 @@ import com.google.common.net.HostAndPort;
 @Slf4j
 public class Pooled<T> {
 
-	private final GenericKeyedObjectPool<HostAndPort, T> internalPool;
+	private final KeyedObjectPool<HostAndPort, T> internalPool;
 	private final HostAndPort hostAndPort;
 
 	public <R> R map(Function<? super T, ? extends R> mapper) {

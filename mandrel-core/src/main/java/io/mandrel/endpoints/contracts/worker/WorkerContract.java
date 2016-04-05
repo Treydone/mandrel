@@ -16,24 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.endpoints.contracts;
+package io.mandrel.endpoints.contracts.worker;
 
-import io.mandrel.cluster.discovery.ServiceIds;
-import io.mandrel.cluster.node.Node;
+import io.mandrel.endpoints.contracts.Contract;
 
+import com.facebook.swift.codec.ThriftField;
 import com.facebook.swift.service.ThriftMethod;
 import com.facebook.swift.service.ThriftService;
 
 @ThriftService
-public interface NodeContract extends Contract, AutoCloseable {
+public interface WorkerContract extends Contract, AutoCloseable {
 
 	@ThriftMethod
-	Node dhis();
-	
-	@ThriftMethod
-	void shutdown();
+	byte[] analyse(@ThriftField(value = 1, name = "id") Long id, @ThriftField(value = 2, name = "source") String source);
 
-	public default String getServiceName() {
-		return ServiceIds.node();
-	}
 }

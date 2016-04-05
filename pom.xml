@@ -41,6 +41,7 @@
 		<module>mandrel-frontier</module>
 		<module>mandrel-worker</module>
 		<module>mandrel-coordinator</module>
+		<module>mandrel-ui-server</module>
 		<module>mandrel-standalone</module>
 		<module>mandrel-distribution</module>
 	</modules>
@@ -91,6 +92,11 @@
 			<dependency>
 				<groupId>io.mandrel</groupId>
 				<artifactId>mandrel-coordinator</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.mandrel</groupId>
+				<artifactId>mandrel-ui-server</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

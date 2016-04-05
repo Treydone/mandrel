@@ -18,7 +18,8 @@
  */
 package io.mandrel.endpoints.internal;
 
-import io.mandrel.cluster.node.NodeRepository;
+import io.mandrel.cluster.discovery.Service;
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.container.ContainerStatus;
 import io.mandrel.common.data.Job;
@@ -26,12 +27,9 @@ import io.mandrel.common.data.JobStatuses;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
-import io.mandrel.controller.CoordinatorContainer;
-import io.mandrel.controller.CoordinatorContainers;
-import io.mandrel.endpoints.contracts.CoordinatorContract;
-import io.mandrel.metrics.MetricsService;
-import io.mandrel.timeline.Event;
-import io.mandrel.timeline.TimelineService;
+import io.mandrel.coordinator.CoordinatorContainer;
+import io.mandrel.coordinator.CoordinatorContainers;
+import io.mandrel.endpoints.contracts.coordinator.AdminCoordinatorContract;
 import io.mandrel.transport.RemoteException;
 
 import java.util.ArrayList;
@@ -42,9 +40,11 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.weakref.jmx.internal.guava.base.Throwables;
 
@@ -52,27 +52,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 @Slf4j
-public class CoordinatorResource implements CoordinatorContract {
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+public class CoordinatorResource implements AdminCoordinatorContract, Service {
 
-	@Autowired
-	private TimelineService timelineService;
-	@Autowired
-	private MetricsService metricsService;
-	@Autowired
-	private NodeRepository nodeRepository;
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 
 	private Supplier<? extends NotFoundException> coordinatorNotFound = () -> new NotFoundException("Coordinator not found");
 
-	@Override
-	public void addEvent(Event event) {
-		timelineService.add(event);
-	}
-
-	@Override
-	public void updateMetrics(Map<String, Long> accumulators) {
-		metricsService.sync(accumulators);
+	public String getServiceName() {
+		return ServiceIds.coordinator();
 	}
 
 	@Override
@@ -110,8 +98,7 @@ public class CoordinatorResource implements CoordinatorContract {
 
 	@Override
 	public List<Container> listRunningCoordinatorContainers() {
-		return CoordinatorContainers.list().stream()
-				.map(f -> new Container().setJobId(f.job().getId()).setVersion(f.job().getVersion()).setStatus(f.status()))
+		return CoordinatorContainers.list().stream().map(f -> new Container().setJobId(f.job().getId()).setVersion(f.job().getVersion()).setStatus(f.status()))
 				.collect(Collectors.toList());
 	}
 

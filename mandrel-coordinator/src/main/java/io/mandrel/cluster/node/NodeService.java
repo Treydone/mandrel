@@ -24,16 +24,18 @@ import io.mandrel.cluster.discovery.ServiceInstance;
 import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.sync.Container;
-import io.mandrel.endpoints.contracts.NodeContract;
-import io.mandrel.transport.Clients;
-import io.mandrel.transport.Pooled;
+import io.mandrel.endpoints.contracts.coordinator.NodesContract;
+import io.mandrel.transport.MandrelClient;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.inject.Inject;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.weakref.jmx.internal.guava.collect.Maps;
@@ -42,16 +44,13 @@ import com.google.common.collect.Lists;
 import com.google.common.net.HostAndPort;
 
 @Component
-public class NodeService {
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+public class NodeService implements NodesContract {
 
-	@Autowired
-	private NodeRepository nodeRepository;
-	@Autowired
-	private DiscoveryClient discoveryClient;
-	@Autowired
-	private Clients clients;
-	@Autowired
-	private StateService stateService;
+	private final NodeRepository nodeRepository;
+	private final DiscoveryClient discoveryClient;
+	private final MandrelClient client;
+	private final StateService stateService;
 
 	@Scheduled(fixedRate = 5000)
 	public void sync() {
@@ -59,8 +58,7 @@ public class NodeService {
 			List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.node());
 
 			List<Node> nodes = instances.stream().map(i -> {
-				Pooled<NodeContract> pooled = clients.onNode(i.getHostAndPort());
-				Node node = pooled.map(client -> client.dhis());
+				Node node = client.node().on(i.getHostAndPort()).map(client -> client.dhis());
 				node.setId(i.getId()).setHostAndPort(i.getHostAndPort());
 				return node;
 			}).collect(Collectors.toList());
@@ -68,31 +66,36 @@ public class NodeService {
 		}
 	}
 
-	public Map<String, Node> nodes() {
+	public Map<String, Node> getNodes() {
 		List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.node());
-		return nodes(instances.stream().map(si -> si.getId()).collect(Collectors.toList()));
+		return getNodes(instances.stream().map(si -> si.getId()).collect(Collectors.toList()));
 	}
 
-	public Map<String, List<Container>> containers(String id) {
+	public Map<String, List<Container>> getContainers(String id) {
 		return nodeRepository.get(id).map(node -> {
 			HostAndPort hostAndPort = node.getHostAndPort();
 
 			Map<String, List<Container>> results = Maps.newHashMap();
 			if (discoveryClient.getInstance(id, ServiceIds.worker()) != null) {
-				results.put(ServiceIds.worker(), clients.onWorker(hostAndPort).map(client -> client.listRunningWorkerContainers()));
+				results.put(ServiceIds.worker(), client.worker().admin().on(hostAndPort).map(client -> client.listRunningWorkerContainers()));
 			}
 			if (discoveryClient.getInstance(id, ServiceIds.frontier()) != null) {
-				results.put(ServiceIds.frontier(), clients.onFrontier(hostAndPort).map(client -> client.listRunningFrontierContainers()));
+				results.put(ServiceIds.frontier(), client.frontier().admin().on(hostAndPort).map(client -> client.listRunningFrontierContainers()));
 			}
 			return results;
 		}).orElse(Maps.newHashMap());
 	}
 
-	public Node node(String id) {
+	public Node getNode(String id) {
 		return nodeRepository.get(id).orElseThrow(() -> new NotFoundException("Unknown node"));
 	}
 
-	public Map<String, Node> nodes(Collection<String> ids) {
+	public Map<String, Node> getNodes(Collection<String> ids) {
 		return Lists.newArrayList(nodeRepository.findAll(ids)).stream().collect(Collectors.toMap(node -> node.getId(), node -> node));
+	}
+
+	@Override
+	public void close() throws Exception {
+
 	}
 }

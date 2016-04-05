@@ -19,6 +19,8 @@
 package io.mandrel.endpoints.internal;
 
 import io.mandrel.cluster.discovery.DiscoveryClient;
+import io.mandrel.cluster.discovery.Service;
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.container.ContainerStatus;
 import io.mandrel.common.data.Job;
@@ -28,9 +30,10 @@ import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
 import io.mandrel.data.analysis.AnalysisService;
 import io.mandrel.data.extract.ExtractorService;
-import io.mandrel.endpoints.contracts.WorkerContract;
+import io.mandrel.endpoints.contracts.worker.AdminWorkerContract;
+import io.mandrel.endpoints.contracts.worker.WorkerContract;
 import io.mandrel.metrics.Accumulators;
-import io.mandrel.transport.Clients;
+import io.mandrel.transport.MandrelClient;
 import io.mandrel.worker.WorkerContainer;
 import io.mandrel.worker.WorkerContainers;
 
@@ -42,10 +45,12 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.weakref.jmx.internal.guava.base.Throwables;
 
@@ -53,22 +58,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Component
-public class WorkerResource implements WorkerContract {
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+public class WorkerResource implements WorkerContract, AdminWorkerContract, Service {
 
-	@Autowired
-	private Clients clients;
-	@Autowired
-	private DiscoveryClient discoveryClient;
-	@Autowired
-	private ObjectMapper objectMapper;
-	@Autowired
-	private AnalysisService analysisService;
-	@Autowired
-	private ExtractorService extractorService;
-	@Autowired
-	private Accumulators accumulators;
+	private final MandrelClient client;
+	private final DiscoveryClient discoveryClient;
+	private final ObjectMapper objectMapper;
+	private final AnalysisService analysisService;
+	private final ExtractorService extractorService;
+	private final Accumulators accumulators;
 
 	private Supplier<? extends NotFoundException> workerNotFound = () -> new NotFoundException("Worker not found");
+
+	public String getServiceName() {
+		return ServiceIds.worker();
+	}
 
 	@Override
 	public void createWorkerContainer(byte[] definition) {
@@ -82,7 +86,7 @@ public class WorkerResource implements WorkerContract {
 	}
 
 	public void create(Job job) {
-		WorkerContainer container = new WorkerContainer(extractorService, accumulators, job, clients, discoveryClient);
+		WorkerContainer container = new WorkerContainer(extractorService, accumulators, job, client, discoveryClient);
 		container.register();
 	}
 
@@ -105,8 +109,7 @@ public class WorkerResource implements WorkerContract {
 
 	@Override
 	public List<Container> listRunningWorkerContainers() {
-		return WorkerContainers.list().stream()
-				.map(f -> new Container().setJobId(f.job().getId()).setVersion(f.job().getVersion()).setStatus(f.status()))
+		return WorkerContainers.list().stream().map(f -> new Container().setJobId(f.job().getId()).setVersion(f.job().getVersion()).setStatus(f.status()))
 				.collect(Collectors.toList());
 	}
 

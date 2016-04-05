@@ -16,27 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.mandrel.frontier;
+package io.mandrel.coordinator;
 
+import io.mandrel.blob.BlobStore;
+import io.mandrel.blob.BlobStores;
 import io.mandrel.common.container.AbstractContainer;
 import io.mandrel.common.container.ContainerStatus;
 import io.mandrel.common.data.Job;
 import io.mandrel.common.service.TaskContext;
-import io.mandrel.data.source.Source;
+import io.mandrel.document.DocumentStore;
+import io.mandrel.document.DocumentStores;
 import io.mandrel.metadata.MetadataStore;
 import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.Accumulators;
 import io.mandrel.transport.MandrelClient;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 import com.google.common.util.concurrent.Monitor;
 
@@ -44,15 +41,12 @@ import com.google.common.util.concurrent.Monitor;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true, fluent = true)
-public class FrontierContainer extends AbstractContainer {
+public class CoordinatorContainer extends AbstractContainer {
 
 	private final Monitor monitor = new Monitor();
 	private final TaskContext context = new TaskContext();
-	private final ExecutorService executor;
-	private final Frontier frontier;
-	private final Revisitor revisitor;
 
-	public FrontierContainer(Job job, Accumulators accumulators, MandrelClient client) {
+	public CoordinatorContainer(Job job, Accumulators accumulators, MandrelClient client) {
 		super(accumulators, job, client);
 		context.setDefinition(job);
 
@@ -61,22 +55,23 @@ public class FrontierContainer extends AbstractContainer {
 		metadatastore.init();
 		MetadataStores.add(job.getId(), metadatastore);
 
-		// Init frontier
-		frontier = job.getFrontier().build(context);
+		BlobStore blobStore = job.getStores().getBlobStore().build(context);
+		blobStore.init();
+		BlobStores.add(job.getId(), blobStore);
 
-		// Revisitor
-		BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("frontier-" + job.getId() + "-%d").daemon(true)
-				.priority(Thread.MAX_PRIORITY).build();
-		executor = Executors.newFixedThreadPool(1, threadFactory);
-		revisitor = new Revisitor(frontier, metadatastore);
-		executor.submit(revisitor);
+		job.getExtractors().getData().forEach(ex -> {
+			DocumentStore documentStore = ex.getDocumentStore().metadataExtractor(ex).build(context);
+			documentStore.init();
+			DocumentStores.add(job.getId(), ex.getName(), documentStore);
+		});
 
 		current.set(ContainerStatus.INITIATED);
+
 	}
 
 	@Override
 	public String type() {
-		return "frontier";
+		return "coordinator";
 	}
 
 	@Override
@@ -84,23 +79,6 @@ public class FrontierContainer extends AbstractContainer {
 		if (monitor.tryEnter()) {
 			try {
 				if (!current.get().equals(ContainerStatus.STARTED)) {
-
-					log.debug("Starting the frontier");
-					frontier.init();
-
-					// Init sources
-					log.debug("Initializing the sources");
-					job.getSources().forEach(s -> {
-						Source source = s.build(context);
-						if (!source.singleton() && source.check()) {
-							source.register(uri -> {
-								frontier.schedule(uri);
-							});
-						}
-					});
-
-					revisitor.start();
-
 					current.set(ContainerStatus.STARTED);
 				}
 			} finally {
@@ -114,10 +92,7 @@ public class FrontierContainer extends AbstractContainer {
 		if (monitor.tryEnter()) {
 			try {
 				if (!current.get().equals(ContainerStatus.PAUSED)) {
-					log.debug("Pausing the frontier");
-
-					revisitor.pause();
-
+					log.debug("Pausing the coordinator");
 					current.set(ContainerStatus.PAUSED);
 				}
 			} finally {
@@ -132,23 +107,23 @@ public class FrontierContainer extends AbstractContainer {
 			try {
 				if (!current.get().equals(ContainerStatus.KILLED)) {
 					try {
-						executor.shutdownNow();
+						MetadataStores.remove(job.getId());
 					} catch (Exception e) {
 						log.debug(e.getMessage(), e);
 					}
 
 					try {
-						frontier.destroy();
+						BlobStores.remove(job.getId());
 					} catch (Exception e) {
-						log.warn("Can not destroy the frontier");
+						log.debug(e.getMessage(), e);
 					}
 
 					try {
-						accumulators.destroy(job.getId());
+						DocumentStores.remove(job.getId());
 					} catch (Exception e) {
-						log.warn("Can not destroy the accumulators");
+						log.debug(e.getMessage(), e);
 					}
-
+					
 					current.set(ContainerStatus.KILLED);
 				}
 			} finally {
@@ -159,11 +134,11 @@ public class FrontierContainer extends AbstractContainer {
 
 	@Override
 	public void register() {
-		FrontierContainers.add(job.getId(), this);
+		CoordinatorContainers.add(job.getId(), this);
 	}
 
 	@Override
 	public void unregister() {
-		FrontierContainers.remove(job.getId());
+		CoordinatorContainers.remove(job.getId());
 	}
 }

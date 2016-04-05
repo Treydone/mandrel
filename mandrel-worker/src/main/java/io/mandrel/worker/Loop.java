@@ -26,7 +26,7 @@ import io.mandrel.data.Link;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.document.Document;
-import io.mandrel.endpoints.contracts.Next;
+import io.mandrel.endpoints.contracts.frontier.Next;
 import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.GlobalAccumulator;
 import io.mandrel.metrics.JobAccumulator;
@@ -34,7 +34,7 @@ import io.mandrel.requests.ConnectTimeoutException;
 import io.mandrel.requests.ReadTimeoutException;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.Requesters;
-import io.mandrel.transport.Clients;
+import io.mandrel.transport.MandrelClient;
 import io.mandrel.transport.RemoteException;
 
 import java.util.HashMap;
@@ -61,7 +61,7 @@ public class Loop implements Runnable {
 
 	private final ExtractorService extractorService;
 	private final Job job;
-	private final Clients clients;
+	private final MandrelClient client;
 
 	private final JobAccumulator jobAccumulator;
 	private final GlobalAccumulator globalAccumulator;
@@ -107,7 +107,7 @@ public class Loop implements Runnable {
 				}
 
 				log.trace("> Asking for uri...");
-				Next next = clients.onRandomFrontier().map(frontier -> frontier.next(job.getId())).get(20000, TimeUnit.MILLISECONDS);
+				Next next = client.frontier().client().onAny().map(frontier -> frontier.next(job.getId())).get(20000, TimeUnit.MILLISECONDS);
 				Uri uri = next.getUri();
 
 				if (uri != null) {
@@ -242,13 +242,13 @@ public class Loop implements Runnable {
 
 	protected void add(long jobId, Set<Uri> uris) {
 		if (CollectionUtils.isNotEmpty(uris)) {
-			clients.onRandomFrontier().with(frontier -> frontier.mschedule(jobId, uris));
+			client.frontier().client().onAny().with(frontier -> frontier.mschedule(jobId, uris));
 		}
 	}
 
 	protected void add(long jobId, Uri uri) {
 		if (uri != null) {
-			clients.onRandomFrontier().with(frontier -> frontier.schedule(jobId, uri));
+			client.frontier().client().onAny().with(frontier -> frontier.schedule(jobId, uri));
 		}
 	}
 }

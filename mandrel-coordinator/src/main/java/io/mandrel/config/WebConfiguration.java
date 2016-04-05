@@ -18,8 +18,6 @@
  */
 package io.mandrel.config;
 
-import io.mandrel.endpoints.web.MandrelHandlerInterceptor;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -33,8 +31,6 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -48,28 +44,9 @@ public class WebConfiguration extends WebMvcConfigurerAdapter {
 	@Autowired
 	private ObjectMapper mapper;
 
-	@Autowired
-	private MandrelHandlerInterceptor interceptor;
-
 	@Bean
 	public DefaultErrorAttributes errorAttributes() {
 		return new DefaultErrorAttributes();
-	}
-
-	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(interceptor);
-	}
-
-	@Override
-	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		if (!registry.hasMappingForPattern("/webjars/**")) {
-			registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
-		}
-		if (!registry.hasMappingForPattern("/public/**")) {
-			registry.addResourceHandler("/public/**").addResourceLocations("classpath:/META-INF/resources/", "classpath:/resources/", "classpath:/static/",
-					"classpath:/public/");
-		}
 	}
 
 	@Override

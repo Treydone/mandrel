@@ -18,6 +18,8 @@
  */
 package io.mandrel.endpoints.internal;
 
+import io.mandrel.cluster.discovery.Service;
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.container.ContainerStatus;
 import io.mandrel.common.data.Job;
@@ -26,12 +28,13 @@ import io.mandrel.common.net.Uri;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
-import io.mandrel.endpoints.contracts.FrontierContract;
-import io.mandrel.endpoints.contracts.Next;
+import io.mandrel.endpoints.contracts.frontier.AdminFrontierContract;
+import io.mandrel.endpoints.contracts.frontier.FrontierContract;
+import io.mandrel.endpoints.contracts.frontier.Next;
 import io.mandrel.frontier.FrontierContainer;
 import io.mandrel.frontier.FrontierContainers;
 import io.mandrel.metrics.Accumulators;
-import io.mandrel.transport.Clients;
+import io.mandrel.transport.MandrelClient;
 import io.mandrel.transport.RemoteException;
 
 import java.util.ArrayList;
@@ -43,9 +46,11 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.weakref.jmx.internal.guava.base.Throwables;
 
@@ -55,16 +60,18 @@ import com.google.common.util.concurrent.SettableFuture;
 
 @Component
 @Slf4j
-public class FrontierResource implements FrontierContract {
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+public class FrontierResource implements FrontierContract, AdminFrontierContract, Service {
 
-	@Autowired
-	private Accumulators accumulators;
-	@Autowired
-	private Clients clients;
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final Accumulators accumulators;
+	private final MandrelClient client;
+	private final ObjectMapper objectMapper;
 
 	private Supplier<? extends NotFoundException> frontierNotFound = () -> new NotFoundException("Frontier not found");
+
+	public String getServiceName() {
+		return ServiceIds.frontier();
+	}
 
 	@Override
 	public void createFrontierContainer(byte[] definition) {
@@ -78,7 +85,7 @@ public class FrontierResource implements FrontierContract {
 	}
 
 	public void create(Job job) {
-		FrontierContainer container = new FrontierContainer(job, accumulators, clients);
+		FrontierContainer container = new FrontierContainer(job, accumulators, client);
 		container.register();
 	}
 
@@ -111,8 +118,7 @@ public class FrontierResource implements FrontierContract {
 
 	@Override
 	public List<Container> listRunningFrontierContainers() {
-		return FrontierContainers.list().stream()
-				.map(f -> new Container().setJobId(f.job().getId()).setVersion(f.job().getVersion()).setStatus(f.status()))
+		return FrontierContainers.list().stream().map(f -> new Container().setJobId(f.job().getId()).setVersion(f.job().getVersion()).setStatus(f.status()))
 				.collect(Collectors.toList());
 	}
 

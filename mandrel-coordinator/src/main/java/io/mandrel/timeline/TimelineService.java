@@ -18,7 +18,7 @@
  */
 package io.mandrel.timeline;
 
-import io.mandrel.messaging.StompService;
+import io.mandrel.endpoints.contracts.coordinator.TimelineContract;
 
 import java.util.List;
 import java.util.Map;
@@ -35,24 +35,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class TimelineService {
+public class TimelineService implements TimelineContract {
 
 	private final TimelineRepository timelineRepository;
-	private final StompService stompService;
+	//	private final StompService stompService;
 	private final ScheduledExecutorService executor;
-
-	public void add(Event event) {
-		timelineRepository.add(event);
-	}
 
 	public List<Event> page(int from, int size) {
 		return timelineRepository.page(from, size);
-	}
-
-	public Map<String, List<Event>> pageByDate(int from, int size) {
-		List<Event> page = timelineRepository.page(from, size);
-		return page.stream().filter(e -> e.getTime() != null)
-				.collect(Collectors.groupingBy(event -> event.getTime().toLocalDate().toString(), TreeMap::new, Collectors.toList())).descendingMap();
 	}
 
 	@PostConstruct
@@ -61,6 +51,24 @@ public class TimelineService {
 	}
 
 	public void pool() {
-		timelineRepository.pool(event -> stompService.publish(event));
+		// TODO
+		//		timelineRepository.pool(event -> stompService.publish(event));
+	}
+
+	@Override
+	public void addEvent(Event event) {
+		timelineRepository.add(event);
+	}
+
+	@Override
+	public Map<String, List<Event>> pageByDate(int from, int size) {
+		List<Event> page = timelineRepository.page(from, size);
+		return page.stream().filter(e -> e.getTime() != null)
+				.collect(Collectors.groupingBy(event -> event.getTime().toLocalDate().toString(), TreeMap::new, Collectors.toList())).descendingMap();
+	}
+
+	@Override
+	public void close() throws Exception {
+
 	}
 }

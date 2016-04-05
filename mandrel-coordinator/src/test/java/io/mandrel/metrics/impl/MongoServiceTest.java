@@ -72,9 +72,9 @@ public class MongoServiceTest {
 
 		Map<String, Long> accumulators = Maps.newHashMap();
 		accumulators.put(MetricKeys.globalTotalSize(), 5l);
-		metricsService.sync(accumulators);
+		metricsService.updateMetrics(accumulators);
 
-		Timeserie serie = metricsService.serie(MetricKeys.globalTotalSize());
+		Timeserie serie = metricsService.getTimeserie(MetricKeys.globalTotalSize());
 		System.err.println(serie);
 
 	}

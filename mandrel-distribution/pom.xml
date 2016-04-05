@@ -82,6 +82,21 @@
 									</arguments>
 								</configuration>
 							</execution>
+							<execution>
+								<id>ui-server</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>package</phase>
+								<configuration>
+									<executable>mvn</executable>
+									<arguments>
+										<argument>package</argument>
+										<argument>-Pui-server</argument>
+										<argument>-DskipDeploy=true</argument>
+									</arguments>
+								</configuration>
+							</execution>
 						</executions>
 					</plugin>
 
@@ -425,7 +440,7 @@
 			<properties>
 				<component.id>coordinator</component.id>
 				<component.class.main>io.mandrel.bootstrap.Coordinator</component.class.main>
-				<component.class.wrapper>io.mandrel.bootstrap.WrapperCoordinator</component.class.wrapper>
+				<component.class.wrapper>io.mandrel.bootstrap.CoordinatorWrapper</component.class.wrapper>
 			</properties>
 			<dependencies>
 				<dependency>
@@ -451,7 +466,7 @@
 			<properties>
 				<component.id>frontier</component.id>
 				<component.class.main>io.mandrel.bootstrap.Frontier</component.class.main>
-				<component.class.wrapper>io.mandrel.bootstrap.WrapperFrontier</component.class.wrapper>
+				<component.class.wrapper>io.mandrel.bootstrap.FrontierWrapper</component.class.wrapper>
 			</properties>
 			<dependencies>
 				<dependency>
@@ -477,12 +492,38 @@
 			<properties>
 				<component.id>worker</component.id>
 				<component.class.main>io.mandrel.bootstrap.Worker</component.class.main>
-				<component.class.wrapper>io.mandrel.bootstrap.WrapperWorker</component.class.wrapper>
+				<component.class.wrapper>io.mandrel.bootstrap.WorkerWrapper</component.class.wrapper>
 			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>io.mandrel</groupId>
 					<artifactId>worker</artifactId>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>appassembler-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		
+		<profile>
+			<id>ui-server</id>
+			<properties>
+				<component.id>ui-server</component.id>
+				<component.class.main>io.mandrel.bootstrap.UiServer</component.class.main>
+				<component.class.wrapper>io.mandrel.bootstrap.UiServerWrapper</component.class.wrapper>
+			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>io.mandrel</groupId>
+					<artifactId>ui-server</artifactId>
 				</dependency>
 			</dependencies>
 			<build>
