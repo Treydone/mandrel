@@ -45,6 +45,9 @@ public class RemoteException extends MandrelException {
 		// Global
 		G_UNKNOWN,
 
+		// Definition
+		D_DEFINITION_INVALID,
+
 		// Frontier
 		// F_TIMEOUT_WHEN_GETTING_URI
 	}

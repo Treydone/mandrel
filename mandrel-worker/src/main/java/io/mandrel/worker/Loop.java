@@ -189,9 +189,9 @@ public class Loop implements Runnable {
 		updateMetrics(watch, blob);
 
 		Map<String, Instance<?>> cachedSelectors = new HashMap<>();
-		if (job.getExtractors() != null && job.getExtractors().getData() != null) {
+		if (job.getDefinition().getExtractors() != null && job.getDefinition().getExtractors().getData() != null) {
 			log.trace(">  - Extracting documents for {}...", uri);
-			job.getExtractors().getData().forEach(ex -> {
+			job.getDefinition().getExtractors().getData().forEach(ex -> {
 				List<Document> documents = extractorService.extractThenFormatThenStore(job.getId(), cachedSelectors, blob, ex);
 
 				if (documents != null) {
@@ -201,10 +201,10 @@ public class Loop implements Runnable {
 			log.trace(">  - Extracting documents for {} done!", uri);
 		}
 
-		if (job.getExtractors().getOutlinks() != null) {
+		if (job.getDefinition().getExtractors().getOutlinks() != null) {
 			log.trace(">  - Extracting outlinks for {}...", uri);
 			final Uri theUri = uri;
-			job.getExtractors().getOutlinks().forEach(ol -> {
+			job.getDefinition().getExtractors().getOutlinks().forEach(ol -> {
 				Set<Link> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(job, theUri, cachedSelectors, blob, ol).getRight();
 				blob.getMetadata().getFetchMetadata().setOutlinks(allFilteredOutlinks);
 				add(job.getId(), allFilteredOutlinks.stream().map(l -> l.getUri()).collect(Collectors.toSet()));

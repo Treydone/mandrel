@@ -84,11 +84,19 @@ public class ThriftClient implements MandrelClient {
 		NiftyClient niftyClient = new NiftyClient(config, transportProperties.isLocal());
 		ThriftClientManager clientManager = new ThriftClientManager(codecManager, niftyClient, Collections.emptySet());
 
-		contracts = Arrays
-				.asList(FrontierContract.class, AdminCoordinatorContract.class, WorkerContract.class, NodeContract.class)
-				.stream()
-				.map(clazz -> Pair.of(clazz,
-						prepare(new KeyedClientPool<>(FrontierContract.class, poolConfig, 9090, null, clientManager, transportProperties.isLocal()))))
+		contracts = Arrays.asList(
+		// Frontier
+				FrontierContract.class, AdminFrontierContract.class,
+
+				// Coordinator
+				TimelineContract.class, JobsContract.class, MetricsContract.class, NodesContract.class, AdminCoordinatorContract.class,
+
+				// Worker
+				WorkerContract.class, AdminWorkerContract.class,
+
+				// Common
+				NodeContract.class).stream()
+				.map(clazz -> Pair.of(clazz, prepare(new KeyedClientPool<>(clazz, poolConfig, 9090, null, clientManager, transportProperties.isLocal()))))
 				.collect(Collectors.toMap(pair -> pair.getLeft(), pair -> pair.getRight()));
 	}
 
@@ -112,7 +120,7 @@ public class ThriftClient implements MandrelClient {
 
 	@Override
 	public Targeted<NodeContract> node() {
-		return new Targeted<>(discoveryClient, ServiceIds.frontier(), get(NodeContract.class));
+		return new Targeted<>(discoveryClient, ServiceIds.node(), get(NodeContract.class));
 	}
 
 	@Override
@@ -137,27 +145,27 @@ public class ThriftClient implements MandrelClient {
 
 			@Override
 			public Targeted<TimelineContract> events() {
-				return new Targeted<>(discoveryClient, ServiceIds.frontier(), get(TimelineContract.class));
+				return new Targeted<>(discoveryClient, ServiceIds.coordinator(), get(TimelineContract.class));
 			}
 
 			@Override
 			public Targeted<JobsContract> jobs() {
-				return new Targeted<>(discoveryClient, ServiceIds.frontier(), get(JobsContract.class));
+				return new Targeted<>(discoveryClient, ServiceIds.coordinator(), get(JobsContract.class));
 			}
 
 			@Override
 			public Targeted<MetricsContract> metrics() {
-				return new Targeted<>(discoveryClient, ServiceIds.frontier(), get(MetricsContract.class));
+				return new Targeted<>(discoveryClient, ServiceIds.coordinator(), get(MetricsContract.class));
 			}
 
 			@Override
 			public Targeted<NodesContract> nodes() {
-				return new Targeted<>(discoveryClient, ServiceIds.frontier(), get(NodesContract.class));
+				return new Targeted<>(discoveryClient, ServiceIds.coordinator(), get(NodesContract.class));
 			}
 
 			@Override
 			public Targeted<AdminCoordinatorContract> admin() {
-				return new Targeted<>(discoveryClient, ServiceIds.frontier(), get(AdminCoordinatorContract.class));
+				return new Targeted<>(discoveryClient, ServiceIds.coordinator(), get(AdminCoordinatorContract.class));
 			}
 		};
 	}
@@ -168,12 +176,12 @@ public class ThriftClient implements MandrelClient {
 
 			@Override
 			public Targeted<WorkerContract> client() {
-				return new Targeted<>(discoveryClient, ServiceIds.frontier(), get(WorkerContract.class));
+				return new Targeted<>(discoveryClient, ServiceIds.worker(), get(WorkerContract.class));
 			}
 
 			@Override
 			public Targeted<AdminWorkerContract> admin() {
-				return new Targeted<>(discoveryClient, ServiceIds.frontier(), get(AdminWorkerContract.class));
+				return new Targeted<>(discoveryClient, ServiceIds.worker(), get(AdminWorkerContract.class));
 			}
 		};
 	}

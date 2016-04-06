@@ -57,12 +57,12 @@ public class FrontierContainer extends AbstractContainer {
 		context.setDefinition(job);
 
 		// Init stores
-		MetadataStore metadatastore = job.getStores().getMetadataStore().build(context);
+		MetadataStore metadatastore = job.getDefinition().getStores().getMetadataStore().build(context);
 		metadatastore.init();
 		MetadataStores.add(job.getId(), metadatastore);
 
 		// Init frontier
-		frontier = job.getFrontier().build(context);
+		frontier = job.getDefinition().getFrontier().build(context);
 
 		// Revisitor
 		BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("frontier-" + job.getId() + "-%d").daemon(true)
@@ -90,7 +90,7 @@ public class FrontierContainer extends AbstractContainer {
 
 					// Init sources
 					log.debug("Initializing the sources");
-					job.getSources().forEach(s -> {
+					job.getDefinition().getSources().forEach(s -> {
 						Source source = s.build(context);
 						if (!source.singleton() && source.check()) {
 							source.register(uri -> {

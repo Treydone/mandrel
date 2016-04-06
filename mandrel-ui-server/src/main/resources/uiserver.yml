@@ -1,0 +1,50 @@
+spring:
+  pidfile: coordinator.pid
+  application:
+    name: coordinator
+    admin:
+      enabled: false
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/mandrel
+  jmx:
+    enabled: false
+
+discovery:
+  instanceHost: localhost
+  zookeeper:
+    enabled: true
+    connectString: localhost:2181
+    root: /mandrel
+
+transport:
+  bindAddress: localhost
+  port: 8090
+                  
+server:
+  port: 8080
+  undertow:
+    buffer-size: 16000
+    buffers-per-region: 20
+    direct-buffers: true
+    io-threads: 4
+    worker-threads: 32 
+  
+logging:
+  console:
+    enabled: true
+    level: WARN
+  level:
+    org.springframework: INFO
+    io.mandrel: DEBUG
+    io.mandrel.messaging: DEBUG
+    
+management:
+  context-path: /admin
+
+endpoints:
+  shutdown:
+    enabled: true
+  health:
+    time-to-live: 5000
+    

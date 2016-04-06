@@ -23,6 +23,8 @@ import io.mandrel.cluster.idgenerator.MongoIdGenerator;
 import io.mandrel.common.bson.JsonBsonCodec;
 import io.mandrel.common.data.Job;
 import io.mandrel.common.data.JobStatuses;
+import io.mandrel.common.data.Page;
+import io.mandrel.common.data.PageRequest;
 import io.mandrel.job.JobRepository;
 
 import java.time.LocalDateTime;
@@ -39,9 +41,6 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -80,9 +79,9 @@ public class MongoJobRepository implements JobRepository {
 		return job;
 	}
 
-	public void updateStatus(long jobId, String status) {
+	public void updateStatus(long jobId, JobStatuses status) {
 		collection.updateOne(new Document("_id", jobId),
-				new Document("$set", new Document("status", status).append(status, LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli())));
+				new Document("$set", new Document("status", status).append(status.toString(), LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli())));
 	}
 
 	public void delete(long id) {
@@ -108,22 +107,22 @@ public class MongoJobRepository implements JobRepository {
 	}
 
 	@Override
-	public Page<Job> page(Pageable pageable) {
-		List<Job> content = Lists.newArrayList(collection.find().limit(pageable.getPageSize()).skip(pageable.getOffset())
+	public Page<Job> page(PageRequest request) {
+		List<Job> content = Lists.newArrayList(collection.find().limit(request.getPageSize()).skip(request.getOffset())
 				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Job.class)));
-		return new PageImpl<>(content, pageable, collection.count());
+		return new Page<>(content, request, collection.count());
 	}
 
 	@Override
-	public Page<Job> pageForActive(Pageable pageable) {
-		Bson filter = Filters.ne("status", JobStatuses.DELETED);
-		List<Job> content = Lists.newArrayList(collection.find(filter).limit(pageable.getPageSize()).skip(pageable.getOffset())
+	public Page<Job> pageForActive(PageRequest request) {
+		Bson filter = Filters.ne("status", JobStatuses.DELETED.toString());
+		List<Job> content = Lists.newArrayList(collection.find(filter).limit(request.getPageSize()).skip(request.getOffset())
 				.map(doc -> JsonBsonCodec.fromBson(mapper, doc, Job.class)));
-		return new PageImpl<>(content, pageable, collection.count());
+		return new Page<>(content, request, collection.count());
 	}
 
 	protected Bson activeFilter() {
-		return Filters.or(Filters.eq("status", JobStatuses.STARTED), Filters.eq("status", JobStatuses.PAUSED),
-				Filters.eq("status", JobStatuses.INITIATED));
+		return Filters.or(Filters.eq("status", JobStatuses.STARTED.toString()), Filters.eq("status", JobStatuses.PAUSED.toString()),
+				Filters.eq("status", JobStatuses.INITIATED.toString()));
 	}
 }

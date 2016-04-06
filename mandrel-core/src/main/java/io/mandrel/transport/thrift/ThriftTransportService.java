@@ -21,6 +21,7 @@ package io.mandrel.transport.thrift;
 import io.airlift.units.Duration;
 import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.discovery.Service;
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.discovery.ServiceInstance;
 import io.mandrel.endpoints.contracts.Contract;
 import io.mandrel.timeline.Event;
@@ -35,6 +36,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,7 @@ import com.google.common.collect.ImmutableSet;
 
 @Component
 @Slf4j
+@Data
 @ConditionalOnProperty(value = "transport.thrift.enabled", matchIfMissing = true)
 public class ThriftTransportService implements TransportService {
 
@@ -60,9 +63,9 @@ public class ThriftTransportService implements TransportService {
 	@Autowired
 	private DiscoveryClient discoveryClient;
 	@Autowired
-	private List<? extends Contract> resources;
+	private List<Contract> resources;
 	@Autowired
-	private List<? extends Service> services;
+	private List<Service> services;
 	@Autowired
 	private ThriftTransportProperties properties;
 	@Autowired
@@ -91,6 +94,12 @@ public class ThriftTransportService implements TransportService {
 				transportProperties.isLocal());
 		server.start();
 
+		services.add(new Service() {
+			@Override
+			public String getServiceName() {
+				return ServiceIds.node();
+			}
+		});
 		services.forEach(service -> {
 			log.debug("Registering service {}", service.getServiceName());
 			ServiceInstance instance = ServiceInstance.builder().host(transportProperties.getBindAddress()).port(transportProperties.getPort())

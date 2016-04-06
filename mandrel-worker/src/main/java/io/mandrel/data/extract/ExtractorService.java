@@ -71,8 +71,8 @@ public class ExtractorService {
 		Set<Link> filteredOutlinks = null;
 		if (outlinks != null) {
 			Stream<Link> stream = outlinks.stream().filter(l -> l != null && l.getUri() != null);
-			if (job.getFilters() != null && CollectionUtils.isNotEmpty(job.getFilters().getLinks())) {
-				stream = stream.filter(link -> job.getFilters().getLinks().stream().allMatch(f -> f.isValid(link)));
+			if (job.getDefinition().getFilters() != null && CollectionUtils.isNotEmpty(job.getDefinition().getFilters().getLinks())) {
+				stream = stream.filter(link -> job.getDefinition().getFilters().getLinks().stream().allMatch(f -> f.isValid(link)));
 			}
 			filteredOutlinks = stream.collect(Collectors.toSet());
 		}

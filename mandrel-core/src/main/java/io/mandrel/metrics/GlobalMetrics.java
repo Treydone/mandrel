@@ -20,13 +20,31 @@ package io.mandrel.metrics;
 
 import java.util.Map;
 
+import com.facebook.swift.codec.ThriftField;
+import com.facebook.swift.codec.ThriftStruct;
+
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Data
+@ThriftStruct
 public class GlobalMetrics {
+
+	@Getter(onMethod = @__(@ThriftField(1)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Long nbPagesTotal = Long.valueOf(0);
+	@Getter(onMethod = @__(@ThriftField(2)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Long totalSizeTotal = Long.valueOf(0);
+
+	@Getter(onMethod = @__(@ThriftField(8)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Map<String, Long> statuses;
+	@Getter(onMethod = @__(@ThriftField(9)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Map<String, Long> hosts;
+	@Getter(onMethod = @__(@ThriftField(10)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Map<String, Long> contentTypes;
 }

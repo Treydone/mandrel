@@ -68,7 +68,7 @@ public class NodeService implements NodesContract {
 
 	public Map<String, Node> getNodes() {
 		List<ServiceInstance> instances = discoveryClient.getInstances(ServiceIds.node());
-		return getNodes(instances.stream().map(si -> si.getId()).collect(Collectors.toList()));
+		return getNodesByIds(instances.stream().map(si -> si.getId()).collect(Collectors.toList()));
 	}
 
 	public Map<String, List<Container>> getContainers(String id) {
@@ -90,7 +90,7 @@ public class NodeService implements NodesContract {
 		return nodeRepository.get(id).orElseThrow(() -> new NotFoundException("Unknown node"));
 	}
 
-	public Map<String, Node> getNodes(Collection<String> ids) {
+	public Map<String, Node> getNodesByIds(Collection<String> ids) {
 		return Lists.newArrayList(nodeRepository.findAll(ids)).stream().collect(Collectors.toMap(node -> node.getId(), node -> node));
 	}
 

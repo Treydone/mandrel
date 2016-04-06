@@ -149,30 +149,32 @@ public class CoordinatorResource implements AdminCoordinatorContract, Service {
 						startCoordinatorContainer(containerJobId);
 						started.add(containerJobId);
 					}
-				} else if (!remoteJob.getStatus().equalsIgnoreCase(c.status().toString())) {
+				} else if (!remoteJob.getStatus().toString().equalsIgnoreCase(c.status().toString())) {
 					log.info("Container for {} is {}, but has to be {}", containerJob.getId(), c.status(), remoteJob.getStatus());
 
-					switch (remoteJob.getStatus()) {
-					case JobStatuses.STARTED:
+					switch (remoteJob.getStatus().getStatus()) {
+					case STARTED:
 						if (!ContainerStatus.STARTED.equals(c.status())) {
 							log.debug("Starting job {}", containerJobId);
 							startCoordinatorContainer(containerJobId);
 							started.add(containerJobId);
 						}
 						break;
-					case JobStatuses.INITIATED:
+					case INITIATED:
 						if (!ContainerStatus.INITIATED.equals(c.status())) {
 							log.debug("Re-init job {}", containerJobId);
 							killCoordinatorContainer(containerJobId);
 							create(remoteJob);
 						}
 						break;
-					case JobStatuses.PAUSED:
+					case PAUSED:
 						if (!ContainerStatus.PAUSED.equals(c.status())) {
 							log.debug("Pausing job {}", containerJobId);
 							pauseCoordinatorContainer(containerJobId);
 							paused.add(containerJobId);
 						}
+						break;
+					default:
 						break;
 					}
 				}

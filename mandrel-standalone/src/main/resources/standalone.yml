@@ -23,12 +23,10 @@ discovery:
   zookeeper:
     enabled: false
 
-#standalone: true
-
 transport:
   port: 8090
   bindAddress: localhost
-  local: true
+  #local: true
                                 
 logging:
   console:

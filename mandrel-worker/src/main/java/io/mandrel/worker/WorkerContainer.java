@@ -79,7 +79,7 @@ public class WorkerContainer extends AbstractContainer {
 		executor = Executors.newScheduledThreadPool(parallel + 1, threadFactory);
 
 		// Prepare the barrier
-		Barrier barrier = new Barrier(job.getPoliteness(), discoveryClient);
+		Barrier barrier = new Barrier(job.getDefinition().getPoliteness(), discoveryClient);
 		executor.scheduleAtFixedRate(() -> barrier.updateBuckets(), 10, 10, TimeUnit.SECONDS);
 
 		// Create loop
@@ -91,16 +91,16 @@ public class WorkerContainer extends AbstractContainer {
 		});
 
 		// Init stores
-		MetadataStore metadatastore = job.getStores().getMetadataStore().build(context);
+		MetadataStore metadatastore = job.getDefinition().getStores().getMetadataStore().build(context);
 		metadatastore.init();
 		MetadataStores.add(job.getId(), metadatastore);
 
-		BlobStore blobStore = job.getStores().getBlobStore().build(context);
+		BlobStore blobStore = job.getDefinition().getStores().getBlobStore().build(context);
 		blobStore.init();
 		BlobStores.add(job.getId(), blobStore);
 
-		if (job.getExtractors().getData() != null) {
-			job.getExtractors().getData().forEach(ex -> {
+		if (job.getDefinition().getExtractors().getData() != null) {
+			job.getDefinition().getExtractors().getData().forEach(ex -> {
 				DocumentStore documentStore = ex.getDocumentStore().metadataExtractor(ex).build(context);
 				documentStore.init();
 				DocumentStores.add(job.getId(), ex.getName(), documentStore);
@@ -108,7 +108,7 @@ public class WorkerContainer extends AbstractContainer {
 		}
 
 		// Init requesters
-		job.getClient().getRequesters().forEach(r -> {
+		job.getDefinition().getClient().getRequesters().forEach(r -> {
 			Requester requester = r.build(context);
 
 			// Prepare client

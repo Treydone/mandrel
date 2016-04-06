@@ -161,30 +161,32 @@ public class WorkerResource implements WorkerContract, AdminWorkerContract, Serv
 							startWorkerContainer(containerJobId);
 							started.add(containerJobId);
 						}
-					} else if (!remoteJob.getStatus().equalsIgnoreCase(c.status().toString())) {
+					} else if (!remoteJob.getStatus().toString().equalsIgnoreCase(c.status().toString())) {
 						log.info("Container for {} is {}, but has to be {}", containerJob.getId(), c.status(), remoteJob.getStatus());
 
-						switch (remoteJob.getStatus()) {
-						case JobStatuses.STARTED:
+						switch (remoteJob.getStatus().getStatus()) {
+						case STARTED:
 							if (!ContainerStatus.STARTED.equals(c.status())) {
 								log.debug("Starting job {}", containerJobId);
 								startWorkerContainer(containerJobId);
 								started.add(containerJobId);
 							}
 							break;
-						case JobStatuses.INITIATED:
+						case INITIATED:
 							if (!ContainerStatus.INITIATED.equals(c.status())) {
 								log.debug("Re-create job {}", containerJobId);
 								killWorkerContainer(containerJobId);
 								create(remoteJob);
 							}
 							break;
-						case JobStatuses.PAUSED:
+						case PAUSED:
 							if (!ContainerStatus.PAUSED.equals(c.status())) {
 								log.debug("Pausing job {}", containerJobId);
 								pauseWorkerContainer(containerJobId);
 								paused.add(containerJobId);
 							}
+							break;
+						default:
 							break;
 						}
 					}

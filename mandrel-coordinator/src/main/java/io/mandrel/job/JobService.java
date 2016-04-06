@@ -25,7 +25,11 @@ import io.mandrel.cluster.instance.StateService;
 import io.mandrel.common.MandrelException;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.data.Job;
+import io.mandrel.common.data.JobDefinition;
+import io.mandrel.common.data.JobStatus;
 import io.mandrel.common.data.JobStatuses;
+import io.mandrel.common.data.Page;
+import io.mandrel.common.data.PageRequest;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
@@ -41,6 +45,7 @@ import io.mandrel.timeline.Event;
 import io.mandrel.timeline.Event.JobInfo.JobEventType;
 import io.mandrel.timeline.TimelineService;
 import io.mandrel.transport.MandrelClient;
+import io.mandrel.transport.RemoteException;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -55,8 +60,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.kohsuke.randname.RandomNameGenerator;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindException;
@@ -165,7 +168,7 @@ public class JobService implements JobsContract {
 	}
 
 	public Job update(Job job) throws BindException {
-		BindingResult errors = Validators.validate(job);
+		BindingResult errors = Validators.validate(job.getDefinition());
 
 		if (errors.hasErrors()) {
 			errors.getAllErrors().stream().forEach(oe -> log.info(oe.toString()));
@@ -179,7 +182,7 @@ public class JobService implements JobsContract {
 
 	public void updateTimeline(Job job, JobEventType status) {
 		Event event = Event.forJob();
-		event.getJob().setJobId(job.getId()).setJobName(job.getName()).setType(status);
+		event.getJob().setJobId(job.getId()).setJobName(job.getDefinition().getName()).setType(status);
 		timelineService.addEvent(event);
 	}
 
@@ -190,7 +193,7 @@ public class JobService implements JobsContract {
 	 * @return
 	 */
 	public Job add(List<String> urls) throws BindException {
-		Job job = new Job();
+		JobDefinition job = new JobDefinition();
 		job.setName(generator.next());
 
 		// Add source
@@ -208,53 +211,53 @@ public class JobService implements JobsContract {
 		return add(job);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.mandrel.job.JobContract#fork(long)
-	 */
 	@Override
 	public long fork(long id) {
 		Job job = get(id);
 		job.setId(0);
-		job.setName(generator.next());
+		job.getDefinition().setName(generator.next());
 
-		cleanDates(job);
+		job.setStatus(new JobStatus());
 
-		BindingResult errors = Validators.validate(job);
+		BindingResult errors = Validators.validate(job.getDefinition());
 
 		if (errors.hasErrors()) {
 			errors.getAllErrors().stream().forEach(oe -> log.info(oe.toString()));
 			throw Throwables.propagate(new BindException(errors));
 		}
 
-		job.setStatus(JobStatuses.INITIATED);
-		job.setCreated(LocalDateTime.now());
+		job.getStatus().setStatus(JobStatuses.INITIATED);
+		job.getStatus().setCreated(LocalDateTime.now());
 
 		job = jobRepository.add(job);
 
 		return job.getId();
 	}
 
-	public void cleanDates(Job job) {
-		job.setCreated(null);
-		job.setDeleted(null);
-		job.setEnded(null);
-		job.setKilled(null);
-		job.setPaused(null);
-		job.setStarted(null);
+	@Override
+	public Job add(byte[] definition) throws RemoteException {
+		JobDefinition parsedDefinition;
+		try {
+			parsedDefinition = objectMapper.readValue(definition, JobDefinition.class);
+		} catch (Exception e) {
+			throw RemoteException.of(RemoteException.Error.D_DEFINITION_INVALID, e.getMessage());
+		}
+		return add(parsedDefinition);
 	}
 
-	public Job add(Job job) throws BindException {
-		BindingResult errors = Validators.validate(job);
+	public Job add(JobDefinition definition) throws RemoteException {
+		BindingResult errors = Validators.validate(definition);
 
 		if (errors.hasErrors()) {
 			errors.getAllErrors().stream().forEach(oe -> log.info(oe.toString()));
-			throw new BindException(errors);
+			throw RemoteException.of(RemoteException.Error.D_DEFINITION_INVALID, errors.toString());
 		}
 
-		job.setStatus(JobStatuses.INITIATED);
-		job.setCreated(LocalDateTime.now());
+		Job job = new Job();
+		job.setDefinition(definition);
+		job.setStatus(new JobStatus());
+		job.getStatus().setStatus(JobStatuses.INITIATED);
+		job.getStatus().setCreated(LocalDateTime.now());
 		job = jobRepository.add(job);
 
 		updateTimeline(job, JobEventType.SPIDER_CREATED);
@@ -262,62 +265,31 @@ public class JobService implements JobsContract {
 		return job;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.mandrel.job.JobContract#get(long)
-	 */
-	@Override
 	public Job get(long id) {
 		return jobRepository.get(id).orElseThrow(() -> new NotFoundException("Job not found"));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.mandrel.job.JobContract#page(org.springframework.data.domain.Pageable)
-	 */
 	@Override
-	public Page<Job> page(Pageable pageable) {
-		return jobRepository.page(pageable);
+	public Page<Job> page(PageRequest request) {
+		return jobRepository.page(request);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.mandrel.job.JobContract#pageForActive(org.springframework.data.domain.Pageable)
-	 */
 	@Override
-	public Page<Job> pageForActive(Pageable pageable) {
-		return jobRepository.pageForActive(pageable);
+	public Page<Job> pageForActive(PageRequest request) {
+		return jobRepository.pageForActive(request);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.mandrel.job.JobContract#listLastActive(int)
-	 */
 	@Override
 	public List<Job> listLastActive(int limit) {
 		return jobRepository.listLastActive(limit);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.mandrel.job.JobContract#reinject(long)
-	 */
 	@Override
 	public void reinject(long jobId) {
 		Job job = get(jobId);
 		injectSingletonSources(job);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.mandrel.job.JobContract#start(long)
-	 */
 	@Override
 	public void start(long jobId) {
 		Job job = get(jobId);
@@ -350,7 +322,7 @@ public class JobService implements JobsContract {
 		TaskContext context = new TaskContext();
 		context.setDefinition(job);
 
-		job.getSources().forEach(s -> {
+		job.getDefinition().getSources().forEach(s -> {
 			Source source = s.build(context);
 
 			if (source.singleton() && source.check()) {
@@ -369,11 +341,6 @@ public class JobService implements JobsContract {
 		});
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.mandrel.job.JobContract#pause(long)
-	 */
 	@Override
 	public void pause(long jobId) {
 		Job job = get(jobId);
@@ -385,11 +352,6 @@ public class JobService implements JobsContract {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.mandrel.job.JobContract#kill(long)
-	 */
 	@Override
 	public void kill(long jobId) {
 		Job job = get(jobId);
@@ -400,11 +362,6 @@ public class JobService implements JobsContract {
 		updateTimeline(job, JobEventType.SPIDER_KILLED);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.mandrel.job.JobContract#delete(long)
-	 */
 	@Override
 	public void delete(long jobId) {
 		Job job = get(jobId);

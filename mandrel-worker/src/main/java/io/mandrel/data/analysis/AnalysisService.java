@@ -102,12 +102,12 @@ public class AnalysisService {
 			report = new Analysis();
 		}
 
-		if (job.getExtractors() != null) {
+		if (job.getDefinition().getExtractors() != null) {
 			Map<String, Instance<?>> cachedSelectors = new HashMap<>();
 
 			// Page extraction
-			if (job.getExtractors().getData() != null) {
-				Map<String, List<Document>> documentsByExtractor = job.getExtractors().getData().stream()
+			if (job.getDefinition().getExtractors().getData() != null) {
+				Map<String, List<Document>> documentsByExtractor = job.getDefinition().getExtractors().getData().stream()
 						.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(cachedSelectors, blob, ex)))
 						.filter(pair -> pair != null && pair.getKey() != null && pair.getValue() != null)
 						.collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
@@ -115,8 +115,8 @@ public class AnalysisService {
 			}
 
 			// Link extraction
-			if (job.getExtractors().getOutlinks() != null) {
-				Map<String, Pair<Set<Link>, Set<Link>>> outlinksByExtractor = job.getExtractors().getOutlinks().stream().map(ol -> {
+			if (job.getDefinition().getExtractors().getOutlinks() != null) {
+				Map<String, Pair<Set<Link>, Set<Link>>> outlinksByExtractor = job.getDefinition().getExtractors().getOutlinks().stream().map(ol -> {
 					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(job, blob.getMetadata().getUri(), cachedSelectors, blob, ol));
 				}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
 

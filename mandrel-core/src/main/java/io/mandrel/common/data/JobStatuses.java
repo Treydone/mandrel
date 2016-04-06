@@ -18,11 +18,7 @@
  */
 package io.mandrel.common.data;
 
-public interface JobStatuses {
-	String INITIATED = "initiated";
-	String STARTED = "started";
-	String PAUSED = "paused";
-	String ENDED = "ended";
-	String KILLED = "killed";
-	String DELETED = "deleted";
+public enum JobStatuses {
+
+	INITIATED, STARTED, PAUSED, ENDED, KILLED, DELETED
 }

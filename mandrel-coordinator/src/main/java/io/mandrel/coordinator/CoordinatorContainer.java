@@ -51,15 +51,15 @@ public class CoordinatorContainer extends AbstractContainer {
 		context.setDefinition(job);
 
 		// Init stores
-		MetadataStore metadatastore = job.getStores().getMetadataStore().build(context);
+		MetadataStore metadatastore = job.getDefinition().getStores().getMetadataStore().build(context);
 		metadatastore.init();
 		MetadataStores.add(job.getId(), metadatastore);
 
-		BlobStore blobStore = job.getStores().getBlobStore().build(context);
+		BlobStore blobStore = job.getDefinition().getStores().getBlobStore().build(context);
 		blobStore.init();
 		BlobStores.add(job.getId(), blobStore);
 
-		job.getExtractors().getData().forEach(ex -> {
+		job.getDefinition().getExtractors().getData().forEach(ex -> {
 			DocumentStore documentStore = ex.getDocumentStore().metadataExtractor(ex).build(context);
 			documentStore.init();
 			DocumentStores.add(job.getId(), ex.getName(), documentStore);
@@ -123,7 +123,7 @@ public class CoordinatorContainer extends AbstractContainer {
 					} catch (Exception e) {
 						log.debug(e.getMessage(), e);
 					}
-					
+
 					current.set(ContainerStatus.KILLED);
 				}
 			} finally {

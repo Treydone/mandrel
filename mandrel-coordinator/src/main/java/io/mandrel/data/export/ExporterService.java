@@ -51,7 +51,8 @@ public class ExporterService {
 	public void export(Long id, String extractorName, Exporter exporter, Writer writer) {
 		Job job = jobService.get(id);
 
-		Optional<? extends DataExtractor> oExtractor = job.getExtractors().getData().stream().filter(ext -> ext.getName().equals(extractorName)).findFirst();
+		Optional<? extends DataExtractor> oExtractor = job.getDefinition().getExtractors().getData().stream()
+				.filter(ext -> ext.getName().equals(extractorName)).findFirst();
 		if (oExtractor.isPresent()) {
 
 			DataExtractor theExtractor = oExtractor.get();

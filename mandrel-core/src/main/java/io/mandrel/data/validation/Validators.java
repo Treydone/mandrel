@@ -18,7 +18,7 @@
  */
 package io.mandrel.data.validation;
 
-import io.mandrel.common.data.Job;
+import io.mandrel.common.data.JobDefinition;
 
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
@@ -28,7 +28,7 @@ public class Validators {
 
 	private final static Validator job = new JobValidator();
 
-	public static BindingResult validate(Job theJob) {
+	public static BindingResult validate(JobDefinition theJob) {
 		BindingResult errors = new BeanPropertyBindingResult(theJob, "job");
 		job.validate(theJob, errors);
 		return errors;

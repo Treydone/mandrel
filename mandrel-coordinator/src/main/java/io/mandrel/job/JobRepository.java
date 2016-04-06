@@ -19,12 +19,12 @@
 package io.mandrel.job;
 
 import io.mandrel.common.data.Job;
+import io.mandrel.common.data.JobStatuses;
+import io.mandrel.common.data.Page;
+import io.mandrel.common.data.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 public interface JobRepository {
 
@@ -32,7 +32,7 @@ public interface JobRepository {
 
 	Job update(Job job);
 
-	void updateStatus(long jobId, String status);
+	void updateStatus(long jobId, JobStatuses status);
 
 	void delete(long id);
 
@@ -42,8 +42,8 @@ public interface JobRepository {
 
 	List<Job> listLastActive(int limit);
 
-	Page<Job> page(Pageable pageable);
+	Page<Job> page(PageRequest request);
 
-	Page<Job> pageForActive(Pageable pageable);
+	Page<Job> pageForActive(PageRequest request);
 
 }

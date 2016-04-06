@@ -19,6 +19,7 @@
 package io.mandrel.data.validation;
 
 import io.mandrel.common.data.Job;
+import io.mandrel.common.data.JobDefinition;
 import io.mandrel.common.data.StoresDefinition;
 import io.mandrel.data.content.DataExtractor;
 import io.mandrel.data.content.DefaultDataExtractor;
@@ -36,7 +37,7 @@ public class JobValidator implements Validator {
 
 		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "name", "field.required", "Can not be null");
 
-		Job job = (Job) target;
+		JobDefinition job = (JobDefinition) target;
 
 		// Stores
 		StoresDefinition stores = job.getStores();

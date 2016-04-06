@@ -19,6 +19,9 @@
 package io.mandrel.endpoints.rest;
 
 import io.mandrel.common.data.Job;
+import io.mandrel.common.data.JobDefinition;
+import io.mandrel.common.data.Page;
+import io.mandrel.common.data.PageRequest;
 import io.mandrel.job.JobService;
 import io.mandrel.metrics.JobMetrics;
 import io.mandrel.metrics.MetricsService;
@@ -30,7 +33,6 @@ import javax.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
@@ -58,7 +60,7 @@ public class JobResource {
 	@ApiOperation(value = "List all the jobs", httpMethod = "GET", response = Job.class, responseContainer = "List")
 	@RequestMapping(method = RequestMethod.GET)
 	public Page<Job> all(@PageableDefault(page = 0, size = 20) Pageable pageable) {
-		return jobService.page(pageable);
+		return jobService.page(new PageRequest(pageable.getPageNumber(), pageable.getPageSize()));
 	}
 
 	@ApiOperation(value = "Add a job", httpMethod = "GET")
@@ -69,8 +71,8 @@ public class JobResource {
 
 	@ApiOperation(value = "Add a job", httpMethod = "POST")
 	@RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public Job add(@RequestBody Job job) throws BindException {
-		return jobService.add(job);
+	public Job add(@RequestBody JobDefinition definition) throws BindException {
+		return jobService.add(definition);
 	}
 
 	@ApiOperation(value = "Update a job", httpMethod = "PUT", response = Job.class)

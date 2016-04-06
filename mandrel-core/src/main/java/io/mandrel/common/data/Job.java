@@ -18,74 +18,43 @@
  */
 package io.mandrel.common.data;
 
-import io.mandrel.data.source.Source;
-import io.mandrel.data.source.Source.SourceDefinition;
-import io.mandrel.frontier.Frontier.FrontierDefinition;
-
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import com.facebook.swift.codec.ThriftField;
+import com.facebook.swift.codec.ThriftStruct;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 @Data
 @Accessors(chain = true)
+@ThriftStruct
 public class Job implements Serializable {
 
-	private static final long serialVersionUID = 7577967853566572778L;
+	private static final long serialVersionUID = -4688211655105045018L;
 
 	@JsonProperty("_id")
+	@Getter(onMethod = @__(@ThriftField(1)))
+	@Setter(onMethod = @__(@ThriftField))
 	private long id;
 
 	@JsonProperty("version")
+	@Getter(onMethod = @__(@ThriftField(2)))
+	@Setter(onMethod = @__(@ThriftField))
 	private long version;
 
-	@JsonProperty("name")
-	private String name;
+	@JsonUnwrapped
+	@Getter(onMethod = @__(@ThriftField(3)))
+	@Setter(onMethod = @__(@ThriftField))
+	private JobDefinition definition;
 
-	@JsonProperty("status")
-	private String status;
+	@JsonUnwrapped
+	@Getter(onMethod = @__(@ThriftField(4)))
+	@Setter(onMethod = @__(@ThriftField))
+	private JobStatus status;
 
-	@JsonProperty("created")
-	private LocalDateTime created;
-
-	@JsonProperty("started")
-	private LocalDateTime started;
-
-	@JsonProperty("paused")
-	private LocalDateTime paused;
-
-	@JsonProperty("ended")
-	private LocalDateTime ended;
-
-	@JsonProperty("killed")
-	private LocalDateTime killed;
-
-	@JsonProperty("deleted")
-	private LocalDateTime deleted;
-
-	@JsonProperty("sources")
-	private List<SourceDefinition<? extends Source>> sources = new ArrayList<>();
-
-	@JsonProperty("filters")
-	private Filters filters = new Filters();
-
-	@JsonProperty("extractors")
-	private Extractors extractors = new Extractors();
-
-	@JsonProperty("stores")
-	private StoresDefinition stores = new StoresDefinition();
-
-	@JsonProperty("frontier")
-	private FrontierDefinition frontier = new FrontierDefinition();
-
-	@JsonProperty("client")
-	private Client client = new Client();
-
-	@JsonProperty("politeness")
-	private Politeness politeness = new Politeness();
 }

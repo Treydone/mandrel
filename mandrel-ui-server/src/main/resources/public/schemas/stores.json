@@ -1,0 +1,80 @@
+{
+   "type":"object",
+   "title":"Stores",
+   "properties":{
+      "metadata":{
+         "title":"Metadata store",
+         "oneOf":[
+            {
+               "title":"Mongo Store",
+               "type":"object",
+               "properties":{
+                  "type":{
+                     "type":"string",
+                     "title":"type",
+                     "default":"mongo",
+                     "options":{
+                        "hidden":true
+                     }
+                  },
+                  "uri":{
+                     "type":"string",
+                     "title":"uri"
+                  },
+                  "database":{
+                     "type":"string",
+                     "title":"database"
+                  },
+                  "bucket":{
+                     "type":"string",
+                     "title":"bucket"
+                  },
+                  "batch_size":{
+                     "type":"number",
+                     "title":"batch_size"
+                  }
+               }
+            }
+         ]
+      },
+      "blob":{
+         "title":"Data store",
+         "oneOf":[
+            {
+               "title":"Mongo Store",
+               "type":"object",
+               "properties":{
+                  "type":{
+                     "type":"string",
+                     "title":"type",
+                     "default":"mongo",
+                     "options":{
+                        "hidden":true
+                     }
+                  },
+                  "uri":{
+                     "type":"string",
+                     "title":"uri"
+                  },
+                  "database":{
+                     "type":"string",
+                     "title":"database"
+                  },
+                  "bucket":{
+                     "type":"string",
+                     "title":"bucket"
+                  },
+                  "batch_size":{
+                     "type":"number",
+                     "title":"batch_size"
+                  }
+               }
+            },
+            {
+            	"title": "None",
+            	"type": "null"
+            }
+         ]
+      }
+   }
+}

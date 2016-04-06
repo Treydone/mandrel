@@ -21,20 +21,46 @@ package io.mandrel.metrics;
 import java.util.Map;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+import com.facebook.swift.codec.ThriftField;
+import com.facebook.swift.codec.ThriftStruct;
 
 @Data
+@ThriftStruct
 public class JobMetrics {
 
-	private Long nbPagesTotal;
-	private Long totalSize = Long.valueOf(0);
+	@Getter(onMethod = @__(@ThriftField(1)))
+	@Setter(onMethod = @__(@ThriftField))
+	private Long nbPagesTotal = Long.valueOf(0);
+	@Getter(onMethod = @__(@ThriftField(2)))
+	@Setter(onMethod = @__(@ThriftField))
+	private Long totalSizeTotal = Long.valueOf(0);
+	@Getter(onMethod = @__(@ThriftField(3)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Long totalTimeToFetch = Long.valueOf(0);
 
+	@Getter(onMethod = @__(@ThriftField(4)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Long readTimeout;
+	@Getter(onMethod = @__(@ThriftField(5)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Long connectTimeout;
+	@Getter(onMethod = @__(@ThriftField(6)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Long connectException;
 
+	@Getter(onMethod = @__(@ThriftField(7)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Map<String, Long> extractors;
+	@Getter(onMethod = @__(@ThriftField(8)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Map<String, Long> statuses;
+	@Getter(onMethod = @__(@ThriftField(9)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Map<String, Long> hosts;
+	@Getter(onMethod = @__(@ThriftField(10)))
+	@Setter(onMethod = @__(@ThriftField))
 	private Map<String, Long> contentTypes;
 }
