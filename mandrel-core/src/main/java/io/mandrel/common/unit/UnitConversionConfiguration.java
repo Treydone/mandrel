@@ -23,8 +23,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 
+import com.google.common.net.HostAndPort;
+
 @Configuration
 public class UnitConversionConfiguration {
+
+	@Bean
+	@ConfigurationPropertiesBinding
+	public StringToHostAndPortConverter stringToHostAndPortConverter() {
+		return new StringToHostAndPortConverter();
+	}
 
 	@Bean
 	@ConfigurationPropertiesBinding
@@ -37,6 +45,14 @@ public class UnitConversionConfiguration {
 		@Override
 		public TimeValue convert(String source) {
 			return TimeValue.parseTimeValue(source);
+		}
+	}
+
+	private static class StringToHostAndPortConverter implements Converter<String, HostAndPort> {
+
+		@Override
+		public HostAndPort convert(String source) {
+			return HostAndPort.fromString(source);
 		}
 	}
 }

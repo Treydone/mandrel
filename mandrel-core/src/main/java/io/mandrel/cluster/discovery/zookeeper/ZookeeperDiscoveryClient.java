@@ -43,7 +43,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-@ConditionalOnProperty(value = "discovery.zookeeper.enabled", matchIfMissing = true)
+@ConditionalOnProperty(value = "discovery.zookeeper.enabled", matchIfMissing = false)
 @Component
 public class ZookeeperDiscoveryClient implements DiscoveryClient {
 

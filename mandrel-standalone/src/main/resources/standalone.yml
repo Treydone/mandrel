@@ -18,15 +18,15 @@ spring:
 #    root: /mandrel
 
 discovery:
-  local:
-    enabled: true
-  zookeeper:
-    enabled: false
+  instanceHost: localhost
+  atomix:
+    hosts:
+      - localhost:50000
 
 transport:
   port: 8090
   bindAddress: localhost
-  #local: true
+  local: true
                                 
 logging:
   console:
