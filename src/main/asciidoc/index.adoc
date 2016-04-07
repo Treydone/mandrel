@@ -344,10 +344,14 @@ $ ./bin/ui-serverd stop
 
 ==== Discovery
 
+By default, Mandrel uses Atomix for the all the clustering operations like discovery and partitions.
+
 [source]
 discovery:
   instanceHost: localhost
-  servers: localhost:50000
+  atomix:
+    hosts:
+      - localhost:50000
 
 [[discovery.instanceHost]]
 *`discovery.instanceHost`*::
@@ -358,18 +362,55 @@ The address what will be registered in the discovery.
 .Default
 `localhost`
 
-[[discovery.servers]]
-*`discovery.servers`*::
+[[discovery.atomix.hosts]]
+*`discovery.atomix.hosts`*::
 +
 .Description
-Comma separated list of servers in the Coordinator ensemble.
+A YAML list of servers in the Coordinator ensemble.
     For example, "host1.mydomain.com,host2.mydomain.com,host3.mydomain.com".
-    By default this is set to localhost for local and pseudo-distributed modes
+    By default this is set to localhost for local mode
     of operation. For a fully-distributed setup, this should be set to a full
     list of Coordinator ensemble servers.
 +
 .Default
 `localhost:50000`
+
+===== Zookeeper
+
+Mandrel can also use Zookeeper as the clustering layer. You need to disable the atomix configuration before:
+
+[source]
+discovery:
+  instanceHost: localhost
+   atomix:
+     enabled: false
+  zookeeper:
+    enabled: true
+    connectString: localhost:2181
+    root: /mandrel
+
+[[discovery.zookeeper.connectString]]
+*`discovery.zookeeper.connectString`*::
++
+.Description
+Comma separated list of servers in the ZooKeeper ensemble.
+    For example, "host1.mydomain.com,host2.mydomain.com,host3.mydomain.com".
+    By default this is set to localhost for local and pseudo-distributed modes
+    of operation. For a fully-distributed setup, this should be set to a full
+    list of ZooKeeper ensemble servers.
++
+.Default
+`localhost:2181`
+
+[[discovery.zookeeper.root]]
+*`discovery.zookeeper.root`*::
++
+.Description
+The root path in Zookeeper where the services will be registered.
+    list of Coordinator ensemble servers.
++
+.Default
+`/mandrel`
 
 ==== Transport
 
@@ -377,6 +418,34 @@ Comma separated list of servers in the Coordinator ensemble.
 transport:
   bindAddress: localhost
   port: 8090
+  local: false
+
+[[transport.instanceHost]]
+*`discovery.bindAddress`*::
++
+.Description
+The address what will be used for binding.
++
+.Default
+`localhost`
+
+[[transport.port]]
+*`discovery.port`*::
++
+.Description
+The port what will be used for listening.
++
+.Default
+`8090`
+
+[[transport.local]]
+*`discovery.local`*::
++
+.Description
+*Only for standalone mode*. When in standalone, if the transport layer have to use the local transport which allows in VM communication.
++
+.Default
+`false`
 
 ==== Logging
 
@@ -424,7 +493,6 @@ server:
     io-threads: 4
     worker-threads: 32
 
-
 [[server.port]]
 *`server.port`*::
 +
@@ -436,7 +504,27 @@ The port used for all HTTP incoming traffic.
 
 === frontier.yml
 
+[source]
+spring:
+  pidfile: frontier.pid
+  application:
+    name: frontier
+    admin:
+      enabled: false
+  jmx:
+    enabled: false
+
 === worker.yml
+
+[source]
+spring:
+  pidfile: worker.pid
+  application:
+    name: worker
+    admin:
+      enabled: false
+  jmx:
+    enabled: false
 
 === standalone.yml
 

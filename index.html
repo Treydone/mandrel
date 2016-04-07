@@ -1212,11 +1212,16 @@ $ ./bin/ui-serverd stop</code></pre>
 <h3 id="_common">Common</h3>
 <div class="sect3">
 <h4 id="_discovery">Discovery</h4>
+<div class="paragraph">
+<p>By default, Mandrel uses Atomix for the all the clustering operations like discovery and partitions.</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code>discovery:
   instanceHost: localhost
-  servers: localhost:50000</code></pre>
+  atomix:
+    hosts:
+      - localhost:50000</code></pre>
 </div>
 </div>
 <div id="discovery.instanceHost" class="dlist">
@@ -1234,15 +1239,15 @@ $ ./bin/ui-serverd stop</code></pre>
 </dd>
 </dl>
 </div>
-<div id="discovery.servers" class="dlist">
+<div id="discovery.atomix.hosts" class="dlist">
 <dl>
-<dt class="hdlist1"><strong><code>discovery.servers</code></strong></dt>
+<dt class="hdlist1"><strong><code>discovery.atomix.hosts</code></strong></dt>
 <dd>
 <div class="paragraph">
 <div class="title">Description</div>
-<p>Comma separated list of servers in the Coordinator ensemble.
+<p>A YAML list of servers in the Coordinator ensemble.
     For example, "host1.mydomain.com,host2.mydomain.com,host3.mydomain.com".
-    By default this is set to localhost for local and pseudo-distributed modes
+    By default this is set to localhost for local mode
     of operation. For a fully-distributed setup, this should be set to a full
     list of Coordinator ensemble servers.</p>
 </div>
@@ -1253,6 +1258,59 @@ $ ./bin/ui-serverd stop</code></pre>
 </dd>
 </dl>
 </div>
+<div class="sect4">
+<h5 id="_zookeeper">Zookeeper</h5>
+<div class="paragraph">
+<p>Mandrel can also use Zookeeper as the clustering layer. You need to disable the atomix configuration before:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>discovery:
+  instanceHost: localhost
+   atomix:
+     enabled: false
+  zookeeper:
+    enabled: true
+    connectString: localhost:2181
+    root: /mandrel</code></pre>
+</div>
+</div>
+<div id="discovery.zookeeper.connectString" class="dlist">
+<dl>
+<dt class="hdlist1"><strong><code>discovery.zookeeper.connectString</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>Comma separated list of servers in the ZooKeeper ensemble.
+    For example, "host1.mydomain.com,host2.mydomain.com,host3.mydomain.com".
+    By default this is set to localhost for local and pseudo-distributed modes
+    of operation. For a fully-distributed setup, this should be set to a full
+    list of ZooKeeper ensemble servers.</p>
+</div>
+<div class="paragraph">
+<div class="title">Default</div>
+<p><code>localhost:2181</code></p>
+</div>
+</dd>
+</dl>
+</div>
+<div id="discovery.zookeeper.root" class="dlist">
+<dl>
+<dt class="hdlist1"><strong><code>discovery.zookeeper.root</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>The root path in Zookeeper where the services will be registered.
+    list of Coordinator ensemble servers.</p>
+</div>
+<div class="paragraph">
+<div class="title">Default</div>
+<p><code>/mandrel</code></p>
+</div>
+</dd>
+</dl>
+</div>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_transport">Transport</h4>
@@ -1260,8 +1318,54 @@ $ ./bin/ui-serverd stop</code></pre>
 <div class="content">
 <pre class="highlight"><code>transport:
   bindAddress: localhost
-  port: 8090</code></pre>
+  port: 8090
+  local: false</code></pre>
 </div>
+</div>
+<div id="transport.instanceHost" class="dlist">
+<dl>
+<dt class="hdlist1"><strong><code>discovery.bindAddress</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>The address what will be used for binding.</p>
+</div>
+<div class="paragraph">
+<div class="title">Default</div>
+<p><code>localhost</code></p>
+</div>
+</dd>
+</dl>
+</div>
+<div id="transport.port" class="dlist">
+<dl>
+<dt class="hdlist1"><strong><code>discovery.port</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>The port what will be used for listening.</p>
+</div>
+<div class="paragraph">
+<div class="title">Default</div>
+<p><code>8090</code></p>
+</div>
+</dd>
+</dl>
+</div>
+<div id="transport.local" class="dlist">
+<dl>
+<dt class="hdlist1"><strong><code>discovery.local</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p><strong>Only for standalone mode</strong>. When in standalone, if the transport layer have to use the local transport which allows in VM communication.</p>
+</div>
+<div class="paragraph">
+<div class="title">Default</div>
+<p><code>false</code></p>
+</div>
+</dd>
+</dl>
 </div>
 </div>
 <div class="sect3">
@@ -1342,11 +1446,33 @@ $ ./bin/ui-serverd stop</code></pre>
 </div>
 <div class="sect2">
 <h3 id="_frontier_yml">frontier.yml</h3>
-
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>spring:
+  pidfile: frontier.pid
+  application:
+    name: frontier
+    admin:
+      enabled: false
+  jmx:
+    enabled: false</code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_worker_yml">worker.yml</h3>
-
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>spring:
+  pidfile: worker.pid
+  application:
+    name: worker
+    admin:
+      enabled: false
+  jmx:
+    enabled: false</code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_standalone_yml">standalone.yml</h3>
@@ -2466,7 +2592,7 @@ the License.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-04-01 10:08:24 +02:00
+Last updated 2016-04-07 12:13:38 +02:00
 </div>
 </div>
 </body>
