@@ -10,12 +10,21 @@ spring:
   jmx:
     enabled: false
 
+#discovery:
+#  instanceHost: localhost
+#   atomix:
+#     enabled: false
+#  zookeeper:
+#    enabled: true
+#    connectString: localhost:2181
+#    root: /mandrel
+#
+
 discovery:
   instanceHost: localhost
-  zookeeper:
-    enabled: true
-    connectString: localhost:2181
-    root: /mandrel
+  atomix:
+    hosts:
+      - localhost:50000
 
 transport:
   bindAddress: localhost

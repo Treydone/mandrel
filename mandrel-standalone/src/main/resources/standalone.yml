@@ -12,10 +12,13 @@ spring:
 
 #discovery:
 #  instanceHost: localhost
+#   atomix:
+#     enabled: false
 #  zookeeper:
 #    enabled: true
 #    connectString: localhost:2181
 #    root: /mandrel
+#
 
 discovery:
   instanceHost: localhost
