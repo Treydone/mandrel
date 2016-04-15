@@ -589,7 +589,7 @@ New contributors are always welcome!</p>
 <div class="sect2">
 <h3 id="_the_big_picture">The Big Picture</h3>
 <div class="paragraph">
-<p>Mandrel is designed for performance and scalability. Event if it has been tested on small and on medium-sized cluster (~30 nodes), Mandrel can scale on cloud-sized cluster without any effort.</p>
+<p>Mandrel is designed for performance and scalability. Daily battle-tested on small and on medium-sized cluster (~30 nodes), Mandrel can scale on cloud-sized cluster without any effort.</p>
 </div>
 <div class="paragraph">
 <p>Mandrel is NOT:</p>
@@ -1534,8 +1534,44 @@ $ ./bin/ui-serverd stop</code></pre>
 <div class="sect3">
 <h4 id="_traps">Traps</h4>
 <div class="paragraph">
-<p>Some websites install honeypots or traps to detect web spiders. These traps usually are links that normal user can’t see but a spider can.
-Mandrel takes care that the link has proper visibility with no nofollow tag or can have the CSS style display:none or will be color disguised to blend in with the page’s background color.</p>
+<p>Some websites install honeypots or traps to detect web crawlers.
+In case of a web crawler, a trap is a set of web pages that may intentionally or unintentionally be used to cause the web crawler to make an infinite number of requests or cause a poorly constructed crawler to crash.
+Traps may be created to "catch" spambots or other crawlers that waste a website&#8217;s bandwidth.
+They may also be created unintentionally by calendars that use dynamic pages with links that continually point to the next day or year.
+There is no algorithm to detect all traps, some classes of traps can be detected automatically, but new, unrecognized traps arise quickly.</p>
+</div>
+<div class="sect4">
+<h5 id="_large_link">Large link</h5>
+<div class="paragraph">
+<p>Link with a huge size have to be skipped for preventing Mandrel to crash.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_hidden_link">Hidden link</h5>
+<div class="paragraph">
+<p>This trap usually consists of links that normal user can’t see but a bot can not.
+Mandrel takes care that the link has proper visibility:
+- no nofollow tag
+- no CSS style display:none or color disguised to blend in with the page’s background color.
+- documents with session-id&#8217;s based on required cookies.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_infinite_deep">Infinite deep</h5>
+<div class="paragraph">
+<p>Creation of indefinitely deep directory structures like
+<a href="http://foo.com/bar/foo/bar/foo/bar/foo/bar/&#8230;&#8203" class="bare">http://foo.com/bar/foo/bar/foo/bar/foo/bar/&#8230;&#8203</a>;..</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_high_links_density">High links density</h5>
+<div class="paragraph">
+<p>Dynamic pages that produce an unbounded number of documents to follow, for instance: calendars and algorithmically generated language poetry.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_infinite_or_large_content_size">Infinite or large content size</h5>
+
 </div>
 </div>
 </div>
@@ -1550,25 +1586,93 @@ Mandrel takes care that the link has proper visibility with no nofollow tag or c
 <h3 id="_uris">URIs</h3>
 <div class="sect3">
 <h4 id="_extraction_and_canonicalization">Extraction and canonicalization</h4>
-<div class="ulist">
-<ul>
-<li>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><strong><code>path_clean</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>remove ‘..’ and its parent directory from the URL path. Therefore, URI path /%7Epage/sub1/sub2/../file.zip is reduced to /%7Epage/sub1/file.zip.</p>
+</div>
+</dd>
+<dt class="hdlist1"><strong><code>lowercase</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
 <p>convert the protocol and hostname to lowercase. For example, HTTP://www.DUMMY.com is converted to <a href="http://www.dummy.com" class="bare">http://www.dummy.com</a>.</p>
-</li>
-<li>
+</div>
+</dd>
+<dt class="hdlist1"><strong><code>strip_userinfo</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>strip any 'userinfo' found on http/https URLs.</p>
+</div>
+</dd>
+<dt class="hdlist1"><strong><code>strip_www</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>strip the first 'www.' found</p>
+</div>
+</dd>
+<dt class="hdlist1"><strong><code>strip_extra_slashes</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>strip any extra slashes, '/', found in the path. Use this rule to equate 'http://www.foo.org//A//B/index.html' and 'http://www.foo.org/A/B/index.html'."</p>
+</div>
+</dd>
+<dt class="hdlist1"><strong><code>strip_anchor</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
 <p>remove the ‘anchor’ or ‘reference’ part of the URI. Hence, <a href="http://dummy.com/faq.html#ancor" class="bare">http://dummy.com/faq.html#ancor</a> is reduced to <a href="http://dummy.com/faq.html" class="bare">http://dummy.com/faq.html</a>.</p>
-</li>
-<li>
+</div>
+</dd>
+<dt class="hdlist1"><strong><code>encode</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
 <p>perform URI encoding for some characters and preventing the crawler from treating <a href="http://dummy.com/~page/" class="bare">http://dummy.com/~page/</a> as a different URI from <a href="http://dummy.com/~%7Epage/" class="bare">http://dummy.com/~%7Epage/</a>.</p>
-</li>
-<li>
-<p>use heuristics to recognize default Web pages. File names such as index.html or index.htm may be removed from the URI with the assumption that they are the default files. If that is true, they would be retrieved by simply using the base URI.
-• remove ‘..’ and its parent directory from the URL path. Therefore, URI path /%7Epage/sub1/sub2/../file.zip is reduced to /%7Epage/sub1/file.zip.</p>
-</li>
-<li>
-<p>Add port 80 when no port number is specified for HTTP request.</p>
-</li>
-</ul>
+</div>
+</dd>
+<dt class="hdlist1"><strong><code>default_index_html</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>use heuristics to recognize default Web pages. File names such as index.html or index.htm may be removed from the URI with the assumption that they are the default files. If that is true, they would be retrieved by simply using the base URI.</p>
+</div>
+</dd>
+<dt class="hdlist1"><strong><code>default_port</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>add port 80 when no port number is specified for HTTP request.</p>
+</div>
+</dd>
+<dt class="hdlist1"><strong><code>strip_session_ids</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>strip known session ids like jessionid, CFID, CFTOKEN, PHPSESSID &#8230;&#8203;</p>
+</div>
+</dd>
+<dt class="hdlist1"><strong><code>fixup_query</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>strip any trailing question mark</p>
+</div>
+</dd>
+<dt class="hdlist1"><strong><code>reorder_params</code></strong></dt>
+<dd>
+<div class="paragraph">
+<div class="title">Description</div>
+<p>Reorder params</p>
+</div>
+</dd>
+</dl>
 </div>
 </div>
 <div class="sect3">
@@ -2592,7 +2696,7 @@ the License.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-04-07 12:13:38 +02:00
+Last updated 2016-04-15 10:44:05 +02:00
 </div>
 </div>
 </body>

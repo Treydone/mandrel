@@ -24,7 +24,8 @@ Mandrel is a distributed mining engine built for the cloud. Features include:
 Mandrel is designed as a whole product, with the idea of bringing a complete mining engine solution that runs out of the box.
 
 === The Big Picture
-Mandrel is designed for performance and scalability. Event if it has been tested on small and on medium-sized cluster (~30 nodes), Mandrel can scale on cloud-sized cluster without any effort.
+
+Mandrel is designed for performance and scalability. Daily battle-tested on small and on medium-sized cluster (~30 nodes), Mandrel can scale on cloud-sized cluster without any effort.
 
 Mandrel is NOT:
 
@@ -565,8 +566,36 @@ All these instances are registered in the Coordinator ensemble.
 
 ==== Traps
 
-Some websites install honeypots or traps to detect web spiders. These traps usually are links that normal user can’t see but a spider can.
-Mandrel takes care that the link has proper visibility with no nofollow tag or can have the CSS style display:none or will be color disguised to blend in with the page’s background color.
+Some websites install honeypots or traps to detect web crawlers.
+In case of a web crawler, a trap is a set of web pages that may intentionally or unintentionally be used to cause the web crawler to make an infinite number of requests or cause a poorly constructed crawler to crash.
+Traps may be created to "catch" spambots or other crawlers that waste a website's bandwidth.
+They may also be created unintentionally by calendars that use dynamic pages with links that continually point to the next day or year.
+There is no algorithm to detect all traps, some classes of traps can be detected automatically, but new, unrecognized traps arise quickly.
+
+===== Large link
+
+Link with a huge size have to be skipped for preventing Mandrel to crash.
+
+===== Hidden link
+
+This trap usually consists of links that normal user can’t see but a bot can not.
+Mandrel takes care that the link has proper visibility:
+- no nofollow tag
+- no CSS style display:none or color disguised to blend in with the page’s background color.
+- documents with session-id's based on required cookies.
+
+===== Infinite deep
+
+Creation of indefinitely deep directory structures like
+http://foo.com/bar/foo/bar/foo/bar/foo/bar/.....
+
+===== High links density
+
+Dynamic pages that produce an unbounded number of documents to follow, for instance: calendars and algorithmically generated language poetry.
+
+===== Infinite or large content size
+
+// TODO
 
 === Fetching
 
@@ -578,12 +607,65 @@ Mandrel takes care that the link has proper visibility with no nofollow tag or c
 
 ==== Extraction and canonicalization
 
-* convert the protocol and hostname to lowercase. For example, HTTP://www.DUMMY.com is converted to http://www.dummy.com.
-* remove the ‘anchor’ or ‘reference’ part of the URI. Hence, http://dummy.com/faq.html#ancor is reduced to http://dummy.com/faq.html.
-* perform URI encoding for some characters and preventing the crawler from treating http://dummy.com/~page/ as a different URI from http://dummy.com/~%7Epage/.
-* use heuristics to recognize default Web pages. File names such as index.html or index.htm may be removed from the URI with the assumption that they are the default files. If that is true, they would be retrieved by simply using the base URI.
-• remove ‘..’ and its parent directory from the URL path. Therefore, URI path /%7Epage/sub1/sub2/../file.zip is reduced to /%7Epage/sub1/file.zip.
-* Add port 80 when no port number is specified for HTTP request.
+*`path_clean`*::
++
+.Description
+remove ‘..’ and its parent directory from the URL path. Therefore, URI path /%7Epage/sub1/sub2/../file.zip is reduced to /%7Epage/sub1/file.zip.
+
+*`lowercase`*::
++
+.Description
+convert the protocol and hostname to lowercase. For example, HTTP://www.DUMMY.com is converted to http://www.dummy.com.
+
+*`strip_userinfo`*::
++
+.Description
+strip any 'userinfo' found on http/https URLs.
+
+*`strip_www`*::
++
+.Description
+strip the first 'www.' found
+
+*`strip_extra_slashes`*::
++
+.Description
+strip any extra slashes, '/', found in the path. Use this rule to equate 'http://www.foo.org//A//B/index.html' and 'http://www.foo.org/A/B/index.html'."
+
+*`strip_anchor`*::
++
+.Description
+remove the ‘anchor’ or ‘reference’ part of the URI. Hence, http://dummy.com/faq.html#ancor is reduced to http://dummy.com/faq.html.
+
+*`encode`*::
++
+.Description
+perform URI encoding for some characters and preventing the crawler from treating http://dummy.com/~page/ as a different URI from http://dummy.com/~%7Epage/.
+
+*`default_index_html`*::
++
+.Description
+use heuristics to recognize default Web pages. File names such as index.html or index.htm may be removed from the URI with the assumption that they are the default files. If that is true, they would be retrieved by simply using the base URI.
+
+*`default_port`*::
++
+.Description
+add port 80 when no port number is specified for HTTP request.
+
+*`strip_session_ids`*::
++
+.Description
+strip known session ids like jessionid, CFID, CFTOKEN, PHPSESSID ...
+
+*`fixup_query`*::
++
+.Description
+strip any trailing question mark
+
+*`reorder_params`*::
++
+.Description
+Reorder params
 
 ==== Exploration
 
