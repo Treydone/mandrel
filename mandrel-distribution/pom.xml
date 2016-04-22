@@ -334,6 +334,7 @@
 					                    import org.apache.http.impl.client.CloseableHttpClient;
 										import org.apache.http.impl.client.HttpClients;
 					                    import org.apache.http.entity.InputStreamEntity;
+					                    import org.apache.http.entity.StringEntity;
 										
 					                    def server = settings.getServer("bintray");
 					                    
@@ -381,6 +382,15 @@
 						                    file = new File("${project.build.directory}/rpm/distribution/RPMS/noarch/${project.artifactId}-${project.version}-1.noarch.rpm");
 						                    put = new HttpPut(url);
 						                    entity = new InputStreamEntity(file.newInputStream());
+						                    put.setEntity entity;
+						                    response = client.execute(target, put, localContext);
+						                    println "Response: " + response;
+						                    response.close();
+						                    
+						                    String url = "https://api.bintray.com/file_metadata/treydone/generic/mandrel-${project.version}.zip"
+						                    HttpPut put = new HttpPut(url);
+											{"list_in_downloads":true}
+						                    StringEntity entity = new StringEntity("{\"list_in_downloads\":true}");
 						                    put.setEntity entity;
 						                    response = client.execute(target, put, localContext);
 						                    println "Response: " + response;

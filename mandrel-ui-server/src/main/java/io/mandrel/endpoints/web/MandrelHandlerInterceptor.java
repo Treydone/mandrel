@@ -60,8 +60,8 @@ public class MandrelHandlerInterceptor implements HandlerInterceptor {
 			modelAndView.getModelMap().addAttribute("statics", BEANSWRAPPER.getStaticModels());
 
 			modelAndView.getModelMap().addAttribute("infoSettings", infoSettings);
-//			modelAndView.getModelMap()
-//					.addAttribute("throughput", client.coordinator().metrics().onAny().map(s -> s.getTimeserie(MetricKeys.globalTotalSize())));
+			modelAndView.getModelMap()
+					.addAttribute("throughput", client.coordinator().metrics().onAny().map(s -> s.getTimeserie(MetricKeys.globalTotalSize())));
 		}
 	}
 

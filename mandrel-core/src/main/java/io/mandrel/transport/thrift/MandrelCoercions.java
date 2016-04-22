@@ -20,6 +20,7 @@ package io.mandrel.transport.thrift;
 
 import io.mandrel.common.data.JobDefinition;
 import io.mandrel.config.BindConfiguration;
+import io.mandrel.metrics.Timeserie;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -80,4 +81,25 @@ public class MandrelCoercions {
 			throw Throwables.propagate(e);
 		}
 	}
+
+	@ToThrift
+	public static ByteBuffer toThrift(Timeserie value) {
+		try {
+			return ByteBuffer.wrap(objectMapper.writeValueAsBytes(value));
+		} catch (JsonProcessingException e) {
+			throw Throwables.propagate(e);
+		}
+	}
+
+	@FromThrift
+	public static Timeserie fromThriftToTimeserie(ByteBuffer buffer) {
+		byte[] result = new byte[buffer.remaining()];
+		buffer.duplicate().get(result);
+		try {
+			return objectMapper.readValue(result, Timeserie.class);
+		} catch (IOException e) {
+			throw Throwables.propagate(e);
+		}
+	}
+
 }

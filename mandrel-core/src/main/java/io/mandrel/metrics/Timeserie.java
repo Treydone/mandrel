@@ -24,36 +24,21 @@ import java.time.LocalDateTime;
 import java.util.TreeSet;
 
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 
-import com.facebook.swift.codec.ThriftConstructor;
-import com.facebook.swift.codec.ThriftField;
-import com.facebook.swift.codec.ThriftStruct;
-
-@ThriftStruct
 public class Timeserie extends TreeSet<Data> {
 
 	private static final long serialVersionUID = -3733297273926957662L;
 
 	@lombok.Data
 	@EqualsAndHashCode(exclude = "value")
-	@ThriftStruct
 	public static class Data implements Comparable<Data> {
 
-		@Getter(onMethod = @__(@ThriftField(1)))
 		private final LocalDateTime time;
-		@Getter(onMethod = @__(@ThriftField(2)))
 		private final Long value;
 
 		@Override
 		public int compareTo(Data other) {
 			return other.getTime().compareTo(time);
-		}
-
-		@ThriftConstructor
-		public Data(LocalDateTime time, Long value) {
-			this.time = time;
-			this.value = value;
 		}
 
 		public static Data of(LocalDateTime time, Long value) {

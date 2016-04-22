@@ -18,6 +18,7 @@
  */
 package io.mandrel.job;
 
+import io.atomix.Atomix;
 import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.discovery.ServiceInstance;
@@ -67,7 +68,6 @@ import org.springframework.validation.BindingResult;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
-import com.google.common.util.concurrent.Monitor;
 
 @Component
 @Slf4j
@@ -81,88 +81,82 @@ public class JobService implements JobsContract {
 	private final StateService stateService;
 	private final MetricsService metricsService;
 	private final ObjectMapper objectMapper;
+	private final Atomix atomix;
 
 	private final RandomNameGenerator generator = new RandomNameGenerator();
-	private final Monitor monitor = new Monitor();
 
 	@Scheduled(fixedRate = 2000)
-	public void sync() {
+	public void sync() throws Exception {
 		if (stateService.isStarted()) {
-			// TODO HOW TO in case of multiple coordinator
-			// -> Acquiring distributed lock
-			if (monitor.tryEnter()) {
-				try {
-					log.trace("Syncing the nodes from the coordinator...");
 
-					SyncRequest sync = new SyncRequest();
+			// In case of multiple coordinator -> Acquiring distributed lock
+			boolean isLeader = atomix.getGroup(ServiceIds.coordinator()).thenApply(group -> group.leader()).thenApply(member -> member.isLeader()).get();
 
-					// Load the existing jobs from the database
-					List<Job> jobs = jobRepository.listActive();
-					if (CollectionUtils.isNotEmpty(jobs)) {
-						sync.setDefinitions(jobs.stream().map(job -> {
-							try {
-								return objectMapper.writeValueAsBytes(job);
-							} catch (Exception e) {
-								throw Throwables.propagate(e);
-							}
-						}).collect(Collectors.toList()));
-					}
-					// Sync first the coordinators
-					discoveryClient.getInstances(ServiceIds.coordinator()).forEach(
-							instance -> {
-								log.trace("Syncing coordinator {}", instance);
-								try {
-									SyncResponse response = client.coordinator().admin().on(instance.getHostAndPort())
-											.map(coordinator -> coordinator.syncCoordinators(sync));
+			if (isLeader) {
+				log.trace("Syncing the nodes from the coordinator...");
 
-									if (response.anyAction()) {
-										log.debug("On coordinator {}:{}, after sync: {} created, {} updated, {} killed, {} started, {} paused",
-												instance.getHost(), instance.getPort(), response.getCreated(), response.getUpdated(), response.getKilled(),
-												response.getPaused());
-									}
-								} catch (Exception e) {
-									log.warn("Can not sync coordinator {}:{} due to: {}", instance.getHost(), instance.getPort(), e.getMessage());
-								}
-							});
+				SyncRequest sync = new SyncRequest();
 
-					// And then the frontiers
-					discoveryClient.getInstances(ServiceIds.frontier()).forEach(
-							instance -> {
-								log.trace("Syncing frontier {}", instance);
-								try {
-									SyncResponse response = client.frontier().admin().on(instance.getHostAndPort())
-											.map(frontier -> frontier.syncFrontiers(sync));
-
-									if (response.anyAction()) {
-										log.debug("On frontier {}:{}, after sync: {} created, {} updated, {} killed, {} started, {} paused",
-												instance.getHost(), instance.getPort(), response.getCreated(), response.getUpdated(), response.getKilled(),
-												response.getPaused());
-									}
-								} catch (Exception e) {
-									log.warn("Can not sync frontier {}:{} due to: {}", instance.getHost(), instance.getPort(), e.getMessage());
-								}
-							});
-
-					// And then the workers
-					discoveryClient.getInstances(ServiceIds.worker()).forEach(
-							instance -> {
-								log.trace("Syncing worker {}", instance);
-								try {
-									SyncResponse response = client.worker().admin().on(instance.getHostAndPort()).map(worker -> worker.syncWorkers(sync));
-
-									if (response.anyAction()) {
-										log.debug("On frontier {}:{}, after sync: {} created, {} updated, {} killed, {} started, {} paused",
-												instance.getHost(), instance.getPort(), response.getCreated(), response.getUpdated(), response.getKilled(),
-												response.getPaused());
-									}
-								} catch (Exception e) {
-									log.warn("Can not sync worker {}:{} due to: {}", instance.getHost(), instance.getPort(), e.getMessage());
-								}
-							});
-
-				} finally {
-					monitor.leave();
+				// Load the existing jobs from the database
+				List<Job> jobs = jobRepository.listActive();
+				if (CollectionUtils.isNotEmpty(jobs)) {
+					sync.setDefinitions(jobs.stream().map(job -> {
+						try {
+							return objectMapper.writeValueAsBytes(job);
+						} catch (Exception e) {
+							throw Throwables.propagate(e);
+						}
+					}).collect(Collectors.toList()));
 				}
+				// Sync first the coordinators
+				discoveryClient.getInstances(ServiceIds.coordinator()).forEach(
+						instance -> {
+							log.trace("Syncing coordinator {}", instance);
+							try {
+								SyncResponse response = client.coordinator().admin().on(instance.getHostAndPort())
+										.map(coordinator -> coordinator.syncCoordinators(sync));
+
+								if (response.anyAction()) {
+									log.debug("On coordinator {}:{}, after sync: {} created, {} updated, {} killed, {} started, {} paused", instance.getHost(),
+											instance.getPort(), response.getCreated(), response.getUpdated(), response.getKilled(), response.getPaused());
+								}
+							} catch (Exception e) {
+								log.warn("Can not sync coordinator {}:{} due to: {}", instance.getHost(), instance.getPort(), e.getMessage());
+							}
+						});
+
+				// And then the frontiers
+				discoveryClient.getInstances(ServiceIds.frontier()).forEach(
+						instance -> {
+							log.trace("Syncing frontier {}", instance);
+							try {
+								SyncResponse response = client.frontier().admin().on(instance.getHostAndPort()).map(frontier -> frontier.syncFrontiers(sync));
+
+								if (response.anyAction()) {
+									log.debug("On frontier {}:{}, after sync: {} created, {} updated, {} killed, {} started, {} paused", instance.getHost(),
+											instance.getPort(), response.getCreated(), response.getUpdated(), response.getKilled(), response.getPaused());
+								}
+							} catch (Exception e) {
+								log.warn("Can not sync frontier {}:{} due to: {}", instance.getHost(), instance.getPort(), e.getMessage());
+							}
+						});
+
+				// And then the workers
+				discoveryClient.getInstances(ServiceIds.worker()).forEach(
+						instance -> {
+							log.trace("Syncing worker {}", instance);
+							try {
+								SyncResponse response = client.worker().admin().on(instance.getHostAndPort()).map(worker -> worker.syncWorkers(sync));
+
+								if (response.anyAction()) {
+									log.debug("On frontier {}:{}, after sync: {} created, {} updated, {} killed, {} started, {} paused", instance.getHost(),
+											instance.getPort(), response.getCreated(), response.getUpdated(), response.getKilled(), response.getPaused());
+								}
+							} catch (Exception e) {
+								log.warn("Can not sync worker {}:{} due to: {}", instance.getHost(), instance.getPort(), e.getMessage());
+							}
+						});
+
 			}
 		}
 	}
