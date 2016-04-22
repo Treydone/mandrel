@@ -556,13 +556,18 @@ All these instances are registered in the Coordinator ensemble.
 
 === Content
 
+==== Storage
+
 ==== Redundant Content
+
+Shingling algorithm
 
 // TODO
 
 ==== Cloaked Content
 
-// TODO
+Cloaking refers to the practice of serving different content to crawlers than to the real human viewers of a site.
+Cloaking is not in all cases malicious: many web sites with dynamic and/or interactive content rely on JavaScript.
 
 ==== Traps
 
@@ -574,20 +579,27 @@ There is no algorithm to detect all traps, some classes of traps can be detected
 
 ===== Large link
 
-Link with a huge size have to be skipped for preventing Mandrel to crash.
+Links with a huge size have to be skipped for preventing Mandrel to crash.
 
 ===== Hidden link
 
 This trap usually consists of links that normal user can’t see but a bot can not.
 Mandrel takes care that the link has proper visibility:
-- no nofollow tag
-- no CSS style display:none or color disguised to blend in with the page’s background color.
-- documents with session-id's based on required cookies.
+
+- no nofollow tag (html documents)
+- no CSS style display:none or color disguised to blend in with the page’s background color (html documents)
+- documents with session-id's based on required cookies
 
 ===== Infinite deep
 
-Creation of indefinitely deep directory structures like
+An other way to trap a crawler is to create an indefinitely deep directory structures like:
 http://foo.com/bar/foo/bar/foo/bar/foo/bar/.....
+
+In order to avoid this, Mandrel allows you to configure some properties in to order to configure:
+
+- the maximum number of directories to crawl from the root URL
+- the maximum number of sub directories Mandrel should crawl in a website
+- the maximum number of files in a directory
 
 ===== High links density
 
@@ -595,13 +607,14 @@ Dynamic pages that produce an unbounded number of documents to follow, for insta
 
 ===== Infinite or large content size
 
-// TODO
+Allows you to limit the size of the content to be fetched and avoid memory overhead during the content extraction.
 
 === Fetching
 
 ==== DNS resolution
 
-// TODO
+DNS requests can take a long time due to the request-forwarding nature of the protocol.
+Therefore, Mandrel maintain its own DNS cache. Entries are expired according to both an eviction and expiration policies.
 
 === URIs
 
@@ -698,8 +711,7 @@ Mandrel can be configured to obey various policies on:
 
 ==== User-agent spoofing
 
-Since every HTTP request made from a client may contains a user-agent header,
-using the same user-agent multiple times leads to the detection of a bot.
+Since every HTTP request made from a client may contains a user-agent header, using the same user-agent multiple times leads to the detection of a bot.
 User agent spoofing is one of the available solution for this. Mandrel allows you to specify a static user-agent or a list of user agents and pick a random one for each request.
 Don't cheat with user-agents, do not pretend to be the Google Bot: Googlebot/2.1 (http://www.google.com/bot.html)
 

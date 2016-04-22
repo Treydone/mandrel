@@ -1524,12 +1524,21 @@ $ ./bin/ui-serverd stop</code></pre>
 <div class="sect2">
 <h3 id="_content">Content</h3>
 <div class="sect3">
-<h4 id="_redundant_content">Redundant Content</h4>
+<h4 id="_storage">Storage</h4>
 
 </div>
 <div class="sect3">
+<h4 id="_redundant_content">Redundant Content</h4>
+<div class="paragraph">
+<p>Shingling algorithm</p>
+</div>
+</div>
+<div class="sect3">
 <h4 id="_cloaked_content">Cloaked Content</h4>
-
+<div class="paragraph">
+<p>Cloaking refers to the practice of serving different content to crawlers than to the real human viewers of a site.
+Cloaking is not in all cases malicious: many web sites with dynamic and/or interactive content rely on JavaScript.</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_traps">Traps</h4>
@@ -1543,24 +1552,50 @@ There is no algorithm to detect all traps, some classes of traps can be detected
 <div class="sect4">
 <h5 id="_large_link">Large link</h5>
 <div class="paragraph">
-<p>Link with a huge size have to be skipped for preventing Mandrel to crash.</p>
+<p>Links with a huge size have to be skipped for preventing Mandrel to crash.</p>
 </div>
 </div>
 <div class="sect4">
 <h5 id="_hidden_link">Hidden link</h5>
 <div class="paragraph">
 <p>This trap usually consists of links that normal user can’t see but a bot can not.
-Mandrel takes care that the link has proper visibility:
-- no nofollow tag
-- no CSS style display:none or color disguised to blend in with the page’s background color.
-- documents with session-id&#8217;s based on required cookies.</p>
+Mandrel takes care that the link has proper visibility:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>no nofollow tag (html documents)</p>
+</li>
+<li>
+<p>no CSS style display:none or color disguised to blend in with the page’s background color (html documents)</p>
+</li>
+<li>
+<p>documents with session-id&#8217;s based on required cookies</p>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect4">
 <h5 id="_infinite_deep">Infinite deep</h5>
 <div class="paragraph">
-<p>Creation of indefinitely deep directory structures like
+<p>An other way to trap a crawler is to create an indefinitely deep directory structures like:
 <a href="http://foo.com/bar/foo/bar/foo/bar/foo/bar/&#8230;&#8203" class="bare">http://foo.com/bar/foo/bar/foo/bar/foo/bar/&#8230;&#8203</a>;..</p>
+</div>
+<div class="paragraph">
+<p>In order to avoid this, Mandrel allows you to configure some properties in to order to configure:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the maximum number of directories to crawl from the root URL</p>
+</li>
+<li>
+<p>the maximum number of sub directories Mandrel should crawl in a website</p>
+</li>
+<li>
+<p>the maximum number of files in a directory</p>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect4">
@@ -1571,7 +1606,9 @@ Mandrel takes care that the link has proper visibility:
 </div>
 <div class="sect4">
 <h5 id="_infinite_or_large_content_size">Infinite or large content size</h5>
-
+<div class="paragraph">
+<p>Allows you to limit the size of the content to be fetched and avoid memory overhead during the content extraction.</p>
+</div>
 </div>
 </div>
 </div>
@@ -1579,7 +1616,10 @@ Mandrel takes care that the link has proper visibility:
 <h3 id="_fetching">Fetching</h3>
 <div class="sect3">
 <h4 id="_dns_resolution">DNS resolution</h4>
-
+<div class="paragraph">
+<p>DNS requests can take a long time due to the request-forwarding nature of the protocol.
+Therefore, Mandrel maintain its own DNS cache. Entries are expired according to both an eviction and expiration policies.</p>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -1736,8 +1776,7 @@ Mandrel can be configured to obey various policies on:</p>
 <div class="sect3">
 <h4 id="_user_agent_spoofing">User-agent spoofing</h4>
 <div class="paragraph">
-<p>Since every HTTP request made from a client may contains a user-agent header,
-using the same user-agent multiple times leads to the detection of a bot.
+<p>Since every HTTP request made from a client may contains a user-agent header, using the same user-agent multiple times leads to the detection of a bot.
 User agent spoofing is one of the available solution for this. Mandrel allows you to specify a static user-agent or a list of user agents and pick a random one for each request.
 Don&#8217;t cheat with user-agents, do not pretend to be the Google Bot: Googlebot/2.1 (<a href="http://www.google.com/bot.html" class="bare">http://www.google.com/bot.html</a>)</p>
 </div>
@@ -2696,7 +2735,7 @@ the License.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-04-15 10:44:05 +02:00
+Last updated 2016-04-22 12:50:15 +02:00
 </div>
 </div>
 </body>
