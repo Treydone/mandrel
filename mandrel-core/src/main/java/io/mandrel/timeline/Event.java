@@ -46,7 +46,7 @@ public class Event {
 	private EventType type;
 	@Getter(onMethod = @__(@ThriftField(5)))
 	@Setter(onMethod = @__(@ThriftField))
-	private SpiderInfo spider;
+	private JobInfo job;
 	@Getter(onMethod = @__(@ThriftField(6)))
 	@Setter(onMethod = @__(@ThriftField))
 	private NodeInfo node;
@@ -55,11 +55,11 @@ public class Event {
 		SPIDER, NODE
 	}
 
-	public static Event forSpider() {
+	public static Event forJob() {
 		Event event = new Event();
 		event.setTime(LocalDateTime.now());
 		event.setType(EventType.SPIDER);
-		event.setSpider(new SpiderInfo());
+		event.setJob(new JobInfo());
 		return event;
 	}
 
@@ -73,19 +73,19 @@ public class Event {
 
 	@Data
 	@ThriftStruct
-	public static class SpiderInfo {
+	public static class JobInfo {
 
 		@Getter(onMethod = @__(@ThriftField(1)))
 		@Setter(onMethod = @__(@ThriftField))
-		private SpiderEventType type;
+		private JobEventType type;
 		@Getter(onMethod = @__(@ThriftField(2)))
 		@Setter(onMethod = @__(@ThriftField))
-		private long spiderId;
+		private long jobId;
 		@Getter(onMethod = @__(@ThriftField(3)))
 		@Setter(onMethod = @__(@ThriftField))
-		private String spiderName;
+		private String jobName;
 
-		public enum SpiderEventType {
+		public enum JobEventType {
 			SPIDER_CREATED, SPIDER_STARTED, SPIDER_PAUSED, SPIDER_UPDATED, SPIDER_ENDED, SPIDER_KILLED, SPIDER_DELETED
 		}
 

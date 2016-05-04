@@ -45,10 +45,10 @@ public class Requesters {
 		return globalRequesters.get(protocol) != null ? Optional.of(globalRequesters.get(protocol)) : Optional.empty();
 	}
 
-	public static void add(long spiderId, Requester requester) {
+	public static void add(long jobId, Requester requester) {
 		synchronized (requesters) {
-			requesters.putIfAbsent(spiderId, new HashMap<>());
-			Map<String, Requester> map = requesters.get(spiderId);
+			requesters.putIfAbsent(jobId, new HashMap<>());
+			Map<String, Requester> map = requesters.get(jobId);
 			requester.getProtocols().forEach(protocol -> {
 
 				Requester oldRequester = map.put(protocol, requester);
@@ -61,17 +61,17 @@ public class Requesters {
 				}
 			});
 			map.putAll(requester.getProtocols().stream().collect(Collectors.toMap(p -> p, p -> requester)));
-			requesters.put(spiderId, map);
+			requesters.put(jobId, map);
 		}
 	}
 
-	public static Optional<Map<String, Requester>> of(Long spiderId) {
-		return requesters.get(spiderId) != null ? Optional.of(requesters.get(spiderId)) : Optional.empty();
+	public static Optional<Map<String, Requester>> of(Long jobId) {
+		return requesters.get(jobId) != null ? Optional.of(requesters.get(jobId)) : Optional.empty();
 	}
 
-	public static void remove(Long spiderId) {
+	public static void remove(Long jobId) {
 		synchronized (requesters) {
-			Map<String, Requester> oldRequesters = requesters.remove(spiderId);
+			Map<String, Requester> oldRequesters = requesters.remove(jobId);
 			oldRequesters.forEach((protocol, req) -> {
 				try {
 					req.close();
@@ -82,8 +82,8 @@ public class Requesters {
 		}
 	}
 
-	public static Optional<Requester> of(Long spiderId, String protocol) {
-		return requesters.get(spiderId) != null ? (requesters.get(spiderId).get(protocol) != null ? Optional.of(requesters.get(spiderId).get(protocol))
+	public static Optional<Requester> of(Long jobId, String protocol) {
+		return requesters.get(jobId) != null ? (requesters.get(jobId).get(protocol) != null ? Optional.of(requesters.get(jobId).get(protocol))
 				: Optional.empty()) : Optional.empty();
 	}
 }

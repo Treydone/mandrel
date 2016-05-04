@@ -20,21 +20,21 @@ package io.mandrel.worker;
 
 import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobStores;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.net.Uri;
 import io.mandrel.data.Link;
 import io.mandrel.data.content.selector.Selector.Instance;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.document.Document;
-import io.mandrel.endpoints.contracts.Next;
+import io.mandrel.endpoints.contracts.frontier.Next;
 import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.GlobalAccumulator;
-import io.mandrel.metrics.SpiderAccumulator;
+import io.mandrel.metrics.JobAccumulator;
 import io.mandrel.requests.ConnectTimeoutException;
 import io.mandrel.requests.ReadTimeoutException;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.Requesters;
-import io.mandrel.transport.Clients;
+import io.mandrel.transport.MandrelClient;
 import io.mandrel.transport.RemoteException;
 
 import java.util.HashMap;
@@ -60,10 +60,10 @@ import org.springframework.util.StopWatch;
 public class Loop implements Runnable {
 
 	private final ExtractorService extractorService;
-	private final Spider spider;
-	private final Clients clients;
+	private final Job job;
+	private final MandrelClient client;
 
-	private final SpiderAccumulator spiderAccumulator;
+	private final JobAccumulator jobAccumulator;
 	private final GlobalAccumulator globalAccumulator;
 
 	private final Barrier barrier;
@@ -107,7 +107,7 @@ public class Loop implements Runnable {
 				}
 
 				log.trace("> Asking for uri...");
-				Next next = clients.onRandomFrontier().map(frontier -> frontier.next(spider.getId())).get(20000, TimeUnit.MILLISECONDS);
+				Next next = client.frontier().client().onAny().map(frontier -> frontier.next(job.getId())).get(20000, TimeUnit.MILLISECONDS);
 				Uri uri = next.getUri();
 
 				if (uri != null) {
@@ -119,7 +119,7 @@ public class Loop implements Runnable {
 					watch.start();
 
 					//
-					Optional<Requester> requester = Requesters.of(spider.getId(), uri.getScheme());
+					Optional<Requester> requester = Requesters.of(job.getId(), uri.getScheme());
 					if (requester.isPresent()) {
 						Requester r = requester.get();
 
@@ -129,11 +129,11 @@ public class Loop implements Runnable {
 						} catch (Exception t) {
 							// TODO create and use internal exception instead...
 							if (t instanceof ConnectTimeoutException) {
-								spiderAccumulator.incConnectTimeout();
-								add(spider.getId(), uri);
+								jobAccumulator.incConnectTimeout();
+								add(job.getId(), uri);
 							} else if (t instanceof ReadTimeoutException) {
-								spiderAccumulator.incReadTimeout();
-								add(spider.getId(), uri);
+								jobAccumulator.incReadTimeout();
+								add(job.getId(), uri);
 							} else {
 								log.debug("Error while looping", t);
 							}
@@ -189,33 +189,33 @@ public class Loop implements Runnable {
 		updateMetrics(watch, blob);
 
 		Map<String, Instance<?>> cachedSelectors = new HashMap<>();
-		if (spider.getExtractors() != null && spider.getExtractors().getData() != null) {
+		if (job.getDefinition().getExtractors() != null && job.getDefinition().getExtractors().getData() != null) {
 			log.trace(">  - Extracting documents for {}...", uri);
-			spider.getExtractors().getData().forEach(ex -> {
-				List<Document> documents = extractorService.extractThenFormatThenStore(spider.getId(), cachedSelectors, blob, ex);
+			job.getDefinition().getExtractors().getData().forEach(ex -> {
+				List<Document> documents = extractorService.extractThenFormatThenStore(job.getId(), cachedSelectors, blob, ex);
 
 				if (documents != null) {
-					spiderAccumulator.incDocumentForExtractor(ex.getName(), documents.size());
+					jobAccumulator.incDocumentForExtractor(ex.getName(), documents.size());
 				}
 			});
 			log.trace(">  - Extracting documents for {} done!", uri);
 		}
 
-		if (spider.getExtractors().getOutlinks() != null) {
+		if (job.getDefinition().getExtractors().getOutlinks() != null) {
 			log.trace(">  - Extracting outlinks for {}...", uri);
 			final Uri theUri = uri;
-			spider.getExtractors().getOutlinks().forEach(ol -> {
-				Set<Link> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(spider, theUri, cachedSelectors, blob, ol).getRight();
+			job.getDefinition().getExtractors().getOutlinks().forEach(ol -> {
+				Set<Link> allFilteredOutlinks = extractorService.extractAndFilterOutlinks(job, theUri, cachedSelectors, blob, ol).getRight();
 				blob.getMetadata().getFetchMetadata().setOutlinks(allFilteredOutlinks);
-				add(spider.getId(), allFilteredOutlinks.stream().map(l -> l.getUri()).collect(Collectors.toSet()));
+				add(job.getId(), allFilteredOutlinks.stream().map(l -> l.getUri()).collect(Collectors.toSet()));
 			});
 			log.trace(">  - Extracting outlinks done for {}!", uri);
 		}
 
-		BlobStores.get(spider.getId()).ifPresent(b -> b.putBlob(blob.getMetadata().getUri(), blob));
+		BlobStores.get(job.getId()).ifPresent(b -> b.putBlob(blob.getMetadata().getUri(), blob));
 
 		log.trace(">  - Storing metadata for {}...", uri);
-		MetadataStores.get(spider.getId()).addMetadata(blob.getMetadata().getUri(), blob.getMetadata());
+		MetadataStores.get(job.getId()).addMetadata(blob.getMetadata().getUri(), blob.getMetadata());
 		log.trace(">  - Storing metadata for {} done!", uri);
 
 		log.trace("> End parsing data for {}", uri);
@@ -223,32 +223,32 @@ public class Loop implements Runnable {
 	}
 
 	protected void updateMetrics(StopWatch watch, Blob blob) {
-		spiderAccumulator.incNbPages();
+		jobAccumulator.incNbPages();
 		globalAccumulator.incNbPages();
 
-		spiderAccumulator.incPageForStatus(blob.getMetadata().getFetchMetadata().getStatusCode());
+		jobAccumulator.incPageForStatus(blob.getMetadata().getFetchMetadata().getStatusCode());
 		globalAccumulator.incPageForStatus(blob.getMetadata().getFetchMetadata().getStatusCode());
 
-		spiderAccumulator.incPageForHost(blob.getMetadata().getUri().getHost());
+		jobAccumulator.incPageForHost(blob.getMetadata().getUri().getHost());
 		globalAccumulator.incPageForHost(blob.getMetadata().getUri().getHost());
 
-		spiderAccumulator.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
+		jobAccumulator.incTotalTimeToFetch(watch.getLastTaskTimeMillis());
 
 		if (blob.getMetadata().getSize() != null) {
-			spiderAccumulator.incTotalSize(blob.getMetadata().getSize());
+			jobAccumulator.incTotalSize(blob.getMetadata().getSize());
 			globalAccumulator.incTotalSize(blob.getMetadata().getSize());
 		}
 	}
 
-	protected void add(long spiderId, Set<Uri> uris) {
+	protected void add(long jobId, Set<Uri> uris) {
 		if (CollectionUtils.isNotEmpty(uris)) {
-			clients.onRandomFrontier().with(frontier -> frontier.mschedule(spiderId, uris));
+			client.frontier().client().onAny().with(frontier -> frontier.mschedule(jobId, uris));
 		}
 	}
 
-	protected void add(long spiderId, Uri uri) {
+	protected void add(long jobId, Uri uri) {
 		if (uri != null) {
-			clients.onRandomFrontier().with(frontier -> frontier.schedule(spiderId, uri));
+			client.frontier().client().onAny().with(frontier -> frontier.schedule(jobId, uri));
 		}
 	}
 }

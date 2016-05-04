@@ -18,7 +18,7 @@
  */
 package io.mandrel.frontier.store.impl;
 
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.frontier.store.FetchRequest;
@@ -31,9 +31,9 @@ public class RedisFrontierStoreTest {
 	@Test
 	public void test() throws InterruptedException {
 
-		Spider spider = new Spider().setId(31);
+		Job job = new Job().setId(31);
 		TaskContext taskContext = new TaskContext();
-		taskContext.setDefinition(spider);
+		taskContext.setDefinition(job);
 
 		RedisFrontierStoreDefinition definition = new RedisFrontierStoreDefinition();
 		RedisFrontierStore store = definition.build(taskContext);

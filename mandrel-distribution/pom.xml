@@ -38,7 +38,7 @@
 								</configuration>
 							</execution>
 							<execution>
-								<id>controller</id>
+								<id>coordinator</id>
 								<goals>
 									<goal>exec</goal>
 								</goals>
@@ -47,7 +47,7 @@
 									<executable>mvn</executable>
 									<arguments>
 										<argument>package</argument>
-										<argument>-Pcontroller</argument>
+										<argument>-Pcoordinator</argument>
 										<argument>-DskipDeploy=true</argument>
 									</arguments>
 								</configuration>
@@ -78,6 +78,21 @@
 									<arguments>
 										<argument>package</argument>
 										<argument>-Pworker</argument>
+										<argument>-DskipDeploy=true</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>ui-server</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>package</phase>
+								<configuration>
+									<executable>mvn</executable>
+									<arguments>
+										<argument>package</argument>
+										<argument>-Pui-server</argument>
 										<argument>-DskipDeploy=true</argument>
 									</arguments>
 								</configuration>
@@ -319,6 +334,7 @@
 					                    import org.apache.http.impl.client.CloseableHttpClient;
 										import org.apache.http.impl.client.HttpClients;
 					                    import org.apache.http.entity.InputStreamEntity;
+					                    import org.apache.http.entity.StringEntity;
 										
 					                    def server = settings.getServer("bintray");
 					                    
@@ -366,6 +382,15 @@
 						                    file = new File("${project.build.directory}/rpm/distribution/RPMS/noarch/${project.artifactId}-${project.version}-1.noarch.rpm");
 						                    put = new HttpPut(url);
 						                    entity = new InputStreamEntity(file.newInputStream());
+						                    put.setEntity entity;
+						                    response = client.execute(target, put, localContext);
+						                    println "Response: " + response;
+						                    response.close();
+						                    
+						                    String url = "https://api.bintray.com/file_metadata/treydone/generic/mandrel-${project.version}.zip"
+						                    HttpPut put = new HttpPut(url);
+											{"list_in_downloads":true}
+						                    StringEntity entity = new StringEntity("{\"list_in_downloads\":true}");
 						                    put.setEntity entity;
 						                    response = client.execute(target, put, localContext);
 						                    println "Response: " + response;
@@ -421,16 +446,16 @@
 		</profile>
 
 		<profile>
-			<id>controller</id>
+			<id>coordinator</id>
 			<properties>
-				<component.id>controller</component.id>
-				<component.class.main>io.mandrel.bootstrap.Controller</component.class.main>
-				<component.class.wrapper>io.mandrel.bootstrap.WrapperController</component.class.wrapper>
+				<component.id>coordinator</component.id>
+				<component.class.main>io.mandrel.bootstrap.Coordinator</component.class.main>
+				<component.class.wrapper>io.mandrel.bootstrap.CoordinatorWrapper</component.class.wrapper>
 			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>io.mandrel</groupId>
-					<artifactId>controller</artifactId>
+					<artifactId>coordinator</artifactId>
 				</dependency>
 			</dependencies>
 			<build>
@@ -451,7 +476,7 @@
 			<properties>
 				<component.id>frontier</component.id>
 				<component.class.main>io.mandrel.bootstrap.Frontier</component.class.main>
-				<component.class.wrapper>io.mandrel.bootstrap.WrapperFrontier</component.class.wrapper>
+				<component.class.wrapper>io.mandrel.bootstrap.FrontierWrapper</component.class.wrapper>
 			</properties>
 			<dependencies>
 				<dependency>
@@ -477,12 +502,38 @@
 			<properties>
 				<component.id>worker</component.id>
 				<component.class.main>io.mandrel.bootstrap.Worker</component.class.main>
-				<component.class.wrapper>io.mandrel.bootstrap.WrapperWorker</component.class.wrapper>
+				<component.class.wrapper>io.mandrel.bootstrap.WorkerWrapper</component.class.wrapper>
 			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>io.mandrel</groupId>
 					<artifactId>worker</artifactId>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>appassembler-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		
+		<profile>
+			<id>ui-server</id>
+			<properties>
+				<component.id>ui-server</component.id>
+				<component.class.main>io.mandrel.bootstrap.UiServer</component.class.main>
+				<component.class.wrapper>io.mandrel.bootstrap.UiServerWrapper</component.class.wrapper>
+			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>io.mandrel</groupId>
+					<artifactId>ui-server</artifactId>
 				</dependency>
 			</dependencies>
 			<build>

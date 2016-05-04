@@ -34,7 +34,7 @@ public class KafkaTest {
 	@Test
 	public void test() {
 
-		String topicName = "topic_spiderpouet";
+		String topicName = "topic_jobpouet";
 
 		ZkClient zkClient = new ZkClient("localhost:2181", 10000, 10000, ZKStringSerializer$.MODULE$);
 

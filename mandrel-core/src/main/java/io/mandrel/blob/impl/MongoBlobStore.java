@@ -87,7 +87,7 @@ public class MongoBlobStore extends BlobStore {
 			// TODO options.description("");
 			MongoClientURI uri = new MongoClientURI(this.uri, options);
 			MongoClient client = new MongoClient(uri);
-			return new MongoBlobStore(context, client, database, MessageFormat.format(bucket, context.getSpiderId()), batchSize);
+			return new MongoBlobStore(context, client, database, MessageFormat.format(bucket, context.getJobId()), batchSize);
 		}
 	}
 

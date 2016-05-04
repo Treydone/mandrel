@@ -18,7 +18,7 @@
  */
 package io.mandrel.requests.proxy;
 
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.service.TaskContext;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -50,7 +50,7 @@ public class NoProxyProxyServersSource extends ProxyServersSource {
 		super(context);
 	}
 
-	public ProxyServer findProxy(Spider spider) {
+	public ProxyServer findProxy(Job job) {
 		return null;
 	}
 

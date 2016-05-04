@@ -19,7 +19,7 @@
 package io.mandrel.data.analysis;
 
 import io.mandrel.blob.Blob;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.robots.ExtendedRobotRules;
 import io.mandrel.common.robots.RobotsTxtUtils;
@@ -63,21 +63,21 @@ public class AnalysisService {
 		this.extractorService = extractorService;
 	}
 
-	public Analysis analyze(Spider spider, String source) {
+	public Analysis analyze(Job job, String source) {
 		Blob blob;
 		try {
 			Uri uri = Uri.create(source);
-			blob = Requesters.of(uri.getScheme()).get().get(uri, spider);
+			blob = Requesters.of(uri.getScheme()).get().get(uri, job);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
 		log.trace("Getting response for {}", source);
 
-		Analysis report = buildReport(spider, blob);
+		Analysis report = buildReport(job, blob);
 		return report;
 	}
 
-	protected Analysis buildReport(Spider spider, Blob blob) {
+	protected Analysis buildReport(Job job, Blob blob) {
 		Analysis report;
 		if (blob.getMetadata().getUri().getScheme().startsWith("http")) {
 			HttpAnalysis temp = new HttpAnalysis();
@@ -102,12 +102,12 @@ public class AnalysisService {
 			report = new Analysis();
 		}
 
-		if (spider.getExtractors() != null) {
+		if (job.getDefinition().getExtractors() != null) {
 			Map<String, Instance<?>> cachedSelectors = new HashMap<>();
 
 			// Page extraction
-			if (spider.getExtractors().getData() != null) {
-				Map<String, List<Document>> documentsByExtractor = spider.getExtractors().getData().stream()
+			if (job.getDefinition().getExtractors().getData() != null) {
+				Map<String, List<Document>> documentsByExtractor = job.getDefinition().getExtractors().getData().stream()
 						.map(ex -> Pair.of(ex.getName(), extractorService.extractThenFormat(cachedSelectors, blob, ex)))
 						.filter(pair -> pair != null && pair.getKey() != null && pair.getValue() != null)
 						.collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
@@ -115,9 +115,9 @@ public class AnalysisService {
 			}
 
 			// Link extraction
-			if (spider.getExtractors().getOutlinks() != null) {
-				Map<String, Pair<Set<Link>, Set<Link>>> outlinksByExtractor = spider.getExtractors().getOutlinks().stream().map(ol -> {
-					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(spider, blob.getMetadata().getUri(), cachedSelectors, blob, ol));
+			if (job.getDefinition().getExtractors().getOutlinks() != null) {
+				Map<String, Pair<Set<Link>, Set<Link>>> outlinksByExtractor = job.getDefinition().getExtractors().getOutlinks().stream().map(ol -> {
+					return Pair.of(ol.getName(), extractorService.extractAndFilterOutlinks(job, blob.getMetadata().getUri(), cachedSelectors, blob, ol));
 				}).collect(Collectors.toMap(key -> key.getLeft(), value -> value.getRight()));
 
 				report.outlinks(Maps.transformEntries(outlinksByExtractor, (key, entries) -> entries.getLeft()));

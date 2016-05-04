@@ -58,6 +58,19 @@ public class JsonTests {
 		ByteSizeValue read = objectMapper.readValue(json, ByteSizeValue.class);
 		assertEquals(value.getKb(), read.getKb());
 	}
+	
+	@Test
+	public void byteSizeValueZero() throws IOException {
+
+		ByteSizeValue value = new ByteSizeValue(0);
+		
+		ByteSizeValue.print(0);
+
+		String json = objectMapper.writeValueAsString(value);
+		System.err.println(json);
+		ByteSizeValue read = objectMapper.readValue(json, ByteSizeValue.class);
+		assertEquals(value.getKb(), read.getKb());
+	}
 
 	@Test
 	public void timeValue() throws IOException {

@@ -83,7 +83,7 @@ public class MongoMetadataStore extends MetadataStore {
 			CodecRegistry codecRegistry = CodecRegistries.fromRegistries(MongoClient.getDefaultCodecRegistry(), CodecRegistries.fromCodecs(new UriCodec()));
 			MongoClientOptions.Builder options = MongoClientOptions.builder().codecRegistry(codecRegistry);
 			MongoClientURI uri = new MongoClientURI(this.uri, options);
-			return new MongoMetadataStore(context, new MongoClient(uri), database, MessageFormat.format(collection, context.getSpiderId()), batchSize);
+			return new MongoMetadataStore(context, new MongoClient(uri), database, MessageFormat.format(collection, context.getJobId()), batchSize);
 		}
 	}
 

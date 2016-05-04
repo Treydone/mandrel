@@ -20,7 +20,7 @@ package io.mandrel.common.schema;
 
 import io.mandrel.common.data.Client;
 import io.mandrel.common.data.Extractors;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.loader.NamedProviders;
 import io.mandrel.data.filters.link.LinkFilter;
@@ -53,7 +53,7 @@ public class SchemaTest {
 
 		ObjectMapper m = new ObjectMapper();
 		SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
-		m.acceptJsonFormatVisitor(m.constructType(Spider.class), visitor);
+		m.acceptJsonFormatVisitor(m.constructType(Job.class), visitor);
 		JsonSchema jsonSchema = visitor.finalSchema();
 
 		System.err.println(m.writerWithDefaultPrettyPrinter().writeValueAsString(jsonSchema));

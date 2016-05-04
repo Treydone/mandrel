@@ -20,11 +20,13 @@ package io.mandrel.transport.thrift;
 
 import io.airlift.units.Duration;
 import io.mandrel.cluster.discovery.DiscoveryClient;
+import io.mandrel.cluster.discovery.Service;
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.cluster.discovery.ServiceInstance;
 import io.mandrel.endpoints.contracts.Contract;
 import io.mandrel.timeline.Event;
 import io.mandrel.timeline.Event.NodeInfo.NodeEventType;
-import io.mandrel.transport.Clients;
+import io.mandrel.transport.MandrelClient;
 import io.mandrel.transport.TransportProperties;
 import io.mandrel.transport.TransportService;
 import io.mandrel.transport.thrift.nifty.ThriftServer;
@@ -34,6 +36,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,16 +54,18 @@ import com.google.common.collect.ImmutableSet;
 
 @Component
 @Slf4j
+@Data
 @ConditionalOnProperty(value = "transport.thrift.enabled", matchIfMissing = true)
 public class ThriftTransportService implements TransportService {
 
 	@Autowired
-	private Clients clients;
+	private MandrelClient client;
 	@Autowired
 	private DiscoveryClient discoveryClient;
-
 	@Autowired
-	private List<? extends Contract> resources;
+	private List<Contract> resources;
+	@Autowired
+	private List<Service> services;
 	@Autowired
 	private ThriftTransportProperties properties;
 	@Autowired
@@ -89,10 +94,16 @@ public class ThriftTransportService implements TransportService {
 				transportProperties.isLocal());
 		server.start();
 
-		resources.forEach(resource -> {
-			log.debug("Registering service {}", resource.getServiceName());
+		services.add(new Service() {
+			@Override
+			public String getServiceName() {
+				return ServiceIds.node();
+			}
+		});
+		services.forEach(service -> {
+			log.debug("Registering service {}", service.getServiceName());
 			ServiceInstance instance = ServiceInstance.builder().host(transportProperties.getBindAddress()).port(transportProperties.getPort())
-					.name(resource.getServiceName()).build();
+					.name(service.getServiceName()).build();
 			discoveryClient.register(instance);
 		});
 
@@ -106,9 +117,9 @@ public class ThriftTransportService implements TransportService {
 
 		log.debug("Shutting down thrift transport");
 
-		resources.forEach(resource -> {
-			log.debug("Unregistering service {}", resource.getServiceName());
-			discoveryClient.unregister(resource.getServiceName());
+		services.forEach(service -> {
+			log.debug("Unregistering service {}", service.getServiceName());
+			discoveryClient.unregister(service.getServiceName());
 		});
 
 		server.close();
@@ -118,9 +129,9 @@ public class ThriftTransportService implements TransportService {
 		send(event);
 	}
 
-	public void send(Event event) {
+	protected void send(Event event) {
 		try {
-			clients.onRandomController().with(service -> service.addEvent(event));
+			client.coordinator().events().onAny().with(service -> service.addEvent(event));
 		} catch (Exception e) {
 			log.warn("Can not send event", e);
 		}

@@ -12,18 +12,19 @@ spring:
 
 #discovery:
 #  instanceHost: localhost
+#   atomix:
+#     enabled: false
 #  zookeeper:
 #    enabled: true
 #    connectString: localhost:2181
 #    root: /mandrel
+#
 
 discovery:
-  local:
-    enabled: true
-  zookeeper:
-    enabled: false
-
-#standalone: true
+  instanceHost: localhost
+  atomix:
+    hosts:
+      - localhost:50000
 
 transport:
   port: 8090
@@ -38,7 +39,7 @@ logging:
     org.springframework: INFO
     io.mandrel: DEBUG
     io.mandrel.worker.Loop: DEBUG
-    io.mandrel.spider.SpiderService : DEBUG
+    io.mandrel.job.JobService : DEBUG
     
 management:
   context-path: /admin

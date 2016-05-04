@@ -18,15 +18,16 @@
  */
 package io.mandrel.common.service;
 
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import lombok.Data;
 
 @Data
 public class TaskContext {
 
-	private Spider definition;
+	private Job definition;
 
-	public long getSpiderId() {
+	public long getJobId() {
 		return definition.getId();
 	}
+	
 }

@@ -19,7 +19,7 @@
 package io.mandrel.requests;
 
 import io.mandrel.blob.Blob;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.lifecycle.Initializable;
 import io.mandrel.common.loader.NamedDefinition;
 import io.mandrel.common.net.Uri;
@@ -108,7 +108,7 @@ public abstract class Requester extends TaskContextAware implements Checkable, I
 	protected NameResolver nameResolver;
 	protected ProxyServersSource proxyServersSource;
 
-	public abstract Blob get(Uri uri, Spider spider) throws Exception;
+	public abstract Blob get(Uri uri, Job job) throws Exception;
 
 	public abstract Blob get(Uri uri) throws Exception;
 

@@ -18,9 +18,9 @@
  */
 package io.mandrel.common.container;
 
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.metrics.Accumulators;
-import io.mandrel.transport.Clients;
+import io.mandrel.transport.MandrelClient;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -32,8 +32,8 @@ import lombok.experimental.Accessors;
 public abstract class AbstractContainer implements Container {
 
 	protected final Accumulators accumulators;
-	protected final Spider spider;
-	protected final Clients clients;
+	protected final Job job;
+	protected final MandrelClient client;
 
 	protected final AtomicReference<ContainerStatus> current = new AtomicReference<>(ContainerStatus.CREATED);
 

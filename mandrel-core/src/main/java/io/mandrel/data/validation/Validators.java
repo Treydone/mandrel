@@ -18,7 +18,7 @@
  */
 package io.mandrel.data.validation;
 
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.JobDefinition;
 
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
@@ -26,15 +26,15 @@ import org.springframework.validation.Validator;
 
 public class Validators {
 
-	private final static Validator spider = new SpiderValidator();
+	private final static Validator job = new JobValidator();
 
-	public static BindingResult validate(Spider theSpider) {
-		BindingResult errors = new BeanPropertyBindingResult(theSpider, "spider");
-		spider.validate(theSpider, errors);
+	public static BindingResult validate(JobDefinition theJob) {
+		BindingResult errors = new BeanPropertyBindingResult(theJob, "job");
+		job.validate(theJob, errors);
 		return errors;
 	}
 
-	public static Validator spider() {
-		return spider;
+	public static Validator job() {
+		return job;
 	}
 }

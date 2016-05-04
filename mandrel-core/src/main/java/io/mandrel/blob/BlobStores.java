@@ -34,9 +34,9 @@ public class BlobStores {
 		return stores.values();
 	}
 
-	public static void add(long spiderId, BlobStore blobStore) {
+	public static void add(long jobId, BlobStore blobStore) {
 		synchronized (stores) {
-			BlobStore oldBlobStore = stores.put(spiderId, blobStore);
+			BlobStore oldBlobStore = stores.put(jobId, blobStore);
 			if (oldBlobStore != null) {
 				try {
 					oldBlobStore.close();
@@ -47,13 +47,13 @@ public class BlobStores {
 		}
 	}
 
-	public static Optional<BlobStore> get(Long spiderId) {
-		return stores.get(spiderId) != null ? Optional.of(stores.get(spiderId)) : Optional.empty();
+	public static Optional<BlobStore> get(Long jobId) {
+		return stores.get(jobId) != null ? Optional.of(stores.get(jobId)) : Optional.empty();
 	}
 
-	public static void remove(Long spiderId) {
+	public static void remove(Long jobId) {
 		synchronized (stores) {
-			BlobStore oldBlobStore = stores.remove(spiderId);
+			BlobStore oldBlobStore = stores.remove(jobId);
 			if (oldBlobStore != null) {
 				try {
 					oldBlobStore.close();

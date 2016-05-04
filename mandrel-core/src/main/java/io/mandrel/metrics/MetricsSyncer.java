@@ -20,7 +20,7 @@ package io.mandrel.metrics;
 
 import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.cluster.instance.StateService;
-import io.mandrel.transport.Clients;
+import io.mandrel.transport.MandrelClient;
 
 import java.util.Map;
 
@@ -41,7 +41,7 @@ public class MetricsSyncer {
 	@Autowired
 	private Accumulators accumulators;
 	@Autowired
-	private Clients clients;
+	private MandrelClient client;
 	@Autowired
 	private DiscoveryClient discoveryClient;
 	@Autowired
@@ -57,12 +57,12 @@ public class MetricsSyncer {
 					Map<String, Long> total = Maps.newHashMap();
 					total.putAll(accumulators.globalAccumulator().tick());
 					total.putAll(accumulators.nodeAccumulator().tick());
-					accumulators.spiderAccumulators().forEach((spiderId, acc) -> total.putAll(acc.tick()));
+					accumulators.jobAccumulators().forEach((jobId, acc) -> total.putAll(acc.tick()));
 
 					if (MapUtils.isNotEmpty(total)) {
 						try {
 							log.debug("Updating metrics");
-							clients.onRandomController().with(controller -> controller.updateMetrics(total));
+							client.coordinator().metrics().onAny().with(coordinator -> coordinator.updateMetrics(total));
 						} catch (Exception e) {
 							log.info("Can not update metrics {} due to", total, e);
 						}

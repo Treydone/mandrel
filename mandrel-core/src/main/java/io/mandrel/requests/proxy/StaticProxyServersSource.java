@@ -18,7 +18,7 @@
  */
 package io.mandrel.requests.proxy;
 
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.service.TaskContext;
 
 import java.util.Arrays;
@@ -72,7 +72,7 @@ public class StaticProxyServersSource extends ProxyServersSource {
 		roundRobin = getProxyServersIterator(servers);
 	}
 
-	public ProxyServer findProxy(Spider spider) {
+	public ProxyServer findProxy(Job job) {
 		return roundRobin.next();
 	}
 

@@ -18,7 +18,7 @@
  */
 package io.mandrel.common.container;
 
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 
 public interface Container {
 
@@ -36,5 +36,5 @@ public interface Container {
 
 	ContainerStatus status();
 	
-	Spider spider();
+	Job job();
 }

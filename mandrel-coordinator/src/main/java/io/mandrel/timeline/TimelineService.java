@@ -1,0 +1,74 @@
+/*
+ * Licensed to Mandrel under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Mandrel licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package io.mandrel.timeline;
+
+import io.mandrel.endpoints.contracts.coordinator.TimelineContract;
+
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+public class TimelineService implements TimelineContract {
+
+	private final TimelineRepository timelineRepository;
+	//	private final StompService stompService;
+	private final ScheduledExecutorService executor;
+
+	public List<Event> page(int from, int size) {
+		return timelineRepository.page(from, size);
+	}
+
+	@PostConstruct
+	public void init() {
+		executor.submit(() -> pool());
+	}
+
+	public void pool() {
+		// TODO
+		//		timelineRepository.pool(event -> stompService.publish(event));
+	}
+
+	@Override
+	public void addEvent(Event event) {
+		timelineRepository.add(event);
+	}
+
+	@Override
+	public Map<String, List<Event>> pageByDate(int from, int size) {
+		List<Event> page = timelineRepository.page(from, size);
+		return page.stream().filter(e -> e.getTime() != null)
+				.collect(Collectors.groupingBy(event -> event.getTime().toLocalDate().toString(), TreeMap::new, Collectors.toList())).descendingMap();
+	}
+
+	@Override
+	public void close() throws Exception {
+
+	}
+}

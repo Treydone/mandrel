@@ -18,20 +18,23 @@
  */
 package io.mandrel.endpoints.internal;
 
+import io.mandrel.cluster.discovery.Service;
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.container.ContainerStatus;
-import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.SpiderStatuses;
+import io.mandrel.common.data.Job;
+import io.mandrel.common.data.JobStatuses;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
-import io.mandrel.endpoints.contracts.FrontierContract;
-import io.mandrel.endpoints.contracts.Next;
+import io.mandrel.endpoints.contracts.frontier.AdminFrontierContract;
+import io.mandrel.endpoints.contracts.frontier.FrontierContract;
+import io.mandrel.endpoints.contracts.frontier.Next;
 import io.mandrel.frontier.FrontierContainer;
 import io.mandrel.frontier.FrontierContainers;
 import io.mandrel.metrics.Accumulators;
-import io.mandrel.transport.Clients;
+import io.mandrel.transport.MandrelClient;
 import io.mandrel.transport.RemoteException;
 
 import java.util.ArrayList;
@@ -43,9 +46,11 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.weakref.jmx.internal.guava.base.Throwables;
 
@@ -55,30 +60,32 @@ import com.google.common.util.concurrent.SettableFuture;
 
 @Component
 @Slf4j
-public class FrontierResource implements FrontierContract {
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+public class FrontierResource implements FrontierContract, AdminFrontierContract, Service {
 
-	@Autowired
-	private Accumulators accumulators;
-	@Autowired
-	private Clients clients;
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final Accumulators accumulators;
+	private final MandrelClient client;
+	private final ObjectMapper objectMapper;
 
 	private Supplier<? extends NotFoundException> frontierNotFound = () -> new NotFoundException("Frontier not found");
 
+	public String getServiceName() {
+		return ServiceIds.frontier();
+	}
+
 	@Override
 	public void createFrontierContainer(byte[] definition) {
-		Spider spider;
+		Job job;
 		try {
-			spider = objectMapper.readValue(definition, Spider.class);
+			job = objectMapper.readValue(definition, Job.class);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
-		create(spider);
+		create(job);
 	}
 
-	public void create(Spider spider) {
-		FrontierContainer container = new FrontierContainer(spider, accumulators, clients);
+	public void create(Job job) {
+		FrontierContainer container = new FrontierContainer(job, accumulators, client);
 		container.register();
 	}
 
@@ -111,8 +118,7 @@ public class FrontierResource implements FrontierContract {
 
 	@Override
 	public List<Container> listRunningFrontierContainers() {
-		return FrontierContainers.list().stream()
-				.map(f -> new Container().setSpiderId(f.spider().getId()).setVersion(f.spider().getVersion()).setStatus(f.status()))
+		return FrontierContainers.list().stream().map(f -> new Container().setJobId(f.job().getId()).setVersion(f.job().getVersion()).setStatus(f.status()))
 				.collect(Collectors.toList());
 	}
 
@@ -134,15 +140,15 @@ public class FrontierResource implements FrontierContract {
 	@Override
 	public SyncResponse syncFrontiers(SyncRequest sync) {
 		Collection<? extends io.mandrel.common.container.Container> containers = FrontierContainers.list();
-		final Map<Long, Spider> spiderByIdFromController = new HashMap<>();
+		final Map<Long, Job> jobByIdFromCoordinator = new HashMap<>();
 		if (sync.getDefinitions() != null) {
-			spiderByIdFromController.putAll(sync.getDefinitions().stream().map(def -> {
+			jobByIdFromCoordinator.putAll(sync.getDefinitions().stream().map(def -> {
 				try {
-					return objectMapper.readValue(def, Spider.class);
+					return objectMapper.readValue(def, Job.class);
 				} catch (Exception e) {
 					throw Throwables.propagate(e);
 				}
-			}).collect(Collectors.toMap(spider -> spider.getId(), spider -> spider)));
+			}).collect(Collectors.toMap(job -> job.getId(), job -> job)));
 		}
 
 		SyncResponse response = new SyncResponse();
@@ -153,76 +159,78 @@ public class FrontierResource implements FrontierContract {
 		List<Long> paused = new ArrayList<>();
 		response.setCreated(created).setKilled(killed).setUpdated(updated).setStarted(started);
 
-		List<Long> existingSpiders = new ArrayList<>();
+		List<Long> existingJobs = new ArrayList<>();
 		if (containers != null)
 			containers.forEach(c -> {
 
-				Spider containerSpider = c.spider();
-				long containerSpiderId = containerSpider.getId();
+				Job containerJob = c.job();
+				long containerJobId = containerJob.getId();
 
-				existingSpiders.add(containerSpiderId);
-				if (!spiderByIdFromController.containsKey(containerSpiderId)) {
-					log.debug("Killing spider {}", containerSpiderId);
-					killFrontierContainer(containerSpiderId);
-					killed.add(containerSpiderId);
+				existingJobs.add(containerJobId);
+				if (!jobByIdFromCoordinator.containsKey(containerJobId)) {
+					log.debug("Killing job {}", containerJobId);
+					killFrontierContainer(containerJobId);
+					killed.add(containerJobId);
 				} else {
-					Spider remoteSpider = spiderByIdFromController.get(containerSpiderId);
+					Job remoteJob = jobByIdFromCoordinator.get(containerJobId);
 
-					if (remoteSpider.getVersion() != containerSpider.getVersion()) {
-						log.debug("Updating spider {}", containerSpiderId);
-						killFrontierContainer(containerSpiderId);
-						create(remoteSpider);
-						updated.add(containerSpiderId);
+					if (remoteJob.getVersion() != containerJob.getVersion()) {
+						log.debug("Updating job {}", containerJobId);
+						killFrontierContainer(containerJobId);
+						create(remoteJob);
+						updated.add(containerJobId);
 
-						if (SpiderStatuses.STARTED.equals(remoteSpider.getStatus())) {
-							log.debug("Starting spider {}", containerSpiderId);
-							startFrontierContainer(containerSpiderId);
-							started.add(containerSpiderId);
+						if (JobStatuses.STARTED.equals(remoteJob.getStatus())) {
+							log.debug("Starting job {}", containerJobId);
+							startFrontierContainer(containerJobId);
+							started.add(containerJobId);
 						}
-					} else if (!remoteSpider.getStatus().equalsIgnoreCase(c.status().toString())) {
-						log.info("Container for {} is {}, but has to be {}", containerSpider.getId(), c.status(), remoteSpider.getStatus());
+					} else if (!remoteJob.getStatus().toString().equalsIgnoreCase(c.status().toString())) {
+						log.info("Container for {} is {}, but has to be {}", containerJob.getId(), c.status(), remoteJob.getStatus());
 
-						switch (remoteSpider.getStatus()) {
-						case SpiderStatuses.STARTED:
+						switch (remoteJob.getStatus().getStatus()) {
+						case STARTED:
 							if (!ContainerStatus.STARTED.equals(c.status())) {
-								log.debug("Starting spider {}", containerSpiderId);
-								startFrontierContainer(containerSpiderId);
-								started.add(containerSpiderId);
+								log.debug("Starting job {}", containerJobId);
+								startFrontierContainer(containerJobId);
+								started.add(containerJobId);
 							}
 							break;
-						case SpiderStatuses.INITIATED:
+						case INITIATED:
 							if (!ContainerStatus.INITIATED.equals(c.status())) {
-								log.debug("Re-init spider {}", containerSpiderId);
-								killFrontierContainer(containerSpiderId);
-								create(remoteSpider);
+								log.debug("Re-init job {}", containerJobId);
+								killFrontierContainer(containerJobId);
+								create(remoteJob);
 							}
 							break;
-						case SpiderStatuses.PAUSED:
+						case PAUSED:
 							if (!ContainerStatus.PAUSED.equals(c.status())) {
-								log.debug("Pausing spider {}", containerSpiderId);
-								pauseFrontierContainer(containerSpiderId);
-								paused.add(containerSpiderId);
+								log.debug("Pausing job {}", containerJobId);
+								pauseFrontierContainer(containerJobId);
+								paused.add(containerJobId);
 							}
+							break;
+						default:
 							break;
 						}
 					}
 				}
 			});
 
-		spiderByIdFromController.forEach((id, spider) -> {
-			if (!existingSpiders.contains(id)) {
-				log.debug("Creating spider {}", id);
-				create(spider);
-				created.add(spider.getId());
+		jobByIdFromCoordinator.forEach((id, job) -> {
+			if (!existingJobs.contains(id)) {
+				log.debug("Creating job {}", id);
+				create(job);
+				created.add(job.getId());
 
-				if (SpiderStatuses.STARTED.equals(spider.getStatus())) {
-					log.debug("Starting spider {}", id);
-					startFrontierContainer(spider.getId());
-					started.add(spider.getId());
-				} else if (SpiderStatuses.PAUSED.equals(spider.getStatus())) {
-					log.debug("Pausing spider {}", id);
-					pauseFrontierContainer(spider.getId());
-					paused.add(spider.getId());
+				if (JobStatuses.STARTED.equals(job.getStatus())) {
+					log.debug("Starting job {}", id);
+					startFrontierContainer(job.getId());
+					started.add(job.getId());
+				} else if (JobStatuses.PAUSED.equals(job.getStatus())) {
+					log.debug("Pausing job {}", id);
+					pauseFrontierContainer(job.getId());
+					paused.add(job.getId());
 				}
 			}
 		});

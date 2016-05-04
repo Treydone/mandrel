@@ -38,7 +38,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConditionalOnProperty(value = "discovery.zookeeper.enabled", matchIfMissing = true)
+@ConditionalOnProperty(value = "discovery.zookeeper.enabled", matchIfMissing = false)
 @EnableConfigurationProperties
 @Slf4j
 public class ZookeeperAutoConfiguration {

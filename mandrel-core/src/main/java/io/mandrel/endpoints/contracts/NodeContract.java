@@ -29,6 +29,9 @@ public interface NodeContract extends Contract, AutoCloseable {
 
 	@ThriftMethod
 	Node dhis();
+	
+	@ThriftMethod
+	void shutdown();
 
 	public default String getServiceName() {
 		return ServiceIds.node();

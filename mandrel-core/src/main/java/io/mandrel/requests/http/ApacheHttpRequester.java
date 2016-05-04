@@ -21,7 +21,7 @@ package io.mandrel.requests.http;
 import io.mandrel.blob.Blob;
 import io.mandrel.blob.BlobMetadata;
 import io.mandrel.common.data.Param;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.net.Uri;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.requests.RequestException;
@@ -231,7 +231,7 @@ public class ApacheHttpRequester extends Requester {
 				.setDefaultRequestConfig(defaultRequestConfig).build();
 	}
 
-	public HttpContext prepareContext(Spider spider) {
+	public HttpContext prepareContext(Job job) {
 		CookieStore store = new BasicCookieStore();
 		if (cookies() != null)
 			cookies().forEach(cookie -> {
@@ -248,8 +248,8 @@ public class ApacheHttpRequester extends Requester {
 		return localContext;
 	}
 
-	public Blob get(Uri uri, Spider spider) throws Exception {
-		HttpUriRequest request = prepareRequest(uri, spider);
+	public Blob get(Uri uri, Job job) throws Exception {
+		HttpUriRequest request = prepareRequest(uri, job);
 		CloseableHttpResponse response;
 		try {
 			response = client.execute(request);
@@ -266,7 +266,7 @@ public class ApacheHttpRequester extends Requester {
 		return extractWebPage(uri, response, null);
 	}
 
-	public HttpUriRequest prepareRequest(Uri uri, Spider spider) {
+	public HttpUriRequest prepareRequest(Uri uri, Job job) {
 		Builder builder = RequestConfig.copy(defaultRequestConfig);
 
 		HttpGet request = new HttpGet(uri.toURI());
@@ -291,13 +291,13 @@ public class ApacheHttpRequester extends Requester {
 		request.setParams(params);
 
 		// Configure the user -agent
-		String userAgent = userAgentProvisionner().get(uri.toString(), spider);
+		String userAgent = userAgentProvisionner().get(uri.toString(), job);
 		if (Strings.isNullOrEmpty(userAgent)) {
 			request.addHeader(HttpHeaders.USER_AGENT, userAgent);
 		}
 
 		// Configure the proxy
-		ProxyServer proxy = proxyServersSource().findProxy(spider);
+		ProxyServer proxy = proxyServersSource().findProxy(job);
 		if (proxy != null) {
 			// TODO Auth!
 			HttpHost proxyHost = new HttpHost(proxy.getHost(), proxy.getPort(), proxy.getProtocol().getProtocol());

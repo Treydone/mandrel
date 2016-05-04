@@ -23,7 +23,7 @@ import io.mandrel.blob.BlobStores;
 import io.mandrel.cluster.discovery.DiscoveryClient;
 import io.mandrel.common.container.AbstractContainer;
 import io.mandrel.common.container.ContainerStatus;
-import io.mandrel.common.data.Spider;
+import io.mandrel.common.data.Job;
 import io.mandrel.common.service.TaskContext;
 import io.mandrel.data.extract.ExtractorService;
 import io.mandrel.document.DocumentStore;
@@ -33,7 +33,7 @@ import io.mandrel.metadata.MetadataStores;
 import io.mandrel.metrics.Accumulators;
 import io.mandrel.requests.Requester;
 import io.mandrel.requests.Requesters;
-import io.mandrel.transport.Clients;
+import io.mandrel.transport.MandrelClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,14 +63,14 @@ public class WorkerContainer extends AbstractContainer {
 	private final ScheduledExecutorService executor;
 	private final List<Loop> loops;
 
-	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Spider spider, Clients clients, DiscoveryClient discoveryClient) {
-		super(accumulators, spider, clients);
-		context.setDefinition(spider);
+	public WorkerContainer(ExtractorService extractorService, Accumulators accumulators, Job job, MandrelClient client, DiscoveryClient discoveryClient) {
+		super(accumulators, job, client);
+		context.setDefinition(job);
 
 		this.extractorService = extractorService;
 
 		// Create the thread factory
-		BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("worker-" + spider.getId() + "-%d").daemon(true)
+		BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("worker-" + job.getId() + "-%d").daemon(true)
 				.priority(Thread.MAX_PRIORITY).build();
 
 		// Get number of parallel loops
@@ -79,36 +79,36 @@ public class WorkerContainer extends AbstractContainer {
 		executor = Executors.newScheduledThreadPool(parallel + 1, threadFactory);
 
 		// Prepare the barrier
-		Barrier barrier = new Barrier(spider.getPoliteness(), discoveryClient);
+		Barrier barrier = new Barrier(job.getDefinition().getPoliteness(), discoveryClient);
 		executor.scheduleAtFixedRate(() -> barrier.updateBuckets(), 10, 10, TimeUnit.SECONDS);
 
 		// Create loop
 		loops = new ArrayList<>(parallel);
 		IntStream.range(0, parallel).forEach(idx -> {
-			Loop loop = new Loop(extractorService, spider, clients, accumulators.spiderAccumulator(spider.getId()), accumulators.globalAccumulator(), barrier);
+			Loop loop = new Loop(extractorService, job, client, accumulators.jobAccumulator(job.getId()), accumulators.globalAccumulator(), barrier);
 			loops.add(loop);
 			executor.submit(loop);
 		});
 
 		// Init stores
-		MetadataStore metadatastore = spider.getStores().getMetadataStore().build(context);
+		MetadataStore metadatastore = job.getDefinition().getStores().getMetadataStore().build(context);
 		metadatastore.init();
-		MetadataStores.add(spider.getId(), metadatastore);
+		MetadataStores.add(job.getId(), metadatastore);
 
-		BlobStore blobStore = spider.getStores().getBlobStore().build(context);
+		BlobStore blobStore = job.getDefinition().getStores().getBlobStore().build(context);
 		blobStore.init();
-		BlobStores.add(spider.getId(), blobStore);
+		BlobStores.add(job.getId(), blobStore);
 
-		if (spider.getExtractors().getData() != null) {
-			spider.getExtractors().getData().forEach(ex -> {
+		if (job.getDefinition().getExtractors().getData() != null) {
+			job.getDefinition().getExtractors().getData().forEach(ex -> {
 				DocumentStore documentStore = ex.getDocumentStore().metadataExtractor(ex).build(context);
 				documentStore.init();
-				DocumentStores.add(spider.getId(), ex.getName(), documentStore);
+				DocumentStores.add(job.getId(), ex.getName(), documentStore);
 			});
 		}
 
 		// Init requesters
-		spider.getClient().getRequesters().forEach(r -> {
+		job.getDefinition().getClient().getRequesters().forEach(r -> {
 			Requester requester = r.build(context);
 
 			// Prepare client
@@ -120,7 +120,7 @@ public class WorkerContainer extends AbstractContainer {
 				}
 				requester.init();
 
-				Requesters.add(spider.getId(), requester);
+				Requesters.add(job.getId(), requester);
 			});
 
 		current.set(ContainerStatus.INITIATED);
@@ -187,30 +187,30 @@ public class WorkerContainer extends AbstractContainer {
 					}
 
 					try {
-						MetadataStores.remove(spider.getId());
+						MetadataStores.remove(job.getId());
 					} catch (Exception e) {
 						log.debug(e.getMessage(), e);
 					}
 
 					try {
-						BlobStores.remove(spider.getId());
+						BlobStores.remove(job.getId());
 					} catch (Exception e) {
 						log.debug(e.getMessage(), e);
 					}
 
 					try {
-						DocumentStores.remove(spider.getId());
+						DocumentStores.remove(job.getId());
 					} catch (Exception e) {
 						log.debug(e.getMessage(), e);
 					}
 
 					try {
-						Requesters.remove(spider.getId());
+						Requesters.remove(job.getId());
 					} catch (Exception e) {
 						log.debug(e.getMessage(), e);
 					}
 
-					accumulators.destroy(spider.getId());
+					accumulators.destroy(job.getId());
 
 					current.set(ContainerStatus.KILLED);
 				}
@@ -222,11 +222,11 @@ public class WorkerContainer extends AbstractContainer {
 
 	@Override
 	public void register() {
-		WorkerContainers.add(spider.getId(), this);
+		WorkerContainers.add(job.getId(), this);
 	}
 
 	@Override
 	public void unregister() {
-		WorkerContainers.remove(spider.getId());
+		WorkerContainers.remove(job.getId());
 	}
 }

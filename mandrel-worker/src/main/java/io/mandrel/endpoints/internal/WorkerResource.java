@@ -19,18 +19,21 @@
 package io.mandrel.endpoints.internal;
 
 import io.mandrel.cluster.discovery.DiscoveryClient;
+import io.mandrel.cluster.discovery.Service;
+import io.mandrel.cluster.discovery.ServiceIds;
 import io.mandrel.common.NotFoundException;
 import io.mandrel.common.container.ContainerStatus;
-import io.mandrel.common.data.Spider;
-import io.mandrel.common.data.SpiderStatuses;
+import io.mandrel.common.data.Job;
+import io.mandrel.common.data.JobStatuses;
 import io.mandrel.common.sync.Container;
 import io.mandrel.common.sync.SyncRequest;
 import io.mandrel.common.sync.SyncResponse;
 import io.mandrel.data.analysis.AnalysisService;
 import io.mandrel.data.extract.ExtractorService;
-import io.mandrel.endpoints.contracts.WorkerContract;
+import io.mandrel.endpoints.contracts.worker.AdminWorkerContract;
+import io.mandrel.endpoints.contracts.worker.WorkerContract;
 import io.mandrel.metrics.Accumulators;
-import io.mandrel.transport.Clients;
+import io.mandrel.transport.MandrelClient;
 import io.mandrel.worker.WorkerContainer;
 import io.mandrel.worker.WorkerContainers;
 
@@ -42,10 +45,12 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.weakref.jmx.internal.guava.base.Throwables;
 
@@ -53,36 +58,35 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Component
-public class WorkerResource implements WorkerContract {
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+public class WorkerResource implements WorkerContract, AdminWorkerContract, Service {
 
-	@Autowired
-	private Clients clients;
-	@Autowired
-	private DiscoveryClient discoveryClient;
-	@Autowired
-	private ObjectMapper objectMapper;
-	@Autowired
-	private AnalysisService analysisService;
-	@Autowired
-	private ExtractorService extractorService;
-	@Autowired
-	private Accumulators accumulators;
+	private final MandrelClient client;
+	private final DiscoveryClient discoveryClient;
+	private final ObjectMapper objectMapper;
+	private final AnalysisService analysisService;
+	private final ExtractorService extractorService;
+	private final Accumulators accumulators;
 
 	private Supplier<? extends NotFoundException> workerNotFound = () -> new NotFoundException("Worker not found");
 
+	public String getServiceName() {
+		return ServiceIds.worker();
+	}
+
 	@Override
 	public void createWorkerContainer(byte[] definition) {
-		Spider spider;
+		Job job;
 		try {
-			spider = objectMapper.readValue(definition, Spider.class);
+			job = objectMapper.readValue(definition, Job.class);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
-		create(spider);
+		create(job);
 	}
 
-	public void create(Spider spider) {
-		WorkerContainer container = new WorkerContainer(extractorService, accumulators, spider, clients, discoveryClient);
+	public void create(Job job) {
+		WorkerContainer container = new WorkerContainer(extractorService, accumulators, job, client, discoveryClient);
 		container.register();
 	}
 
@@ -105,23 +109,22 @@ public class WorkerResource implements WorkerContract {
 
 	@Override
 	public List<Container> listRunningWorkerContainers() {
-		return WorkerContainers.list().stream()
-				.map(f -> new Container().setSpiderId(f.spider().getId()).setVersion(f.spider().getVersion()).setStatus(f.status()))
+		return WorkerContainers.list().stream().map(f -> new Container().setJobId(f.job().getId()).setVersion(f.job().getVersion()).setStatus(f.status()))
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public SyncResponse syncWorkers(SyncRequest sync) {
 		Collection<? extends io.mandrel.common.container.Container> containers = WorkerContainers.list();
-		final Map<Long, Spider> spiderByIdFromController = new HashMap<>();
+		final Map<Long, Job> jobByIdFromCoordinator = new HashMap<>();
 		if (sync.getDefinitions() != null) {
-			spiderByIdFromController.putAll(sync.getDefinitions().stream().map(def -> {
+			jobByIdFromCoordinator.putAll(sync.getDefinitions().stream().map(def -> {
 				try {
-					return objectMapper.readValue(def, Spider.class);
+					return objectMapper.readValue(def, Job.class);
 				} catch (Exception e) {
 					throw Throwables.propagate(e);
 				}
-			}).collect(Collectors.toMap(spider -> spider.getId(), spider -> spider)));
+			}).collect(Collectors.toMap(job -> job.getId(), job -> job)));
 		}
 
 		SyncResponse response = new SyncResponse();
@@ -132,76 +135,78 @@ public class WorkerResource implements WorkerContract {
 		List<Long> paused = new ArrayList<>();
 		response.setCreated(created).setKilled(killed).setUpdated(updated).setStarted(started);
 
-		List<Long> existingSpiders = new ArrayList<>();
+		List<Long> existingJobs = new ArrayList<>();
 		if (containers != null)
 			containers.forEach(c -> {
 
-				Spider containerSpider = c.spider();
-				long containerSpiderId = containerSpider.getId();
+				Job containerJob = c.job();
+				long containerJobId = containerJob.getId();
 
-				existingSpiders.add(containerSpiderId);
-				if (!spiderByIdFromController.containsKey(containerSpiderId)) {
-					log.debug("Killing spider {}", containerSpiderId);
-					killWorkerContainer(containerSpiderId);
-					killed.add(containerSpiderId);
+				existingJobs.add(containerJobId);
+				if (!jobByIdFromCoordinator.containsKey(containerJobId)) {
+					log.debug("Killing job {}", containerJobId);
+					killWorkerContainer(containerJobId);
+					killed.add(containerJobId);
 				} else {
-					Spider remoteSpider = spiderByIdFromController.get(containerSpiderId);
+					Job remoteJob = jobByIdFromCoordinator.get(containerJobId);
 
-					if (remoteSpider.getVersion() != containerSpider.getVersion()) {
-						log.debug("Updating spider {}", containerSpiderId);
-						killWorkerContainer(containerSpiderId);
-						create(remoteSpider);
-						updated.add(containerSpiderId);
+					if (remoteJob.getVersion() != containerJob.getVersion()) {
+						log.debug("Updating job {}", containerJobId);
+						killWorkerContainer(containerJobId);
+						create(remoteJob);
+						updated.add(containerJobId);
 
-						if (SpiderStatuses.STARTED.equals(remoteSpider.getStatus())) {
-							log.debug("Starting spider {}", containerSpiderId);
-							startWorkerContainer(containerSpiderId);
-							started.add(containerSpiderId);
+						if (JobStatuses.STARTED.equals(remoteJob.getStatus())) {
+							log.debug("Starting job {}", containerJobId);
+							startWorkerContainer(containerJobId);
+							started.add(containerJobId);
 						}
-					} else if (!remoteSpider.getStatus().equalsIgnoreCase(c.status().toString())) {
-						log.info("Container for {} is {}, but has to be {}", containerSpider.getId(), c.status(), remoteSpider.getStatus());
+					} else if (!remoteJob.getStatus().toString().equalsIgnoreCase(c.status().toString())) {
+						log.info("Container for {} is {}, but has to be {}", containerJob.getId(), c.status(), remoteJob.getStatus());
 
-						switch (remoteSpider.getStatus()) {
-						case SpiderStatuses.STARTED:
+						switch (remoteJob.getStatus().getStatus()) {
+						case STARTED:
 							if (!ContainerStatus.STARTED.equals(c.status())) {
-								log.debug("Starting spider {}", containerSpiderId);
-								startWorkerContainer(containerSpiderId);
-								started.add(containerSpiderId);
+								log.debug("Starting job {}", containerJobId);
+								startWorkerContainer(containerJobId);
+								started.add(containerJobId);
 							}
 							break;
-						case SpiderStatuses.INITIATED:
+						case INITIATED:
 							if (!ContainerStatus.INITIATED.equals(c.status())) {
-								log.debug("Re-create spider {}", containerSpiderId);
-								killWorkerContainer(containerSpiderId);
-								create(remoteSpider);
+								log.debug("Re-create job {}", containerJobId);
+								killWorkerContainer(containerJobId);
+								create(remoteJob);
 							}
 							break;
-						case SpiderStatuses.PAUSED:
+						case PAUSED:
 							if (!ContainerStatus.PAUSED.equals(c.status())) {
-								log.debug("Pausing spider {}", containerSpiderId);
-								pauseWorkerContainer(containerSpiderId);
-								paused.add(containerSpiderId);
+								log.debug("Pausing job {}", containerJobId);
+								pauseWorkerContainer(containerJobId);
+								paused.add(containerJobId);
 							}
+							break;
+						default:
 							break;
 						}
 					}
 				}
 			});
 
-		spiderByIdFromController.forEach((id, spider) -> {
-			if (!existingSpiders.contains(id)) {
-				log.debug("Creating spider {}", id);
-				create(spider);
-				created.add(spider.getId());
+		jobByIdFromCoordinator.forEach((id, job) -> {
+			if (!existingJobs.contains(id)) {
+				log.debug("Creating job {}", id);
+				create(job);
+				created.add(job.getId());
 
-				if (SpiderStatuses.STARTED.equals(spider.getStatus())) {
-					log.debug("Starting spider {}", id);
-					startWorkerContainer(spider.getId());
-					started.add(spider.getId());
-				} else if (SpiderStatuses.PAUSED.equals(spider.getStatus())) {
-					log.debug("Pausing spider {}", id);
-					pauseWorkerContainer(spider.getId());
-					paused.add(spider.getId());
+				if (JobStatuses.STARTED.equals(job.getStatus())) {
+					log.debug("Starting job {}", id);
+					startWorkerContainer(job.getId());
+					started.add(job.getId());
+				} else if (JobStatuses.PAUSED.equals(job.getStatus())) {
+					log.debug("Pausing job {}", id);
+					pauseWorkerContainer(job.getId());
+					paused.add(job.getId());
 				}
 			}
 		});
@@ -211,8 +216,8 @@ public class WorkerResource implements WorkerContract {
 	@Override
 	@SneakyThrows
 	public byte[] analyse(Long id, String source) {
-		Spider spider = WorkerContainers.get(id).orElseThrow(workerNotFound).spider();
-		return objectMapper.writeValueAsBytes(analysisService.analyze(spider, source));
+		Job job = WorkerContainers.get(id).orElseThrow(workerNotFound).job();
+		return objectMapper.writeValueAsBytes(analysisService.analyze(job, source));
 	}
 
 	@Override

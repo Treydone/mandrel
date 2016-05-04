@@ -53,4 +53,9 @@ public class NodeResource implements NodeContract {
 	public void close() throws Exception {
 
 	}
+
+	@Override
+	public void shutdown() {
+		// TODO
+	}
 }

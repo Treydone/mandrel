@@ -21,7 +21,7 @@
 		<!-- Mandrel -->
 		<dependency>
 			<groupId>io.mandrel</groupId>
-			<artifactId>mandrel-controller</artifactId>
+			<artifactId>mandrel-coordinator</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.mandrel</groupId>
@@ -30,6 +30,10 @@
 		<dependency>
 			<groupId>io.mandrel</groupId>
 			<artifactId>mandrel-worker</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.mandrel</groupId>
+			<artifactId>mandrel-ui-server</artifactId>
 		</dependency>
 
 		<dependency>
